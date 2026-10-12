@@ -39,6 +39,10 @@ import { StoreProductPage } from '@/pages/storefront/StoreProductPage';
 import { ProductFormPage } from '@/pages/products/ProductFormPage';
 import { ProductsPage } from '@/pages/products/ProductsPage';
 import { PayoutRequestsPage } from '@/pages/payouts/PayoutRequestsPage';
+import { PurchaseOrderFormPage } from '@/pages/purchasing/PurchaseOrderFormPage';
+import { PurchaseOrderPage } from '@/pages/purchasing/PurchaseOrderPage';
+import { PurchaseOrdersPage } from '@/pages/purchasing/PurchaseOrdersPage';
+import { SuppliersPage } from '@/pages/purchasing/SuppliersPage';
 import { ReportsPage } from '@/pages/reports/ReportsPage';
 import { ForgotPasswordPage } from '@/pages/auth/ForgotPasswordPage';
 import { LoginPage } from '@/pages/auth/LoginPage';
@@ -111,6 +115,11 @@ export function App() {
                                     <Route path="customers" element={<CustomersPage />} />
                                     <Route path="inventory" element={<InventoryPage />} />
                                     <Route path="inventory/movements" element={<StockMovementsPage />} />
+                                    <Route path="suppliers" element={<SuppliersPage />} />
+                                    <Route path="purchase-orders" element={<PurchaseOrdersPage />} />
+                                    <Route path="purchase-orders/new" element={<PurchaseOrderFormPage />} />
+                                    <Route path="purchase-orders/:purchaseOrderId" element={<PurchaseOrderPage />} />
+                                    <Route path="purchase-orders/:purchaseOrderId/edit" element={<PurchaseOrderFormPage key="edit" />} />
                                     <Route path="affiliates" element={<AffiliatesPage />} />
                                     <Route path="payout-requests" element={<PayoutRequestsPage />} />
                                     <Route path="notifications" element={<NotificationsPage />} />

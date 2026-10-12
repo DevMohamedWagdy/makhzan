@@ -30,6 +30,7 @@ class StockMovementResource extends JsonResource
             'stock_after' => $this->stock_after,
             'unit_cost' => $this->unit_cost,
             'order' => $this->order ? ['order_id' => $this->order->id, 'number' => $this->order->number] : null,
+            'purchase_order' => $this->purchaseOrder ? ['purchase_order_id' => $this->purchaseOrder->id, 'number' => $this->purchaseOrder->number] : null,
             'actor' => $this->actor,
             'note' => $this->note,
             'created_at' => $this->created_at?->toIso8601String(),

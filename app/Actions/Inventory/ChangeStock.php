@@ -5,6 +5,7 @@ namespace App\Actions\Inventory;
 use App\Enums\StockMovementType;
 use App\Models\Order;
 use App\Models\ProductVariant;
+use App\Models\PurchaseOrder;
 use App\Models\StockMovement;
 use App\Notifications\StockAlertNotification;
 use Illuminate\Support\Facades\DB;
@@ -23,12 +24,12 @@ class ChangeStock
      *
      * @throws ValidationException when removing more than is in stock
      */
-    public function by(ProductVariant $variant, int $change, StockMovementType $type, string $actor, ?Order $order = null, ?string $note = null, ?float $unitCost = null): ?StockMovement
+    public function by(ProductVariant $variant, int $change, StockMovementType $type, string $actor, ?Order $order = null, ?string $note = null, ?float $unitCost = null, ?PurchaseOrder $purchaseOrder = null): ?StockMovement
     {
-        return DB::transaction(function () use ($variant, $change, $type, $actor, $order, $note, $unitCost): ?StockMovement {
+        return DB::transaction(function () use ($variant, $change, $type, $actor, $order, $note, $unitCost, $purchaseOrder): ?StockMovement {
             $locked = $this->lock($variant);
 
-            return $this->record($variant, $locked, $change, $type, $actor, $order, $note, $unitCost);
+            return $this->record($variant, $locked, $change, $type, $actor, $order, $note, $unitCost, $purchaseOrder);
         });
     }
 
@@ -52,7 +53,7 @@ class ChangeStock
     /**
      * @throws ValidationException
      */
-    private function record(ProductVariant $variant, ProductVariant $locked, int $change, StockMovementType $type, string $actor, ?Order $order, ?string $note, ?float $unitCost): ?StockMovement
+    private function record(ProductVariant $variant, ProductVariant $locked, int $change, StockMovementType $type, string $actor, ?Order $order, ?string $note, ?float $unitCost, ?PurchaseOrder $purchaseOrder = null): ?StockMovement
     {
         if ($change === 0) {
             return null;
@@ -92,6 +93,7 @@ class ChangeStock
             'stock_after' => $after,
             'unit_cost' => $unitCost ?? $locked->cost,
             'order_id' => $order?->id,
+            'purchase_order_id' => $purchaseOrder?->id,
             'actor' => $actor,
             'note' => $note,
         ]);

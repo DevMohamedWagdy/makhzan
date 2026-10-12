@@ -34,8 +34,13 @@ function MovementSource({ movement }) {
                     {t('الطلب #{number}', { number: movement.order.number })}
                 </Link>
             )}
-            {movement.note && <span className="text-ink-2">{movement.note}</span>}
-            {!movement.order && !movement.note && <span className="text-muted">{movement.actor === 'customer' ? t('العميل') : t('المتجر')}</span>}
+            {movement.purchase_order && (
+                <Link to={`/dashboard/purchase-orders/${movement.purchase_order.purchase_order_id}`} className="font-medium text-primary hover:underline">
+                    {t('أمر الشراء #{number}', { number: movement.purchase_order.number })}
+                </Link>
+            )}
+            {movement.note && !movement.purchase_order && <span className="text-ink-2">{movement.note}</span>}
+            {!movement.order && !movement.purchase_order && !movement.note && <span className="text-muted">{movement.actor === 'customer' ? t('العميل') : t('المتجر')}</span>}
             {movement.type === 'restock' && movement.unit_cost != null && <span className="text-muted">{t('تكلفة القطعة {value}', { value: formatMoney(movement.unit_cost) })}</span>}
         </span>
     );

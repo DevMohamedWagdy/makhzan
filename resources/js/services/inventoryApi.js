@@ -18,6 +18,13 @@ export const inventoryApi = {
     recordMovement: (variantId, payload) => request('POST', `${BASE}/${variantId}/movements`, { body: payload }),
     /** @param {{ type?: string, variant_id?: number, search?: string, from?: string, to?: string, page?: number, per_page?: number }} filters */
     movements: (filters) => request('GET', `${BASE}/movements`, { query: filters }),
+    /** Every variant (same shape as `list` rows) for the spreadsheet export. */
+    exportAll: () => request('GET', `${BASE}/export`),
+    /**
+     * Counted stock and costs from an edited export. Returns `{ updated, unchanged, skipped, errors: [{ row, message }] }`.
+     * @param {Array<{ line: number, variant_id?: string, sku?: string, stock?: string, cost?: string }>} rows
+     */
+    importRows: (rows) => request('POST', `${BASE}/import`, { body: { rows } }),
     /** @param {{ low_stock_threshold: number }} payload */
     updateSettings: (payload) => request('PUT', `${BASE}/settings`, { body: payload }),
 };

@@ -27,7 +27,7 @@ class StockMovementController extends Controller
         $search = trim($filters['search'] ?? '');
 
         $movements = $request->user()->store->stockMovements()
-            ->with('order:id,number')
+            ->with(['order:id,number', 'purchaseOrder:id,number'])
             ->when($filters['type'] ?? null, fn ($query, $type) => $query->where('type', $type))
             ->when($filters['variant_id'] ?? null, fn ($query, $variantId) => $query->where('product_variant_id', $variantId))
             ->when($search !== '', fn ($query) => $query->where('product_name', 'like', "%{$search}%"))

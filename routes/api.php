@@ -30,6 +30,7 @@ use App\Http\Controllers\Api\V1\Vendor\Auth\VendorAuthController;
 use App\Http\Controllers\Api\V1\Vendor\CustomerController;
 use App\Http\Controllers\Api\V1\Vendor\CustomerSummaryController;
 use App\Http\Controllers\Api\V1\Vendor\InventoryController;
+use App\Http\Controllers\Api\V1\Vendor\InventoryImportController;
 use App\Http\Controllers\Api\V1\Vendor\InventorySettingsController;
 use App\Http\Controllers\Api\V1\Vendor\InventorySummaryController;
 use App\Http\Controllers\Api\V1\Vendor\NotificationController;
@@ -40,10 +41,12 @@ use App\Http\Controllers\Api\V1\Vendor\ProductCategoryController;
 use App\Http\Controllers\Api\V1\Vendor\ProductController;
 use App\Http\Controllers\Api\V1\Vendor\ProductImageController;
 use App\Http\Controllers\Api\V1\Vendor\ProductSummaryController;
+use App\Http\Controllers\Api\V1\Vendor\PurchaseOrderController;
 use App\Http\Controllers\Api\V1\Vendor\ReportController;
 use App\Http\Controllers\Api\V1\Vendor\ShippingSettingsController;
 use App\Http\Controllers\Api\V1\Vendor\StockMovementController;
 use App\Http\Controllers\Api\V1\Vendor\StoreSlugAvailabilityController;
+use App\Http\Controllers\Api\V1\Vendor\SupplierController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->name('api.v1.')->group(function () {
@@ -190,9 +193,21 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
             Route::get('summary', InventorySummaryController::class)->name('summary');
             Route::put('settings', [InventorySettingsController::class, 'update'])->name('settings.update');
             Route::get('movements', [StockMovementController::class, 'index'])->name('movements.index');
+            Route::get('export', [InventoryImportController::class, 'export'])->name('export');
+            Route::post('import', [InventoryImportController::class, 'import'])->middleware('throttle:10,1')->name('import');
             Route::patch('{variant}', [InventoryController::class, 'update'])->name('update');
             Route::post('{variant}/movements', [StockMovementController::class, 'store'])->middleware('throttle:60,1')->name('movements.store');
         });
+
+        Route::apiResource('suppliers', SupplierController::class)->except('show');
+
+        Route::prefix('purchase-orders/{purchaseOrder}')->name('purchase-orders.')->group(function () {
+            Route::post('order', [PurchaseOrderController::class, 'markOrdered'])->name('order');
+            Route::post('receive', [PurchaseOrderController::class, 'receive'])->name('receive');
+            Route::post('cancel', [PurchaseOrderController::class, 'cancel'])->name('cancel');
+            Route::post('close', [PurchaseOrderController::class, 'close'])->name('close');
+        });
+        Route::apiResource('purchase-orders', PurchaseOrderController::class)->parameters(['purchase-orders' => 'purchaseOrder']);
 
         Route::get('products/summary', ProductSummaryController::class)->name('products.summary');
         Route::post('products/{product}/images', [ProductImageController::class, 'store'])->middleware('throttle:30,1')->name('products.images.store');

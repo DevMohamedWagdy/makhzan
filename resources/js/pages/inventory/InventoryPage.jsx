@@ -8,6 +8,7 @@ import { Input, Select } from '@/components/ui/Form';
 import { Icon } from '@/components/ui/Icon';
 import { Pagination, Tabs } from '@/components/ui/Navigation';
 import { Skeleton } from '@/components/ui/Spinner';
+import { InventoryImportModal } from '@/features/inventory/InventoryImportModal';
 import { EditItemModal, InventorySettingsModal, StockMovementModal, itemLabel } from '@/features/inventory/InventoryModals';
 import { MovementHistoryDrawer } from '@/features/inventory/StockMovements';
 import { ProductThumb } from '@/features/products/ProductBadges';
@@ -71,6 +72,7 @@ export function InventoryPage() {
     const [editing, setEditing] = useState(null);
     const [history, setHistory] = useState(null);
     const [settingsOpen, setSettingsOpen] = useState(false);
+    const [importOpen, setImportOpen] = useState(false);
 
     const setQuery = useCallback(
         (patch) =>
@@ -141,8 +143,14 @@ export function InventoryPage() {
                         <Button variant="secondary" icon="settings" onClick={() => setSettingsOpen(true)}>
                             {t('إعدادات المخزون')}
                         </Button>
+                        <Button variant="secondary" icon="file-spreadsheet" onClick={() => setImportOpen(true)}>
+                            {t('جرد بملف Excel')}
+                        </Button>
                         <Button variant="secondary" icon="refresh" to="/dashboard/inventory/movements">
                             {t('سجل الحركات')}
+                        </Button>
+                        <Button icon="download" to="/dashboard/purchase-orders/new">
+                            {t('أمر شراء')}
                         </Button>
                     </>
                 }
@@ -301,6 +309,7 @@ export function InventoryPage() {
             <StockMovementModal item={movement?.item} initialType={movement?.type} onClose={() => setMovement(null)} onSaved={onItemSaved} />
             <EditItemModal item={editing} storeThreshold={summary?.low_stock_threshold ?? 5} onClose={() => setEditing(null)} onSaved={onItemSaved} />
             <MovementHistoryDrawer item={history} onClose={() => setHistory(null)} />
+            <InventoryImportModal open={importOpen} onClose={() => setImportOpen(false)} onImported={load} />
             <InventorySettingsModal
                 open={settingsOpen}
                 threshold={summary?.low_stock_threshold}

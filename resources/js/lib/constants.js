@@ -50,6 +50,16 @@ export const STOCK_MOVEMENT_TYPES = {
     product_edit: { label: t('تعديل من صفحة المنتج'), tone: 'neutral', icon: 'edit' },
 };
 
+/** @type {Record<'draft'|'ordered'|'partial'|'received'|'closed'|'cancelled', { label: string, tone: string, icon: string }>} */
+export const PURCHASE_ORDER_STATUSES = {
+    draft: { label: t('مسودة'), tone: 'neutral', icon: 'edit' },
+    ordered: { label: t('بانتظار الاستلام'), tone: 'info', icon: 'send' },
+    partial: { label: t('مستلم جزئياً'), tone: 'warning', icon: 'refresh' },
+    received: { label: t('مستلم بالكامل'), tone: 'success', icon: 'check-circle' },
+    closed: { label: t('مغلق'), tone: 'neutral', icon: 'lock' },
+    cancelled: { label: t('ملغي'), tone: 'danger', icon: 'x' },
+};
+
 /** Common option names offered as suggestions in the product form. */
 export const OPTION_SUGGESTIONS = [t('المقاس'), t('اللون'), t('الخامة'), t('الوزن')];
 
