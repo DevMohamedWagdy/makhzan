@@ -142,7 +142,7 @@ export function RegisterPage() {
             });
 
             toast.success(t('تم إنشاء متجر «{name}» بنجاح 🎉', { name: vendor.store.name }), t('مرحباً بك في مخزن، يمكنك البدء بإضافة مسوقيك الآن.'));
-            navigate('/dashboard/affiliates', { replace: true });
+            navigate('/dashboard', { replace: true });
         } catch (error) {
             const fieldErrors = Object.fromEntries(Object.entries(error.errors ?? {}).map(([key, message]) => [SERVER_FIELD_MAP[key] ?? key, message]));
 

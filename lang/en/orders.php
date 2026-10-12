@@ -9,6 +9,8 @@ return [
     'recipient_required' => 'Enter the recipient name',
     'address_line_required' => 'Enter the detailed address (street and building number)',
     'address_not_found' => 'Address not found',
+    'customer_not_found' => 'Customer not found',
+    'report_period_too_long' => 'A report can cover at most :days days',
     'cart_empty' => 'Your cart is empty',
     'item_unavailable' => 'This product is no longer available',
     'item_insufficient' => 'Only :available left of this product',

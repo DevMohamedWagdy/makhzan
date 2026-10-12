@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\V1\Affiliate\Auth\AffiliateAuthController;
 use App\Http\Controllers\Api\V1\Affiliate\Auth\AffiliatePasswordController;
 use App\Http\Controllers\Api\V1\Affiliate\Auth\AffiliatePasswordResetController;
+use App\Http\Controllers\Api\V1\Affiliate\NotificationController as AffiliateNotificationController;
 use App\Http\Controllers\Api\V1\Affiliate\OrderController as AffiliateOrderController;
 use App\Http\Controllers\Api\V1\Affiliate\PayoutController;
 use App\Http\Controllers\Api\V1\Public\AffiliateRegistrationController;
@@ -26,6 +27,8 @@ use App\Http\Controllers\Api\V1\Vendor\AffiliateStatusController;
 use App\Http\Controllers\Api\V1\Vendor\AffiliateSummaryController;
 use App\Http\Controllers\Api\V1\Vendor\Auth\PasswordResetController;
 use App\Http\Controllers\Api\V1\Vendor\Auth\VendorAuthController;
+use App\Http\Controllers\Api\V1\Vendor\CustomerController;
+use App\Http\Controllers\Api\V1\Vendor\CustomerSummaryController;
 use App\Http\Controllers\Api\V1\Vendor\NotificationController;
 use App\Http\Controllers\Api\V1\Vendor\OrderController as VendorOrderController;
 use App\Http\Controllers\Api\V1\Vendor\OrderSummaryController;
@@ -34,6 +37,7 @@ use App\Http\Controllers\Api\V1\Vendor\ProductCategoryController;
 use App\Http\Controllers\Api\V1\Vendor\ProductController;
 use App\Http\Controllers\Api\V1\Vendor\ProductImageController;
 use App\Http\Controllers\Api\V1\Vendor\ProductSummaryController;
+use App\Http\Controllers\Api\V1\Vendor\ReportController;
 use App\Http\Controllers\Api\V1\Vendor\ShippingSettingsController;
 use App\Http\Controllers\Api\V1\Vendor\StoreSlugAvailabilityController;
 use Illuminate\Support\Facades\Route;
@@ -103,12 +107,16 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
             Route::post('auth/logout', [AffiliateAuthController::class, 'logout'])->name('auth.logout');
             Route::get('payouts', [PayoutController::class, 'index'])->name('payouts.index');
             Route::get('orders', [AffiliateOrderController::class, 'index'])->name('orders.index');
+            Route::get('notifications', [AffiliateNotificationController::class, 'index'])->name('notifications.index');
         });
 
         // The affiliate acting as themselves only — never through a vendor's impersonation token.
         Route::middleware(['auth:sanctum', 'affiliate:self'])->group(function () {
             Route::put('auth/password', [AffiliatePasswordController::class, 'update'])->name('auth.password');
             Route::post('payouts', [PayoutController::class, 'store'])->middleware('throttle:10,1')->name('payouts.store');
+            // A vendor looking around as the affiliate leaves their notifications unread.
+            Route::post('notifications/read-all', [AffiliateNotificationController::class, 'readAll'])->name('notifications.read-all');
+            Route::post('notifications/{notification}/read', [AffiliateNotificationController::class, 'read'])->name('notifications.read');
         });
     });
 
@@ -135,6 +143,12 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::post('notifications/{notification}/read', [NotificationController::class, 'read'])->name('notifications.read');
 
         Route::get('payouts', [VendorPayoutController::class, 'index'])->name('payouts.index');
+
+        Route::get('reports', ReportController::class)->name('reports');
+
+        Route::get('customers/summary', CustomerSummaryController::class)->name('customers.summary');
+        Route::get('customers', [CustomerController::class, 'index'])->name('customers.index');
+        Route::get('customers/{customer}', [CustomerController::class, 'show'])->name('customers.show');
 
         Route::prefix('affiliates')->name('affiliates.')->group(function () {
             Route::get('summary', AffiliateSummaryController::class)->name('summary');

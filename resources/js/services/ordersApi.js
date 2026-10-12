@@ -4,7 +4,7 @@ const BASE = '/api/v1/vendor/orders';
 
 /** Vendor order management and shipping settings. */
 export const ordersApi = {
-    /** @param {{ status?: string, search?: string, affiliate?: 1, page?: number, per_page?: number }} filters */
+    /** @param {{ status?: string, search?: string, affiliate?: 1, affiliate_id?: number, customer_id?: number, page?: number, per_page?: number }} filters */
     list: (filters) => request('GET', BASE, { query: filters }),
     /** Counts per status plus `total`, `today` and `delivered_revenue`. */
     summary: () => request('GET', `${BASE}/summary`),

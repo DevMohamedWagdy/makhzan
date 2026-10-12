@@ -12,6 +12,7 @@ use App\Models\Order;
 use App\Models\OrderEvent;
 use App\Models\ProductVariant;
 use App\Models\Store;
+use App\Notifications\AffiliateCommissionNotification;
 use App\Notifications\OrderPlacedNotification;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -88,6 +89,7 @@ class PlaceOrder
         });
 
         $store->vendor->notify(new OrderPlacedNotification($order));
+        $order->affiliate?->notify(new AffiliateCommissionNotification($order, AffiliateCommissionNotification::ORDER_PLACED));
 
         return $order;
     }

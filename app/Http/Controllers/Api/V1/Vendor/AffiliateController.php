@@ -4,16 +4,19 @@ namespace App\Http\Controllers\Api\V1\Vendor;
 
 use App\Actions\Affiliates\CreateAffiliate;
 use App\Enums\AffiliateSource;
+use App\Enums\AffiliateStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\Vendor\ListAffiliatesRequest;
 use App\Http\Requests\Api\V1\Vendor\StoreAffiliateRequest;
 use App\Http\Requests\Api\V1\Vendor\UpdateAffiliateRequest;
 use App\Http\Resources\AffiliateResource;
 use App\Models\Affiliate;
+use App\Notifications\AffiliateAccountStatusNotification;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 
 class AffiliateController extends Controller
@@ -105,10 +108,16 @@ class AffiliateController extends Controller
 
     /**
      * Permanent delete. Referral codes cascade; use freezing to keep history instead.
+     * Deleting a pending applicant rejects them, and they are emailed about it.
      */
     public function destroy(Affiliate $affiliate): Response
     {
         Gate::authorize('delete', $affiliate);
+
+        if ($affiliate->status === AffiliateStatus::Pending && filled($affiliate->email)) {
+            Notification::route('mail', $affiliate->email)
+                ->notify(AffiliateAccountStatusNotification::for($affiliate, AffiliateAccountStatusNotification::REJECTED)->locale($affiliate->preferredLocale()));
+        }
 
         $affiliate->tokens()->delete();
         $affiliate->delete();

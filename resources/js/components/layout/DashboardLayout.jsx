@@ -8,6 +8,7 @@ import { LanguageToggle } from '@/components/ui/LanguageToggle';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { useAuth } from '@/context/AuthContext';
 import { DashboardAlertsProvider, useDashboardAlerts } from '@/context/DashboardAlertsContext';
+import { notificationTarget } from '@/features/notifications/NotificationItem';
 import { NotificationsMenu } from '@/features/notifications/NotificationsMenu';
 import { isRtl, t } from '@/i18n';
 import { APP_DOMAIN } from '@/lib/constants';
@@ -17,7 +18,7 @@ const NAV_SECTIONS = [
     {
         title: t('الرئيسية'),
         items: [
-            { label: t('لوحة التحكم'), icon: 'grid', to: '/dashboard', soon: true },
+            { label: t('لوحة التحكم'), icon: 'grid', to: '/dashboard', end: true },
             { label: t('الإشعارات'), icon: 'bell', to: '/dashboard/notifications', counter: 'unreadCount' },
         ],
     },
@@ -28,6 +29,7 @@ const NAV_SECTIONS = [
             { label: t('المنتجات'), icon: 'box', to: '/dashboard/products' },
             { label: t('المخزون'), icon: 'warehouse', soon: true },
             { label: t('الطلبات'), icon: 'shopping-bag', to: '/dashboard/orders', counter: 'pendingOrdersCount' },
+            { label: t('العملاء'), icon: 'user', to: '/dashboard/customers' },
             { label: t('الشحن'), icon: 'truck', to: '/dashboard/shipping' },
         ],
     },
@@ -43,7 +45,7 @@ const NAV_SECTIONS = [
     {
         title: t('الإدارة'),
         items: [
-            { label: t('التقارير'), icon: 'bar-chart', soon: true },
+            { label: t('التقارير'), icon: 'bar-chart', to: '/dashboard/reports' },
             { label: t('إعدادات المتجر'), icon: 'settings', soon: true },
         ],
     },
@@ -100,6 +102,7 @@ function Sidebar({ open, onClose }) {
                                         <li key={item.label}>
                                             <NavLink
                                                 to={item.to}
+                                                end={item.end}
                                                 onClick={onClose}
                                                 className={({ isActive }) =>
                                                     cn(
@@ -173,6 +176,7 @@ export function DashboardLayout() {
 function DashboardShell() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const { vendor, logout } = useAuth();
+    const { notifications, unreadCount, markRead, markAllRead } = useDashboardAlerts();
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -194,7 +198,7 @@ function DashboardShell() {
                     <div className="ms-auto flex items-center gap-2">
                         <LanguageToggle />
                         <ThemeToggle />
-                        <NotificationsMenu />
+                        <NotificationsMenu notifications={notifications} unreadCount={unreadCount} markRead={markRead} markAllRead={markAllRead} target={notificationTarget} allHref="/dashboard/notifications" />
                         <Dropdown
                             label={t('قائمة الحساب')}
                             trigger={(props) => (

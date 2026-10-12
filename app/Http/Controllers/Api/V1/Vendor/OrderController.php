@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Gate;
 class OrderController extends Controller
 {
     /**
-     * The store's orders, newest first, filtered by status, search or affiliate attribution.
+     * The store's orders, newest first, filtered by status, search, affiliate attribution or customer.
      */
     public function index(ListOrdersRequest $request): AnonymousResourceCollection
     {
@@ -28,6 +28,7 @@ class OrderController extends Controller
             ->when($filters['status'] ?? null, fn ($query, $status) => $query->where('status', $status))
             ->when($request->boolean('affiliate'), fn ($query) => $query->whereNotNull('affiliate_id'))
             ->when($filters['affiliate_id'] ?? null, fn ($query, $affiliateId) => $query->where('affiliate_id', $affiliateId))
+            ->when($filters['customer_id'] ?? null, fn ($query, $customerId) => $query->where('customer_id', $customerId))
             ->latest('id')
             ->paginate($filters['per_page'] ?? 20)
             ->withQueryString();

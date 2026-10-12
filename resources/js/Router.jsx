@@ -6,15 +6,23 @@ import { AffiliateAuthProvider, useAffiliateAuth } from '@/context/AffiliateAuth
 import { AuthProvider, useAuth } from '@/context/AuthContext';
 import { ThemeProvider } from '@/context/ThemeContext';
 import { ToastProvider } from '@/context/ToastContext';
+import { AffiliatePortalLayout } from '@/features/affiliate-portal/AffiliatePortalLayout';
 import { StorefrontLayout } from '@/features/storefront/StorefrontLayout';
 import { t } from '@/i18n';
 import { AffiliateJoinPage } from '@/pages/affiliate-join/AffiliateJoinPage';
+import { AffiliateAccountPage } from '@/pages/affiliate/AffiliateAccountPage';
 import { AffiliateDashboardPage } from '@/pages/affiliate/AffiliateDashboardPage';
+import { AffiliateLinksPage } from '@/pages/affiliate/AffiliateLinksPage';
+import { AffiliateNotificationsPage } from '@/pages/affiliate/AffiliateNotificationsPage';
+import { AffiliateOrdersPage } from '@/pages/affiliate/AffiliateOrdersPage';
+import { AffiliatePayoutsPage } from '@/pages/affiliate/AffiliatePayoutsPage';
 import { AffiliateForgotPasswordPage } from '@/pages/affiliate/AffiliateForgotPasswordPage';
 import { AffiliateLoginPage } from '@/pages/affiliate/AffiliateLoginPage';
 import { AffiliateResetPasswordPage } from '@/pages/affiliate/AffiliateResetPasswordPage';
 import { AffiliatesPage } from '@/pages/affiliates/AffiliatesPage';
 import { CategoriesPage } from '@/pages/categories/CategoriesPage';
+import { CustomersPage } from '@/pages/customers/CustomersPage';
+import { DashboardHomePage } from '@/pages/dashboard/DashboardHomePage';
 import { NotificationsPage } from '@/pages/notifications/NotificationsPage';
 import { OrdersPage } from '@/pages/orders/OrdersPage';
 import { ShippingPage } from '@/pages/shipping/ShippingPage';
@@ -29,6 +37,7 @@ import { StoreProductPage } from '@/pages/storefront/StoreProductPage';
 import { ProductFormPage } from '@/pages/products/ProductFormPage';
 import { ProductsPage } from '@/pages/products/ProductsPage';
 import { PayoutRequestsPage } from '@/pages/payouts/PayoutRequestsPage';
+import { ReportsPage } from '@/pages/reports/ReportsPage';
 import { ForgotPasswordPage } from '@/pages/auth/ForgotPasswordPage';
 import { LoginPage } from '@/pages/auth/LoginPage';
 import { RegisterPage } from '@/pages/auth/RegisterPage';
@@ -76,7 +85,7 @@ function RequireAffiliate() {
 function GuestOnly() {
     const { isAuthenticated } = useAuth();
 
-    return isAuthenticated ? <Navigate to="/dashboard/affiliates" replace /> : <Outlet />;
+    return isAuthenticated ? <Navigate to="/dashboard" replace /> : <Outlet />;
 }
 
 export function App() {
@@ -95,7 +104,9 @@ export function App() {
                             </Route>
                             <Route element={<RequireVendor />}>
                                 <Route path="/dashboard" element={<DashboardLayout />}>
-                                    <Route index element={<Navigate to="affiliates" replace />} />
+                                    <Route index element={<DashboardHomePage />} />
+                                    <Route path="reports" element={<ReportsPage />} />
+                                    <Route path="customers" element={<CustomersPage />} />
                                     <Route path="affiliates" element={<AffiliatesPage />} />
                                     <Route path="payout-requests" element={<PayoutRequestsPage />} />
                                     <Route path="notifications" element={<NotificationsPage />} />
@@ -108,7 +119,14 @@ export function App() {
                                 </Route>
                             </Route>
                             <Route element={<RequireAffiliate />}>
-                                <Route path="/affiliate" element={<AffiliateDashboardPage />} />
+                                <Route path="/affiliate" element={<AffiliatePortalLayout />}>
+                                    <Route index element={<AffiliateDashboardPage />} />
+                                    <Route path="orders" element={<AffiliateOrdersPage />} />
+                                    <Route path="payouts" element={<AffiliatePayoutsPage />} />
+                                    <Route path="links" element={<AffiliateLinksPage />} />
+                                    <Route path="notifications" element={<AffiliateNotificationsPage />} />
+                                    <Route path="account" element={<AffiliateAccountPage />} />
+                                </Route>
                             </Route>
                             <Route path="/affiliate-portal" element={<Navigate to="/affiliate" replace />} />
                             {/* Public: reachable logged in or out (vendors preview their own link). */}

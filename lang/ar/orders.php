@@ -9,6 +9,8 @@ return [
     'recipient_required' => 'أدخل اسم المستلم',
     'address_line_required' => 'أدخل العنوان بالتفصيل (الشارع ورقم العقار)',
     'address_not_found' => 'العنوان غير موجود',
+    'customer_not_found' => 'العميل غير موجود',
+    'report_period_too_long' => 'أقصى مدة للتقرير :days يوماً',
     'cart_empty' => 'السلة فارغة',
     'item_unavailable' => 'هذا المنتج لم يعد متاحاً',
     'item_insufficient' => 'متبقي :available قطعة فقط من هذا المنتج',

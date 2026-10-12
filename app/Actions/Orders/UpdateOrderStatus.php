@@ -8,6 +8,7 @@ use App\Models\Affiliate;
 use App\Models\AffiliateReferralCode;
 use App\Models\Order;
 use App\Models\ProductVariant;
+use App\Notifications\AffiliateCommissionNotification;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -16,13 +17,16 @@ class UpdateOrderStatus
     /**
      * Moves an order along its lifecycle (see OrderStatus::next()) and applies the side
      * effects: cancelled and returned orders go back to stock; the affiliate is credited when
-     * the order is delivered and debited if a delivered order is returned.
+     * the order is delivered and debited if a delivered order is returned, and is notified
+     * whenever their commission changes.
      *
      * @throws ValidationException
      */
     public function handle(Order $order, OrderStatus $status, string $actor, ?string $note = null): Order
     {
-        return DB::transaction(function () use ($order, $status, $actor, $note): Order {
+        $commissionEvent = null;
+
+        $order = DB::transaction(function () use ($order, $status, $actor, $note, &$commissionEvent): Order {
             $order = Order::query()->whereKey($order->id)->lockForUpdate()->firstOrFail();
             $previous = $order->status;
 
@@ -41,13 +45,19 @@ class UpdateOrderStatus
                 $this->restock($order);
             }
 
-            $this->settleCommission($order, $previous, $status);
+            $commissionEvent = $this->settleCommission($order, $previous, $status);
 
             $order->save();
             $order->events()->create(['status' => $status, 'actor' => $actor, 'note' => $note]);
 
             return $order;
         });
+
+        if ($commissionEvent) {
+            $order->affiliate?->notify(new AffiliateCommissionNotification($order, $commissionEvent));
+        }
+
+        return $order;
     }
 
     private function restock(Order $order): void
@@ -59,21 +69,33 @@ class UpdateOrderStatus
 
     /**
      * Earned on delivery; reversed if a delivered order comes back; dropped if the order
-     * never reaches the customer.
+     * never reaches the customer. Returns the AffiliateCommissionNotification event, if any.
      */
-    private function settleCommission(Order $order, OrderStatus $from, OrderStatus $to): void
+    private function settleCommission(Order $order, OrderStatus $from, OrderStatus $to): ?string
     {
         $commission = $order->commission_status;
 
         if ($to === OrderStatus::Delivered && $commission === CommissionStatus::Pending) {
             $this->adjustAffiliate($order, 1);
             $order->commission_status = CommissionStatus::Earned;
-        } elseif ($to === OrderStatus::Returned && $from === OrderStatus::Delivered && $commission === CommissionStatus::Earned) {
+
+            return AffiliateCommissionNotification::EARNED;
+        }
+
+        if ($to === OrderStatus::Returned && $from === OrderStatus::Delivered && $commission === CommissionStatus::Earned) {
             $this->adjustAffiliate($order, -1);
             $order->commission_status = CommissionStatus::Cancelled;
-        } elseif ($to->restocks() && $commission === CommissionStatus::Pending) {
-            $order->commission_status = CommissionStatus::Cancelled;
+
+            return AffiliateCommissionNotification::REVERSED;
         }
+
+        if ($to->restocks() && $commission === CommissionStatus::Pending) {
+            $order->commission_status = CommissionStatus::Cancelled;
+
+            return AffiliateCommissionNotification::CANCELLED;
+        }
+
+        return null;
     }
 
     /**

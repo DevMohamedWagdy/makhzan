@@ -48,6 +48,15 @@ class NotificationResource extends JsonResource
                 'customer' => $details['customer_name'],
                 'total' => number_format((float) $details['total'], 2),
             ]),
+            'account_approved', 'account_frozen', 'account_reactivated' => __("notifications.{$this->type}.message", ['store' => $details['store_name']]),
+            'payout_paid', 'payout_rejected' => __("notifications.{$this->type}.message", ['amount' => number_format((float) $details['amount'], 2)]),
+            'referral_order_placed', 'commission_earned', 'commission_cancelled', 'commission_reversed' => __("notifications.{$this->type}", [
+                'number' => $details['number'],
+                'commission' => number_format((float) $details['commission'], 2),
+            ]),
+            'commission_changed' => __($details['type'] === 'fixed' ? 'notifications.commission_changed.fixed' : 'notifications.commission_changed.percentage', [
+                'value' => $details['type'] === 'fixed' ? number_format((float) $details['value'], 2) : rtrim(rtrim(number_format((float) $details['value'], 2), '0'), '.'),
+            ]),
             default => $details['message'] ?? '',
         };
     }

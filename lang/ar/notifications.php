@@ -37,5 +37,41 @@ return [
         'line' => 'وصلك طلب جديد #:number من :customer بقيمة :total ج.م.',
         'action' => 'عرض الطلب',
     ],
+    'open_portal' => 'فتح بوابة المسوقين',
+    'reason' => 'السبب: :reason',
+    'store_note' => 'ملاحظة المتجر: :note',
+    'account_approved' => [
+        'subject' => 'تمت الموافقة على انضمامك لمسوقي :store',
+        'message' => 'تمت الموافقة على طلب انضمامك لفريق مسوقي :store. روابط الإحالة الخاصة بك جاهزة للمشاركة.',
+    ],
+    'account_rejected' => [
+        'subject' => 'بخصوص طلب انضمامك لمسوقي :store',
+        'message' => 'نأسف، لم تتم الموافقة على طلب انضمامك لفريق مسوقي :store.',
+    ],
+    'account_frozen' => [
+        'subject' => 'تم إيقاف حسابك كمسوق في :store',
+        'message' => 'أوقف :store حسابك كمسوق مؤقتاً، وروابط الإحالة الخاصة بك معطلة حالياً. تواصل مع المتجر للاستفسار.',
+    ],
+    'account_reactivated' => [
+        'subject' => 'تمت إعادة تفعيل حسابك في :store',
+        'message' => 'أعاد :store تفعيل حسابك كمسوق، وروابط الإحالة الخاصة بك تعمل من جديد.',
+    ],
+    'payout_paid' => [
+        'subject' => 'تم تحويل :amount ج.م إليك',
+        'message' => 'حوّل المتجر :amount ج.م من عمولاتك إلى وسيلة السحب المسجلة.',
+        'reference' => 'رقم العملية: :reference',
+    ],
+    'payout_rejected' => [
+        'subject' => 'تم رفض طلب تحويل :amount ج.م',
+        'message' => 'رفض المتجر طلب تحويل :amount ج.م، ورصيدك المستحق كما هو.',
+    ],
+    'referral_order_placed' => 'طلب جديد #:number عبر روابطك، عمولتك المتوقعة :commission ج.م عند التوصيل',
+    'commission_earned' => 'تم توصيل الطلب #:number وأُضيفت :commission ج.م لرصيدك',
+    'commission_cancelled' => 'أُلغي الطلب #:number، فلن تُحتسب عمولته (:commission ج.م)',
+    'commission_reversed' => 'تم إرجاع الطلب #:number، فخُصمت عمولته (:commission ج.م) من رصيدك',
+    'commission_changed' => [
+        'percentage' => 'تم تحديث عمولتك إلى :value% من قيمة كل طلب جديد',
+        'fixed' => 'تم تحديث عمولتك إلى :value ج.م على كل طلب جديد',
+    ],
 
 ];
