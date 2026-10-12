@@ -23,7 +23,7 @@ class RegisterAffiliateRequest extends StoreAffiliateRequest
     {
         return $this->registrationLink()->is_enabled
             ? Response::allow()
-            : Response::denyAsNotFound('رابط التسجيل غير صالح أو متوقف حالياً');
+            : Response::denyAsNotFound(__('affiliates.registration_link_invalid'));
     }
 
     /**
@@ -41,10 +41,10 @@ class RegisterAffiliateRequest extends StoreAffiliateRequest
     {
         return [
             ...parent::messages(),
-            'full_name.required' => 'أدخل اسمك بالكامل',
-            'phone.required' => 'أدخل رقم هاتفك',
-            'phone.unique' => 'هذا الرقم مسجل بالفعل ضمن مسوقي هذا المتجر',
-            'password.required' => 'أدخل كلمة المرور',
+            'full_name.required' => __('forms.full_name_required'),
+            'phone.required' => __('forms.phone_required'),
+            'phone.unique' => __('affiliates.phone_taken_in_store'),
+            'password.required' => __('forms.password_required'),
         ];
     }
 

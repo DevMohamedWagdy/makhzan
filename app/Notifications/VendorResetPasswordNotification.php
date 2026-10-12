@@ -46,11 +46,11 @@ class VendorResetPasswordNotification extends Notification implements ShouldQueu
         $expireMinutes = config('auth.passwords.vendors.expire');
 
         return (new MailMessage)
-            ->subject('إعادة تعيين كلمة المرور - مخزن')
-            ->greeting('مرحباً '.$notifiable->full_name)
-            ->line('وصلنا طلب لإعادة تعيين كلمة مرور حسابك على مخزن.')
-            ->action('إعادة تعيين كلمة المرور', $this->resetUrl($notifiable))
-            ->line("ينتهي هذا الرابط خلال {$expireMinutes} دقيقة.")
-            ->line('إذا لم تطلب إعادة التعيين، تجاهل هذه الرسالة ولن يتغير شيء.');
+            ->subject(__('notifications.vendor_reset_password.subject'))
+            ->greeting(__('notifications.greeting', ['name' => $notifiable->full_name]))
+            ->line(__('notifications.vendor_reset_password.intro'))
+            ->action(__('notifications.vendor_reset_password.action'), $this->resetUrl($notifiable))
+            ->line(__('notifications.vendor_reset_password.expiry', ['minutes' => $expireMinutes]))
+            ->line(__('notifications.ignore_reset'));
     }
 }

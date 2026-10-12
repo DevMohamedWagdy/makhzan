@@ -56,21 +56,21 @@ class AffiliateRegisteredNotification extends Notification implements ShouldQueu
     public function toMail(Vendor $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject("مسوق جديد: {$this->affiliate->full_name}")
-            ->greeting('مرحباً '.$notifiable->full_name)
-            ->line($this->message())
-            ->action($this->requiresApproval() ? 'مراجعة الطلب' : 'عرض المسوق', url('/dashboard/affiliates?affiliate='.$this->affiliate->id));
+            ->subject(__('notifications.affiliate_registered.subject', ['affiliate' => $this->affiliate->full_name]))
+            ->greeting(__('notifications.greeting', ['name' => $notifiable->full_name]))
+            ->line(__($this->requiresApproval() ? 'notifications.affiliate_registered.pending' : 'notifications.affiliate_registered.active', ['affiliate' => $this->affiliate->full_name]))
+            ->action(__($this->requiresApproval() ? 'notifications.affiliate_registered.review' : 'notifications.affiliate_registered.view'), url('/dashboard/affiliates?affiliate='.$this->affiliate->id));
     }
 
     /**
-     * Payload of the dashboard notification.
+     * Payload of the dashboard notification; the message is rendered in the reader's
+     * language by NotificationResource::message().
      *
-     * @return array{message: string, affiliate_id: int, affiliate_name: string, requires_approval: bool}
+     * @return array{affiliate_id: int, affiliate_name: string, requires_approval: bool}
      */
     public function toArray(object $notifiable): array
     {
         return [
-            'message' => $this->message(),
             'affiliate_id' => $this->affiliate->id,
             'affiliate_name' => $this->affiliate->full_name,
             'requires_approval' => $this->requiresApproval(),
@@ -80,12 +80,5 @@ class AffiliateRegisteredNotification extends Notification implements ShouldQueu
     private function requiresApproval(): bool
     {
         return $this->affiliate->status === AffiliateStatus::Pending;
-    }
-
-    private function message(): string
-    {
-        return $this->requiresApproval()
-            ? "{$this->affiliate->full_name} أرسل طلب انضمام لفريق المسوقين وينتظر موافقتك"
-            : "انضم {$this->affiliate->full_name} لفريق المسوقين عبر رابط التسجيل";
     }
 }

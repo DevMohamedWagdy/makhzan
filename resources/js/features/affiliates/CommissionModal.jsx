@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/Button';
 import { Alert } from '@/components/ui/Display';
 import { Field, Input, OptionCards, Switch, Textarea } from '@/components/ui/Form';
 import { Modal } from '@/components/ui/Overlay';
+import { t } from '@/i18n';
 import { AFFILIATE_TIERS, CURRENCY } from '@/lib/constants';
 import { formatMoney } from '@/lib/format';
 import { formatCommission } from './AffiliateBadges';
@@ -40,7 +41,7 @@ export function CommissionModal({ affiliate, open, onClose, onSave, saving }) {
 
     const submit = () => {
         if (!useTierDefault && (Number.isNaN(numeric) || numeric < min || numeric > max)) {
-            setError(type === 'percentage' ? `أدخل نسبة بين ${min}% و ${max}%` : `أدخل مبلغاً بين ${min} و ${max} ${CURRENCY}`);
+            setError(type === 'percentage' ? t('أدخل نسبة بين {min}% و {max}%', { min, max }) : t('أدخل مبلغاً بين {min} و {max} {CURRENCY}', { min, max, CURRENCY }));
 
             return;
         }
@@ -55,15 +56,15 @@ export function CommissionModal({ affiliate, open, onClose, onSave, saving }) {
             dismissible={!saving}
             icon="percent"
             iconTone="warning"
-            title="تخصيص عمولة استثنائية"
-            description={`حدد عمولة خاصة لـ ${affiliate.full_name} بدلاً من عمولة شريحته الافتراضية.`}
+            title={t('تخصيص عمولة استثنائية')}
+            description={t('حدد عمولة خاصة لـ {full_name} بدلاً من عمولة شريحته الافتراضية.', { full_name: affiliate.full_name })}
             footer={
                 <>
                     <Button variant="secondary" onClick={onClose} disabled={saving}>
-                        إلغاء
+                        {t('إلغاء')}
                     </Button>
                     <Button onClick={submit} loading={saving} icon="check">
-                        حفظ العمولة
+                        {t('حفظ العمولة')}
                     </Button>
                 </>
             }
@@ -73,8 +74,8 @@ export function CommissionModal({ affiliate, open, onClose, onSave, saving }) {
                     <Switch
                         checked={useTierDefault}
                         onChange={setUseTierDefault}
-                        label={`استخدام عمولة الشريحة (${AFFILIATE_TIERS[affiliate.tier].label} — ${tierDefault}%)`}
-                        description="أوقف هذا الخيار لتعيين عمولة مختلفة لهذا المسوق فقط."
+                        label={t('استخدام عمولة الشريحة ({value} — {tierDefault}%)', { value: AFFILIATE_TIERS[affiliate.tier].label, tierDefault })}
+                        description={t('أوقف هذا الخيار لتعيين عمولة مختلفة لهذا المسوق فقط.')}
                     />
                 </div>
 
@@ -88,11 +89,11 @@ export function CommissionModal({ affiliate, open, onClose, onSave, saving }) {
                                 setError(null);
                             }}
                             options={[
-                                { value: 'percentage', label: 'نسبة مئوية', icon: 'percent', description: 'نسبة من قيمة كل طلب' },
-                                { value: 'fixed', label: 'مبلغ ثابت', icon: 'wallet', description: 'مبلغ محدد عن كل طلب' },
+                                { value: 'percentage', label: t('نسبة مئوية'), icon: 'percent', description: t('نسبة من قيمة كل طلب') },
+                                { value: 'fixed', label: t('مبلغ ثابت'), icon: 'wallet', description: t('مبلغ محدد عن كل طلب') },
                             ]}
                         />
-                        <Field label={type === 'percentage' ? 'نسبة العمولة' : 'قيمة العمولة لكل طلب'} error={error} required>
+                        <Field label={type === 'percentage' ? t('نسبة العمولة') : t('قيمة العمولة لكل طلب')} error={error} required>
                             {(props) => (
                                 <Input
                                     {...props}
@@ -112,14 +113,14 @@ export function CommissionModal({ affiliate, open, onClose, onSave, saving }) {
                                 />
                             )}
                         </Field>
-                        <Field label="سبب التخصيص" optional hint="ملاحظة داخلية لا تظهر للمسوق">
-                            {(props) => <Textarea {...props} value={note} onChange={(event) => setNote(event.target.value)} placeholder="مثال: اتفاق خاص لموسم رمضان" maxLength={200} />}
+                        <Field label={t('سبب التخصيص')} optional hint={t('ملاحظة داخلية لا تظهر للمسوق')}>
+                            {(props) => <Textarea {...props} value={note} onChange={(event) => setNote(event.target.value)} placeholder={t('مثال: اتفاق خاص لموسم رمضان')} maxLength={200} />}
                         </Field>
                     </div>
                 )}
 
                 <Alert tone="info" icon="info">
-                    على طلب بقيمة {formatMoney(SAMPLE_ORDER)} سيحصل المسوق على <strong>{formatMoney(Number.isNaN(preview) ? 0 : preview)}</strong>
+                    {t('على طلب بقيمة {order} سيحصل المسوق على', { order: formatMoney(SAMPLE_ORDER) })} <strong>{formatMoney(Number.isNaN(preview) ? 0 : preview)}</strong>
                     {!useTierDefault && value && ` (${formatCommission({ type, value: numeric || 0 })})`}.
                 </Alert>
             </div>

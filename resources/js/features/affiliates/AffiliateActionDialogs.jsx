@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { Alert, Avatar } from '@/components/ui/Display';
 import { Field, Textarea } from '@/components/ui/Form';
+import { t } from '@/i18n';
 import { formatMoney, formatNumber } from '@/lib/format';
 
 function AffiliateSummary({ affiliate }) {
@@ -37,18 +38,18 @@ export function FreezeDialog({ affiliate, open, onClose, onConfirm, loading }) {
             loading={loading}
             tone="warning"
             icon="snowflake"
-            title="تجميد حساب المسوق"
-            description="سيتم إيقاف الحساب مؤقتاً دون حذف أي بيانات."
-            confirmLabel="تجميد الحساب"
+            title={t('تجميد حساب المسوق')}
+            description={t('سيتم إيقاف الحساب مؤقتاً دون حذف أي بيانات.')}
+            confirmLabel={t('تجميد الحساب')}
         >
             <AffiliateSummary affiliate={affiliate} />
             <ul className="flex list-disc flex-col gap-1.5 ps-5 text-sm leading-relaxed text-ink-2">
-                <li>لن يتمكن المسوق من تسجيل الدخول، وستتوقف روابط الإحالة الخاصة به.</li>
-                <li>سجل الطلبات والعمولات السابقة يبقى محفوظاً كما هو.</li>
-                <li>يمكنك إلغاء التجميد في أي وقت.</li>
+                <li>{t('لن يتمكن المسوق من تسجيل الدخول، وستتوقف روابط الإحالة الخاصة به.')}</li>
+                <li>{t('سجل الطلبات والعمولات السابقة يبقى محفوظاً كما هو.')}</li>
+                <li>{t('يمكنك إلغاء التجميد في أي وقت.')}</li>
             </ul>
-            <Field label="سبب التجميد" optional hint="يظهر في ملف المسوق كمرجع لفريقك">
-                {(props) => <Textarea {...props} value={reason} onChange={(event) => setReason(event.target.value)} placeholder="مثال: مخالفة سياسة الإعلانات" maxLength={200} />}
+            <Field label={t('سبب التجميد')} optional hint={t('يظهر في ملف المسوق كمرجع لفريقك')}>
+                {(props) => <Textarea {...props} value={reason} onChange={(event) => setReason(event.target.value)} placeholder={t('مثال: مخالفة سياسة الإعلانات')} maxLength={200} />}
             </Field>
         </ConfirmDialog>
     );
@@ -61,7 +62,7 @@ export function DeleteDialog({ affiliate, open, onClose, onConfirm, loading, rej
 
     if (rejecting) {
         return (
-            <ConfirmDialog open={open} onClose={onClose} onConfirm={onConfirm} loading={loading} icon="x" title="رفض طلب الانضمام؟" description="سيتم حذف طلب التسجيل، ويمكن للمسوق التقديم مرة أخرى عبر الرابط." confirmLabel="رفض الطلب">
+            <ConfirmDialog open={open} onClose={onClose} onConfirm={onConfirm} loading={loading} icon="x" title={t('رفض طلب الانضمام؟')} description={t('سيتم حذف طلب التسجيل، ويمكن للمسوق التقديم مرة أخرى عبر الرابط.')} confirmLabel={t('رفض الطلب')}>
                 <AffiliateSummary affiliate={affiliate} />
             </ConfirmDialog>
         );
@@ -76,20 +77,20 @@ export function DeleteDialog({ affiliate, open, onClose, onConfirm, loading, rej
             onConfirm={onConfirm}
             loading={loading}
             icon="trash"
-            title="حذف المسوق نهائياً"
-            description="لا يمكن التراجع عن هذا الإجراء. سيتم حذف الحساب وكل أكواد الإحالة المرتبطة به."
-            confirmLabel="حذف نهائي"
-            confirmPhrase="حذف"
+            title={t('حذف المسوق نهائياً')}
+            description={t('لا يمكن التراجع عن هذا الإجراء. سيتم حذف الحساب وكل أكواد الإحالة المرتبطة به.')}
+            confirmLabel={t('حذف نهائي')}
+            confirmPhrase={t('حذف')}
         >
             <AffiliateSummary affiliate={affiliate} />
             {hasBalance && (
-                <Alert tone="danger" title="لدى المسوق رصيد غير مسحوب">
-                    رصيد معلق بقيمة {formatMoney(affiliate.stats.pending_balance)}. تأكد من تسويته قبل الحذف.
+                <Alert tone="danger" title={t('لدى المسوق رصيد غير مسحوب')}>
+                    {t('رصيد معلق بقيمة {value}. تأكد من تسويته قبل الحذف.', { value: formatMoney(affiliate.stats.pending_balance) })}
                 </Alert>
             )}
             {affiliate.stats.orders_count > 0 && (
                 <Alert tone="warning">
-                    لهذا المسوق {formatNumber(affiliate.stats.orders_count)} طلب مسجل. إذا كنت تريد إيقافه فقط مع الاحتفاظ بالسجلات، استخدم <strong>«تجميد الحساب»</strong> بدلاً من الحذف.
+                    {t('لهذا المسوق {count} طلب مسجل. إذا كنت تريد إيقافه فقط مع الاحتفاظ بالسجلات، استخدم «تجميد الحساب» بدلاً من الحذف.', { count: formatNumber(affiliate.stats.orders_count) })}
                 </Alert>
             )}
         </ConfirmDialog>
@@ -109,13 +110,13 @@ export function ImpersonateDialog({ affiliate, open, onClose, onConfirm, loading
             loading={loading}
             tone="primary"
             icon="log-in"
-            title="الدخول بصفة المسوق"
-            description="ستشاهد لوحة المسوق تماماً كما يراها، لمساعدته أو للتحقق من مشكلة."
-            confirmLabel="الدخول الآن"
+            title={t('الدخول بصفة المسوق')}
+            description={t('ستشاهد لوحة المسوق تماماً كما يراها، لمساعدته أو للتحقق من مشكلة.')}
+            confirmLabel={t('الدخول الآن')}
         >
             <AffiliateSummary affiliate={affiliate} />
             <Alert tone="info" icon="shield-check">
-                الجلسة صالحة لمدة ٣٠ دقيقة، وكل إجراء تقوم به يُسجل في سجل النشاط باسمك كصاحب المتجر. لن تتمكن من رؤية كلمة مرور المسوق.
+                {t('الجلسة صالحة لمدة ٣٠ دقيقة، وكل إجراء تقوم به يُسجل في سجل النشاط باسمك كصاحب المتجر. لن تتمكن من رؤية كلمة مرور المسوق.')}
             </Alert>
         </ConfirmDialog>
     );

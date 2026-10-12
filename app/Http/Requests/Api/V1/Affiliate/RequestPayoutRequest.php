@@ -26,9 +26,9 @@ class RequestPayoutRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'amount.required' => 'أدخل المبلغ المطلوب تحويله',
-            'amount.numeric' => 'المبلغ يجب أن يكون رقماً',
-            'amount.min' => 'أقل مبلغ للتحويل 1 ج.م',
+            'amount.required' => __('payouts.request_amount_required'),
+            'amount.numeric' => __('payouts.amount_numeric'),
+            'amount.min' => __('payouts.amount_min'),
         ];
     }
 }

@@ -47,6 +47,6 @@ class AffiliatePolicy
     {
         return $vendor->store?->id === $affiliate->store_id
             ? Response::allow()
-            : Response::denyAsNotFound('المسوق غير موجود');
+            : Response::denyAsNotFound(__('affiliates.not_found'));
     }
 }

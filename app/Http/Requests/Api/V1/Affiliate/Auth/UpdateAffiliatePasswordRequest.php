@@ -26,13 +26,13 @@ class UpdateAffiliatePasswordRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'current_password.required' => 'أدخل كلمة المرور الحالية',
-            'current_password.current_password' => 'كلمة المرور الحالية غير صحيحة',
-            'password.required' => 'أدخل كلمة المرور الجديدة',
-            'password.min' => 'كلمة المرور يجب أن تكون ٨ أحرف على الأقل وتحتوي على حروف وأرقام',
-            'password.regex' => 'كلمة المرور يجب أن تكون ٨ أحرف على الأقل وتحتوي على حروف وأرقام',
-            'password.confirmed' => 'كلمتا المرور غير متطابقتين',
-            'password.different' => 'اختر كلمة مرور مختلفة عن الحالية',
+            'current_password.required' => __('forms.current_password_required'),
+            'current_password.current_password' => __('forms.current_password_incorrect'),
+            'password.required' => __('forms.new_password_required'),
+            'password.min' => __('forms.password_rules'),
+            'password.regex' => __('forms.password_rules'),
+            'password.confirmed' => __('forms.password_mismatch'),
+            'password.different' => __('forms.password_same_as_current'),
         ];
     }
 }

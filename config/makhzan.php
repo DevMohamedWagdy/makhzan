@@ -18,6 +18,17 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Supported Languages
+    |--------------------------------------------------------------------------
+    |
+    | The first one is the default (see app.locale). Mirrors resources/js/i18n.
+    |
+    */
+
+    'locales' => ['ar', 'en'],
+
+    /*
+    |--------------------------------------------------------------------------
     | Reserved Store Slugs
     |--------------------------------------------------------------------------
     */
@@ -73,6 +84,19 @@ return [
         // Minimum gap between two reset emails for the same affiliate.
         'password_reset_throttle_seconds' => 60,
         'import_max_rows' => 1000,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Products
+    |--------------------------------------------------------------------------
+    */
+
+    'products' => [
+        // Total stock at or below this (but above zero) counts as "low stock".
+        'low_stock_threshold' => 5,
+        'max_images' => 10,
+        'max_variants' => 100,
     ],
 
 ];

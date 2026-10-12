@@ -24,7 +24,7 @@ class AffiliateImportController extends Controller
 
         if ($rows === [] || count($rows) > $maxRows) {
             throw ValidationException::withMessages([
-                'file' => $rows === [] ? 'الملف فارغ أو لا يحتوي على صفوف بيانات' : "الحد الأقصى {$maxRows} صف في المرة الواحدة",
+                'file' => $rows === [] ? __('affiliates.import.empty_file') : __('affiliates.import.too_many_rows', ['max' => $maxRows]),
             ]);
         }
 

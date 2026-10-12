@@ -1,3 +1,5 @@
+import { t } from '@/i18n';
+
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
@@ -45,7 +47,7 @@ export function passwordStrength(password = '') {
         score++;
     }
 
-    const labels = ['ضعيفة جداً', 'ضعيفة', 'متوسطة', 'جيدة', 'قوية'];
+    const labels = [t('ضعيفة جداً'), t('ضعيفة'), t('متوسطة'), t('جيدة'), t('قوية')];
 
     return { score, label: labels[score] };
 }
@@ -53,25 +55,25 @@ export function passwordStrength(password = '') {
 /* Composable rule builders. Each returns an error message or null. */
 
 export const rules = {
-    required: (message = 'هذا الحقل مطلوب') => (value) =>
+    required: (message = t('هذا الحقل مطلوب')) => (value) =>
         value === undefined || value === null || String(value).trim() === '' ? message : null,
     minLength: (length, message) => (value) =>
-        value && String(value).trim().length < length ? message ?? `يجب ألا يقل عن ${length} أحرف` : null,
-    email: (message = 'صيغة البريد الإلكتروني غير صحيحة') => (value) => (value && !isEmail(value) ? message : null),
-    phone: (message = 'رقم الهاتف غير صحيح، مثال: 01012345678') => (value) => (value && !isPhone(value) ? message : null),
+        value && String(value).trim().length < length ? message ?? t('يجب ألا يقل عن {length} أحرف', { length }) : null,
+    email: (message = t('صيغة البريد الإلكتروني غير صحيحة')) => (value) => (value && !isEmail(value) ? message : null),
+    phone: (message = t('رقم الهاتف غير صحيح، مثال: 01012345678')) => (value) => (value && !isPhone(value) ? message : null),
     password: () => (value) =>
         value && (value.length < 8 || !/\d/.test(value) || !/[A-Za-z]/.test(value))
-            ? 'كلمة المرور يجب أن تكون ٨ أحرف على الأقل وتحتوي على حروف وأرقام'
+            ? t('كلمة المرور يجب أن تكون ٨ أحرف على الأقل وتحتوي على حروف وأرقام')
             : null,
-    matches: (field, message = 'كلمتا المرور غير متطابقتين') => (value, values) =>
+    matches: (field, message = t('كلمتا المرور غير متطابقتين')) => (value, values) =>
         value !== values[field] ? message : null,
     slug: () => (value) =>
-        value && !isSlug(value) ? 'استخدم حروفاً إنجليزية صغيرة وأرقاماً وشرطة (-) فقط، من ٣ إلى ٤٠ حرفاً' : null,
+        value && !isSlug(value) ? t('استخدم حروفاً إنجليزية صغيرة وأرقاماً وشرطة (-) فقط، من ٣ إلى ٤٠ حرفاً') : null,
     range: (min, max, message) => (value) => {
         const number = Number(value);
 
         return value !== '' && (Number.isNaN(number) || number < min || number > max)
-            ? message ?? `أدخل قيمة بين ${min} و ${max}`
+            ? message ?? t('أدخل قيمة بين {min} و {max}', { min, max })
             : null;
     },
 };

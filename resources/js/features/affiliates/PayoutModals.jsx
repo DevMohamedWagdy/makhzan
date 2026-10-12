@@ -6,6 +6,7 @@ import { Field, Input, Textarea } from '@/components/ui/Form';
 import { Icon } from '@/components/ui/Icon';
 import { Modal } from '@/components/ui/Overlay';
 import { useCopy } from '@/hooks/common';
+import { t } from '@/i18n';
 import { CURRENCY, PAYOUT_METHODS } from '@/lib/constants';
 import { cn, formatMoney } from '@/lib/format';
 import { PayoutMethodLabel } from './AffiliateBadges';
@@ -44,13 +45,13 @@ export function RecordPayoutModal({ affiliate, open, onClose, onSave, saving }) 
 
     const submit = () => {
         if (Number.isNaN(numeric) || numeric < 1) {
-            setError(`أدخل مبلغاً لا يقل عن 1 ${CURRENCY}`);
+            setError(t('أدخل مبلغاً لا يقل عن 1 {CURRENCY}', { CURRENCY }));
 
             return;
         }
 
         if (numeric > balance) {
-            setError('المبلغ أكبر من الرصيد المعلق');
+            setError(t('المبلغ أكبر من الرصيد المعلق'));
 
             return;
         }
@@ -65,22 +66,22 @@ export function RecordPayoutModal({ affiliate, open, onClose, onSave, saving }) 
             dismissible={!saving}
             icon="wallet"
             iconTone="success"
-            title={affiliate.payout_request ? 'تأكيد تحويل العمولة' : 'تسجيل دفعة عمولة'}
-            description={`سجّل المبلغ الذي حوّلته لـ ${affiliate.full_name} ليُخصم من رصيده المعلق.`}
+            title={affiliate.payout_request ? t('تأكيد تحويل العمولة') : t('تسجيل دفعة عمولة')}
+            description={t('سجّل المبلغ الذي حوّلته لـ {full_name} ليُخصم من رصيده المعلق.', { full_name: affiliate.full_name })}
             footer={
                 <>
                     <Button variant="secondary" onClick={onClose} disabled={saving}>
-                        إلغاء
+                        {t('إلغاء')}
                     </Button>
                     <Button variant="success" onClick={submit} loading={saving} icon="check">
-                        تأكيد التحويل
+                        {t('تأكيد التحويل')}
                     </Button>
                 </>
             }
         >
             <div className="flex flex-col gap-5">
                 {affiliate.payout_request?.request_note && (
-                    <Alert tone="warning" icon="send" title="ملاحظة المسوق">
+                    <Alert tone="warning" icon="send" title={t('ملاحظة المسوق')}>
                         {affiliate.payout_request.request_note}
                     </Alert>
                 )}
@@ -88,7 +89,7 @@ export function RecordPayoutModal({ affiliate, open, onClose, onSave, saving }) 
                 <div className="rounded-xl border border-line bg-surface-2 p-4">
                     <PayoutMethodLabel type={destination.type} />
                     <dl className="mt-2 divide-y divide-line">
-                        <DetailRow label="اسم صاحب الحساب">{destination.account_name}</DetailRow>
+                        <DetailRow label={t('اسم صاحب الحساب')}>{destination.account_name}</DetailRow>
                         <DetailRow label={PAYOUT_METHODS[destination.type].numberLabel}>
                             <span className="inline-flex items-center gap-1">
                                 <span className="ltr font-mono">{destination.account_number}</span>
@@ -96,14 +97,14 @@ export function RecordPayoutModal({ affiliate, open, onClose, onSave, saving }) 
                                     type="button"
                                     onClick={() => copy(destination.account_number)}
                                     className={cn('grid size-8 place-items-center rounded-lg transition', copiedValue === destination.account_number ? 'bg-success-soft text-success' : 'text-muted hover:bg-surface-3 hover:text-ink')}
-                                    aria-label="نسخ رقم الحساب"
-                                    title="نسخ رقم الحساب"
+                                    aria-label={t('نسخ رقم الحساب')}
+                                    title={t('نسخ رقم الحساب')}
                                 >
                                     <Icon name={copiedValue === destination.account_number ? 'check' : 'copy'} className="size-4" />
                                 </button>
                             </span>
                         </DetailRow>
-                        {destination.bank_name && <DetailRow label="البنك">{destination.bank_name}</DetailRow>}
+                        {destination.bank_name && <DetailRow label={t('البنك')}>{destination.bank_name}</DetailRow>}
                         {destination.iban && (
                             <DetailRow label="IBAN">
                                 <span className="ltr font-mono text-xs">{destination.iban}</span>
@@ -113,7 +114,7 @@ export function RecordPayoutModal({ affiliate, open, onClose, onSave, saving }) 
                 </div>
 
                 <div className="grid gap-5 sm:grid-cols-2">
-                    <Field label="المبلغ المحوَّل" error={error} required hint={`الرصيد المعلق: ${formatMoney(balance)}`}>
+                    <Field label={t('المبلغ المحوَّل')} error={error} required hint={t('الرصيد المعلق: {value}', { value: formatMoney(balance) })}>
                         {(props) => (
                             <Input
                                 {...props}
@@ -133,13 +134,13 @@ export function RecordPayoutModal({ affiliate, open, onClose, onSave, saving }) 
                             />
                         )}
                     </Field>
-                    <Field label="تاريخ التحويل">{(props) => <Input {...props} type="date" max={today()} value={paidAt} onChange={(event) => setPaidAt(event.target.value)} />}</Field>
+                    <Field label={t('تاريخ التحويل')}>{(props) => <Input {...props} type="date" max={today()} value={paidAt} onChange={(event) => setPaidAt(event.target.value)} />}</Field>
                 </div>
-                <Field label="رقم العملية / الإيصال" optional hint="يساعد المسوق على مطابقة التحويل">
+                <Field label={t('رقم العملية / الإيصال')} optional hint={t('يساعد المسوق على مطابقة التحويل')}>
                     {(props) => <Input {...props} dir="ltr" className="text-start" value={reference} onChange={(event) => setReference(event.target.value)} placeholder="TRX123456" maxLength={100} />}
                 </Field>
-                <Field label="ملاحظة" optional hint="تظهر للمسوق في سجل تحويلاته">
-                    {(props) => <Textarea {...props} value={note} onChange={(event) => setNote(event.target.value)} placeholder="مثال: عمولات شهر سبتمبر" maxLength={200} />}
+                <Field label={t('ملاحظة')} optional hint={t('تظهر للمسوق في سجل تحويلاته')}>
+                    {(props) => <Textarea {...props} value={note} onChange={(event) => setNote(event.target.value)} placeholder={t('مثال: عمولات شهر سبتمبر')} maxLength={200} />}
                 </Field>
             </div>
         </Modal>
@@ -166,12 +167,12 @@ export function RejectPayoutDialog({ affiliate, open, onClose, onConfirm, loadin
             onConfirm={() => onConfirm(note.trim() || null)}
             loading={loading}
             icon="x"
-            title="رفض طلب التحويل؟"
-            description={`طلب ${affiliate.full_name} تحويل ${formatMoney(affiliate.payout_request.amount)}. سيبقى رصيده المعلق كما هو.`}
-            confirmLabel="رفض الطلب"
+            title={t('رفض طلب التحويل؟')}
+            description={t('طلب {full_name} تحويل {value}. سيبقى رصيده المعلق كما هو.', { full_name: affiliate.full_name, value: formatMoney(affiliate.payout_request.amount) })}
+            confirmLabel={t('رفض الطلب')}
         >
-            <Field label="سبب الرفض" optional hint="يظهر للمسوق">
-                {(props) => <Textarea {...props} value={note} onChange={(event) => setNote(event.target.value)} placeholder="مثال: التحويلات تتم يوم 1 من كل شهر" maxLength={200} />}
+            <Field label={t('سبب الرفض')} optional hint={t('يظهر للمسوق')}>
+                {(props) => <Textarea {...props} value={note} onChange={(event) => setNote(event.target.value)} placeholder={t('مثال: التحويلات تتم يوم 1 من كل شهر')} maxLength={200} />}
             </Field>
         </ConfirmDialog>
     );

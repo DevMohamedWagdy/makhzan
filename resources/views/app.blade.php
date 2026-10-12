@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="rtl">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -10,6 +10,12 @@
 
         <script>
             (function () {
+                // Applied before first paint (mirrors resources/js/i18n): language and direction, then theme.
+                try {
+                    var locale = localStorage.getItem('makhzan.locale') === 'en' ? 'en' : 'ar';
+                    document.documentElement.lang = locale;
+                    document.documentElement.dir = locale === 'en' ? 'ltr' : 'rtl';
+                } catch (e) {}
                 try {
                     var stored = localStorage.getItem('makhzan.theme');
                     var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;

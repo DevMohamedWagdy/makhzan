@@ -22,7 +22,7 @@ class AffiliateRegistrationController extends Controller
      */
     public function show(AffiliateRegistrationLink $registrationLink): AffiliateRegistrationLinkPublicResource
     {
-        abort_unless($registrationLink->is_enabled, Response::HTTP_NOT_FOUND, 'رابط التسجيل غير صالح أو متوقف حالياً');
+        abort_unless($registrationLink->is_enabled, Response::HTTP_NOT_FOUND, __('affiliates.registration_link_invalid'));
 
         return new AffiliateRegistrationLinkPublicResource($registrationLink->load('store'));
     }
@@ -45,9 +45,10 @@ class AffiliateRegistrationController extends Controller
             );
         } catch (UniqueConstraintViolationException) {
             // A double-submit can pass validation twice; the (store_id, phone) index is the real guard.
-            throw ValidationException::withMessages(['phone' => 'هذا الرقم مسجل بالفعل ضمن مسوقي هذا المتجر']);
+            throw ValidationException::withMessages(['phone' => __('affiliates.phone_taken_in_store')]);
         }
 
+        $affiliate->rememberLocale();
         $registrationLink->store->vendor->notify(new AffiliateRegisteredNotification($affiliate));
 
         $referralCode = $affiliate->referralCodes()->first();
@@ -60,8 +61,8 @@ class AffiliateRegistrationController extends Controller
             'referral_code' => $referralCode?->code,
             'referral_url' => $referralCode ? $registrationLink->store->storefrontUrl('?ref='.$referralCode->code) : null,
             'message' => $status === AffiliateStatus::Pending
-                ? 'تم استلام طلب انضمامك، وسيتم إشعارك فور موافقة صاحب المتجر.'
-                : 'تم تسجيلك بنجاح! يمكنك البدء في مشاركة رابط الإحالة الخاص بك الآن.',
+                ? __('affiliates.registration_pending')
+                : __('affiliates.registration_active'),
         ], Response::HTTP_CREATED);
     }
 }

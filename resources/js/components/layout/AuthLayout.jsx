@@ -1,12 +1,14 @@
 import { Link } from 'react-router-dom';
 import { Logo } from '@/components/brand/Logo';
 import { Icon } from '@/components/ui/Icon';
+import { LanguageToggle } from '@/components/ui/LanguageToggle';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
+import { t } from '@/i18n';
 
 const HIGHLIGHTS = [
-    { icon: 'warehouse', title: 'مخزون تحت السيطرة', text: 'تابع كميات منتجاتك وحركتها لحظة بلحظة في كل الفروع.' },
-    { icon: 'users', title: 'جيش من المسوقين', text: 'أضف مسوقين بعمولات مرنة وتابع مبيعات كل واحد منهم.' },
-    { icon: 'truck', title: 'شحن وتحصيل أسهل', text: 'اربط الطلبات بشركات الشحن وتابع التحصيل من مكان واحد.' },
+    { icon: 'warehouse', title: t('مخزون تحت السيطرة'), text: t('تابع كميات منتجاتك وحركتها لحظة بلحظة في كل الفروع.') },
+    { icon: 'users', title: t('جيش من المسوقين'), text: t('أضف مسوقين بعمولات مرنة وتابع مبيعات كل واحد منهم.') },
+    { icon: 'truck', title: t('شحن وتحصيل أسهل'), text: t('اربط الطلبات بشركات الشحن وتابع التحصيل من مكان واحد.') },
 ];
 
 export function AuthLayout({ children, wide = false }) {
@@ -14,24 +16,25 @@ export function AuthLayout({ children, wide = false }) {
         <div className="flex min-h-dvh">
             <main className="flex flex-1 flex-col px-4 py-6 sm:px-10">
                 <header className="flex items-center justify-between">
-                    <Link to="/login" aria-label="الصفحة الرئيسية لمخزن">
+                    <Link to="/login" aria-label={t('الصفحة الرئيسية لمخزن')}>
                         <Logo className="h-10" />
                     </Link>
+                    <LanguageToggle />
                     <ThemeToggle />
                 </header>
                 <div className="flex flex-1 items-center justify-center py-10">
                     <div className={wide ? 'w-full max-w-2xl' : 'w-full max-w-md'}>{children}</div>
                 </div>
                 <footer className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs text-muted">
-                    <span>© {new Date().getFullYear()} مخزن. جميع الحقوق محفوظة.</span>
+                    <span>{t('© {value} مخزن. جميع الحقوق محفوظة.', { value: new Date().getFullYear() })}</span>
                     <a href="#" className="hover:text-primary">
-                        الشروط والأحكام
+                        {t('الشروط والأحكام')}
                     </a>
                     <a href="#" className="hover:text-primary">
-                        سياسة الخصوصية
+                        {t('سياسة الخصوصية')}
                     </a>
                     <a href="#" className="hover:text-primary">
-                        مركز المساعدة
+                        {t('مركز المساعدة')}
                     </a>
                 </footer>
             </main>
@@ -51,14 +54,14 @@ export function AuthLayout({ children, wide = false }) {
                 <div className="relative">
                     <span className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1.5 text-xs font-medium text-white backdrop-blur">
                         <Icon name="sparkles" className="size-4" />
-                        منصة واحدة لإدارة تجارتك بالكامل
+                        {t('منصة واحدة لإدارة تجارتك بالكامل')}
                     </span>
                     <h1 className="mt-6 text-4xl leading-[1.35] font-bold text-white">
-                        كل ما يحتاجه متجرك،
+                        {t('كل ما يحتاجه متجرك،')}
                         <br />
-                        في مخزن واحد.
+                        {t('في مخزن واحد.')}
                     </h1>
-                    <p className="mt-4 max-w-md text-base leading-relaxed text-indigo-100">المخزون، الطلبات، المسوقين والتقارير — نظام متكامل مصمم للتاجر العربي.</p>
+                    <p className="mt-4 max-w-md text-base leading-relaxed text-indigo-100">{t('المخزون، الطلبات، المسوقين والتقارير — نظام متكامل مصمم للتاجر العربي.')}</p>
                 </div>
 
                 <ul className="relative flex flex-col gap-3">

@@ -46,11 +46,11 @@ class AffiliateResetPasswordNotification extends Notification implements ShouldQ
         $minutes = config('makhzan.affiliates.password_reset_minutes');
 
         return (new MailMessage)
-            ->subject('إعادة تعيين كلمة المرور - '.$notifiable->store->name)
-            ->greeting('مرحباً '.$notifiable->full_name)
-            ->line('وصلنا طلب لإعادة تعيين كلمة مرور حسابك كمسوق في '.$notifiable->store->name.'.')
-            ->action('تعيين كلمة مرور جديدة', $this->resetUrl($notifiable))
-            ->line("ينتهي هذا الرابط خلال {$minutes} دقيقة ويمكن استخدامه مرة واحدة فقط.")
-            ->line('إذا لم تطلب إعادة التعيين، تجاهل هذه الرسالة ولن يتغير شيء.');
+            ->subject(__('notifications.affiliate_reset_password.subject', ['store' => $notifiable->store->name]))
+            ->greeting(__('notifications.greeting', ['name' => $notifiable->full_name]))
+            ->line(__('notifications.affiliate_reset_password.intro', ['store' => $notifiable->store->name]))
+            ->action(__('notifications.affiliate_reset_password.action'), $this->resetUrl($notifiable))
+            ->line(__('notifications.affiliate_reset_password.expiry', ['minutes' => $minutes]))
+            ->line(__('notifications.ignore_reset'));
     }
 }

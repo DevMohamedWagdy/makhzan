@@ -3,32 +3,33 @@ import { Dropdown } from '@/components/ui/Dropdown';
 import { Icon } from '@/components/ui/Icon';
 import { Skeleton } from '@/components/ui/Spinner';
 import { Button } from '@/components/ui/Button';
+import { t } from '@/i18n';
 import { cn, formatMoney, formatNumber, formatRelative } from '@/lib/format';
 import { CommissionCell, PayoutMethodLabel, StatusBadge, TierBadge } from './AffiliateBadges';
 
-const COLUMNS = ['المسوق', 'الهاتف', 'الشريحة', 'العمولة', 'وسيلة السحب', 'المبيعات', 'الحالة', 'آخر نشاط', ''];
+const COLUMNS = [t('المسوق'), t('الهاتف'), t('الشريحة'), t('العمولة'), t('وسيلة السحب'), t('المبيعات'), t('الحالة'), t('آخر نشاط'), ''];
 
 export function buildRowActions(affiliate, actions) {
     if (affiliate.status === 'pending') {
         return [
-            { label: 'عرض الطلب', icon: 'eye', onClick: () => actions.view(affiliate) },
-            { label: 'قبول المسوق', icon: 'check', tone: 'success', onClick: () => actions.approve(affiliate) },
+            { label: t('عرض الطلب'), icon: 'eye', onClick: () => actions.view(affiliate) },
+            { label: t('قبول المسوق'), icon: 'check', tone: 'success', onClick: () => actions.approve(affiliate) },
             { divider: true },
-            { label: 'رفض الطلب', icon: 'x', tone: 'danger', onClick: () => actions.reject(affiliate) },
+            { label: t('رفض الطلب'), icon: 'x', tone: 'danger', onClick: () => actions.reject(affiliate) },
         ];
     }
 
     return [
-        { label: 'عرض الملف', icon: 'eye', onClick: () => actions.view(affiliate) },
-        { label: 'تعديل البيانات', icon: 'edit', onClick: () => actions.edit(affiliate) },
-        { label: 'تخصيص عمولة استثنائية', icon: 'percent', onClick: () => actions.commission(affiliate) },
-        { label: affiliate.payout_request ? 'تأكيد طلب التحويل' : 'تسجيل دفعة عمولة', icon: 'wallet', onClick: () => actions.payout(affiliate), hidden: affiliate.stats.pending_balance <= 0 },
-        { label: 'الدخول بصفة المسوق', icon: 'log-in', onClick: () => actions.impersonate(affiliate) },
+        { label: t('عرض الملف'), icon: 'eye', onClick: () => actions.view(affiliate) },
+        { label: t('تعديل البيانات'), icon: 'edit', onClick: () => actions.edit(affiliate) },
+        { label: t('تخصيص عمولة استثنائية'), icon: 'percent', onClick: () => actions.commission(affiliate) },
+        { label: affiliate.payout_request ? t('تأكيد طلب التحويل') : t('تسجيل دفعة عمولة'), icon: 'wallet', onClick: () => actions.payout(affiliate), hidden: affiliate.stats.pending_balance <= 0 },
+        { label: t('الدخول بصفة المسوق'), icon: 'log-in', onClick: () => actions.impersonate(affiliate) },
         { divider: true },
         affiliate.status === 'frozen'
-            ? { label: 'إلغاء التجميد', icon: 'zap', tone: 'success', onClick: () => actions.activate(affiliate) }
-            : { label: 'تجميد / إيقاف الحساب', icon: 'snowflake', onClick: () => actions.freeze(affiliate) },
-        { label: 'حذف نهائي', icon: 'trash', tone: 'danger', onClick: () => actions.remove(affiliate) },
+            ? { label: t('إلغاء التجميد'), icon: 'zap', tone: 'success', onClick: () => actions.activate(affiliate) }
+            : { label: t('تجميد / إيقاف الحساب'), icon: 'snowflake', onClick: () => actions.freeze(affiliate) },
+        { label: t('حذف نهائي'), icon: 'trash', tone: 'danger', onClick: () => actions.remove(affiliate) },
     ];
 }
 
@@ -55,14 +56,14 @@ function LoadingRows({ count }) {
 
 export function AffiliatesTable({ items, loading, error, perPage, actions, hasActiveFilters, onResetFilters, onAdd, onRetry }) {
     if (error) {
-        return <EmptyState icon="alert-triangle" title="تعذر تحميل المسوقين" description={error} action={<Button variant="secondary" icon="refresh" onClick={onRetry}>إعادة المحاولة</Button>} />;
+        return <EmptyState icon="alert-triangle" title={t('تعذر تحميل المسوقين')} description={error} action={<Button variant="secondary" icon="refresh" onClick={onRetry}>{t('إعادة المحاولة')}</Button>} />;
     }
 
     if (!loading && items.length === 0) {
         return hasActiveFilters ? (
-            <EmptyState icon="search" title="لا توجد نتائج مطابقة" description="جرّب تغيير كلمات البحث أو إزالة بعض الفلاتر." action={<Button variant="secondary" icon="x" onClick={onResetFilters}>مسح الفلاتر</Button>} />
+            <EmptyState icon="search" title={t('لا توجد نتائج مطابقة')} description={t('جرّب تغيير كلمات البحث أو إزالة بعض الفلاتر.')} action={<Button variant="secondary" icon="x" onClick={onResetFilters}>{t('مسح الفلاتر')}</Button>} />
         ) : (
-            <EmptyState icon="users" title="لم تضف أي مسوق بعد" description="ابدأ ببناء فريق المسوقين الخاص بمتجرك وتابع مبيعات كل واحد منهم." action={<Button icon="user-plus" onClick={onAdd}>إضافة أول مسوق</Button>} />
+            <EmptyState icon="users" title={t('لم تضف أي مسوق بعد')} description={t('ابدأ ببناء فريق المسوقين الخاص بمتجرك وتابع مبيعات كل واحد منهم.')} action={<Button icon="user-plus" onClick={onAdd}>{t('إضافة أول مسوق')}</Button>} />
         );
     }
 
@@ -72,8 +73,8 @@ export function AffiliatesTable({ items, loading, error, perPage, actions, hasAc
                 <thead>
                     <tr className="border-y border-line bg-surface-2 text-xs text-muted">
                         {COLUMNS.map((column, index) => (
-                            <th key={index} scope="col" className={cn('px-4 py-3 text-start font-medium whitespace-nowrap', !column && 'sticky left-0 bg-surface-2')}>
-                                {column || <span className="sr-only">الإجراءات</span>}
+                            <th key={index} scope="col" className={cn('px-4 py-3 text-start font-medium whitespace-nowrap', !column && 'sticky end-0 bg-surface-2')}>
+                                {column || <span className="sr-only">{t('الإجراءات')}</span>}
                             </th>
                         ))}
                     </tr>
@@ -115,35 +116,35 @@ export function AffiliatesTable({ items, loading, error, perPage, actions, hasAc
                                 </td>
                                 <td className="px-4 py-3.5 whitespace-nowrap">
                                     <span className="block font-semibold text-ink">{formatMoney(affiliate.stats.sales_total)}</span>
-                                    <span className="text-xs text-muted">{formatNumber(affiliate.stats.orders_count)} طلب</span>
+                                    <span className="text-xs text-muted">{t('{value} طلب', { value: formatNumber(affiliate.stats.orders_count) })}</span>
                                 </td>
                                 <td className="px-4 py-3.5">
                                     <div className="flex flex-col items-start gap-1">
                                         <StatusBadge status={affiliate.status} />
                                         {affiliate.payout_request && (
                                             <Badge tone="warning" icon="send">
-                                                طلب تحويل
+                                                {t('طلب تحويل')}
                                             </Badge>
                                         )}
                                     </div>
                                 </td>
                                 <td className="px-4 py-3.5 text-xs whitespace-nowrap text-muted">{formatRelative(affiliate.last_active_at)}</td>
                                 {/* Actions stay pinned to the inline-end edge while the table scrolls horizontally. */}
-                                <td className="sticky left-0 bg-surface px-4 py-3.5 shadow-[8px_0_12px_-10px_rgb(0_0_0/0.25)] transition group-hover:bg-surface-2" onClick={(event) => event.stopPropagation()}>
+                                <td className="sticky end-0 bg-surface px-4 py-3.5 shadow-[8px_0_12px_-10px_rgb(0_0_0/0.25)] ltr:shadow-[-8px_0_12px_-10px_rgb(0_0_0/0.25)] transition group-hover:bg-surface-2" onClick={(event) => event.stopPropagation()}>
                                     <div className="flex items-center justify-end gap-1">
                                         {affiliate.status === 'pending' && (
                                             <button
                                                 type="button"
                                                 onClick={() => actions.approve(affiliate)}
                                                 className="grid size-8 place-items-center rounded-lg bg-success-soft text-success hover:bg-success hover:text-white"
-                                                aria-label={`قبول ${affiliate.full_name}`}
-                                                title="قبول"
+                                                aria-label={t('قبول {full_name}', { full_name: affiliate.full_name })}
+                                                title={t('قبول')}
                                             >
                                                 <Icon name="check" className="size-4" />
                                             </button>
                                         )}
                                         <Dropdown
-                                            label={`إجراءات ${affiliate.full_name}`}
+                                            label={t('إجراءات {full_name}', { full_name: affiliate.full_name })}
                                             items={buildRowActions(affiliate, actions)}
                                             trigger={(props) => (
                                                 <button type="button" {...props} className="grid size-8 place-items-center rounded-lg text-muted transition hover:bg-surface-3 hover:text-ink aria-expanded:bg-surface-3 aria-expanded:text-ink">

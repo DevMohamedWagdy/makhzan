@@ -26,10 +26,10 @@ class ResetPasswordRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'password.required' => 'أدخل كلمة المرور الجديدة',
-            'password.min' => 'كلمة المرور يجب أن تكون ٨ أحرف على الأقل وتحتوي على حروف وأرقام',
-            'password.regex' => 'كلمة المرور يجب أن تكون ٨ أحرف على الأقل وتحتوي على حروف وأرقام',
-            'password.confirmed' => 'كلمتا المرور غير متطابقتين',
+            'password.required' => __('forms.new_password_required'),
+            'password.min' => __('forms.password_rules'),
+            'password.regex' => __('forms.password_rules'),
+            'password.confirmed' => __('forms.password_mismatch'),
         ];
     }
 }

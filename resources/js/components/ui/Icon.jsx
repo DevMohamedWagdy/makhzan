@@ -1,3 +1,5 @@
+import { isRtl } from '@/i18n';
+
 /** Stroke icon set (24×24, 1.8 stroke). Inline to avoid an icon-font dependency. */
 const PATHS = {
     'alert-circle': <><circle cx="12" cy="12" r="9" /><path d="M12 8v4.5M12 16h.01" /></>,
@@ -61,7 +63,14 @@ const PATHS = {
 };
 
 /** @param {{ name: keyof typeof PATHS, className?: string, strokeWidth?: number }} props */
+/** Arrows and chevrons are drawn for the Arabic (RTL) layout and mirrored in English. */
+const DIRECTIONAL = new Set(['arrow-left', 'arrow-right', 'chevron-left', 'chevron-right']);
+
 export function Icon({ name, className = 'size-5', strokeWidth = 1.8, ...props }) {
+    if (!isRtl && DIRECTIONAL.has(name)) {
+        className = `${className} -scale-x-100`;
+    }
+
     return (
         <svg
             viewBox="0 0 24 24"

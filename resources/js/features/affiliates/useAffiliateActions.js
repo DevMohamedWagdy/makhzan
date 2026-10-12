@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
 import { refreshDashboardAlerts } from '@/context/DashboardAlertsContext';
 import { useToast } from '@/context/ToastContext';
+import { t } from '@/i18n';
 import { formatMoney } from '@/lib/format';
 import { affiliatesApi } from '@/services/affiliatesApi';
 
@@ -24,7 +25,7 @@ export function useAffiliateActions({ onChanged, onRemoved }) {
 
                 return result;
             } catch (error) {
-                toast.error('تعذر تنفيذ الإجراء', error.message);
+                toast.error(t('تعذر تنفيذ الإجراء'), error.message);
                 throw error;
             } finally {
                 setPending(null);
@@ -35,7 +36,7 @@ export function useAffiliateActions({ onChanged, onRemoved }) {
 
     const freeze = useCallback(
         async (affiliate, reason) => {
-            const updated = await run('freeze', () => affiliatesApi.setStatus(affiliate.affiliate_id, 'frozen', reason), 'تم تجميد الحساب', `تم إيقاف ${affiliate.full_name} وتعطيل روابطه مع الاحتفاظ بكل سجلاته.`);
+            const updated = await run('freeze', () => affiliatesApi.setStatus(affiliate.affiliate_id, 'frozen', reason), t('تم تجميد الحساب'), t('تم إيقاف {full_name} وتعطيل روابطه مع الاحتفاظ بكل سجلاته.', { full_name: affiliate.full_name }));
 
             onChanged(updated);
         },
@@ -47,8 +48,8 @@ export function useAffiliateActions({ onChanged, onRemoved }) {
             const updated = await run(
                 'activate',
                 () => affiliatesApi.setStatus(affiliate.affiliate_id, 'active'),
-                approving ? 'تم قبول المسوق' : 'تم إلغاء التجميد',
-                approving ? `أصبح ${affiliate.full_name} مسوقاً نشطاً وتم إنشاء كود إحالة له.` : `عاد حساب ${affiliate.full_name} للعمل.`,
+                approving ? t('تم قبول المسوق') : t('تم إلغاء التجميد'),
+                approving ? t('أصبح {full_name} مسوقاً نشطاً وتم إنشاء كود إحالة له.', { full_name: affiliate.full_name }) : t('عاد حساب {full_name} للعمل.', { full_name: affiliate.full_name }),
             );
 
             onChanged(updated);
@@ -58,7 +59,7 @@ export function useAffiliateActions({ onChanged, onRemoved }) {
 
     const remove = useCallback(
         async (affiliate, { rejecting = false } = {}) => {
-            await run('delete', () => affiliatesApi.remove(affiliate.affiliate_id), rejecting ? 'تم رفض طلب الانضمام' : 'تم حذف المسوق نهائياً');
+            await run('delete', () => affiliatesApi.remove(affiliate.affiliate_id), rejecting ? t('تم رفض طلب الانضمام') : t('تم حذف المسوق نهائياً'));
             onRemoved(affiliate);
         },
         [onRemoved, run],
@@ -66,7 +67,7 @@ export function useAffiliateActions({ onChanged, onRemoved }) {
 
     const setCommission = useCallback(
         async (affiliate, payload) => {
-            const updated = await run('commission', () => affiliatesApi.setCommission(affiliate.affiliate_id, payload), 'تم تحديث العمولة', payload.use_tier_default ? 'يتبع المسوق الآن عمولة شريحته الافتراضية.' : undefined);
+            const updated = await run('commission', () => affiliatesApi.setCommission(affiliate.affiliate_id, payload), t('تم تحديث العمولة'), payload.use_tier_default ? t('يتبع المسوق الآن عمولة شريحته الافتراضية.') : undefined);
 
             onChanged(updated);
         },
@@ -75,7 +76,7 @@ export function useAffiliateActions({ onChanged, onRemoved }) {
 
     const createReferralCode = useCallback(
         async (affiliate) => {
-            const updated = await run('referral', () => affiliatesApi.createReferralCode(affiliate.affiliate_id), 'تم إنشاء كود إحالة جديد');
+            const updated = await run('referral', () => affiliatesApi.createReferralCode(affiliate.affiliate_id), t('تم إنشاء كود إحالة جديد'));
 
             onChanged(updated);
         },
@@ -84,7 +85,7 @@ export function useAffiliateActions({ onChanged, onRemoved }) {
 
     const recordPayout = useCallback(
         async (affiliate, payload) => {
-            const updated = await run('payout', () => affiliatesApi.recordPayout(affiliate.affiliate_id, payload), 'تم تسجيل التحويل', `خُصم ${formatMoney(payload.amount)} من رصيد ${affiliate.full_name}.`);
+            const updated = await run('payout', () => affiliatesApi.recordPayout(affiliate.affiliate_id, payload), t('تم تسجيل التحويل'), t('خُصم {value} من رصيد {full_name}.', { value: formatMoney(payload.amount), full_name: affiliate.full_name }));
 
             onChanged(updated);
         },
@@ -93,7 +94,7 @@ export function useAffiliateActions({ onChanged, onRemoved }) {
 
     const rejectPayout = useCallback(
         async (affiliate, note) => {
-            const updated = await run('reject-payout', () => affiliatesApi.rejectPayout(affiliate.affiliate_id, affiliate.payout_request.payout_id, note), 'تم رفض طلب التحويل');
+            const updated = await run('reject-payout', () => affiliatesApi.rejectPayout(affiliate.affiliate_id, affiliate.payout_request.payout_id, note), t('تم رفض طلب التحويل'));
 
             onChanged(updated);
         },

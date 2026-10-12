@@ -47,7 +47,7 @@ class UpdateAffiliateStatusRequest extends FormRequest
                 $affiliate = $this->route('affiliate');
 
                 if ($this->input('status') === AffiliateStatus::Frozen->value && $affiliate->status === AffiliateStatus::Pending) {
-                    $validator->errors()->add('status', 'لا يمكن تجميد طلب انضمام لم تتم الموافقة عليه بعد');
+                    $validator->errors()->add('status', __('affiliates.cannot_freeze_pending'));
                 }
             },
         ];
@@ -59,9 +59,9 @@ class UpdateAffiliateStatusRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'status.required' => 'حدد الحالة المطلوبة',
-            'status.in' => 'حالة غير صالحة',
-            'reason.max' => 'سبب التجميد يجب ألا يتجاوز ٢٠٠ حرف',
+            'status.required' => __('affiliates.status_required'),
+            'status.in' => __('affiliates.status_invalid'),
+            'reason.max' => __('affiliates.freeze_reason_max'),
         ];
     }
 }

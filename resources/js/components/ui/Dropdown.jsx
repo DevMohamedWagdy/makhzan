@@ -1,6 +1,7 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useClickOutside } from '@/hooks/common';
+import { t } from '@/i18n';
 import { cn } from '@/lib/format';
 import { Icon } from './Icon';
 
@@ -11,7 +12,7 @@ const MENU_WIDTH = 224;
  * by scrollable table containers.
  * @param {{ trigger: (props: object) => JSX.Element, items: Array<{ label: string, icon?: string, onClick?: Function, tone?: 'danger'|'success', divider?: boolean, hidden?: boolean, disabled?: boolean, hint?: string }> }} props
  */
-export function Dropdown({ trigger, items, label = 'الإجراءات' }) {
+export function Dropdown({ trigger, items, label = t('الإجراءات') }) {
     const [open, setOpen] = useState(false);
     const [position, setPosition] = useState(null);
     const triggerRef = useRef(null);

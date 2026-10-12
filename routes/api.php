@@ -19,6 +19,10 @@ use App\Http\Controllers\Api\V1\Vendor\Auth\PasswordResetController;
 use App\Http\Controllers\Api\V1\Vendor\Auth\VendorAuthController;
 use App\Http\Controllers\Api\V1\Vendor\NotificationController;
 use App\Http\Controllers\Api\V1\Vendor\PayoutController as VendorPayoutController;
+use App\Http\Controllers\Api\V1\Vendor\ProductCategoryController;
+use App\Http\Controllers\Api\V1\Vendor\ProductController;
+use App\Http\Controllers\Api\V1\Vendor\ProductImageController;
+use App\Http\Controllers\Api\V1\Vendor\ProductSummaryController;
 use App\Http\Controllers\Api\V1\Vendor\StoreSlugAvailabilityController;
 use Illuminate\Support\Facades\Route;
 
@@ -107,5 +111,15 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         });
 
         Route::apiResource('affiliates', AffiliateController::class);
+
+        Route::apiResource('product-categories', ProductCategoryController::class)
+            ->except('show')
+            ->parameters(['product-categories' => 'category']);
+
+        Route::get('products/summary', ProductSummaryController::class)->name('products.summary');
+        Route::post('products/{product}/images', [ProductImageController::class, 'store'])->middleware('throttle:30,1')->name('products.images.store');
+        Route::put('products/{product}/images/order', [ProductImageController::class, 'reorder'])->name('products.images.reorder');
+        Route::delete('products/{product}/images/{image}', [ProductImageController::class, 'destroy'])->scopeBindings()->name('products.images.destroy');
+        Route::apiResource('products', ProductController::class);
     });
 });

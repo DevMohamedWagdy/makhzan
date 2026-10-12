@@ -176,6 +176,7 @@
     }
 }
 
+/* Drawers open from the inline-end edge: the left in Arabic, the right in English. */
 @keyframes mk-slide-in {
     from {
         transform: translateX(-100%);
@@ -183,6 +184,19 @@
     to {
         transform: translateX(0);
     }
+}
+
+@keyframes mk-slide-in-ltr {
+    from {
+        transform: translateX(100%);
+    }
+    to {
+        transform: translateX(0);
+    }
+}
+
+[dir='ltr'] .animate-slide-in {
+    animation-name: mk-slide-in-ltr;
 }
 
 @keyframes mk-pop {

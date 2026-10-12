@@ -21,7 +21,7 @@ class AffiliateReferralCodeController extends Controller
         Gate::authorize('update', $affiliate);
 
         if ($affiliate->status !== AffiliateStatus::Active) {
-            throw ValidationException::withMessages(['affiliate' => 'لا يمكن إنشاء كود لمسوق غير نشط']);
+            throw ValidationException::withMessages(['affiliate' => __('affiliates.cannot_create_code_inactive')]);
         }
 
         $affiliate->createReferralCode();

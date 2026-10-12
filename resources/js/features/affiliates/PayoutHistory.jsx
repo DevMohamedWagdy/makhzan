@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Display';
 import { Skeleton } from '@/components/ui/Spinner';
+import { t } from '@/i18n';
 import { PAYOUT_METHODS, PAYOUT_STATUSES } from '@/lib/constants';
 import { formatDate, formatMoney } from '@/lib/format';
 
@@ -20,7 +21,7 @@ export function PayoutStatusBadge({ status }) {
  * and the affiliate's own dashboard. `load(page)` returns a paginated `{ data, meta, summary }`;
  * changing `refreshKey` reloads from the first page.
  */
-export function PayoutHistory({ load, refreshKey, emptyText = 'لا توجد تحويلات بعد.' }) {
+export function PayoutHistory({ load, refreshKey, emptyText = t('لا توجد تحويلات بعد.') }) {
     const [items, setItems] = useState(null);
     const [meta, setMeta] = useState(null);
     const [totalPaid, setTotalPaid] = useState(0);
@@ -75,7 +76,7 @@ export function PayoutHistory({ load, refreshKey, emptyText = 'لا توجد ت�
     return (
         <div className="flex flex-col gap-3">
             <p className="text-xs text-muted">
-                إجمالي المحوَّل: <strong className="text-ink">{formatMoney(totalPaid)}</strong>
+                {t('إجمالي المحوَّل:')} <strong className="text-ink">{formatMoney(totalPaid)}</strong>
             </p>
             <ul className="flex flex-col gap-3">
                 {items.map((payout) => (
@@ -88,23 +89,23 @@ export function PayoutHistory({ load, refreshKey, emptyText = 'لا توجد ت�
                             <span>
                                 {PAYOUT_METHODS[payout.payout_method.type]?.label} <span className="ltr inline-block font-mono">•••• {payout.payout_method.account_number_last4}</span>
                             </span>
-                            {payout.status === 'paid' && <span>حُوِّل في {formatDate(payout.paid_at)}</span>}
-                            {payout.status === 'requested' && <span>طُلب في {formatDate(payout.created_at)}</span>}
-                            {payout.status === 'rejected' && <span>رُفض في {formatDate(payout.rejected_at)}</span>}
+                            {payout.status === 'paid' && <span>{t('حُوِّل في {value}', { value: formatDate(payout.paid_at) })}</span>}
+                            {payout.status === 'requested' && <span>{t('طُلب في {value}', { value: formatDate(payout.created_at) })}</span>}
+                            {payout.status === 'rejected' && <span>{t('رُفض في {value}', { value: formatDate(payout.rejected_at) })}</span>}
                             {payout.reference && (
                                 <span>
-                                    رقم العملية: <span className="ltr inline-block font-mono text-ink-2">{payout.reference}</span>
+                                    {t('رقم العملية:')} <span className="ltr inline-block font-mono text-ink-2">{payout.reference}</span>
                                 </span>
                             )}
                         </div>
-                        {payout.request_note && <p className="mt-2 text-xs text-ink-2">ملاحظة المسوق: {payout.request_note}</p>}
-                        {payout.note && <p className="mt-1 text-xs text-ink-2">ملاحظة المتجر: {payout.note}</p>}
+                        {payout.request_note && <p className="mt-2 text-xs text-ink-2">{t('ملاحظة المسوق: {request_note}', { request_note: payout.request_note })}</p>}
+                        {payout.note && <p className="mt-1 text-xs text-ink-2">{t('ملاحظة المتجر: {note}', { note: payout.note })}</p>}
                     </li>
                 ))}
             </ul>
             {meta && meta.current_page < meta.last_page && (
                 <Button variant="secondary" size="sm" loading={loadingMore} onClick={loadMore} className="self-center">
-                    عرض المزيد
+                    {t('عرض المزيد')}
                 </Button>
             )}
         </div>

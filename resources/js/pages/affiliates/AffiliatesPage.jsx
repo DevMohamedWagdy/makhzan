@@ -17,6 +17,7 @@ import { CommissionModal } from '@/features/affiliates/CommissionModal';
 import { RecordPayoutModal, RejectPayoutDialog } from '@/features/affiliates/PayoutModals';
 import { useAffiliateActions } from '@/features/affiliates/useAffiliateActions';
 import { useAffiliates } from '@/features/affiliates/useAffiliates';
+import { t } from '@/i18n';
 import { formatMoney, formatNumber } from '@/lib/format';
 import { affiliatesApi } from '@/services/affiliatesApi';
 
@@ -44,7 +45,7 @@ export function AffiliatesPage() {
             affiliatesApi
                 .get(linkedAffiliateId)
                 .then(setProfile)
-                .catch((error) => toast.error('تعذر فتح ملف المسوق', error.message));
+                .catch((error) => toast.error(t('تعذر فتح ملف المسوق'), error.message));
         }
     }, [linkedAffiliateId, toast]);
 
@@ -112,7 +113,7 @@ export function AffiliatesPage() {
             await impersonate(dialog.affiliate.affiliate_id);
             navigate('/affiliate');
         } catch (error) {
-            toast.error('تعذر الدخول بصفة المسوق', error.message);
+            toast.error(t('تعذر الدخول بصفة المسوق'), error.message);
         } finally {
             setImpersonating(false);
         }
@@ -125,26 +126,26 @@ export function AffiliatesPage() {
     return (
         <>
             <PageHeader
-                title="المسوقين"
-                description={`إدارة فريق المسوقين بالعمولة لمتجر ${store?.name ?? ''}`}
-                breadcrumbs={['لوحة التحكم', 'التسويق', 'المسوقين']}
+                title={t('المسوقين')}
+                description={t('إدارة فريق المسوقين بالعمولة لمتجر {value}', { value: store?.name ?? '' })}
+                breadcrumbs={[t('لوحة التحكم'), t('التسويق'), t('المسوقين')]}
                 actions={
                     <>
                         <Button variant="secondary" icon="link" onClick={() => setDialog({ type: 'add', method: 'link' })}>
-                            رابط التسجيل
+                            {t('رابط التسجيل')}
                         </Button>
                         <Button icon="user-plus" onClick={() => setDialog({ type: 'add', method: 'manual' })}>
-                            إضافة مسوق
+                            {t('إضافة مسوق')}
                         </Button>
                     </>
                 }
             />
 
             <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                <StatCard label="إجمالي المسوقين" value={summary ? formatNumber(summary.total) : '—'} icon="users" tone="primary" hint={summary && `${formatNumber(summary.pending)} بانتظار المراجعة`} />
-                <StatCard label="المسوقون النشطون" value={summary ? formatNumber(summary.active) : '—'} icon="check-circle" tone="success" hint={summary && `${formatNumber(summary.frozen)} حساب مجمد`} />
-                <StatCard label="مبيعات المسوقين" value={summary ? formatMoney(summary.sales_total) : '—'} icon="bar-chart" tone="info" hint="منذ بداية التعامل" />
-                <StatCard label="العمولات المكتسبة" value={summary ? formatMoney(summary.earned_commission) : '—'} icon="wallet" tone="warning" hint={summary?.payout_requests ? `${formatNumber(summary.payout_requests)} طلب تحويل بانتظارك` : 'إجمالي المستحق للمسوقين'} />
+                <StatCard label={t('إجمالي المسوقين')} value={summary ? formatNumber(summary.total) : '—'} icon="users" tone="primary" hint={summary && t('{value} بانتظار المراجعة', { value: formatNumber(summary.pending) })} />
+                <StatCard label={t('المسوقون النشطون')} value={summary ? formatNumber(summary.active) : '—'} icon="check-circle" tone="success" hint={summary && t('{value} حساب مجمد', { value: formatNumber(summary.frozen) })} />
+                <StatCard label={t('مبيعات المسوقين')} value={summary ? formatMoney(summary.sales_total) : '—'} icon="bar-chart" tone="info" hint={t('منذ بداية التعامل')} />
+                <StatCard label={t('العمولات المكتسبة')} value={summary ? formatMoney(summary.earned_commission) : '—'} icon="wallet" tone="warning" hint={summary?.payout_requests ? t('{value} طلب تحويل بانتظارك', { value: formatNumber(summary.payout_requests) }) : t('إجمالي المستحق للمسوقين')} />
             </div>
 
             <section className="mk-card overflow-hidden">
@@ -193,7 +194,7 @@ export function AffiliatesPage() {
                 }}
             />
 
-            <Drawer open={dialog?.type === 'edit'} onClose={closeDialog} size="lg" icon="edit" title="تعديل بيانات المسوق" description={target?.full_name}>
+            <Drawer open={dialog?.type === 'edit'} onClose={closeDialog} size="lg" icon="edit" title={t('تعديل بيانات المسوق')} description={target?.full_name}>
                 {dialog?.type === 'edit' && <AffiliateForm key={target.affiliate_id} affiliate={target} onSaved={onChanged} onCancel={closeDialog} />}
             </Drawer>
 

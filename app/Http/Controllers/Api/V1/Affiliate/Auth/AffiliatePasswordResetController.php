@@ -33,7 +33,7 @@ class AffiliatePasswordResetController extends Controller
         }
 
         return response()->json([
-            'message' => 'إذا كان لحسابك بريد إلكتروني مسجل، ستصلك رسالة بها رابط لتعيين كلمة مرور جديدة خلال دقائق.',
+            'message' => __('auth.affiliate_reset_link_sent'),
         ]);
     }
 
@@ -48,9 +48,9 @@ class AffiliatePasswordResetController extends Controller
             ->first();
 
         if (! $affiliate || ! $passwordReset->reset($affiliate, $request->string('token')->toString(), $request->validated('password'))) {
-            throw ValidationException::withMessages(['token' => 'رابط إعادة التعيين غير صالح أو منتهي الصلاحية']);
+            throw ValidationException::withMessages(['token' => __('auth.reset_link_invalid')]);
         }
 
-        return response()->json(['message' => 'تم تعيين كلمة المرور الجديدة، يمكنك تسجيل الدخول الآن.']);
+        return response()->json(['message' => __('auth.affiliate_password_reset')]);
     }
 }

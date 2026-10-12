@@ -27,17 +27,18 @@ class EnsureAffiliateToken
     {
         $affiliate = $request->user();
 
-        abort_unless($affiliate instanceof Affiliate, Response::HTTP_FORBIDDEN, 'هذا القسم متاح للمسوقين فقط.');
+        abort_unless($affiliate instanceof Affiliate, Response::HTTP_FORBIDDEN, __('auth.affiliates_only'));
 
         $isImpersonation = $affiliate->tokenCan(Affiliate::IMPERSONATION_ABILITY);
         $isOwnSession = $affiliate->tokenCan(Affiliate::TOKEN_ABILITY);
 
-        abort_unless($isImpersonation || $isOwnSession, Response::HTTP_FORBIDDEN, 'هذا القسم متاح للمسوقين فقط.');
+        abort_unless($isImpersonation || $isOwnSession, Response::HTTP_FORBIDDEN, __('auth.affiliates_only'));
 
         if ($isImpersonation) {
-            abort_if($mode === 'self', Response::HTTP_FORBIDDEN, 'هذا الإجراء غير متاح أثناء الدخول بصفة المسوق.');
+            abort_if($mode === 'self', Response::HTTP_FORBIDDEN, __('auth.not_while_impersonating'));
         } else {
-            abort_unless($affiliate->status === AffiliateStatus::Active, Response::HTTP_FORBIDDEN, 'حسابك غير نشط حالياً، تواصل مع المتجر.');
+            abort_unless($affiliate->status === AffiliateStatus::Active, Response::HTTP_FORBIDDEN, __('auth.affiliate_inactive'));
+            $affiliate->rememberLocale();
         }
 
         return $next($request);

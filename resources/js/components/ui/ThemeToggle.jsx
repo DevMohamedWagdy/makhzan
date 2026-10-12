@@ -1,10 +1,11 @@
 import { useTheme } from '@/context/ThemeContext';
+import { t } from '@/i18n';
 import { cn } from '@/lib/format';
 import { Icon } from './Icon';
 
 export function ThemeToggle({ className }) {
     const { isDark, toggleTheme } = useTheme();
-    const label = isDark ? 'التبديل إلى الوضع الفاتح' : 'التبديل إلى الوضع الداكن';
+    const label = isDark ? t('التبديل إلى الوضع الفاتح') : t('التبديل إلى الوضع الداكن');
 
     return (
         <button

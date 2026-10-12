@@ -1,7 +1,9 @@
 import { LogoMark } from '@/components/brand/Logo';
 import { Avatar } from '@/components/ui/Display';
 import { Skeleton } from '@/components/ui/Spinner';
+import { LanguageToggle } from '@/components/ui/LanguageToggle';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
+import { t } from '@/i18n';
 import { cn } from '@/lib/format';
 
 /**
@@ -17,13 +19,14 @@ export function StorePublicLayout({ store, children, narrow = false }) {
                         {store ? <Avatar name={store.name} src={store.logo_url} size="sm" /> : <Skeleton className="size-8 rounded-xl" />}
                         <span className="truncate font-semibold text-ink">{store?.name}</span>
                     </div>
+                    <LanguageToggle />
                     <ThemeToggle />
                 </div>
             </header>
             <main className={cn('mx-auto w-full flex-1 px-4 py-8 sm:px-6 sm:py-12', narrow ? 'max-w-md' : 'max-w-5xl')}>{children}</main>
             <footer className="flex items-center justify-center gap-2 pb-8 text-xs text-muted">
                 <LogoMark className="size-5" />
-                مدعوم من منصة مخزن
+                {t('مدعوم من منصة مخزن')}
             </footer>
         </div>
     );

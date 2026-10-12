@@ -89,9 +89,11 @@ class NotificationControllerTest extends TestCase
 
         $this->withToken($affiliate->issueToken(remember: false))->postJson('/api/v1/affiliate/payouts', ['amount' => 400])->assertCreated();
 
-        $notification = $vendor->notifications()->sole();
-        $this->assertSame('payout_requested', $notification->type);
-        $this->assertSame('طلب سارة محمود تحويل 400.00 ج.م من رصيد عمولاته', $notification->data['message']);
-        $this->assertSame($affiliate->id, $notification->data['affiliate_id']);
+        $this->assertSame('payout_requested', $vendor->notifications()->sole()->type);
+
+        $this->actingAsVendor($vendor);
+        $this->getJson('/api/v1/vendor/notifications')
+            ->assertJsonPath('data.0.message', 'طلب سارة محمود تحويل 400.00 ج.م من رصيد عمولاته')
+            ->assertJsonPath('data.0.details.affiliate_id', $affiliate->id);
     }
 }

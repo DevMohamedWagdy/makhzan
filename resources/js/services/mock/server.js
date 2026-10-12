@@ -1,3 +1,4 @@
+import { t } from '@/i18n';
 import { AFFILIATE_TIERS, RESERVED_SLUGS } from '@/lib/constants';
 import { normalizePhone } from '@/lib/validators';
 import { sessionStore } from '../session';
@@ -19,6 +20,12 @@ const db = {
     nextPayoutId: 1,
     /** Vendor dashboard notifications, newest first. */
     notifications: [],
+    categories: [],
+    products: [],
+    nextCategoryId: 1,
+    nextProductId: 1,
+    nextVariantId: 1,
+    nextImageId: 1,
     nextVendorId: 1025,
     nextStoreId: 3052,
     nextAffiliateId: 5001 + MOCK_AFFILIATES.length,
@@ -49,7 +56,7 @@ function currentVendor() {
     const sessionVendor = sessionStore.get()?.vendor;
 
     if (!sessionVendor) {
-        fail(401, 'انتهت الجلسة، سجّل الدخول مرة أخرى');
+        fail(401, t('انتهت الجلسة، سجّل الدخول مرة أخرى'));
     }
 
     return db.vendors.find((vendor) => vendor.vendor_id === sessionVendor.vendor_id) ?? sessionVendor;
@@ -71,7 +78,7 @@ function currentAffiliate(token) {
     const session = db.affiliateTokens[token] ?? fail(401, 'Unauthenticated.');
     const affiliate = db.affiliates.find((candidate) => candidate.affiliate_id === session.affiliate_id) ?? fail(401, 'Unauthenticated.');
 
-    session.impersonation || affiliate.status === 'active' || fail(403, 'حسابك غير نشط حالياً، تواصل مع المتجر.');
+    session.impersonation || affiliate.status === 'active' || fail(403, t('حسابك غير نشط حالياً، تواصل مع المتجر.'));
 
     return { affiliate, impersonation: session.impersonation };
 }
@@ -109,7 +116,7 @@ function findPublicLink(token) {
     const link = Object.values(db.registrationLinks).find((candidate) => candidate.token === token && candidate.is_enabled);
     const store = link && db.vendors.find((vendor) => vendor.store.store_id === link.store_id)?.store;
 
-    return link && store ? { link, store } : fail(404, 'رابط التسجيل غير صالح أو متوقف حالياً');
+    return link && store ? { link, store } : fail(404, t('رابط التسجيل غير صالح أو متوقف حالياً'));
 }
 
 function registrationLinkFor(store) {
@@ -119,14 +126,14 @@ function registrationLinkFor(store) {
 }
 
 function findAffiliate(id) {
-    return storeAffiliates().find((affiliate) => affiliate.affiliate_id === Number(id)) ?? fail(404, 'المسوق غير موجود');
+    return storeAffiliates().find((affiliate) => affiliate.affiliate_id === Number(id)) ?? fail(404, t('المسوق غير موجود'));
 }
 
 function assertUniqueAffiliatePhone(phone, ignoreId = null) {
     const normalized = normalizePhone(phone);
 
     if (storeAffiliates().some((affiliate) => normalizePhone(affiliate.phone) === normalized && affiliate.affiliate_id !== ignoreId)) {
-        fail(422, 'بيانات غير صالحة', { phone: 'رقم الهاتف مسجل لمسوق آخر بالفعل' });
+        fail(422, t('بيانات غير صالحة'), { phone: t('رقم الهاتف مسجل لمسوق آخر بالفعل') });
     }
 }
 
@@ -178,7 +185,7 @@ function payoutsPage(affiliateId, page = 1) {
 
 function assertWithinPendingBalance(affiliate, amount) {
     if (amount > affiliate.stats.pending_balance) {
-        fail(422, 'المبلغ أكبر من الرصيد المعلق', { amount: 'المبلغ أكبر من الرصيد المعلق' });
+        fail(422, t('المبلغ أكبر من الرصيد المعلق'), { amount: t('المبلغ أكبر من الرصيد المعلق') });
     }
 }
 
@@ -215,6 +222,101 @@ function vendorNotifications() {
     return db.notifications.filter((notification) => notification.vendor_id === vendor_id);
 }
 
+const LOW_STOCK_THRESHOLD = 5;
+
+function storeCategories() {
+    const { store_id } = currentVendor().store;
+
+    return db.categories.filter((category) => category.store_id === store_id).sort((a, b) => a.position - b.position || a.category_id - b.category_id);
+}
+
+function storeProducts() {
+    const { store_id } = currentVendor().store;
+
+    return db.products.filter((product) => product.store_id === store_id);
+}
+
+const findCategory = (id) => storeCategories().find((category) => category.category_id === Number(id)) ?? fail(404, t('القسم غير موجود'));
+const findProduct = (id) => storeProducts().find((product) => product.product_id === Number(id)) ?? fail(404, t('المنتج غير موجود'));
+const productStock = (product) => product.variants.reduce((sum, variant) => sum + variant.stock, 0);
+const mockSlug = (name, id) => `${name.trim().replace(/\s+/g, '-').toLowerCase()}-${id}`;
+
+/** Same shape as ProductResource. */
+function productView(product) {
+    const cheapest = [...product.variants].sort((a, b) => a.price - b.price)[0];
+    const category = db.categories.find((candidate) => candidate.category_id === product.category_id);
+
+    return structuredClone({
+        ...product,
+        category: category ? { category_id: category.category_id, name: category.name } : null,
+        variants: product.variants.map((variant) => ({ ...variant, title: variant.option_values.join(' / ') })),
+        image_url: product.images[0]?.url ?? null,
+        price: cheapest?.price ?? null,
+        price_max: Math.max(...product.variants.map((variant) => variant.price)),
+        compare_at_price: cheapest?.compare_at_price ?? null,
+        stock_total: productStock(product),
+    });
+}
+
+/** Mirrors the main SaveProductRequest checks the UI relies on. */
+function saveProduct(body, product = null) {
+    storeCategories().some((category) => category.category_id === Number(body.category_id)) || fail(422, t('بيانات غير صالحة'), { category_id: t('اختر القسم') });
+    body.name?.trim() || fail(422, t('بيانات غير صالحة'), { name: t('أدخل اسم المنتج') });
+
+    const now = new Date().toISOString();
+    const record = product ?? { product_id: db.nextProductId++, store_id: currentVendor().store.store_id, images: [], created_at: now };
+
+    Object.assign(record, {
+        category_id: Number(body.category_id),
+        name: body.name.trim(),
+        slug: record.slug ?? mockSlug(body.name, record.product_id),
+        description: body.description || null,
+        status: body.status,
+        is_featured: Boolean(body.is_featured),
+        options: body.options ?? [],
+        variants: body.variants.map((variant) => ({
+            variant_id: variant.id ?? db.nextVariantId++,
+            option_values: variant.option_values,
+            sku: variant.sku || null,
+            price: Number(variant.price),
+            compare_at_price: variant.compare_at_price ? Number(variant.compare_at_price) : null,
+            stock: Number(variant.stock),
+        })),
+        updated_at: now,
+    });
+
+    product || db.products.unshift(record);
+
+    return productView(record);
+}
+
+function categoryView(category) {
+    return structuredClone({ ...category, products_count: db.products.filter((product) => product.category_id === category.category_id).length });
+}
+
+function saveCategory(body, category = null) {
+    const name = body.name?.trim() || fail(422, t('بيانات غير صالحة'), { name: t('أدخل اسم القسم') });
+
+    storeCategories().some((other) => other.name === name && other !== category) && fail(422, t('بيانات غير صالحة'), { name: t('يوجد قسم بنفس الاسم بالفعل') });
+
+    const { store_id } = currentVendor().store;
+    const record = category ?? { category_id: db.nextCategoryId++, store_id, position: storeCategories().length, is_active: true, image_url: null };
+
+    Object.assign(record, {
+        name,
+        slug: record.slug ?? mockSlug(name, record.category_id),
+        description: body.description ?? record.description ?? null,
+        ...(body.is_active !== undefined && { is_active: Boolean(body.is_active) }),
+        ...(body.position !== undefined && { position: Number(body.position) }),
+        ...(body.image instanceof Blob && { image_url: URL.createObjectURL(body.image) }),
+        ...(body.remove_image && { image_url: null }),
+    });
+
+    category || db.categories.push(record);
+
+    return categoryView(record);
+}
+
 function findOpenPayoutRequest(affiliate) {
     return db.payouts.find((payout) => payout.affiliate_id === affiliate.affiliate_id && payout.status === 'requested') ?? null;
 }
@@ -247,7 +349,7 @@ const routes = [
             const credential = vendor && db.credentials.find((entry) => entry.vendor_id === vendor.vendor_id);
 
             if (!vendor || credential.password !== body.password) {
-                fail(422, 'بيانات الدخول غير صحيحة', { identifier: 'البريد الإلكتروني / رقم الهاتف أو كلمة المرور غير صحيحة' });
+                fail(422, t('بيانات الدخول غير صحيحة'), { identifier: t('البريد الإلكتروني / رقم الهاتف أو كلمة المرور غير صحيحة') });
             }
 
             return { token: `mk_${randomToken(24)}`, vendor: structuredClone(vendor) };
@@ -261,19 +363,19 @@ const routes = [
             const errors = {};
 
             if (db.vendors.some((vendor) => vendor.email.toLowerCase() === vendorInput.email.toLowerCase())) {
-                errors['vendor.email'] = 'البريد الإلكتروني مسجل بالفعل';
+                errors['vendor.email'] = t('البريد الإلكتروني مسجل بالفعل');
             }
 
             if (db.vendors.some((vendor) => normalizePhone(vendor.phone) === normalizePhone(vendorInput.phone))) {
-                errors['vendor.phone'] = 'رقم الهاتف مسجل بالفعل';
+                errors['vendor.phone'] = t('رقم الهاتف مسجل بالفعل');
             }
 
             if (isSlugTaken(storeInput.slug)) {
-                errors['store.slug'] = 'هذا الرابط محجوز، جرّب اسماً آخر';
+                errors['store.slug'] = t('هذا الرابط محجوز، جرّب اسماً آخر');
             }
 
             if (Object.keys(errors).length) {
-                fail(422, 'بيانات غير صالحة', errors);
+                fail(422, t('بيانات غير صالحة'), errors);
             }
 
             const vendor_id = db.nextVendorId++;
@@ -310,12 +412,12 @@ const routes = [
 
             // The mock has no real tokens; "expired" simulates an invalid link.
             if (!credential || body.token === 'expired') {
-                fail(422, 'رابط إعادة التعيين غير صالح أو منتهي الصلاحية', { email: 'رابط إعادة التعيين غير صالح أو منتهي الصلاحية' });
+                fail(422, t('رابط إعادة التعيين غير صالح أو منتهي الصلاحية'), { email: t('رابط إعادة التعيين غير صالح أو منتهي الصلاحية') });
             }
 
             credential.password = body.password;
 
-            return { message: 'تم تغيير كلمة المرور بنجاح، يمكنك تسجيل الدخول الآن.' };
+            return { message: t('تم تغيير كلمة المرور بنجاح، يمكنك تسجيل الدخول الآن.') };
         },
     ],
     [
@@ -329,7 +431,7 @@ const routes = [
         () => {
             return {
                 channel: 'email',
-                message: 'إذا كان الحساب موجوداً، ستصلك رسالة على بريدك الإلكتروني المسجل بخطوات إعادة تعيين كلمة المرور.',
+                message: t('إذا كان الحساب موجوداً، ستصلك رسالة على بريدك الإلكتروني المسجل بخطوات إعادة تعيين كلمة المرور.'),
             };
         },
     ],
@@ -339,7 +441,7 @@ const routes = [
         'GET',
         /^\/api\/v1\/stores\/([^/]+)$/,
         ([slug]) => {
-            const store = findStoreBySlug(slug) ?? fail(404, 'المتجر غير موجود');
+            const store = findStoreBySlug(slug) ?? fail(404, t('المتجر غير موجود'));
 
             return { name: store.name, slug: store.slug, logo_url: store.logo_url };
         },
@@ -348,7 +450,7 @@ const routes = [
         'POST',
         /^\/api\/v1\/affiliate\/auth\/login$/,
         (_, body) => {
-            const store = findStoreBySlug(body.store_slug) ?? fail(422, 'بيانات غير صالحة', { store_slug: 'المتجر غير موجود' });
+            const store = findStoreBySlug(body.store_slug) ?? fail(422, t('بيانات غير صالحة'), { store_slug: t('المتجر غير موجود') });
             const identifier = String(body.identifier ?? '').trim().toLowerCase();
             const affiliate = db.affiliates.find(
                 (candidate) => candidate.store_id === store.store_id && (normalizePhone(candidate.phone) === normalizePhone(identifier) || candidate.email?.toLowerCase() === identifier),
@@ -356,12 +458,12 @@ const routes = [
             const password = affiliate && db.affiliatePasswords[affiliate.affiliate_id];
 
             if (!password || password !== body.password) {
-                fail(422, 'بيانات غير صالحة', { identifier: 'رقم الهاتف / البريد الإلكتروني أو كلمة المرور غير صحيحة' });
+                fail(422, t('بيانات غير صالحة'), { identifier: t('رقم الهاتف / البريد الإلكتروني أو كلمة المرور غير صحيحة') });
             }
 
             if (affiliate.status !== 'active') {
-                fail(422, 'بيانات غير صالحة', {
-                    identifier: affiliate.status === 'pending' ? 'طلب انضمامك قيد المراجعة، وستتمكن من الدخول فور موافقة صاحب المتجر.' : 'حسابك موقوف حالياً، تواصل مع المتجر لمزيد من التفاصيل.',
+                fail(422, t('بيانات غير صالحة'), {
+                    identifier: affiliate.status === 'pending' ? t('طلب انضمامك قيد المراجعة، وستتمكن من الدخول فور موافقة صاحب المتجر.') : t('حسابك موقوف حالياً، تواصل مع المتجر لمزيد من التفاصيل.'),
                 });
             }
 
@@ -376,10 +478,10 @@ const routes = [
         'POST',
         /^\/api\/v1\/affiliate\/auth\/forgot-password$/,
         (_, body) => {
-            findStoreBySlug(body.store_slug) ?? fail(422, 'بيانات غير صالحة', { store_slug: 'المتجر غير موجود' });
+            findStoreBySlug(body.store_slug) ?? fail(422, t('بيانات غير صالحة'), { store_slug: t('المتجر غير موجود') });
 
             // The mock sends no email; the response is identical either way, as in the real API.
-            return { message: 'إذا كان لحسابك بريد إلكتروني مسجل، ستصلك رسالة بها رابط لتعيين كلمة مرور جديدة خلال دقائق.' };
+            return { message: t('إذا كان لحسابك بريد إلكتروني مسجل، ستصلك رسالة بها رابط لتعيين كلمة مرور جديدة خلال دقائق.') };
         },
     ],
     [
@@ -391,12 +493,12 @@ const routes = [
 
             // The mock has no real tokens; "expired" simulates an invalid link.
             if (!affiliate || body.token === 'expired') {
-                fail(422, 'رابط إعادة التعيين غير صالح أو منتهي الصلاحية', { token: 'رابط إعادة التعيين غير صالح أو منتهي الصلاحية' });
+                fail(422, t('رابط إعادة التعيين غير صالح أو منتهي الصلاحية'), { token: t('رابط إعادة التعيين غير صالح أو منتهي الصلاحية') });
             }
 
             db.affiliatePasswords[affiliate.affiliate_id] = body.password;
 
-            return { message: 'تم تعيين كلمة المرور الجديدة، يمكنك تسجيل الدخول الآن.' };
+            return { message: t('تم تعيين كلمة المرور الجديدة، يمكنك تسجيل الدخول الآن.') };
         },
     ],
     ['GET', /^\/api\/v1\/affiliate\/auth\/me$/, (_, __, ___, token) => affiliateSelfView(currentAffiliate(token).affiliate)],
@@ -408,15 +510,15 @@ const routes = [
             const { affiliate, impersonation } = currentAffiliate(token);
             const amount = Number(body.amount);
 
-            impersonation && fail(403, 'هذا الإجراء غير متاح أثناء الدخول بصفة المسوق.');
+            impersonation && fail(403, t('هذا الإجراء غير متاح أثناء الدخول بصفة المسوق.'));
             assertWithinPendingBalance(affiliate, amount);
-            findOpenPayoutRequest(affiliate) && fail(422, 'لديك طلب تحويل قيد المراجعة بالفعل', { amount: 'لديك طلب تحويل قيد المراجعة بالفعل' });
+            findOpenPayoutRequest(affiliate) && fail(422, t('لديك طلب تحويل قيد المراجعة بالفعل'), { amount: t('لديك طلب تحويل قيد المراجعة بالفعل') });
 
             const payout = buildPayout(affiliate, { amount, status: 'requested', request_note: body.note || null });
 
             db.payouts.push(payout);
             affiliate.payout_request = payout;
-            notifyVendor(affiliate.store_id, 'payout_requested', `طلب ${affiliate.full_name} تحويل ${amount.toFixed(2)} ج.م من رصيد عمولاته`, {
+            notifyVendor(affiliate.store_id, 'payout_requested', t('طلب {full_name} تحويل {value} ج.م من رصيد عمولاته', { full_name: affiliate.full_name, value: amount.toFixed(2) }), {
                 affiliate_id: affiliate.affiliate_id,
                 affiliate_name: affiliate.full_name,
                 payout_id: payout.payout_id,
@@ -441,11 +543,11 @@ const routes = [
         (_, body, __, token) => {
             const { affiliate, impersonation } = currentAffiliate(token);
 
-            !impersonation || fail(403, 'هذا الإجراء غير متاح أثناء الدخول بصفة المسوق.');
-            db.affiliatePasswords[affiliate.affiliate_id] === body.current_password || fail(422, 'بيانات غير صالحة', { current_password: 'كلمة المرور الحالية غير صحيحة' });
+            !impersonation || fail(403, t('هذا الإجراء غير متاح أثناء الدخول بصفة المسوق.'));
+            db.affiliatePasswords[affiliate.affiliate_id] === body.current_password || fail(422, t('بيانات غير صالحة'), { current_password: t('كلمة المرور الحالية غير صحيحة') });
             db.affiliatePasswords[affiliate.affiliate_id] = body.password;
 
-            return { message: 'تم تغيير كلمة المرور، وتم تسجيل الخروج من الأجهزة الأخرى.' };
+            return { message: t('تم تغيير كلمة المرور، وتم تسجيل الخروج من الأجهزة الأخرى.') };
         },
     ],
 
@@ -472,7 +574,7 @@ const routes = [
             const phone = normalizePhone(body.phone);
 
             if (db.affiliates.some((affiliate) => affiliate.store_id === store.store_id && normalizePhone(affiliate.phone) === phone)) {
-                fail(422, 'بيانات غير صالحة', { phone: 'هذا الرقم مسجل بالفعل ضمن مسوقي هذا المتجر' });
+                fail(422, t('بيانات غير صالحة'), { phone: t('هذا الرقم مسجل بالفعل ضمن مسوقي هذا المتجر') });
             }
 
             const vendor = db.vendors.find((candidate) => candidate.store.store_id === store.store_id);
@@ -491,7 +593,7 @@ const routes = [
             notifyVendor(
                 store.store_id,
                 'affiliate_registered',
-                link.auto_approve ? `انضم ${affiliate.full_name} لفريق المسوقين عبر رابط التسجيل` : `${affiliate.full_name} أرسل طلب انضمام لفريق المسوقين وينتظر موافقتك`,
+                link.auto_approve ? t('انضم {full_name} لفريق المسوقين عبر رابط التسجيل', { full_name: affiliate.full_name }) : t('{full_name} أرسل طلب انضمام لفريق المسوقين وينتظر موافقتك', { full_name: affiliate.full_name }),
                 { affiliate_id: affiliate.affiliate_id, affiliate_name: affiliate.full_name, requires_approval: !link.auto_approve },
             );
             const referral = affiliate.referral_codes[0];
@@ -504,8 +606,8 @@ const routes = [
                 referral_code: referral?.code ?? null,
                 referral_url: referral?.url ?? null,
                 message: link.auto_approve
-                    ? 'تم تسجيلك بنجاح! يمكنك البدء في مشاركة رابط الإحالة الخاص بك الآن.'
-                    : 'تم استلام طلب انضمامك، وسيتم إشعارك فور موافقة صاحب المتجر.',
+                    ? t('تم تسجيلك بنجاح! يمكنك البدء في مشاركة رابط الإحالة الخاص بك الآن.')
+                    : t('تم استلام طلب انضمامك، وسيتم إشعارك فور موافقة صاحب المتجر.'),
             };
         },
     ],
@@ -682,12 +784,117 @@ const routes = [
         ([id]) => {
             const affiliate = findAffiliate(id);
 
-            affiliate.status === 'active' || fail(422, 'لا يمكن إنشاء كود لمسوق غير نشط');
+            affiliate.status === 'active' || fail(422, t('لا يمكن إنشاء كود لمسوق غير نشط'));
             affiliate.referral_codes.push(generateReferralCode(affiliate));
 
             return structuredClone(affiliate);
         },
     ],
+    /* ---------------------------- Catalog ---------------------------- */
+    ['GET', /^\/api\/v1\/vendor\/product-categories$/, () => storeCategories().map(categoryView)],
+    ['POST', /^\/api\/v1\/vendor\/product-categories$/, (_, body) => saveCategory(body)],
+    ['PUT', /^\/api\/v1\/vendor\/product-categories\/(\d+)$/, ([id], body) => saveCategory(body, findCategory(id))],
+    [
+        'DELETE',
+        /^\/api\/v1\/vendor\/product-categories\/(\d+)$/,
+        ([id]) => {
+            const category = findCategory(id);
+
+            db.products.some((product) => product.category_id === category.category_id) && fail(422, t('بيانات غير صالحة'), { category: t('لا يمكن حذف قسم به منتجات، انقل منتجاته لقسم آخر أولاً') });
+            db.categories = db.categories.filter((candidate) => candidate !== category);
+
+            return {};
+        },
+    ],
+    [
+        'GET',
+        /^\/api\/v1\/vendor\/products\/summary$/,
+        () => {
+            const products = storeProducts();
+            const countBy = (status) => products.filter((product) => product.status === status).length;
+
+            return {
+                total: products.length,
+                active: countBy('active'),
+                draft: countBy('draft'),
+                archived: countBy('archived'),
+                out_of_stock: products.filter((product) => productStock(product) === 0).length,
+                low_stock: products.filter((product) => productStock(product) > 0 && productStock(product) <= LOW_STOCK_THRESHOLD).length,
+                low_stock_threshold: LOW_STOCK_THRESHOLD,
+            };
+        },
+    ],
+    [
+        'GET',
+        /^\/api\/v1\/vendor\/products$/,
+        (_, __, query) => {
+            const search = (query.search ?? '').trim().toLowerCase();
+            const stockMatches = (product) => {
+                const stock = productStock(product);
+
+                return !query.stock || (query.stock === 'out' ? stock === 0 : query.stock === 'low' ? stock > 0 && stock <= LOW_STOCK_THRESHOLD : stock > LOW_STOCK_THRESHOLD);
+            };
+            const filtered = storeProducts()
+                .filter((product) => !query.status || product.status === query.status)
+                .filter((product) => !query.category_id || product.category_id === Number(query.category_id))
+                .filter(stockMatches)
+                .filter((product) => !search || product.name.toLowerCase().includes(search) || product.variants.some((variant) => variant.sku?.toLowerCase().includes(search)));
+            const per_page = Number(query.per_page ?? 10);
+            const last_page = Math.max(1, Math.ceil(filtered.length / per_page));
+            const current_page = Math.min(Math.max(1, Number(query.page ?? 1)), last_page);
+
+            return { data: filtered.slice((current_page - 1) * per_page, current_page * per_page).map(productView), meta: { current_page, per_page, total: filtered.length, last_page } };
+        },
+    ],
+    ['GET', /^\/api\/v1\/vendor\/products\/(\d+)$/, ([id]) => productView(findProduct(id))],
+    ['POST', /^\/api\/v1\/vendor\/products$/, (_, body) => saveProduct(body)],
+    ['PUT', /^\/api\/v1\/vendor\/products\/(\d+)$/, ([id], body) => saveProduct(body, findProduct(id))],
+    [
+        'DELETE',
+        /^\/api\/v1\/vendor\/products\/(\d+)$/,
+        ([id]) => {
+            const product = findProduct(id);
+
+            db.products = db.products.filter((candidate) => candidate !== product);
+
+            return {};
+        },
+    ],
+    [
+        'POST',
+        /^\/api\/v1\/vendor\/products\/(\d+)\/images$/,
+        ([id], body) => {
+            const product = findProduct(id);
+
+            product.images.length + body.images.length <= 10 || fail(422, t('بيانات غير صالحة'), { images: t('الحد الأقصى 10 صور للمنتج') });
+            body.images.forEach((file) => product.images.push({ image_id: db.nextImageId++, url: URL.createObjectURL(file) }));
+
+            return structuredClone(product.images);
+        },
+    ],
+    [
+        'PUT',
+        /^\/api\/v1\/vendor\/products\/(\d+)\/images\/order$/,
+        ([id], body) => {
+            const product = findProduct(id);
+
+            product.images = body.image_ids.map((imageId) => product.images.find((image) => image.image_id === imageId)).filter(Boolean);
+
+            return structuredClone(product.images);
+        },
+    ],
+    [
+        'DELETE',
+        /^\/api\/v1\/vendor\/products\/(\d+)\/images\/(\d+)$/,
+        ([id, imageId]) => {
+            const product = findProduct(id);
+
+            product.images = product.images.filter((image) => image.image_id !== Number(imageId));
+
+            return {};
+        },
+    ],
+
     /* ---------------------- Notifications & payouts ---------------------- */
     [
         'GET',
@@ -755,7 +962,7 @@ const routes = [
             const affiliate = findAffiliate(id);
             const amount = Number(body.amount);
 
-            affiliate.status !== 'pending' || fail(422, 'بيانات غير صالحة', { amount: 'لا يمكن تسجيل دفعة لمسوق لم تتم الموافقة عليه بعد' });
+            affiliate.status !== 'pending' || fail(422, t('بيانات غير صالحة'), { amount: t('لا يمكن تسجيل دفعة لمسوق لم تتم الموافقة عليه بعد') });
             assertWithinPendingBalance(affiliate, amount);
 
             const fields = {
@@ -781,7 +988,7 @@ const routes = [
             const affiliate = findAffiliate(id);
             const payout = db.payouts.find((candidate) => candidate.payout_id === Number(payoutId) && candidate.affiliate_id === affiliate.affiliate_id) ?? fail(404, 'Not Found');
 
-            payout.status === 'requested' || fail(422, 'تمت معالجة هذا الطلب بالفعل', { payout: 'تمت معالجة هذا الطلب بالفعل' });
+            payout.status === 'requested' || fail(422, t('تمت معالجة هذا الطلب بالفعل'), { payout: t('تمت معالجة هذا الطلب بالفعل') });
             Object.assign(payout, { status: 'rejected', note: body.note || null, rejected_at: new Date().toISOString() });
             affiliate.payout_request = null;
 
@@ -794,7 +1001,7 @@ const routes = [
         ([id]) => {
             const affiliate = findAffiliate(id);
 
-            affiliate.status !== 'pending' || fail(422, 'لا يمكن الدخول بحساب مسوق لم تتم الموافقة عليه بعد');
+            affiliate.status !== 'pending' || fail(422, t('لا يمكن الدخول بحساب مسوق لم تتم الموافقة عليه بعد'));
 
             const token = `imp_${randomToken(24)}`;
 

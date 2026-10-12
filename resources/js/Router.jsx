@@ -6,13 +6,17 @@ import { AffiliateAuthProvider, useAffiliateAuth } from '@/context/AffiliateAuth
 import { AuthProvider, useAuth } from '@/context/AuthContext';
 import { ThemeProvider } from '@/context/ThemeContext';
 import { ToastProvider } from '@/context/ToastContext';
+import { t } from '@/i18n';
 import { AffiliateJoinPage } from '@/pages/affiliate-join/AffiliateJoinPage';
 import { AffiliateDashboardPage } from '@/pages/affiliate/AffiliateDashboardPage';
 import { AffiliateForgotPasswordPage } from '@/pages/affiliate/AffiliateForgotPasswordPage';
 import { AffiliateLoginPage } from '@/pages/affiliate/AffiliateLoginPage';
 import { AffiliateResetPasswordPage } from '@/pages/affiliate/AffiliateResetPasswordPage';
 import { AffiliatesPage } from '@/pages/affiliates/AffiliatesPage';
+import { CategoriesPage } from '@/pages/categories/CategoriesPage';
 import { NotificationsPage } from '@/pages/notifications/NotificationsPage';
+import { ProductFormPage } from '@/pages/products/ProductFormPage';
+import { ProductsPage } from '@/pages/products/ProductsPage';
 import { PayoutRequestsPage } from '@/pages/payouts/PayoutRequestsPage';
 import { ForgotPasswordPage } from '@/pages/auth/ForgotPasswordPage';
 import { LoginPage } from '@/pages/auth/LoginPage';
@@ -51,8 +55,8 @@ function RequireAffiliate() {
                 <span className="mx-auto grid size-16 place-items-center rounded-2xl bg-primary-soft text-primary">
                     <Icon name="log-in" className="size-8" />
                 </span>
-                <h1 className="mt-6 text-2xl font-bold text-ink">سجّل دخولك من رابط متجرك</h1>
-                <p className="mt-3 text-sm leading-relaxed text-muted">لكل متجر صفحة دخول خاصة بمسوقيه. استخدم رابط الدخول الذي أرسله لك المتجر.</p>
+                <h1 className="mt-6 text-2xl font-bold text-ink">{t('سجّل دخولك من رابط متجرك')}</h1>
+                <p className="mt-3 text-sm leading-relaxed text-muted">{t('لكل متجر صفحة دخول خاصة بمسوقيه. استخدم رابط الدخول الذي أرسله لك المتجر.')}</p>
             </div>
         </StorePublicLayout>
     );
@@ -84,6 +88,10 @@ export function App() {
                                     <Route path="affiliates" element={<AffiliatesPage />} />
                                     <Route path="payout-requests" element={<PayoutRequestsPage />} />
                                     <Route path="notifications" element={<NotificationsPage />} />
+                                    <Route path="categories" element={<CategoriesPage />} />
+                                    <Route path="products" element={<ProductsPage />} />
+                                    <Route path="products/new" element={<ProductFormPage />} />
+                                    <Route path="products/:productId" element={<ProductFormPage />} />
                                 </Route>
                             </Route>
                             <Route element={<RequireAffiliate />}>

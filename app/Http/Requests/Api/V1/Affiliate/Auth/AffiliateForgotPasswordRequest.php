@@ -27,9 +27,9 @@ class AffiliateForgotPasswordRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'store_slug.required' => 'المتجر غير محدد',
-            'store_slug.exists' => 'المتجر غير موجود',
-            'identifier.required' => 'أدخل رقم الهاتف أو البريد الإلكتروني',
+            'store_slug.required' => __('forms.store_missing'),
+            'store_slug.exists' => __('forms.store_not_found'),
+            'identifier.required' => __('forms.affiliate_identifier_required'),
         ];
     }
 }

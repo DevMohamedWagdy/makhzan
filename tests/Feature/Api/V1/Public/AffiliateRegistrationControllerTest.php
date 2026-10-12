@@ -103,7 +103,7 @@ class AffiliateRegistrationControllerTest extends TestCase
         $this->assertSame('affiliate_registered', $notification->type);
         $this->assertSame($affiliateId, $notification->data['affiliate_id']);
         $this->assertTrue($notification->data['requires_approval']);
-        $this->assertSame('سارة محمود إبراهيم أرسل طلب انضمام لفريق المسوقين وينتظر موافقتك', $notification->data['message']);
+        $this->assertSame('سارة محمود إبراهيم', $notification->data['affiliate_name']);
     }
 
     public function test_register_with_auto_approve_creates_active_affiliate_and_returns_referral_link(): void

@@ -1,13 +1,15 @@
 import { useRef } from 'react';
+import { isRtl, t } from '@/i18n';
 import { cn, formatNumber } from '@/lib/format';
 import { Icon } from './Icon';
 
-/** Underlined tabs with arrow-key navigation (RTL aware). */
+/** Underlined tabs with arrow-key navigation (direction aware). */
 export function Tabs({ tabs, value, onChange, className }) {
     const listRef = useRef(null);
 
     const onKeyDown = (event) => {
-        const keys = { ArrowLeft: 1, ArrowRight: -1 }; // RTL: left moves forward.
+        // Arrow keys follow the reading direction: in Arabic, left moves forward.
+        const keys = isRtl ? { ArrowLeft: 1, ArrowRight: -1 } : { ArrowLeft: -1, ArrowRight: 1 };
 
         if (!(event.key in keys)) {
             return;
@@ -66,13 +68,12 @@ export function Pagination({ meta, onPageChange }) {
     const pageButton = 'grid h-9 min-w-9 place-items-center rounded-lg px-2 text-sm transition disabled:cursor-not-allowed disabled:opacity-40';
 
     return (
-        <nav className="flex flex-col items-center justify-between gap-3 sm:flex-row" aria-label="التنقل بين الصفحات">
+        <nav className="flex flex-col items-center justify-between gap-3 sm:flex-row" aria-label={t('التنقل بين الصفحات')}>
             <p className="text-sm text-muted">
-                عرض <span className="font-medium text-ink">{formatNumber(from)}</span> إلى <span className="font-medium text-ink">{formatNumber(to)}</span> من أصل{' '}
-                <span className="font-medium text-ink">{formatNumber(total)}</span> مسوق
+                {t('عرض {from} إلى {to} من أصل {total}', { from: formatNumber(from), to: formatNumber(to), total: formatNumber(total) })}
             </p>
             <div className="flex items-center gap-1">
-                <button type="button" className={cn(pageButton, 'text-ink-2 hover:bg-surface-3')} disabled={current_page <= 1} onClick={() => onPageChange(current_page - 1)} aria-label="الصفحة السابقة" title="الصفحة السابقة">
+                <button type="button" className={cn(pageButton, 'text-ink-2 hover:bg-surface-3')} disabled={current_page <= 1} onClick={() => onPageChange(current_page - 1)} aria-label={t('الصفحة السابقة')} title={t('الصفحة السابقة')}>
                     <Icon name="chevron-right" className="size-4" />
                 </button>
                 {pageWindow(current_page, last_page).map((page, index) =>
@@ -92,7 +93,7 @@ export function Pagination({ meta, onPageChange }) {
                         </button>
                     ),
                 )}
-                <button type="button" className={cn(pageButton, 'text-ink-2 hover:bg-surface-3')} disabled={current_page >= last_page} onClick={() => onPageChange(current_page + 1)} aria-label="الصفحة التالية" title="الصفحة التالية">
+                <button type="button" className={cn(pageButton, 'text-ink-2 hover:bg-surface-3')} disabled={current_page >= last_page} onClick={() => onPageChange(current_page + 1)} aria-label={t('الصفحة التالية')} title={t('الصفحة التالية')}>
                     <Icon name="chevron-left" className="size-4" />
                 </button>
             </div>

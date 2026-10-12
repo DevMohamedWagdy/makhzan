@@ -25,8 +25,10 @@ class EnsureVendorToken
         abort_unless(
             $user instanceof Vendor && $user->tokenCan(Vendor::TOKEN_ABILITY),
             Response::HTTP_FORBIDDEN,
-            'هذا الإجراء متاح لأصحاب المتاجر فقط.',
+            __('auth.vendors_only'),
         );
+
+        $user->rememberLocale();
 
         return $next($request);
     }

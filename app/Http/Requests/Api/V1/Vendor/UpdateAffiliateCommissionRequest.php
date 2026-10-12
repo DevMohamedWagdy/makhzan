@@ -56,8 +56,8 @@ class UpdateAffiliateCommissionRequest extends FormRequest
 
                 if ($value < $min || $value > $max) {
                     $validator->errors()->add('value', $type === CommissionType::Percentage
-                        ? "أدخل نسبة بين {$min}% و {$max}%"
-                        : "أدخل مبلغاً بين {$min} و {$max} ج.م");
+                        ? __('affiliates.commission_percentage_range', ['min' => $min, 'max' => $max])
+                        : __('affiliates.commission_fixed_range', ['min' => $min, 'max' => $max]));
                 }
             },
         ];
@@ -69,10 +69,10 @@ class UpdateAffiliateCommissionRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'type.required' => 'اختر نوع العمولة',
-            'type.enum' => 'نوع عمولة غير معروف',
-            'value.required' => 'أدخل قيمة العمولة',
-            'value.numeric' => 'قيمة العمولة يجب أن تكون رقماً',
+            'type.required' => __('affiliates.commission_type_required'),
+            'type.enum' => __('affiliates.commission_type_unknown'),
+            'value.required' => __('affiliates.commission_value_required'),
+            'value.numeric' => __('affiliates.commission_value_numeric'),
         ];
     }
 }
