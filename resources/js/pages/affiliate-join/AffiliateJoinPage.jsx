@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { StorePublicLayout } from '@/components/layout/StorePublicLayout';
 import { Button } from '@/components/ui/Button';
 import { Alert, Badge } from '@/components/ui/Display';
@@ -312,6 +312,15 @@ export function AffiliateJoinPage() {
                         <Button type="submit" size="lg" loading={submitting} icon="user-plus" className="w-full sm:col-span-2">
                             {submitting ? 'جارٍ إرسال الطلب...' : link?.requires_approval ? 'إرسال طلب الانضمام' : 'إنشاء حسابي'}
                         </Button>
+
+                        {store && (
+                            <p className="text-center text-sm text-muted sm:col-span-2">
+                                لديك حساب بالفعل؟{' '}
+                                <Link to={`/${store.slug}/affiliates/login`} className="font-semibold text-primary hover:underline">
+                                    سجّل دخولك
+                                </Link>
+                            </p>
+                        )}
                     </fieldset>
                 </form>
             </div>

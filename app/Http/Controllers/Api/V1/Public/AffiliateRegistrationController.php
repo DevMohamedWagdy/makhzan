@@ -9,6 +9,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\Public\RegisterAffiliateRequest;
 use App\Http\Resources\AffiliateRegistrationLinkPublicResource;
 use App\Models\AffiliateRegistrationLink;
+use App\Notifications\AffiliateRegisteredNotification;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
@@ -28,7 +29,8 @@ class AffiliateRegistrationController extends Controller
 
     /**
      * Registers an applicant. With auto-approve on they become active immediately and get a
-     * referral code; otherwise they wait in the vendor's "pending review" list.
+     * referral code; otherwise they wait in the vendor's "pending review" list. Either way
+     * the vendor is notified.
      */
     public function store(RegisterAffiliateRequest $request, AffiliateRegistrationLink $registrationLink, CreateAffiliate $createAffiliate): JsonResponse
     {
@@ -45,6 +47,8 @@ class AffiliateRegistrationController extends Controller
             // A double-submit can pass validation twice; the (store_id, phone) index is the real guard.
             throw ValidationException::withMessages(['phone' => 'هذا الرقم مسجل بالفعل ضمن مسوقي هذا المتجر']);
         }
+
+        $registrationLink->store->vendor->notify(new AffiliateRegisteredNotification($affiliate));
 
         $referralCode = $affiliate->referralCodes()->first();
 

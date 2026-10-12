@@ -7,6 +7,7 @@ use App\Enums\AffiliateStatus;
 use App\Enums\AffiliateTier;
 use App\Enums\PayoutMethod;
 use App\Models\Affiliate;
+use App\Models\AffiliatePayout;
 use App\Models\Vendor;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -69,6 +70,22 @@ class AffiliateControllerTest extends TestCase
             ->assertOk()
             ->assertJsonCount(1, 'data')
             ->assertJsonPath('data.0.affiliate_id', $match->id);
+    }
+
+    public function test_index_filters_affiliates_with_an_open_payout_request(): void
+    {
+        $vendor = $this->actingAsVendor();
+        $affiliates = Affiliate::factory()->for($vendor)->for($vendor->store);
+        $requesting = $affiliates->create();
+        $alreadyPaid = $affiliates->create();
+        $affiliates->create();
+        AffiliatePayout::factory()->for($requesting)->requested()->create();
+        AffiliatePayout::factory()->for($alreadyPaid)->create();
+
+        $this->getJson('/api/v1/vendor/affiliates?payout_request=1')
+            ->assertOk()
+            ->assertJsonPath('data.*.affiliate_id', [$requesting->id])
+            ->assertJsonPath('data.0.payout_request.status', 'requested');
     }
 
     public function test_index_searches_by_name_phone_with_arabic_digits_and_referral_code(): void

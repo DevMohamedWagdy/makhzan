@@ -7,7 +7,9 @@ use App\Enums\AffiliateStatus;
 use App\Enums\AffiliateTier;
 use App\Enums\CommissionType;
 use App\Enums\PayoutMethod;
+use App\Enums\PayoutStatus;
 use App\Support\PhoneNumber;
+use Carbon\CarbonInterface;
 use Database\Factories\AffiliateFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -17,10 +19,12 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 use Laravel\Sanctum\HasApiTokens;
 
 #[Fillable([
@@ -38,6 +42,13 @@ class Affiliate extends Authenticatable
 
     /** @use HasFactory<AffiliateFactory> */
     use HasApiTokens, HasFactory, Notifiable;
+
+    /**
+     * Every vendor and affiliate view shows an open transfer request.
+     *
+     * @var list<string>
+     */
+    protected $with = ['pendingPayoutRequest'];
 
     /**
      * Get the attributes that should be cast.
@@ -87,6 +98,26 @@ class Affiliate extends Authenticatable
     public function referralCodes(): HasMany
     {
         return $this->hasMany(AffiliateReferralCode::class);
+    }
+
+    /**
+     * @return HasMany<AffiliatePayout, $this>
+     */
+    public function payouts(): HasMany
+    {
+        return $this->hasMany(AffiliatePayout::class);
+    }
+
+    /**
+     * The affiliate's transfer request still waiting for the vendor, if any.
+     *
+     * @return HasOne<AffiliatePayout, $this>
+     */
+    public function pendingPayoutRequest(): HasOne
+    {
+        return $this->hasOne(AffiliatePayout::class)->ofMany(['id' => 'max'], function (Builder $query): void {
+            $query->where('status', PayoutStatus::Requested);
+        });
     }
 
     /**
@@ -161,6 +192,90 @@ class Affiliate extends Authenticatable
             'code' => AffiliateReferralCode::generateCode($this->id),
             'is_active' => $this->status === AffiliateStatus::Active,
         ]);
+    }
+
+    /**
+     * Asks the vendor to transfer part or all of the pending balance. Only one request may
+     * be open at a time; the balance is deducted later, when the vendor records the payment.
+     *
+     * @throws ValidationException
+     */
+    public function requestPayout(float $amount, ?string $note = null): AffiliatePayout
+    {
+        return DB::transaction(function () use ($amount, $note): AffiliatePayout {
+            $this->assertWithinPendingBalance($amount);
+
+            if ($this->pendingPayoutRequest()->exists()) {
+                throw ValidationException::withMessages(['amount' => 'لديك طلب تحويل قيد المراجعة بالفعل']);
+            }
+
+            return $this->payouts()->create([
+                ...$this->payoutDestination(),
+                'amount' => $amount,
+                'status' => PayoutStatus::Requested,
+                'request_note' => $note,
+            ]);
+        });
+    }
+
+    /**
+     * Records a commission payment the vendor already sent and deducts it from the pending
+     * balance. An open transfer request is fulfilled by it instead of adding a second row.
+     *
+     * @throws ValidationException
+     */
+    public function recordPayout(float $amount, ?string $reference = null, ?string $note = null, ?CarbonInterface $paidAt = null): AffiliatePayout
+    {
+        return DB::transaction(function () use ($amount, $reference, $note, $paidAt): AffiliatePayout {
+            $balance = $this->assertWithinPendingBalance($amount);
+
+            $this->forceFill(['pending_balance' => round($balance - $amount, 2)])->save();
+
+            $payout = $this->pendingPayoutRequest()->first() ?? $this->payouts()->make();
+
+            $payout->fill([
+                ...$this->payoutDestination(),
+                'amount' => $amount,
+                'status' => PayoutStatus::Paid,
+                'reference' => $reference,
+                'note' => $note,
+                'paid_at' => $paidAt ?? now(),
+            ])->save();
+
+            return $payout;
+        });
+    }
+
+    /**
+     * Locks the affiliate row (serializing concurrent payouts and requests) and returns the
+     * current pending balance once the amount is known to fit in it.
+     *
+     * @throws ValidationException
+     */
+    private function assertWithinPendingBalance(float $amount): float
+    {
+        $balance = (float) static::query()->whereKey($this->id)->lockForUpdate()->value('pending_balance');
+
+        if (round($amount, 2) > round($balance, 2)) {
+            throw ValidationException::withMessages(['amount' => 'المبلغ أكبر من الرصيد المعلق']);
+        }
+
+        return $balance;
+    }
+
+    /**
+     * Snapshot of the account the money goes to, kept on the payout row.
+     *
+     * @return array{store_id: int, payout_type: PayoutMethod, payout_account_name: string, payout_account_last4: string}
+     */
+    private function payoutDestination(): array
+    {
+        return [
+            'store_id' => $this->store_id,
+            'payout_type' => $this->payout_type,
+            'payout_account_name' => $this->payout_account_name,
+            'payout_account_last4' => mb_substr((string) $this->payout_account_number, -4),
+        ];
     }
 
     /**

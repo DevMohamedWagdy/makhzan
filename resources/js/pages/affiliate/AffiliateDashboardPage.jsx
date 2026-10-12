@@ -5,7 +5,7 @@ import { ImpersonationBanner } from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/Button';
 import { Alert, Avatar, Badge, Card, DetailRow, EmptyState, StatCard } from '@/components/ui/Display';
 import { Dropdown } from '@/components/ui/Dropdown';
-import { Field, PasswordInput } from '@/components/ui/Form';
+import { Field, Input, PasswordInput, Textarea } from '@/components/ui/Form';
 import { Icon } from '@/components/ui/Icon';
 import { Modal } from '@/components/ui/Overlay';
 import { Skeleton } from '@/components/ui/Spinner';
@@ -13,9 +13,11 @@ import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { useAffiliateAuth } from '@/context/AffiliateAuthContext';
 import { useToast } from '@/context/ToastContext';
 import { PayoutMethodLabel, StatusBadge, TierBadge, formatCommission } from '@/features/affiliates/AffiliateBadges';
+import { PayoutHistory } from '@/features/affiliates/PayoutHistory';
 import { useCopy } from '@/hooks/common';
 import { useForm } from '@/hooks/useForm';
-import { cn, formatDate, formatMoney, formatNumber } from '@/lib/format';
+import { CURRENCY } from '@/lib/constants';
+import { cn, formatDate, formatMoney, formatNumber, formatRelative } from '@/lib/format';
 import { rules } from '@/lib/validators';
 import { affiliatePortalApi } from '@/services/affiliatePortalApi';
 
@@ -139,6 +141,122 @@ function ReferralLinks({ codes, storeName }) {
     );
 }
 
+function RequestPayoutModal({ affiliate, open, onClose, onRequested }) {
+    const toast = useToast();
+    const balance = affiliate.stats.pending_balance;
+    const [amount, setAmount] = useState('');
+    const [note, setNote] = useState('');
+    const [errors, setErrors] = useState({});
+    const [submitting, setSubmitting] = useState(false);
+
+    useEffect(() => {
+        if (open) {
+            setAmount(String(balance));
+            setNote('');
+            setErrors({});
+        }
+    }, [open, balance]);
+
+    const submit = async (event) => {
+        event.preventDefault();
+        const numeric = Number(amount);
+
+        if (Number.isNaN(numeric) || numeric < 1) {
+            setErrors({ amount: `أدخل مبلغاً لا يقل عن 1 ${CURRENCY}` });
+
+            return;
+        }
+
+        if (numeric > balance) {
+            setErrors({ amount: 'المبلغ أكبر من رصيدك المستحق' });
+
+            return;
+        }
+
+        setSubmitting(true);
+
+        try {
+            await affiliatePortalApi.requestPayout({ amount: numeric, note: note.trim() || null });
+            toast.success('تم إرسال طلب التحويل', 'سيراجع المتجر طلبك ويحوّل المبلغ إلى وسيلة السحب المسجلة.');
+            onRequested();
+        } catch (error) {
+            setErrors(error.errors && Object.keys(error.errors).length ? error.errors : { amount: error.message });
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    return (
+        <Modal open={open} onClose={onClose} dismissible={!submitting} size="sm" icon="send" title="طلب تحويل العمولة" description="سيصل طلبك للمتجر ليحوّل المبلغ إلى وسيلة السحب المسجلة.">
+            <form onSubmit={submit} noValidate className="flex flex-col gap-4">
+                <div className="flex items-center justify-between gap-3 rounded-xl border border-line bg-surface-2 p-3">
+                    <PayoutMethodLabel type={affiliate.payout_method.type} />
+                    <span className="ltr font-mono text-xs text-muted">•••• {affiliate.payout_method.account_number_last4}</span>
+                </div>
+                <Field label="المبلغ المطلوب" error={errors.amount} required hint={`رصيدك المستحق: ${formatMoney(balance)}`}>
+                    {(props) => (
+                        <Input
+                            {...props}
+                            data-autofocus
+                            type="number"
+                            inputMode="decimal"
+                            min={1}
+                            max={balance}
+                            step="0.01"
+                            value={amount}
+                            onChange={(event) => {
+                                setAmount(event.target.value);
+                                setErrors({});
+                            }}
+                            aria-invalid={errors.amount ? 'true' : undefined}
+                            suffix={<span className="px-2 text-sm text-muted">{CURRENCY}</span>}
+                        />
+                    )}
+                </Field>
+                <Field label="ملاحظة للمتجر" optional error={errors.note}>
+                    {(props) => <Textarea {...props} value={note} onChange={(event) => setNote(event.target.value)} placeholder="مثال: أرجو التحويل قبل نهاية الأسبوع" maxLength={200} />}
+                </Field>
+                <div className="flex justify-end gap-2 pt-2">
+                    <Button variant="secondary" onClick={onClose} disabled={submitting}>
+                        إلغاء
+                    </Button>
+                    <Button type="submit" loading={submitting} icon="send">
+                        إرسال الطلب
+                    </Button>
+                </div>
+            </form>
+        </Modal>
+    );
+}
+
+/** Pending balance, the open transfer request (if any) and the button to ask for one. */
+function PayoutRequestCard({ affiliate, isImpersonating, onRequest }) {
+    const request = affiliate.payout_request;
+    const balance = affiliate.stats.pending_balance;
+
+    return (
+        <Card title="تحويل أرباحي">
+            <p className="text-xs text-muted">رصيدك المستحق</p>
+            <p className="mt-1 text-2xl font-bold text-ink">{formatMoney(balance)}</p>
+
+            {request ? (
+                <Alert tone="warning" icon="refresh" title="طلبك قيد المراجعة" className="mt-4">
+                    طلبت تحويل {formatMoney(request.amount)} {formatRelative(request.created_at)}، وسيصلك المبلغ بعد موافقة المتجر.
+                </Alert>
+            ) : (
+                <>
+                    <Button icon="send" className="mt-4 w-full" onClick={onRequest} disabled={isImpersonating || balance <= 0}>
+                        طلب تحويل العمولة
+                    </Button>
+                    <p className="mt-2 text-xs leading-relaxed text-muted">
+                        {isImpersonating ? 'غير متاح أثناء الدخول بصفة المسوق.' : balance > 0 ? 'سيصل طلبك للمتجر ليحوّل المبلغ إلى وسيلة السحب المسجلة.' : 'لا يوجد رصيد مستحق للتحويل حالياً.'}
+                    </p>
+                </>
+            )}
+        </Card>
+    );
+}
+
 function DashboardSkeleton() {
     return (
         <div className="flex flex-col gap-6">
@@ -163,6 +281,8 @@ export function AffiliateDashboardPage() {
     const [affiliate, setAffiliate] = useState(null);
     const [loadError, setLoadError] = useState(null);
     const [passwordOpen, setPasswordOpen] = useState(false);
+    const [payoutOpen, setPayoutOpen] = useState(false);
+    const loadPayouts = useCallback((page) => affiliatePortalApi.payouts(page), []);
 
     const load = useCallback(() => {
         setLoadError(null);
@@ -256,15 +376,23 @@ export function AffiliateDashboardPage() {
                             <StatCard label="طلباتي" value={formatNumber(affiliate.stats.orders_count)} icon="shopping-bag" />
                             <StatCard label="مبيعاتي" value={formatMoney(affiliate.stats.sales_total)} icon="bar-chart" tone="info" />
                             <StatCard label="إجمالي أرباحي" value={formatMoney(affiliate.stats.earned_commission)} icon="wallet" tone="success" />
-                            <StatCard label="رصيد قيد التحويل" value={formatMoney(affiliate.stats.pending_balance)} icon="refresh" tone="warning" />
+                            <StatCard label="رصيد مستحق" value={formatMoney(affiliate.stats.pending_balance)} icon="refresh" tone="warning" />
                         </div>
 
                         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-                            <Card title="روابط الإحالة الخاصة بي" description="شارك هذه الروابط، وكل طلب يتم عبرها يُحسب لك" className="lg:col-span-2">
-                                <ReferralLinks codes={affiliate.referral_codes} storeName={store.name} />
-                            </Card>
+                            <div className="flex flex-col gap-6 lg:col-span-2">
+                                <Card title="روابط الإحالة الخاصة بي" description="شارك هذه الروابط، وكل طلب يتم عبرها يُحسب لك">
+                                    <ReferralLinks codes={affiliate.referral_codes} storeName={store.name} />
+                                </Card>
+
+                                <Card title="سجل تحويلاتي" description="المبالغ التي حوّلها المتجر لك وطلبات التحويل">
+                                    <PayoutHistory load={loadPayouts} refreshKey={`${affiliate.stats.pending_balance}-${affiliate.payout_request?.payout_id ?? 'none'}`} emptyText="لم تستلم أي تحويلات بعد." />
+                                </Card>
+                            </div>
 
                             <div className="flex flex-col gap-6">
+                                <PayoutRequestCard affiliate={affiliate} isImpersonating={isImpersonating} onRequest={() => setPayoutOpen(true)} />
+
                                 <Card title="وسيلة استلام الأرباح">
                                     <PayoutMethodLabel type={affiliate.payout_method.type} />
                                     <dl className="mt-3 divide-y divide-line">
@@ -294,12 +422,23 @@ export function AffiliateDashboardPage() {
                             </div>
                         </div>
 
-                        <p className="text-center text-xs text-muted">سجل الطلبات التفصيلي وطلبات السحب سيتوفران هنا قريباً.</p>
+                        <p className="text-center text-xs text-muted">سجل الطلبات التفصيلي سيتوفر هنا قريباً.</p>
                     </div>
                 )}
             </main>
 
             <ChangePasswordModal open={passwordOpen} onClose={() => setPasswordOpen(false)} />
+            {affiliate && (
+                <RequestPayoutModal
+                    affiliate={affiliate}
+                    open={payoutOpen}
+                    onClose={() => setPayoutOpen(false)}
+                    onRequested={() => {
+                        setPayoutOpen(false);
+                        load();
+                    }}
+                />
+            )}
             <footer className="pb-8 text-center">
                 <Logo className="mx-auto h-7 opacity-60" />
             </footer>

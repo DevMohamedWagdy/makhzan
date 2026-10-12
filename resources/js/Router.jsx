@@ -12,6 +12,8 @@ import { AffiliateForgotPasswordPage } from '@/pages/affiliate/AffiliateForgotPa
 import { AffiliateLoginPage } from '@/pages/affiliate/AffiliateLoginPage';
 import { AffiliateResetPasswordPage } from '@/pages/affiliate/AffiliateResetPasswordPage';
 import { AffiliatesPage } from '@/pages/affiliates/AffiliatesPage';
+import { NotificationsPage } from '@/pages/notifications/NotificationsPage';
+import { PayoutRequestsPage } from '@/pages/payouts/PayoutRequestsPage';
 import { ForgotPasswordPage } from '@/pages/auth/ForgotPasswordPage';
 import { LoginPage } from '@/pages/auth/LoginPage';
 import { RegisterPage } from '@/pages/auth/RegisterPage';
@@ -80,6 +82,8 @@ export function App() {
                                 <Route path="/dashboard" element={<DashboardLayout />}>
                                     <Route index element={<Navigate to="affiliates" replace />} />
                                     <Route path="affiliates" element={<AffiliatesPage />} />
+                                    <Route path="payout-requests" element={<PayoutRequestsPage />} />
+                                    <Route path="notifications" element={<NotificationsPage />} />
                                 </Route>
                             </Route>
                             <Route element={<RequireAffiliate />}>

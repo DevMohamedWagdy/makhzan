@@ -23,6 +23,7 @@ class ListAffiliatesRequest extends FormRequest
             'tier' => ['nullable', Rule::enum(AffiliateTier::class)],
             'status' => ['nullable', Rule::enum(AffiliateStatus::class)],
             'payout_method' => ['nullable', Rule::enum(PayoutMethod::class)],
+            'payout_request' => ['nullable', 'boolean'],
             'page' => ['nullable', 'integer', 'min:1'],
             'per_page' => ['nullable', 'integer', Rule::in([10, 20, 50])],
         ];

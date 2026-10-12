@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Alert, Avatar, Badge, DetailRow } from '@/components/ui/Display';
 import { Dropdown } from '@/components/ui/Dropdown';
@@ -7,7 +7,9 @@ import { Drawer } from '@/components/ui/Overlay';
 import { useCopy } from '@/hooks/common';
 import { AFFILIATE_SOURCES, PAYOUT_METHODS } from '@/lib/constants';
 import { cn, formatDate, formatMoney, formatNumber, formatRelative, maskAccount } from '@/lib/format';
+import { affiliatesApi } from '@/services/affiliatesApi';
 import { PayoutMethodLabel, StatusBadge, TierBadge, formatCommission, getEffectiveCommission } from './AffiliateBadges';
+import { PayoutHistory } from './PayoutHistory';
 
 function Section({ title, icon, action, children }) {
     return (
@@ -47,6 +49,8 @@ function CopyButton({ value, label }) {
  */
 export function AffiliateProfileDrawer({ affiliate, open, onClose, actions, creatingCode }) {
     const [revealAccount, setRevealAccount] = useState(false);
+    const affiliateId = affiliate?.affiliate_id;
+    const loadPayouts = useCallback((page) => affiliatesApi.listPayouts(affiliateId, page), [affiliateId]);
 
     if (!affiliate) {
         return null;
@@ -56,6 +60,7 @@ export function AffiliateProfileDrawer({ affiliate, open, onClose, actions, crea
     const payoutConfig = PAYOUT_METHODS[affiliate.payout_method.type];
     const isPending = affiliate.status === 'pending';
     const isFrozen = affiliate.status === 'frozen';
+    const payoutRequest = affiliate.payout_request;
 
     const header = (
         <div className="relative">
@@ -122,6 +127,23 @@ export function AffiliateProfileDrawer({ affiliate, open, onClose, actions, crea
                 <div className="px-6 pt-5">
                     <Alert tone="danger" icon="snowflake" title="الحساب مجمد">
                         {affiliate.frozen_reason ? `السبب: ${affiliate.frozen_reason}. ` : ''}روابط الإحالة معطلة، والسجلات التاريخية محفوظة.
+                    </Alert>
+                </div>
+            )}
+            {payoutRequest && (
+                <div className="px-6 pt-5">
+                    <Alert tone="warning" icon="send" title={`طلب تحويل عمولة بقيمة ${formatMoney(payoutRequest.amount)}`}>
+                        <p>
+                            أرسل المسوق الطلب {formatRelative(payoutRequest.created_at)}.{payoutRequest.request_note ? ` ملاحظته: ${payoutRequest.request_note}` : ''}
+                        </p>
+                        <div className="mt-3 flex flex-wrap gap-2">
+                            <Button size="sm" variant="success" icon="check" onClick={() => actions.payout(affiliate)}>
+                                تأكيد التحويل
+                            </Button>
+                            <Button size="sm" variant="danger-soft" icon="x" onClick={() => actions.rejectPayout(affiliate)}>
+                                رفض الطلب
+                            </Button>
+                        </div>
                     </Alert>
                 </div>
             )}
@@ -204,6 +226,22 @@ export function AffiliateProfileDrawer({ affiliate, open, onClose, actions, crea
                             )}
                         </dl>
                     </div>
+                </Section>
+
+                <Section
+                    title="تحويلات العمولة"
+                    icon="send"
+                    action={
+                        !isPending &&
+                        !payoutRequest &&
+                        affiliate.stats.pending_balance > 0 && (
+                            <Button size="sm" variant="soft" icon="plus" onClick={() => actions.payout(affiliate)}>
+                                تسجيل دفعة
+                            </Button>
+                        )
+                    }
+                >
+                    <PayoutHistory load={loadPayouts} refreshKey={`${affiliate.stats.pending_balance}-${payoutRequest?.payout_id ?? 'none'}`} emptyText="لم تُسجَّل أي تحويلات لهذا المسوق بعد." />
                 </Section>
 
                 <Section

@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Enums\AffiliateTier;
 use App\Enums\CommissionType;
 use App\Models\Affiliate;
+use App\Models\AffiliatePayout;
 use App\Models\Store;
 use App\Models\Vendor;
 use Illuminate\Database\Seeder;
@@ -40,14 +41,24 @@ class DemoVendorSeeder extends Seeder
             return;
         }
 
-        Affiliate::factory()->for($vendor)->for($vendor->store)->tier(AffiliateTier::General)->withSales(48, null, 650)->create([
+        $affiliate = Affiliate::factory()->for($vendor)->for($vendor->store)->tier(AffiliateTier::General)->withSales(48, null, 650)->create([
             'full_name' => 'سارة محمود إبراهيم',
             'phone' => self::AFFILIATE_PHONE,
             'email' => 'sara.affiliate@example.com',
             'password' => self::AFFILIATE_PASSWORD,
             'payout_account_name' => 'سارة محمود',
             'payout_account_number' => self::AFFILIATE_PHONE,
+            'pending_balance' => 1850,
         ]);
+
+        $payout = AffiliatePayout::factory()->for($affiliate)->state([
+            'payout_type' => $affiliate->payout_type,
+            'payout_account_name' => $affiliate->payout_account_name,
+            'payout_account_last4' => mb_substr(self::AFFILIATE_PHONE, -4),
+        ]);
+
+        $payout->create(['amount' => 1200, 'reference' => 'TRX20260814', 'paid_at' => now()->subDays(45)]);
+        $payout->create(['amount' => 950, 'reference' => 'TRX20260912', 'paid_at' => now()->subDays(18)]);
     }
 
     private function seedVendorWithAffiliates(): Vendor

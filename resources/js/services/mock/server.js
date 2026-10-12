@@ -15,6 +15,10 @@ const db = {
     affiliatePasswords: { [DEMO_AFFILIATE_CREDENTIALS.affiliate_id]: DEMO_AFFILIATE_CREDENTIALS.password },
     /** token → { affiliate_id, impersonation } */
     affiliateTokens: {},
+    payouts: [],
+    nextPayoutId: 1,
+    /** Vendor dashboard notifications, newest first. */
+    notifications: [],
     nextVendorId: 1025,
     nextStoreId: 3052,
     nextAffiliateId: 5001 + MOCK_AFFILIATES.length,
@@ -94,6 +98,7 @@ function affiliateSelfView(affiliate) {
         },
         referral_codes: affiliate.referral_codes,
         stats: affiliate.stats,
+        payout_request: affiliate.payout_request,
         store: { name: store.name, slug: store.slug, logo_url: store.logo_url },
         joined_at: affiliate.joined_at,
     });
@@ -149,11 +154,69 @@ function buildAffiliateRecord(input, source, vendor = currentVendor()) {
         commission_override: null,
         referral_codes: [],
         stats: { orders_count: 0, sales_total: 0, earned_commission: 0, pending_balance: 0 },
+        payout_request: null,
         source,
         frozen_reason: null,
         joined_at: new Date().toISOString(),
         last_active_at: null,
     };
+}
+
+/** Paginated payouts with the total paid, like AffiliatePayoutController@index. */
+function payoutsPage(affiliateId, page = 1) {
+    const payouts = db.payouts.filter((payout) => payout.affiliate_id === affiliateId).sort((a, b) => b.payout_id - a.payout_id);
+    const per_page = 20;
+    const last_page = Math.max(1, Math.ceil(payouts.length / per_page));
+    const current_page = Math.min(Number(page) || 1, last_page);
+
+    return structuredClone({
+        data: payouts.slice((current_page - 1) * per_page, current_page * per_page),
+        meta: { current_page, per_page, total: payouts.length, last_page },
+        summary: { total_paid: payouts.filter((payout) => payout.status === 'paid').reduce((sum, payout) => sum + payout.amount, 0) },
+    });
+}
+
+function assertWithinPendingBalance(affiliate, amount) {
+    if (amount > affiliate.stats.pending_balance) {
+        fail(422, 'المبلغ أكبر من الرصيد المعلق', { amount: 'المبلغ أكبر من الرصيد المعلق' });
+    }
+}
+
+/** A payout row snapshotting where the money goes, like Affiliate::payoutDestination(). */
+function buildPayout(affiliate, fields) {
+    return {
+        payout_id: db.nextPayoutId++,
+        affiliate_id: affiliate.affiliate_id,
+        payout_method: {
+            type: affiliate.payout_method.type,
+            account_name: affiliate.payout_method.account_name,
+            account_number_last4: String(affiliate.payout_method.account_number).slice(-4),
+        },
+        reference: null,
+        request_note: null,
+        note: null,
+        created_at: new Date().toISOString(),
+        paid_at: null,
+        rejected_at: null,
+        ...fields,
+    };
+}
+
+/** Mirrors the database channel of the Laravel notifications sent to the store's vendor. */
+function notifyVendor(storeId, type, message, details) {
+    const vendor = db.vendors.find((candidate) => candidate.store.store_id === storeId);
+
+    db.notifications.unshift({ id: crypto.randomUUID(), vendor_id: vendor.vendor_id, type, message, details, read_at: null, created_at: new Date().toISOString() });
+}
+
+function vendorNotifications() {
+    const { vendor_id } = currentVendor();
+
+    return db.notifications.filter((notification) => notification.vendor_id === vendor_id);
+}
+
+function findOpenPayoutRequest(affiliate) {
+    return db.payouts.find((payout) => payout.affiliate_id === affiliate.affiliate_id && payout.status === 'requested') ?? null;
 }
 
 function generateReferralCode(affiliate, storeSlug = currentVendor().store.slug) {
@@ -337,6 +400,32 @@ const routes = [
         },
     ],
     ['GET', /^\/api\/v1\/affiliate\/auth\/me$/, (_, __, ___, token) => affiliateSelfView(currentAffiliate(token).affiliate)],
+    ['GET', /^\/api\/v1\/affiliate\/payouts$/, (_, __, query, token) => payoutsPage(currentAffiliate(token).affiliate.affiliate_id, query.page)],
+    [
+        'POST',
+        /^\/api\/v1\/affiliate\/payouts$/,
+        (_, body, __, token) => {
+            const { affiliate, impersonation } = currentAffiliate(token);
+            const amount = Number(body.amount);
+
+            impersonation && fail(403, 'هذا الإجراء غير متاح أثناء الدخول بصفة المسوق.');
+            assertWithinPendingBalance(affiliate, amount);
+            findOpenPayoutRequest(affiliate) && fail(422, 'لديك طلب تحويل قيد المراجعة بالفعل', { amount: 'لديك طلب تحويل قيد المراجعة بالفعل' });
+
+            const payout = buildPayout(affiliate, { amount, status: 'requested', request_note: body.note || null });
+
+            db.payouts.push(payout);
+            affiliate.payout_request = payout;
+            notifyVendor(affiliate.store_id, 'payout_requested', `طلب ${affiliate.full_name} تحويل ${amount.toFixed(2)} ج.م من رصيد عمولاته`, {
+                affiliate_id: affiliate.affiliate_id,
+                affiliate_name: affiliate.full_name,
+                payout_id: payout.payout_id,
+                amount,
+            });
+
+            return structuredClone(payout);
+        },
+    ],
     [
         'POST',
         /^\/api\/v1\/affiliate\/auth\/logout$/,
@@ -399,6 +488,12 @@ const routes = [
 
             db.affiliates.unshift(affiliate);
             db.affiliatePasswords[affiliate.affiliate_id] = body.password;
+            notifyVendor(
+                store.store_id,
+                'affiliate_registered',
+                link.auto_approve ? `انضم ${affiliate.full_name} لفريق المسوقين عبر رابط التسجيل` : `${affiliate.full_name} أرسل طلب انضمام لفريق المسوقين وينتظر موافقتك`,
+                { affiliate_id: affiliate.affiliate_id, affiliate_name: affiliate.full_name, requires_approval: !link.auto_approve },
+            );
             const referral = affiliate.referral_codes[0];
 
             return {
@@ -428,6 +523,7 @@ const routes = [
                 .filter((affiliate) => !query.tier || affiliate.tier === query.tier)
                 .filter((affiliate) => !query.status || affiliate.status === query.status)
                 .filter((affiliate) => !query.payout_method || affiliate.payout_method.type === query.payout_method)
+                .filter((affiliate) => !query.payout_request || affiliate.payout_request)
                 .filter(
                     (affiliate) =>
                         !search ||
@@ -460,6 +556,7 @@ const routes = [
                 pending: countBy('pending'),
                 sales_total: affiliates.reduce((sum, affiliate) => sum + affiliate.stats.sales_total, 0),
                 earned_commission: affiliates.reduce((sum, affiliate) => sum + affiliate.stats.earned_commission, 0),
+                payout_requests: affiliates.filter((affiliate) => affiliate.payout_request).length,
             };
         },
     ],
@@ -587,6 +684,106 @@ const routes = [
 
             affiliate.status === 'active' || fail(422, 'لا يمكن إنشاء كود لمسوق غير نشط');
             affiliate.referral_codes.push(generateReferralCode(affiliate));
+
+            return structuredClone(affiliate);
+        },
+    ],
+    /* ---------------------- Notifications & payouts ---------------------- */
+    [
+        'GET',
+        /^\/api\/v1\/vendor\/notifications$/,
+        (_, __, query) => {
+            const all = vendorNotifications();
+            const filtered = query.unread ? all.filter((notification) => !notification.read_at) : all;
+            const per_page = Number(query.per_page ?? 20);
+            const last_page = Math.max(1, Math.ceil(filtered.length / per_page));
+            const current_page = Math.min(Math.max(1, Number(query.page ?? 1)), last_page);
+
+            return structuredClone({
+                data: filtered.slice((current_page - 1) * per_page, current_page * per_page).map(({ vendor_id, ...notification }) => notification),
+                meta: { current_page, per_page, total: filtered.length, last_page },
+                summary: { unread_count: all.filter((notification) => !notification.read_at).length },
+            });
+        },
+    ],
+    [
+        'POST',
+        /^\/api\/v1\/vendor\/notifications\/read-all$/,
+        () => {
+            vendorNotifications().forEach((notification) => {
+                notification.read_at ??= new Date().toISOString();
+            });
+
+            return {};
+        },
+    ],
+    [
+        'POST',
+        /^\/api\/v1\/vendor\/notifications\/([^/]+)\/read$/,
+        ([id]) => {
+            const notification = vendorNotifications().find((candidate) => candidate.id === id) ?? fail(404, 'Not Found');
+
+            notification.read_at ??= new Date().toISOString();
+
+            return structuredClone(notification);
+        },
+    ],
+    [
+        'GET',
+        /^\/api\/v1\/vendor\/payouts$/,
+        (_, __, query) => {
+            const affiliates = storeAffiliates();
+            const storePayouts = db.payouts.filter((payout) => affiliates.some((affiliate) => affiliate.affiliate_id === payout.affiliate_id)).sort((a, b) => b.payout_id - a.payout_id);
+            const filtered = query.status ? storePayouts.filter((payout) => payout.status === query.status) : storePayouts;
+            const per_page = 20;
+            const last_page = Math.max(1, Math.ceil(filtered.length / per_page));
+            const current_page = Math.min(Math.max(1, Number(query.page ?? 1)), last_page);
+            const countBy = (status) => storePayouts.filter((payout) => payout.status === status).length;
+
+            return structuredClone({
+                data: filtered.slice((current_page - 1) * per_page, current_page * per_page).map((payout) => ({ ...payout, affiliate: affiliates.find((affiliate) => affiliate.affiliate_id === payout.affiliate_id) })),
+                meta: { current_page, per_page, total: filtered.length, last_page },
+                summary: { requested: countBy('requested'), paid: countBy('paid'), rejected: countBy('rejected') },
+            });
+        },
+    ],
+    ['GET', /^\/api\/v1\/vendor\/affiliates\/(\d+)\/payouts$/, ([id], _, query) => payoutsPage(findAffiliate(id).affiliate_id, query.page)],
+    [
+        'POST',
+        /^\/api\/v1\/vendor\/affiliates\/(\d+)\/payouts$/,
+        ([id], body) => {
+            const affiliate = findAffiliate(id);
+            const amount = Number(body.amount);
+
+            affiliate.status !== 'pending' || fail(422, 'بيانات غير صالحة', { amount: 'لا يمكن تسجيل دفعة لمسوق لم تتم الموافقة عليه بعد' });
+            assertWithinPendingBalance(affiliate, amount);
+
+            const fields = {
+                amount,
+                status: 'paid',
+                reference: body.reference || null,
+                note: body.note || null,
+                paid_at: body.paid_at ? new Date(body.paid_at).toISOString() : new Date().toISOString(),
+            };
+            const request = findOpenPayoutRequest(affiliate);
+
+            request ? Object.assign(request, fields) : db.payouts.push(buildPayout(affiliate, fields));
+            affiliate.stats.pending_balance = Math.round((affiliate.stats.pending_balance - amount) * 100) / 100;
+            affiliate.payout_request = null;
+
+            return structuredClone(affiliate);
+        },
+    ],
+    [
+        'POST',
+        /^\/api\/v1\/vendor\/affiliates\/(\d+)\/payouts\/(\d+)\/reject$/,
+        ([id, payoutId], body) => {
+            const affiliate = findAffiliate(id);
+            const payout = db.payouts.find((candidate) => candidate.payout_id === Number(payoutId) && candidate.affiliate_id === affiliate.affiliate_id) ?? fail(404, 'Not Found');
+
+            payout.status === 'requested' || fail(422, 'تمت معالجة هذا الطلب بالفعل', { payout: 'تمت معالجة هذا الطلب بالفعل' });
+            Object.assign(payout, { status: 'rejected', note: body.note || null, rejected_at: new Date().toISOString() });
+            affiliate.payout_request = null;
 
             return structuredClone(affiliate);
         },

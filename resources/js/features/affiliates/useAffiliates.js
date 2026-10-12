@@ -3,8 +3,8 @@ import { useSearchParams } from 'react-router-dom';
 import { useDebouncedValue } from '@/hooks/common';
 import { affiliatesApi } from '@/services/affiliatesApi';
 
-const FILTER_KEYS = ['search', 'tier', 'status', 'payout_method', 'page', 'per_page'];
-const DEFAULT_FILTERS = { search: '', tier: '', status: '', payout_method: '', page: 1, per_page: 10 };
+const FILTER_KEYS = ['search', 'tier', 'status', 'payout_method', 'payout_request', 'page', 'per_page'];
+const DEFAULT_FILTERS = { search: '', tier: '', status: '', payout_method: '', payout_request: '', page: 1, per_page: 10 };
 
 const initialState = {
     items: [],
@@ -50,8 +50,8 @@ export function useAffiliates() {
 
     // Only the debounced search hits the API; the raw value drives the input.
     const query = useMemo(
-        () => ({ search: debouncedSearch, tier: filters.tier, status: filters.status, payout_method: filters.payout_method, page: filters.page, per_page: filters.per_page }),
-        [debouncedSearch, filters.tier, filters.status, filters.payout_method, filters.page, filters.per_page],
+        () => ({ search: debouncedSearch, tier: filters.tier, status: filters.status, payout_method: filters.payout_method, payout_request: filters.payout_request, page: filters.page, per_page: filters.per_page }),
+        [debouncedSearch, filters.tier, filters.status, filters.payout_method, filters.payout_request, filters.page, filters.per_page],
     );
 
     const setFilters = useCallback(
@@ -78,7 +78,21 @@ export function useAffiliates() {
         [setSearchParams],
     );
 
-    const resetFilters = useCallback(() => setSearchParams({}, { replace: true }), [setSearchParams]);
+    const resetFilters = useCallback(
+        () =>
+            setSearchParams(
+                (previous) => {
+                    const next = new URLSearchParams();
+
+                    // The open profile isn't a filter; keep it.
+                    previous.has('affiliate') && next.set('affiliate', previous.get('affiliate'));
+
+                    return next;
+                },
+                { replace: true },
+            ),
+        [setSearchParams],
+    );
 
     const load = useCallback(async () => {
         const currentRequest = ++requestId.current;

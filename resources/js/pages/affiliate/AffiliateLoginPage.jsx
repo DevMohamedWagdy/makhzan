@@ -33,7 +33,7 @@ export function AffiliateLoginPage() {
     const { store, missing } = useStoreBySlug(storeSlug, 'دخول المسوقين');
     const [submitting, setSubmitting] = useState(false);
     const [formError, setFormError] = useState(null);
-    const { values, errors, bind, setField, validateFields } = useForm({ identifier: location.state?.identifier ?? '', password: '', remember: true }, schema);
+    const { values, errors, bind, setField, validateFields } = useForm({ identifier: location.state?.identifier ?? '', password: '', remember: false }, schema);
 
     if (isAuthenticated && !isImpersonating) {
         return <Navigate to="/affiliate" replace />;

@@ -3,18 +3,22 @@
 use App\Http\Controllers\Api\V1\Affiliate\Auth\AffiliateAuthController;
 use App\Http\Controllers\Api\V1\Affiliate\Auth\AffiliatePasswordController;
 use App\Http\Controllers\Api\V1\Affiliate\Auth\AffiliatePasswordResetController;
+use App\Http\Controllers\Api\V1\Affiliate\PayoutController;
 use App\Http\Controllers\Api\V1\Public\AffiliateRegistrationController;
 use App\Http\Controllers\Api\V1\Public\StoreController;
 use App\Http\Controllers\Api\V1\Vendor\AffiliateCommissionController;
 use App\Http\Controllers\Api\V1\Vendor\AffiliateController;
 use App\Http\Controllers\Api\V1\Vendor\AffiliateImpersonationController;
 use App\Http\Controllers\Api\V1\Vendor\AffiliateImportController;
+use App\Http\Controllers\Api\V1\Vendor\AffiliatePayoutController;
 use App\Http\Controllers\Api\V1\Vendor\AffiliateReferralCodeController;
 use App\Http\Controllers\Api\V1\Vendor\AffiliateRegistrationLinkController;
 use App\Http\Controllers\Api\V1\Vendor\AffiliateStatusController;
 use App\Http\Controllers\Api\V1\Vendor\AffiliateSummaryController;
 use App\Http\Controllers\Api\V1\Vendor\Auth\PasswordResetController;
 use App\Http\Controllers\Api\V1\Vendor\Auth\VendorAuthController;
+use App\Http\Controllers\Api\V1\Vendor\NotificationController;
+use App\Http\Controllers\Api\V1\Vendor\PayoutController as VendorPayoutController;
 use App\Http\Controllers\Api\V1\Vendor\StoreSlugAvailabilityController;
 use Illuminate\Support\Facades\Route;
 
@@ -51,11 +55,13 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::middleware(['auth:sanctum', 'affiliate'])->group(function () {
             Route::get('auth/me', [AffiliateAuthController::class, 'me'])->name('auth.me');
             Route::post('auth/logout', [AffiliateAuthController::class, 'logout'])->name('auth.logout');
+            Route::get('payouts', [PayoutController::class, 'index'])->name('payouts.index');
         });
 
         // The affiliate acting as themselves only — never through a vendor's impersonation token.
         Route::middleware(['auth:sanctum', 'affiliate:self'])->group(function () {
             Route::put('auth/password', [AffiliatePasswordController::class, 'update'])->name('auth.password');
+            Route::post('payouts', [PayoutController::class, 'store'])->middleware('throttle:10,1')->name('payouts.store');
         });
     });
 
@@ -77,6 +83,12 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::get('auth/me', [VendorAuthController::class, 'me'])->name('auth.me');
         Route::post('auth/logout', [VendorAuthController::class, 'logout'])->name('auth.logout');
 
+        Route::get('notifications', [NotificationController::class, 'index'])->name('notifications.index');
+        Route::post('notifications/read-all', [NotificationController::class, 'readAll'])->name('notifications.read-all');
+        Route::post('notifications/{notification}/read', [NotificationController::class, 'read'])->name('notifications.read');
+
+        Route::get('payouts', [VendorPayoutController::class, 'index'])->name('payouts.index');
+
         Route::prefix('affiliates')->name('affiliates.')->group(function () {
             Route::get('summary', AffiliateSummaryController::class)->name('summary');
             Route::post('import', AffiliateImportController::class)->middleware('throttle:10,1')->name('import');
@@ -88,6 +100,9 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
             Route::patch('{affiliate}/status', AffiliateStatusController::class)->name('status.update');
             Route::put('{affiliate}/commission', AffiliateCommissionController::class)->name('commission.update');
             Route::post('{affiliate}/referral-codes', [AffiliateReferralCodeController::class, 'store'])->name('referral-codes.store');
+            Route::get('{affiliate}/payouts', [AffiliatePayoutController::class, 'index'])->name('payouts.index');
+            Route::post('{affiliate}/payouts', [AffiliatePayoutController::class, 'store'])->name('payouts.store');
+            Route::post('{affiliate}/payouts/{payout}/reject', [AffiliatePayoutController::class, 'reject'])->scopeBindings()->name('payouts.reject');
             Route::post('{affiliate}/impersonate', [AffiliateImpersonationController::class, 'store'])->middleware('throttle:20,1')->name('impersonate');
         });
 

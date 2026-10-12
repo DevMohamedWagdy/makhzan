@@ -1,4 +1,4 @@
-import { Avatar, EmptyState } from '@/components/ui/Display';
+import { Avatar, Badge, EmptyState } from '@/components/ui/Display';
 import { Dropdown } from '@/components/ui/Dropdown';
 import { Icon } from '@/components/ui/Icon';
 import { Skeleton } from '@/components/ui/Spinner';
@@ -22,6 +22,7 @@ export function buildRowActions(affiliate, actions) {
         { label: 'عرض الملف', icon: 'eye', onClick: () => actions.view(affiliate) },
         { label: 'تعديل البيانات', icon: 'edit', onClick: () => actions.edit(affiliate) },
         { label: 'تخصيص عمولة استثنائية', icon: 'percent', onClick: () => actions.commission(affiliate) },
+        { label: affiliate.payout_request ? 'تأكيد طلب التحويل' : 'تسجيل دفعة عمولة', icon: 'wallet', onClick: () => actions.payout(affiliate), hidden: affiliate.stats.pending_balance <= 0 },
         { label: 'الدخول بصفة المسوق', icon: 'log-in', onClick: () => actions.impersonate(affiliate) },
         { divider: true },
         affiliate.status === 'frozen'
@@ -117,7 +118,14 @@ export function AffiliatesTable({ items, loading, error, perPage, actions, hasAc
                                     <span className="text-xs text-muted">{formatNumber(affiliate.stats.orders_count)} طلب</span>
                                 </td>
                                 <td className="px-4 py-3.5">
-                                    <StatusBadge status={affiliate.status} />
+                                    <div className="flex flex-col items-start gap-1">
+                                        <StatusBadge status={affiliate.status} />
+                                        {affiliate.payout_request && (
+                                            <Badge tone="warning" icon="send">
+                                                طلب تحويل
+                                            </Badge>
+                                        )}
+                                    </div>
                                 </td>
                                 <td className="px-4 py-3.5 text-xs whitespace-nowrap text-muted">{formatRelative(affiliate.last_active_at)}</td>
                                 {/* Actions stay pinned to the inline-end edge while the table scrolls horizontally. */}

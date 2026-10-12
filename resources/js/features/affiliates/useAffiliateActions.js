@@ -1,5 +1,7 @@
 import { useCallback, useState } from 'react';
+import { refreshDashboardAlerts } from '@/context/DashboardAlertsContext';
 import { useToast } from '@/context/ToastContext';
+import { formatMoney } from '@/lib/format';
 import { affiliatesApi } from '@/services/affiliatesApi';
 
 /**
@@ -18,6 +20,7 @@ export function useAffiliateActions({ onChanged, onRemoved }) {
                 const result = await action();
 
                 toast.success(successTitle, successDescription);
+                refreshDashboardAlerts();
 
                 return result;
             } catch (error) {
@@ -79,5 +82,23 @@ export function useAffiliateActions({ onChanged, onRemoved }) {
         [onChanged, run],
     );
 
-    return { pending, freeze, activate, remove, setCommission, createReferralCode };
+    const recordPayout = useCallback(
+        async (affiliate, payload) => {
+            const updated = await run('payout', () => affiliatesApi.recordPayout(affiliate.affiliate_id, payload), 'تم تسجيل التحويل', `خُصم ${formatMoney(payload.amount)} من رصيد ${affiliate.full_name}.`);
+
+            onChanged(updated);
+        },
+        [onChanged, run],
+    );
+
+    const rejectPayout = useCallback(
+        async (affiliate, note) => {
+            const updated = await run('reject-payout', () => affiliatesApi.rejectPayout(affiliate.affiliate_id, affiliate.payout_request.payout_id, note), 'تم رفض طلب التحويل');
+
+            onChanged(updated);
+        },
+        [onChanged, run],
+    );
+
+    return { pending, freeze, activate, remove, setCommission, createReferralCode, recordPayout, rejectPayout };
 }

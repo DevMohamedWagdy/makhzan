@@ -5,12 +5,16 @@ import { AFFILIATE_STATUSES, AFFILIATE_TIERS, PAYOUT_METHODS, PER_PAGE_OPTIONS }
 
 const toOptions = (map) => Object.entries(map).map(([value, config]) => ({ value, label: config.label }));
 
+/** Not a status: lists affiliates with an open commission transfer request. */
+export const PAYOUT_REQUEST_TAB = 'payout_request';
+
 export function AffiliateStatusTabs({ value, onChange, summary }) {
     const tabs = [
         { value: '', label: 'كل المسوقين', count: summary?.total },
         { value: 'active', label: AFFILIATE_STATUSES.active.label, count: summary?.active },
         { value: 'pending', label: AFFILIATE_STATUSES.pending.label, count: summary?.pending },
         { value: 'frozen', label: AFFILIATE_STATUSES.frozen.label, count: summary?.frozen },
+        { value: PAYOUT_REQUEST_TAB, label: 'طلبات تحويل', count: summary?.payout_requests },
     ];
 
     return <Tabs tabs={tabs} value={value} onChange={onChange} className="px-3" />;

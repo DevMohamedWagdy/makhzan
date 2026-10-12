@@ -18,6 +18,18 @@ export const affiliatesApi = {
     setCommission: (affiliateId, payload) => request('PUT', `${BASE}/${affiliateId}/commission`, { body: payload }),
 
     createReferralCode: (affiliateId) => request('POST', `${BASE}/${affiliateId}/referral-codes`),
+    /** Store-wide payouts with their affiliates: `{ data, meta, summary: { requested, paid, rejected } }`. @param {{ status?: 'requested'|'paid'|'rejected', page?: number }} query */
+    listStorePayouts: (query = {}) => request('GET', '/api/v1/vendor/payouts', { query }),
+
+    /** Payouts and transfer requests, newest first: { data, meta, summary: { total_paid } }. */
+    listPayouts: (affiliateId, page = 1) => request('GET', `${BASE}/${affiliateId}/payouts`, { query: { page } }),
+
+    /** Records a transfer already sent; fulfils the open request. Returns the affiliate. @param {{ amount: number, reference?: string, note?: string, paid_at?: string }} payload */
+    recordPayout: (affiliateId, payload) => request('POST', `${BASE}/${affiliateId}/payouts`, { body: payload }),
+
+    /** Declines an open transfer request. Returns the affiliate. */
+    rejectPayout: (affiliateId, payoutId, note = null) => request('POST', `${BASE}/${affiliateId}/payouts/${payoutId}/reject`, { body: { note } }),
+
     impersonate: (affiliateId) => request('POST', `${BASE}/${affiliateId}/impersonate`),
 
     /** Rows use the CSV template columns, each with its original `line` number for error reporting. */

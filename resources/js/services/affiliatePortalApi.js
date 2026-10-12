@@ -18,6 +18,12 @@ export const affiliatePortalApi = {
 
     logout: () => request('POST', '/api/v1/affiliate/auth/logout', { auth: 'affiliate' }),
 
+    /** Own payouts and transfer requests, newest first: { data, meta, summary: { total_paid } }. */
+    payouts: (page = 1) => request('GET', '/api/v1/affiliate/payouts', { query: { page }, auth: 'affiliate' }),
+
+    /** Asks the vendor to transfer commission. @param {{ amount: number, note?: string }} payload */
+    requestPayout: (payload) => request('POST', '/api/v1/affiliate/payouts', { body: payload, auth: 'affiliate' }),
+
     /** @param {{ current_password: string, password: string, password_confirmation: string }} payload */
     changePassword: (payload) => request('PUT', '/api/v1/affiliate/auth/password', { body: payload, auth: 'affiliate' }),
 };

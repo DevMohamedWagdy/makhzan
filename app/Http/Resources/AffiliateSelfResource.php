@@ -46,6 +46,7 @@ class AffiliateSelfResource extends JsonResource
                 'earned_commission' => $this->earned_commission,
                 'pending_balance' => $this->pending_balance,
             ],
+            'payout_request' => $this->pendingPayoutRequest ? new AffiliatePayoutResource($this->pendingPayoutRequest) : null,
             'store' => new PublicStoreResource($this->whenLoaded('store')),
             'joined_at' => $this->created_at?->toIso8601String(),
         ];

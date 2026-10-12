@@ -6,13 +6,18 @@ import { Dropdown } from '@/components/ui/Dropdown';
 import { Icon } from '@/components/ui/Icon';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { useAuth } from '@/context/AuthContext';
+import { DashboardAlertsProvider, useDashboardAlerts } from '@/context/DashboardAlertsContext';
+import { NotificationsMenu } from '@/features/notifications/NotificationsMenu';
 import { APP_DOMAIN } from '@/lib/constants';
 import { cn } from '@/lib/format';
 
 const NAV_SECTIONS = [
     {
         title: 'الرئيسية',
-        items: [{ label: 'لوحة التحكم', icon: 'grid', to: '/dashboard', soon: true }],
+        items: [
+            { label: 'لوحة التحكم', icon: 'grid', to: '/dashboard', soon: true },
+            { label: 'الإشعارات', icon: 'bell', to: '/dashboard/notifications', counter: 'unreadCount' },
+        ],
     },
     {
         title: 'التجارة',
@@ -27,6 +32,7 @@ const NAV_SECTIONS = [
         title: 'التسويق',
         items: [
             { label: 'المسوقين', icon: 'users', to: '/dashboard/affiliates' },
+            { label: 'طلبات التحويل', icon: 'send', to: '/dashboard/payout-requests', counter: 'payoutRequestsCount' },
             { label: 'الكوبونات', icon: 'gift', soon: true },
             { label: 'الحملات', icon: 'megaphone', soon: true },
         ],
@@ -42,6 +48,7 @@ const NAV_SECTIONS = [
 
 function Sidebar({ open, onClose }) {
     const { store } = useAuth();
+    const alerts = useDashboardAlerts();
 
     return (
         <>
@@ -100,6 +107,11 @@ function Sidebar({ open, onClose }) {
                                             >
                                                 <Icon name={item.icon} className="size-[18px]" />
                                                 {item.label}
+                                                {item.counter && alerts[item.counter] > 0 && (
+                                                    <span className="ms-auto grid h-5 min-w-5 place-items-center rounded-full bg-danger px-1.5 text-[11px] font-bold text-white">
+                                                        {alerts[item.counter] > 99 ? '99+' : alerts[item.counter]}
+                                                    </span>
+                                                )}
                                             </NavLink>
                                         </li>
                                     ),
@@ -146,7 +158,16 @@ export function ImpersonationBanner() {
     );
 }
 
+/** The vendor dashboard: sidebar, header and the page. Counters are shared through DashboardAlertsProvider. */
 export function DashboardLayout() {
+    return (
+        <DashboardAlertsProvider>
+            <DashboardShell />
+        </DashboardAlertsProvider>
+    );
+}
+
+function DashboardShell() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const { vendor, logout } = useAuth();
     const navigate = useNavigate();
@@ -169,10 +190,7 @@ export function DashboardLayout() {
                     </div>
                     <div className="ms-auto flex items-center gap-2">
                         <ThemeToggle />
-                        <button type="button" className="relative grid size-10 place-items-center rounded-xl border border-line text-ink-2 hover:text-ink" aria-label="الإشعارات" title="الإشعارات">
-                            <Icon name="bell" />
-                            <span className="absolute top-2 end-2.5 size-2 rounded-full bg-danger ring-2 ring-surface" />
-                        </button>
+                        <NotificationsMenu />
                         <Dropdown
                             label="قائمة الحساب"
                             trigger={(props) => (

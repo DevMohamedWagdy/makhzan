@@ -93,6 +93,19 @@ class AffiliateRegistrationControllerTest extends TestCase
         $this->assertSame(0, $affiliate->referralCodes()->count());
     }
 
+    public function test_register_notifies_the_store_vendor_on_the_dashboard(): void
+    {
+        $link = AffiliateRegistrationLink::factory()->create(['auto_approve' => false]);
+
+        $affiliateId = $this->postJson($this->url($link), $this->payload())->assertCreated()->json('affiliate_id');
+
+        $notification = $link->store->vendor->notifications()->sole();
+        $this->assertSame('affiliate_registered', $notification->type);
+        $this->assertSame($affiliateId, $notification->data['affiliate_id']);
+        $this->assertTrue($notification->data['requires_approval']);
+        $this->assertSame('سارة محمود إبراهيم أرسل طلب انضمام لفريق المسوقين وينتظر موافقتك', $notification->data['message']);
+    }
+
     public function test_register_with_auto_approve_creates_active_affiliate_and_returns_referral_link(): void
     {
         $link = AffiliateRegistrationLink::factory()->create(['auto_approve' => true]);

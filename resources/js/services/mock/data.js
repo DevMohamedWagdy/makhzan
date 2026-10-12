@@ -121,6 +121,7 @@ function buildAffiliate(index) {
             earned_commission: Math.round((salesTotal * rate) / 100),
             pending_balance: status === 'active' ? between(0, 2400) : 0,
         },
+        payout_request: null,
         source: status === 'pending' ? 'self_registration' : pick(['manual', 'manual', 'self_registration', 'bulk_import']),
         frozen_reason: status === 'frozen' ? 'مخالفة سياسة الإعلانات الممولة' : null,
         joined_at: daysAgo(status === 'pending' ? between(0, 4) : between(10, 220)),

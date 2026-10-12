@@ -28,7 +28,7 @@ export function LoginPage() {
     const location = useLocation();
     const [submitting, setSubmitting] = useState(false);
     const [formError, setFormError] = useState(null);
-    const { values, errors, bind, setValues, setField, validateFields } = useForm({ identifier: location.state?.identifier ?? '', password: '', remember: true }, schema);
+    const { values, errors, bind, setValues, setField, validateFields } = useForm({ identifier: location.state?.identifier ?? '', password: '', remember: false }, schema);
 
     const onSubmit = async (event) => {
         event.preventDefault();

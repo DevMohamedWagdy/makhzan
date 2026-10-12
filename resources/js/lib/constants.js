@@ -16,6 +16,13 @@ export const AFFILIATE_STATUSES = {
     pending: { label: 'بانتظار المراجعة', tone: 'warning' },
 };
 
+/** @type {Record<'requested' | 'paid' | 'rejected', { label: string, tone: string, icon: string }>} */
+export const PAYOUT_STATUSES = {
+    requested: { label: 'قيد المراجعة', tone: 'warning', icon: 'refresh' },
+    paid: { label: 'تم التحويل', tone: 'success', icon: 'check-circle' },
+    rejected: { label: 'مرفوض', tone: 'danger', icon: 'x' },
+};
+
 /** @type {Record<import('./schema').PayoutMethodType, { label: string, numberLabel: string, numberPlaceholder: string, needsBank: boolean }>} */
 export const PAYOUT_METHODS = {
     vodafone_cash: {

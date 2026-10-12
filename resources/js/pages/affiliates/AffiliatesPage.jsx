@@ -1,5 +1,5 @@
-import { useCallback, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { PageHeader } from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/Button';
 import { StatCard } from '@/components/ui/Display';
@@ -9,16 +9,18 @@ import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
 import { AddAffiliateDrawer } from '@/features/affiliates/AddAffiliateDrawer';
 import { DeleteDialog, FreezeDialog, ImpersonateDialog } from '@/features/affiliates/AffiliateActionDialogs';
-import { AffiliateFilters, AffiliateStatusTabs } from '@/features/affiliates/AffiliateFilters';
+import { AffiliateFilters, AffiliateStatusTabs, PAYOUT_REQUEST_TAB } from '@/features/affiliates/AffiliateFilters';
 import { AffiliateForm } from '@/features/affiliates/AffiliateForm';
 import { AffiliateProfileDrawer } from '@/features/affiliates/AffiliateProfileDrawer';
 import { AffiliatesTable } from '@/features/affiliates/AffiliatesTable';
 import { CommissionModal } from '@/features/affiliates/CommissionModal';
+import { RecordPayoutModal, RejectPayoutDialog } from '@/features/affiliates/PayoutModals';
 import { useAffiliateActions } from '@/features/affiliates/useAffiliateActions';
 import { useAffiliates } from '@/features/affiliates/useAffiliates';
 import { formatMoney, formatNumber } from '@/lib/format';
+import { affiliatesApi } from '@/services/affiliatesApi';
 
-/** @typedef {'add' | 'edit' | 'commission' | 'freeze' | 'delete' | 'reject' | 'impersonate'} DialogType */
+/** @typedef {'add' | 'edit' | 'commission' | 'payout' | 'reject-payout' | 'freeze' | 'delete' | 'reject' | 'impersonate'} DialogType */
 
 export function AffiliatesPage() {
     const { store, impersonate } = useAuth();
@@ -32,6 +34,36 @@ export function AffiliatesPage() {
     const [impersonating, setImpersonating] = useState(false);
 
     const closeDialog = useCallback(() => setDialog(null), []);
+
+    // Notifications and the payout requests page link here with ?affiliate={id} to open a profile.
+    const [searchParams, setSearchParams] = useSearchParams();
+    const linkedAffiliateId = searchParams.get('affiliate');
+
+    useEffect(() => {
+        if (linkedAffiliateId) {
+            affiliatesApi
+                .get(linkedAffiliateId)
+                .then(setProfile)
+                .catch((error) => toast.error('تعذر فتح ملف المسوق', error.message));
+        }
+    }, [linkedAffiliateId, toast]);
+
+    const closeProfile = () => {
+        setProfile(null);
+
+        if (linkedAffiliateId) {
+            setSearchParams(
+                (previous) => {
+                    const next = new URLSearchParams(previous);
+
+                    next.delete('affiliate');
+
+                    return next;
+                },
+                { replace: true },
+            );
+        }
+    };
 
     const onChanged = useCallback(
         (updated) => {
@@ -60,6 +92,8 @@ export function AffiliatesPage() {
             view: (affiliate) => setProfile(affiliate),
             edit: (affiliate) => setDialog({ type: 'edit', affiliate }),
             commission: (affiliate) => setDialog({ type: 'commission', affiliate }),
+            payout: (affiliate) => setDialog({ type: 'payout', affiliate }),
+            rejectPayout: (affiliate) => setDialog({ type: 'reject-payout', affiliate }),
             freeze: (affiliate) => setDialog({ type: 'freeze', affiliate }),
             remove: (affiliate) => setDialog({ type: 'delete', affiliate }),
             reject: (affiliate) => setDialog({ type: 'reject', affiliate }),
@@ -110,12 +144,16 @@ export function AffiliatesPage() {
                 <StatCard label="إجمالي المسوقين" value={summary ? formatNumber(summary.total) : '—'} icon="users" tone="primary" hint={summary && `${formatNumber(summary.pending)} بانتظار المراجعة`} />
                 <StatCard label="المسوقون النشطون" value={summary ? formatNumber(summary.active) : '—'} icon="check-circle" tone="success" hint={summary && `${formatNumber(summary.frozen)} حساب مجمد`} />
                 <StatCard label="مبيعات المسوقين" value={summary ? formatMoney(summary.sales_total) : '—'} icon="bar-chart" tone="info" hint="منذ بداية التعامل" />
-                <StatCard label="العمولات المكتسبة" value={summary ? formatMoney(summary.earned_commission) : '—'} icon="wallet" tone="warning" hint="إجمالي المستحق للمسوقين" />
+                <StatCard label="العمولات المكتسبة" value={summary ? formatMoney(summary.earned_commission) : '—'} icon="wallet" tone="warning" hint={summary?.payout_requests ? `${formatNumber(summary.payout_requests)} طلب تحويل بانتظارك` : 'إجمالي المستحق للمسوقين'} />
             </div>
 
             <section className="mk-card overflow-hidden">
                 <div className="pt-1">
-                    <AffiliateStatusTabs value={list.filters.status} onChange={(status) => list.setFilters({ status })} summary={summary} />
+                    <AffiliateStatusTabs
+                        value={list.filters.payout_request ? PAYOUT_REQUEST_TAB : list.filters.status}
+                        onChange={(tab) => list.setFilters(tab === PAYOUT_REQUEST_TAB ? { status: '', payout_request: '1' } : { status: tab, payout_request: '' })}
+                        summary={summary}
+                    />
                 </div>
                 <AffiliateFilters filters={list.filters} onChange={list.setFilters} onReset={list.resetFilters} hasActiveFilters={list.hasActiveFilters} />
                 <AffiliatesTable
@@ -136,7 +174,7 @@ export function AffiliatesPage() {
                 )}
             </section>
 
-            <AffiliateProfileDrawer key={profile?.affiliate_id} affiliate={profile} open={Boolean(profile)} onClose={() => setProfile(null)} actions={actions} creatingCode={affiliateActions.pending === 'referral'} />
+            <AffiliateProfileDrawer key={profile?.affiliate_id} affiliate={profile} open={Boolean(profile)} onClose={closeProfile} actions={actions} creatingCode={affiliateActions.pending === 'referral'} />
 
             <AddAffiliateDrawer
                 open={dialog?.type === 'add'}
@@ -165,6 +203,22 @@ export function AffiliatesPage() {
                 onClose={closeDialog}
                 saving={affiliateActions.pending === 'commission'}
                 onSave={(payload) => affiliateActions.setCommission(target, payload).catch(swallow)}
+            />
+
+            <RecordPayoutModal
+                affiliate={target}
+                open={dialog?.type === 'payout'}
+                onClose={closeDialog}
+                saving={affiliateActions.pending === 'payout'}
+                onSave={(payload) => affiliateActions.recordPayout(target, payload).catch(swallow)}
+            />
+
+            <RejectPayoutDialog
+                affiliate={target}
+                open={dialog?.type === 'reject-payout'}
+                onClose={closeDialog}
+                loading={affiliateActions.pending === 'reject-payout'}
+                onConfirm={(note) => affiliateActions.rejectPayout(target, note).catch(swallow)}
             />
 
             <FreezeDialog affiliate={target} open={dialog?.type === 'freeze'} onClose={closeDialog} loading={affiliateActions.pending === 'freeze'} onConfirm={(reason) => affiliateActions.freeze(target, reason).catch(swallow)} />

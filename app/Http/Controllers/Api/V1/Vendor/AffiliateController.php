@@ -31,6 +31,7 @@ class AffiliateController extends Controller
             ->when($filters['tier'] ?? null, fn ($query, $tier) => $query->where('tier', $tier))
             ->when($filters['status'] ?? null, fn ($query, $status) => $query->where('status', $status))
             ->when($filters['payout_method'] ?? null, fn ($query, $method) => $query->where('payout_type', $method))
+            ->when($request->boolean('payout_request'), fn ($query) => $query->has('pendingPayoutRequest'))
             ->latest()
             ->latest('id')
             ->paginate($filters['per_page'] ?? 10)
