@@ -149,7 +149,7 @@ export function Switch({ checked, onChange, label, description, disabled, id }) 
 /** Segmented radio cards, e.g. tier or payout selection. */
 export function OptionCards({ options, value, onChange, columns = 3, name }) {
     return (
-        <div role="radiogroup" className={cn('grid gap-2.5', columns === 2 ? 'grid-cols-2' : columns === 4 ? 'grid-cols-2 sm:grid-cols-4' : 'grid-cols-1 sm:grid-cols-3')}>
+        <div role="radiogroup" className={cn('grid gap-2.5', columns === 1 ? 'grid-cols-1' : columns === 2 ? 'grid-cols-2' : columns === 4 ? 'grid-cols-2 sm:grid-cols-4' : 'grid-cols-1 sm:grid-cols-3')}>
             {options.map((option) => {
                 const selected = option.value === value;
 

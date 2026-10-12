@@ -22,7 +22,8 @@ const NAV_SECTIONS = [
     {
         title: 'التجارة',
         items: [
-            { label: 'المنتجات', icon: 'box', soon: true },
+            { label: 'الأقسام', icon: 'grid', to: '/dashboard/categories' },
+            { label: 'المنتجات', icon: 'box', to: '/dashboard/products' },
             { label: 'المخزون', icon: 'warehouse', soon: true },
             { label: 'الطلبات', icon: 'shopping-bag', soon: true },
             { label: 'الشحن', icon: 'truck', soon: true },

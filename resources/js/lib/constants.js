@@ -16,6 +16,19 @@ export const AFFILIATE_STATUSES = {
     pending: { label: 'بانتظار المراجعة', tone: 'warning' },
 };
 
+/** @type {Record<'draft' | 'active' | 'archived', { label: string, tone: string, description: string }>} */
+export const PRODUCT_STATUSES = {
+    active: { label: 'منشور', tone: 'success', description: 'ظاهر في المتجر ومتاح للشراء' },
+    draft: { label: 'مسودة', tone: 'neutral', description: 'مخفي من المتجر لحين اكتماله' },
+    archived: { label: 'مؤرشف', tone: 'warning', description: 'متوقف عن البيع ومحفوظ في السجلات' },
+};
+
+/** @type {Record<'in' | 'low' | 'out', string>} */
+export const STOCK_LEVELS = { in: 'متوفر', low: 'مخزون منخفض', out: 'نفد المخزون' };
+
+/** Common option names offered as suggestions in the product form. */
+export const OPTION_SUGGESTIONS = ['المقاس', 'اللون', 'الخامة', 'الوزن'];
+
 /** @type {Record<'requested' | 'paid' | 'rejected', { label: string, tone: string, icon: string }>} */
 export const PAYOUT_STATUSES = {
     requested: { label: 'قيد المراجعة', tone: 'warning', icon: 'refresh' },

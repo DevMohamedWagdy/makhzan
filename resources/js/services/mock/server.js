@@ -19,6 +19,12 @@ const db = {
     nextPayoutId: 1,
     /** Vendor dashboard notifications, newest first. */
     notifications: [],
+    categories: [],
+    products: [],
+    nextCategoryId: 1,
+    nextProductId: 1,
+    nextVariantId: 1,
+    nextImageId: 1,
     nextVendorId: 1025,
     nextStoreId: 3052,
     nextAffiliateId: 5001 + MOCK_AFFILIATES.length,
@@ -213,6 +219,101 @@ function vendorNotifications() {
     const { vendor_id } = currentVendor();
 
     return db.notifications.filter((notification) => notification.vendor_id === vendor_id);
+}
+
+const LOW_STOCK_THRESHOLD = 5;
+
+function storeCategories() {
+    const { store_id } = currentVendor().store;
+
+    return db.categories.filter((category) => category.store_id === store_id).sort((a, b) => a.position - b.position || a.category_id - b.category_id);
+}
+
+function storeProducts() {
+    const { store_id } = currentVendor().store;
+
+    return db.products.filter((product) => product.store_id === store_id);
+}
+
+const findCategory = (id) => storeCategories().find((category) => category.category_id === Number(id)) ?? fail(404, 'القسم غير موجود');
+const findProduct = (id) => storeProducts().find((product) => product.product_id === Number(id)) ?? fail(404, 'المنتج غير موجود');
+const productStock = (product) => product.variants.reduce((sum, variant) => sum + variant.stock, 0);
+const mockSlug = (name, id) => `${name.trim().replace(/\s+/g, '-').toLowerCase()}-${id}`;
+
+/** Same shape as ProductResource. */
+function productView(product) {
+    const cheapest = [...product.variants].sort((a, b) => a.price - b.price)[0];
+    const category = db.categories.find((candidate) => candidate.category_id === product.category_id);
+
+    return structuredClone({
+        ...product,
+        category: category ? { category_id: category.category_id, name: category.name } : null,
+        variants: product.variants.map((variant) => ({ ...variant, title: variant.option_values.join(' / ') })),
+        image_url: product.images[0]?.url ?? null,
+        price: cheapest?.price ?? null,
+        price_max: Math.max(...product.variants.map((variant) => variant.price)),
+        compare_at_price: cheapest?.compare_at_price ?? null,
+        stock_total: productStock(product),
+    });
+}
+
+/** Mirrors the main SaveProductRequest checks the UI relies on. */
+function saveProduct(body, product = null) {
+    storeCategories().some((category) => category.category_id === Number(body.category_id)) || fail(422, 'بيانات غير صالحة', { category_id: 'اختر القسم' });
+    body.name?.trim() || fail(422, 'بيانات غير صالحة', { name: 'أدخل اسم المنتج' });
+
+    const now = new Date().toISOString();
+    const record = product ?? { product_id: db.nextProductId++, store_id: currentVendor().store.store_id, images: [], created_at: now };
+
+    Object.assign(record, {
+        category_id: Number(body.category_id),
+        name: body.name.trim(),
+        slug: record.slug ?? mockSlug(body.name, record.product_id),
+        description: body.description || null,
+        status: body.status,
+        is_featured: Boolean(body.is_featured),
+        options: body.options ?? [],
+        variants: body.variants.map((variant) => ({
+            variant_id: variant.id ?? db.nextVariantId++,
+            option_values: variant.option_values,
+            sku: variant.sku || null,
+            price: Number(variant.price),
+            compare_at_price: variant.compare_at_price ? Number(variant.compare_at_price) : null,
+            stock: Number(variant.stock),
+        })),
+        updated_at: now,
+    });
+
+    product || db.products.unshift(record);
+
+    return productView(record);
+}
+
+function categoryView(category) {
+    return structuredClone({ ...category, products_count: db.products.filter((product) => product.category_id === category.category_id).length });
+}
+
+function saveCategory(body, category = null) {
+    const name = body.name?.trim() || fail(422, 'بيانات غير صالحة', { name: 'أدخل اسم القسم' });
+
+    storeCategories().some((other) => other.name === name && other !== category) && fail(422, 'بيانات غير صالحة', { name: 'يوجد قسم بنفس الاسم بالفعل' });
+
+    const { store_id } = currentVendor().store;
+    const record = category ?? { category_id: db.nextCategoryId++, store_id, position: storeCategories().length, is_active: true, image_url: null };
+
+    Object.assign(record, {
+        name,
+        slug: record.slug ?? mockSlug(name, record.category_id),
+        description: body.description ?? record.description ?? null,
+        ...(body.is_active !== undefined && { is_active: Boolean(body.is_active) }),
+        ...(body.position !== undefined && { position: Number(body.position) }),
+        ...(body.image instanceof Blob && { image_url: URL.createObjectURL(body.image) }),
+        ...(body.remove_image && { image_url: null }),
+    });
+
+    category || db.categories.push(record);
+
+    return categoryView(record);
 }
 
 function findOpenPayoutRequest(affiliate) {
@@ -688,6 +789,111 @@ const routes = [
             return structuredClone(affiliate);
         },
     ],
+    /* ---------------------------- Catalog ---------------------------- */
+    ['GET', /^\/api\/v1\/vendor\/product-categories$/, () => storeCategories().map(categoryView)],
+    ['POST', /^\/api\/v1\/vendor\/product-categories$/, (_, body) => saveCategory(body)],
+    ['PUT', /^\/api\/v1\/vendor\/product-categories\/(\d+)$/, ([id], body) => saveCategory(body, findCategory(id))],
+    [
+        'DELETE',
+        /^\/api\/v1\/vendor\/product-categories\/(\d+)$/,
+        ([id]) => {
+            const category = findCategory(id);
+
+            db.products.some((product) => product.category_id === category.category_id) && fail(422, 'بيانات غير صالحة', { category: 'لا يمكن حذف قسم به منتجات، انقل منتجاته لقسم آخر أولاً' });
+            db.categories = db.categories.filter((candidate) => candidate !== category);
+
+            return {};
+        },
+    ],
+    [
+        'GET',
+        /^\/api\/v1\/vendor\/products\/summary$/,
+        () => {
+            const products = storeProducts();
+            const countBy = (status) => products.filter((product) => product.status === status).length;
+
+            return {
+                total: products.length,
+                active: countBy('active'),
+                draft: countBy('draft'),
+                archived: countBy('archived'),
+                out_of_stock: products.filter((product) => productStock(product) === 0).length,
+                low_stock: products.filter((product) => productStock(product) > 0 && productStock(product) <= LOW_STOCK_THRESHOLD).length,
+                low_stock_threshold: LOW_STOCK_THRESHOLD,
+            };
+        },
+    ],
+    [
+        'GET',
+        /^\/api\/v1\/vendor\/products$/,
+        (_, __, query) => {
+            const search = (query.search ?? '').trim().toLowerCase();
+            const stockMatches = (product) => {
+                const stock = productStock(product);
+
+                return !query.stock || (query.stock === 'out' ? stock === 0 : query.stock === 'low' ? stock > 0 && stock <= LOW_STOCK_THRESHOLD : stock > LOW_STOCK_THRESHOLD);
+            };
+            const filtered = storeProducts()
+                .filter((product) => !query.status || product.status === query.status)
+                .filter((product) => !query.category_id || product.category_id === Number(query.category_id))
+                .filter(stockMatches)
+                .filter((product) => !search || product.name.toLowerCase().includes(search) || product.variants.some((variant) => variant.sku?.toLowerCase().includes(search)));
+            const per_page = Number(query.per_page ?? 10);
+            const last_page = Math.max(1, Math.ceil(filtered.length / per_page));
+            const current_page = Math.min(Math.max(1, Number(query.page ?? 1)), last_page);
+
+            return { data: filtered.slice((current_page - 1) * per_page, current_page * per_page).map(productView), meta: { current_page, per_page, total: filtered.length, last_page } };
+        },
+    ],
+    ['GET', /^\/api\/v1\/vendor\/products\/(\d+)$/, ([id]) => productView(findProduct(id))],
+    ['POST', /^\/api\/v1\/vendor\/products$/, (_, body) => saveProduct(body)],
+    ['PUT', /^\/api\/v1\/vendor\/products\/(\d+)$/, ([id], body) => saveProduct(body, findProduct(id))],
+    [
+        'DELETE',
+        /^\/api\/v1\/vendor\/products\/(\d+)$/,
+        ([id]) => {
+            const product = findProduct(id);
+
+            db.products = db.products.filter((candidate) => candidate !== product);
+
+            return {};
+        },
+    ],
+    [
+        'POST',
+        /^\/api\/v1\/vendor\/products\/(\d+)\/images$/,
+        ([id], body) => {
+            const product = findProduct(id);
+
+            product.images.length + body.images.length <= 10 || fail(422, 'بيانات غير صالحة', { images: 'الحد الأقصى 10 صور للمنتج' });
+            body.images.forEach((file) => product.images.push({ image_id: db.nextImageId++, url: URL.createObjectURL(file) }));
+
+            return structuredClone(product.images);
+        },
+    ],
+    [
+        'PUT',
+        /^\/api\/v1\/vendor\/products\/(\d+)\/images\/order$/,
+        ([id], body) => {
+            const product = findProduct(id);
+
+            product.images = body.image_ids.map((imageId) => product.images.find((image) => image.image_id === imageId)).filter(Boolean);
+
+            return structuredClone(product.images);
+        },
+    ],
+    [
+        'DELETE',
+        /^\/api\/v1\/vendor\/products\/(\d+)\/images\/(\d+)$/,
+        ([id, imageId]) => {
+            const product = findProduct(id);
+
+            product.images = product.images.filter((image) => image.image_id !== Number(imageId));
+
+            return {};
+        },
+    ],
+
     /* ---------------------- Notifications & payouts ---------------------- */
     [
         'GET',

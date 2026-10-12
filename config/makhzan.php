@@ -75,4 +75,17 @@ return [
         'import_max_rows' => 1000,
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Products
+    |--------------------------------------------------------------------------
+    */
+
+    'products' => [
+        // Total stock at or below this (but above zero) counts as "low stock".
+        'low_stock_threshold' => 5,
+        'max_images' => 10,
+        'max_variants' => 100,
+    ],
+
 ];

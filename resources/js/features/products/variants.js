@@ -1,0 +1,185 @@
+/**
+ * Product options/variants form state:
+ * {
+ *   hasOptions: boolean,
+ *   options: Array<{ name: string, values: string[] }>,
+ *   rows: Record<comboKey, { id?: number, price: string, compare_at_price: string, sku: string, stock: string, enabled: boolean }>,
+ *   simple: { id?: number, price: string, compare_at_price: string, sku: string, stock: string },
+ * }
+ * Rows are keyed by option combination so price/stock survive edits to the options.
+ */
+
+const SEPARATOR = '\u0001';
+
+export const comboKey = (values) => values.join(SEPARATOR);
+
+const blankRow = (defaults = {}) => ({ price: '', compare_at_price: '', sku: '', stock: '0', enabled: true, ...defaults });
+
+const toField = (value) => (value === null || value === undefined ? '' : String(value));
+
+/** Every combination of the options' values, in option order: [['أحمر','S'], ['أحمر','M'], ...]. */
+export function combinations(options) {
+    const usable = options.filter((option) => option.values.length > 0);
+
+    if (usable.length === 0) {
+        return [];
+    }
+
+    return usable.reduce((result, option) => result.flatMap((prefix) => option.values.map((value) => [...prefix, value])), [[]]);
+}
+
+export function emptyVariantsState() {
+    return { hasOptions: false, options: [], rows: {}, simple: blankRow() };
+}
+
+export function variantsStateFromProduct(product) {
+    if (!product) {
+        return emptyVariantsState();
+    }
+
+    const toRow = (variant) => ({
+        id: variant.variant_id,
+        price: toField(variant.price),
+        compare_at_price: toField(variant.compare_at_price),
+        sku: toField(variant.sku),
+        stock: toField(variant.stock),
+        enabled: true,
+    });
+
+    if (product.options.length === 0) {
+        return { ...emptyVariantsState(), simple: toRow(product.variants[0]) };
+    }
+
+    const rows = Object.fromEntries(product.variants.map((variant) => [comboKey(variant.option_values), toRow(variant)]));
+
+    // Combinations the vendor left out when saving show up as disabled rows.
+    combinations(product.options).forEach((values) => {
+        rows[comboKey(values)] ??= blankRow({ enabled: false });
+    });
+
+    return { hasOptions: true, options: product.options.map((option) => ({ name: option.name, values: [...option.values] })), rows, simple: blankRow() };
+}
+
+/** Fills rows for new combinations, defaulting their price to the first existing price. */
+export function syncRows(state) {
+    const defaultPrice = Object.values(state.rows).find((row) => row.price !== '')?.price ?? state.simple.price ?? '';
+    const rows = { ...state.rows };
+
+    combinations(state.options).forEach((values) => {
+        rows[comboKey(values)] ??= blankRow({ price: defaultPrice });
+    });
+
+    return { ...state, rows };
+}
+
+const numberOrNull = (value) => (value === '' || value === null ? null : Number(value));
+
+/**
+ * @returns {{ options: Array<{ name: string, values: string[] }>, variants: object[], keys: string[] }}
+ *   `keys[i]` is the row key of `variants[i]`, to map server errors (variants.i.price) back to rows.
+ */
+export function buildVariantsPayload(state) {
+    const toVariant = (row, optionValues) => ({
+        ...(row.id && { id: row.id }),
+        option_values: optionValues,
+        price: numberOrNull(row.price),
+        compare_at_price: numberOrNull(row.compare_at_price),
+        sku: row.sku.trim() || null,
+        stock: numberOrNull(row.stock) ?? 0,
+    });
+
+    if (!state.hasOptions) {
+        return { options: [], variants: [toVariant(state.simple, [])], keys: ['simple'] };
+    }
+
+    const options = state.options.map((option) => ({ name: option.name.trim(), values: option.values }));
+    const enabled = combinations(options).filter((values) => state.rows[comboKey(values)]?.enabled);
+
+    return { options, variants: enabled.map((values) => toVariant(state.rows[comboKey(values)], values)), keys: enabled.map(comboKey) };
+}
+
+function rowErrors(row) {
+    const errors = {};
+    const price = Number(row.price);
+
+    if (row.price === '' || Number.isNaN(price) || price < 0) {
+        errors.price = 'أدخل السعر';
+    }
+
+    if (row.compare_at_price !== '' && !(Number(row.compare_at_price) > price)) {
+        errors.compare_at_price = 'يجب أن يكون أكبر من السعر';
+    }
+
+    if (row.stock === '' || !Number.isInteger(Number(row.stock)) || Number(row.stock) < 0) {
+        errors.stock = 'أدخل كمية صحيحة';
+    }
+
+    return errors;
+}
+
+/**
+ * Client-side checks mirroring SaveProductRequest.
+ * @returns {Record<string, string>}  keys: "options", "options.{i}.name", "options.{i}.values", "simple.{field}", "rows.{key}.{field}"
+ */
+export function validateVariants(state) {
+    const errors = {};
+    const addRowErrors = (prefix, row) => Object.entries(rowErrors(row)).forEach(([field, message]) => (errors[`${prefix}.${field}`] = message));
+
+    if (!state.hasOptions) {
+        addRowErrors('simple', state.simple);
+
+        return errors;
+    }
+
+    if (state.options.length === 0) {
+        errors.options = 'أضف خياراً واحداً على الأقل، أو أوقف خيار المقاسات والألوان';
+    }
+
+    const names = state.options.map((option) => option.name.trim().toLowerCase());
+
+    state.options.forEach((option, index) => {
+        if (!option.name.trim()) {
+            errors[`options.${index}.name`] = 'أدخل اسم الخيار';
+        } else if (names.indexOf(option.name.trim().toLowerCase()) !== index) {
+            errors[`options.${index}.name`] = 'اسم الخيار مكرر';
+        }
+
+        if (option.values.length === 0) {
+            errors[`options.${index}.values`] = 'أضف قيمة واحدة على الأقل';
+        }
+    });
+
+    const enabled = combinations(state.options).filter((values) => state.rows[comboKey(values)]?.enabled);
+
+    if (state.options.length > 0 && enabled.length === 0 && !Object.keys(errors).some((key) => key.startsWith('options.'))) {
+        errors.options = 'فعّل تركيبة واحدة على الأقل';
+    }
+
+    enabled.forEach((values) => addRowErrors(`rows.${comboKey(values)}`, state.rows[comboKey(values)]));
+
+    return errors;
+}
+
+/** Maps server keys (variants.2.price, options.0.values) onto the form's error keys. */
+export function mapVariantServerErrors(serverErrors, keys) {
+    const mapped = {};
+
+    Object.entries(serverErrors).forEach(([key, message]) => {
+        const match = key.match(/^variants\.(\d+)\.(\w+)/);
+
+        if (match) {
+            const rowKey = keys[Number(match[1])];
+            const field = match[2] === 'option_values' ? 'price' : match[2];
+
+            mapped[rowKey === 'simple' ? `simple.${field}` : `rows.${rowKey}.${field}`] = message;
+        } else if (key === 'variants') {
+            mapped.options = message;
+        } else if (key.startsWith('options')) {
+            mapped[key.replace(/\.values\.\d+$/, '.values')] = message;
+        } else {
+            mapped[key] = message;
+        }
+    });
+
+    return mapped;
+}

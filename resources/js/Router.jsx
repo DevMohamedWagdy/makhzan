@@ -12,7 +12,10 @@ import { AffiliateForgotPasswordPage } from '@/pages/affiliate/AffiliateForgotPa
 import { AffiliateLoginPage } from '@/pages/affiliate/AffiliateLoginPage';
 import { AffiliateResetPasswordPage } from '@/pages/affiliate/AffiliateResetPasswordPage';
 import { AffiliatesPage } from '@/pages/affiliates/AffiliatesPage';
+import { CategoriesPage } from '@/pages/categories/CategoriesPage';
 import { NotificationsPage } from '@/pages/notifications/NotificationsPage';
+import { ProductFormPage } from '@/pages/products/ProductFormPage';
+import { ProductsPage } from '@/pages/products/ProductsPage';
 import { PayoutRequestsPage } from '@/pages/payouts/PayoutRequestsPage';
 import { ForgotPasswordPage } from '@/pages/auth/ForgotPasswordPage';
 import { LoginPage } from '@/pages/auth/LoginPage';
@@ -84,6 +87,10 @@ export function App() {
                                     <Route path="affiliates" element={<AffiliatesPage />} />
                                     <Route path="payout-requests" element={<PayoutRequestsPage />} />
                                     <Route path="notifications" element={<NotificationsPage />} />
+                                    <Route path="categories" element={<CategoriesPage />} />
+                                    <Route path="products" element={<ProductsPage />} />
+                                    <Route path="products/new" element={<ProductFormPage />} />
+                                    <Route path="products/:productId" element={<ProductFormPage />} />
                                 </Route>
                             </Route>
                             <Route element={<RequireAffiliate />}>

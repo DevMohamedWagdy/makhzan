@@ -35,6 +35,22 @@ class Store extends Model
     }
 
     /**
+     * @return HasMany<ProductCategory, $this>
+     */
+    public function productCategories(): HasMany
+    {
+        return $this->hasMany(ProductCategory::class)->orderBy('position')->orderBy('id');
+    }
+
+    /**
+     * @return HasMany<Product, $this>
+     */
+    public function products(): HasMany
+    {
+        return $this->hasMany(Product::class);
+    }
+
+    /**
      * @return HasOne<AffiliateRegistrationLink, $this>
      */
     public function affiliateRegistrationLink(): HasOne
