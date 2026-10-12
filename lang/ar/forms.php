@@ -1,0 +1,38 @@
+<?php
+
+return [
+
+    'full_name_required' => 'أدخل اسمك بالكامل',
+    'full_name_min' => 'اكتب الاسم الثنائي على الأقل',
+    'phone_required' => 'أدخل رقم هاتفك',
+    'vendor_phone_required' => 'أدخل رقم الهاتف / الواتساب',
+    'phone_invalid' => 'رقم الهاتف غير صحيح، مثال: 01012345678',
+    'phone_taken' => 'رقم الهاتف مسجل بالفعل',
+    'email_required' => 'أدخل البريد الإلكتروني',
+    'email_invalid' => 'صيغة البريد الإلكتروني غير صحيحة',
+    'email_taken' => 'البريد الإلكتروني مسجل بالفعل',
+    'identifier_required' => 'أدخل البريد الإلكتروني أو رقم الهاتف',
+    'affiliate_identifier_required' => 'أدخل رقم الهاتف أو البريد الإلكتروني',
+    'password_required' => 'أدخل كلمة المرور',
+    'new_password_required' => 'أدخل كلمة المرور الجديدة',
+    'current_password_required' => 'أدخل كلمة المرور الحالية',
+    'current_password_incorrect' => 'كلمة المرور الحالية غير صحيحة',
+    'password_rules' => 'كلمة المرور يجب أن تكون ٨ أحرف على الأقل وتحتوي على حروف وأرقام',
+    'password_mismatch' => 'كلمتا المرور غير متطابقتين',
+    'password_same_as_current' => 'اختر كلمة مرور مختلفة عن الحالية',
+    'file_type' => 'نوع الملف غير مدعوم',
+    'image_type' => 'نوع الملف غير مدعوم، استخدم PNG أو JPG أو WEBP',
+    'file_too_large' => 'حجم الملف يتجاوز :size ميجابايت',
+    'image_too_large' => 'حجم الصورة يتجاوز :size ميجابايت',
+    'store_missing' => 'المتجر غير محدد',
+    'store_not_found' => 'المتجر غير موجود',
+    'store_name_required' => 'أدخل اسم المتجر',
+    'store_name_min' => 'اسم المتجر قصير جداً',
+    'slug_required' => 'اختر رابطاً لمتجرك',
+    'slug_format' => 'استخدم حروفاً إنجليزية صغيرة وأرقاماً وشرطة (-) فقط، من ٣ إلى ٤٠ حرفاً',
+    'slug_taken' => 'هذا الرابط محجوز، جرّب اسماً آخر',
+    'governorate_required' => 'اختر المحافظة',
+    'city_required' => 'اختر المدينة',
+    'city_mismatch' => 'المدينة لا تتبع المحافظة المختارة',
+
+];

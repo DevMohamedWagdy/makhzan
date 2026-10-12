@@ -4,45 +4,47 @@ import { Logo } from '@/components/brand/Logo';
 import { Avatar } from '@/components/ui/Display';
 import { Dropdown } from '@/components/ui/Dropdown';
 import { Icon } from '@/components/ui/Icon';
+import { LanguageToggle } from '@/components/ui/LanguageToggle';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { useAuth } from '@/context/AuthContext';
 import { DashboardAlertsProvider, useDashboardAlerts } from '@/context/DashboardAlertsContext';
 import { NotificationsMenu } from '@/features/notifications/NotificationsMenu';
+import { isRtl, t } from '@/i18n';
 import { APP_DOMAIN } from '@/lib/constants';
 import { cn } from '@/lib/format';
 
 const NAV_SECTIONS = [
     {
-        title: 'الرئيسية',
+        title: t('الرئيسية'),
         items: [
-            { label: 'لوحة التحكم', icon: 'grid', to: '/dashboard', soon: true },
-            { label: 'الإشعارات', icon: 'bell', to: '/dashboard/notifications', counter: 'unreadCount' },
+            { label: t('لوحة التحكم'), icon: 'grid', to: '/dashboard', soon: true },
+            { label: t('الإشعارات'), icon: 'bell', to: '/dashboard/notifications', counter: 'unreadCount' },
         ],
     },
     {
-        title: 'التجارة',
+        title: t('التجارة'),
         items: [
-            { label: 'الأقسام', icon: 'grid', to: '/dashboard/categories' },
-            { label: 'المنتجات', icon: 'box', to: '/dashboard/products' },
-            { label: 'المخزون', icon: 'warehouse', soon: true },
-            { label: 'الطلبات', icon: 'shopping-bag', soon: true },
-            { label: 'الشحن', icon: 'truck', soon: true },
+            { label: t('الأقسام'), icon: 'grid', to: '/dashboard/categories' },
+            { label: t('المنتجات'), icon: 'box', to: '/dashboard/products' },
+            { label: t('المخزون'), icon: 'warehouse', soon: true },
+            { label: t('الطلبات'), icon: 'shopping-bag', soon: true },
+            { label: t('الشحن'), icon: 'truck', soon: true },
         ],
     },
     {
-        title: 'التسويق',
+        title: t('التسويق'),
         items: [
-            { label: 'المسوقين', icon: 'users', to: '/dashboard/affiliates' },
-            { label: 'طلبات التحويل', icon: 'send', to: '/dashboard/payout-requests', counter: 'payoutRequestsCount' },
-            { label: 'الكوبونات', icon: 'gift', soon: true },
-            { label: 'الحملات', icon: 'megaphone', soon: true },
+            { label: t('المسوقين'), icon: 'users', to: '/dashboard/affiliates' },
+            { label: t('طلبات التحويل'), icon: 'send', to: '/dashboard/payout-requests', counter: 'payoutRequestsCount' },
+            { label: t('الكوبونات'), icon: 'gift', soon: true },
+            { label: t('الحملات'), icon: 'megaphone', soon: true },
         ],
     },
     {
-        title: 'الإدارة',
+        title: t('الإدارة'),
         items: [
-            { label: 'التقارير', icon: 'bar-chart', soon: true },
-            { label: 'إعدادات المتجر', icon: 'settings', soon: true },
+            { label: t('التقارير'), icon: 'bar-chart', soon: true },
+            { label: t('إعدادات المتجر'), icon: 'settings', soon: true },
         ],
     },
 ];
@@ -57,13 +59,13 @@ function Sidebar({ open, onClose }) {
             <aside
                 className={cn(
                     'fixed inset-y-0 start-0 z-40 flex w-[264px] flex-col border-e border-line bg-surface transition-transform duration-300 lg:translate-x-0',
-                    open ? 'translate-x-0' : 'translate-x-full',
+                    open ? 'translate-x-0' : isRtl ? 'translate-x-full' : '-translate-x-full',
                 )}
-                aria-label="القائمة الرئيسية"
+                aria-label={t('القائمة الرئيسية')}
             >
                 <div className="flex h-[72px] items-center justify-between border-b border-line px-6">
                     <Logo className="h-9" />
-                    <button type="button" onClick={onClose} className="grid size-9 place-items-center rounded-lg text-muted hover:bg-surface-3 lg:hidden" aria-label="إغلاق القائمة">
+                    <button type="button" onClick={onClose} className="grid size-9 place-items-center rounded-lg text-muted hover:bg-surface-3 lg:hidden" aria-label={t('إغلاق القائمة')}>
                         <Icon name="x" />
                     </button>
                 </div>
@@ -88,10 +90,10 @@ function Sidebar({ open, onClose }) {
                                 {section.items.map((item) =>
                                     item.soon ? (
                                         <li key={item.label}>
-                                            <span className="flex cursor-not-allowed items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-muted" title="هذه الوحدة قيد التطوير">
+                                            <span className="flex cursor-not-allowed items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-muted" title={t('هذه الوحدة قيد التطوير')}>
                                                 <Icon name={item.icon} className="size-[18px]" />
                                                 {item.label}
-                                                <span className="ms-auto rounded-md bg-surface-3 px-1.5 py-0.5 text-[10px]">قريباً</span>
+                                                <span className="ms-auto rounded-md bg-surface-3 px-1.5 py-0.5 text-[10px]">{t('قريباً')}</span>
                                             </span>
                                         </li>
                                     ) : (
@@ -123,8 +125,8 @@ function Sidebar({ open, onClose }) {
                 </nav>
 
                 <div className="m-4 rounded-xl bg-gradient-to-br from-indigo-600 to-sky-500 p-4 text-white">
-                    <p className="text-sm font-semibold">تحتاج مساعدة؟</p>
-                    <p className="mt-1 text-xs leading-relaxed text-indigo-100">فريق دعم مخزن متاح يومياً من ٩ صباحاً حتى ١٢ منتصف الليل.</p>
+                    <p className="text-sm font-semibold">{t('تحتاج مساعدة؟')}</p>
+                    <p className="mt-1 text-xs leading-relaxed text-indigo-100">{t('فريق دعم مخزن متاح يومياً من ٩ صباحاً حتى ١٢ منتصف الليل.')}</p>
                 </div>
             </aside>
         </>
@@ -143,7 +145,7 @@ export function ImpersonationBanner() {
         <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 bg-warning px-4 py-2.5 text-sm font-medium text-slate-950">
             <Icon name="eye" className="size-[18px]" />
             <span>
-                أنت تتصفح الآن بصفة المسوق <strong>{impersonation.affiliate.full_name}</strong> — كل الإجراءات تُسجل باسمك.
+                {t('أنت تتصفح الآن بصفة المسوق {name} — كل الإجراءات تُسجل باسمك.', { name: impersonation.affiliate.full_name })}
             </span>
             <button
                 type="button"
@@ -153,7 +155,7 @@ export function ImpersonationBanner() {
                 }}
                 className="rounded-lg bg-slate-950 px-3 py-1 text-xs font-semibold text-white hover:bg-slate-800"
             >
-                العودة إلى حسابي
+                {t('العودة إلى حسابي')}
             </button>
         </div>
     );
@@ -182,34 +184,35 @@ function DashboardShell() {
             <div className="lg:ps-[264px]">
                 <ImpersonationBanner />
                 <header className="sticky top-0 z-20 flex h-[72px] items-center gap-3 border-b border-line bg-surface/85 px-4 backdrop-blur-md sm:px-8">
-                    <button type="button" onClick={() => setSidebarOpen(true)} className="grid size-10 place-items-center rounded-xl border border-line text-ink-2 lg:hidden" aria-label="فتح القائمة">
+                    <button type="button" onClick={() => setSidebarOpen(true)} className="grid size-10 place-items-center rounded-xl border border-line text-ink-2 lg:hidden" aria-label={t('فتح القائمة')}>
                         <Icon name="menu" />
                     </button>
                     <div className="relative hidden max-w-md flex-1 md:block">
                         <Icon name="search" className="pointer-events-none absolute start-3.5 top-1/2 size-[18px] -translate-y-1/2 text-muted" />
-                        <input type="search" placeholder="ابحث في الطلبات، المنتجات، المسوقين..." className="mk-input h-10 bg-surface-2 ps-10" aria-label="بحث عام" />
+                        <input type="search" placeholder={t('ابحث في الطلبات، المنتجات، المسوقين...')} className="mk-input h-10 bg-surface-2 ps-10" aria-label={t('بحث عام')} />
                     </div>
                     <div className="ms-auto flex items-center gap-2">
+                        <LanguageToggle />
                         <ThemeToggle />
                         <NotificationsMenu />
                         <Dropdown
-                            label="قائمة الحساب"
+                            label={t('قائمة الحساب')}
                             trigger={(props) => (
                                 <button type="button" {...props} className="flex items-center gap-2.5 rounded-xl p-1 pe-2 transition hover:bg-surface-3">
                                     <Avatar name={vendor?.full_name} size="sm" />
                                     <span className="hidden text-start sm:block">
                                         <span className="block text-sm font-semibold text-ink">{vendor?.full_name}</span>
-                                        <span className="block text-xs text-muted">صاحب المتجر</span>
+                                        <span className="block text-xs text-muted">{t('صاحب المتجر')}</span>
                                     </span>
                                     <Icon name="chevron-down" className="hidden size-4 text-muted sm:block" />
                                 </button>
                             )}
                             items={[
-                                { label: 'الملف الشخصي', icon: 'user', disabled: true, hint: 'قريباً' },
-                                { label: 'إعدادات المتجر', icon: 'store', disabled: true, hint: 'قريباً' },
+                                { label: t('الملف الشخصي'), icon: 'user', disabled: true, hint: t('قريباً') },
+                                { label: t('إعدادات المتجر'), icon: 'store', disabled: true, hint: t('قريباً') },
                                 { divider: true },
                                 {
-                                    label: 'تسجيل الخروج',
+                                    label: t('تسجيل الخروج'),
                                     icon: 'log-out',
                                     tone: 'danger',
                                     onClick: () => {
@@ -234,7 +237,7 @@ export function PageHeader({ title, description, breadcrumbs = [], actions }) {
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
                 {breadcrumbs.length > 0 && (
-                    <nav aria-label="مسار التنقل" className="mb-2 flex items-center gap-1.5 text-xs text-muted">
+                    <nav aria-label={t('مسار التنقل')} className="mb-2 flex items-center gap-1.5 text-xs text-muted">
                         {breadcrumbs.map((crumb, index) => (
                             <span key={crumb} className="flex items-center gap-1.5">
                                 {index > 0 && <Icon name="chevron-left" className="size-3" />}

@@ -1,0 +1,38 @@
+<?php
+
+return [
+
+    'full_name_required' => 'Enter your full name',
+    'full_name_min' => 'Enter at least your first and last name',
+    'phone_required' => 'Enter your phone number',
+    'vendor_phone_required' => 'Enter your phone / WhatsApp number',
+    'phone_invalid' => 'Invalid phone number, e.g. 01012345678',
+    'phone_taken' => 'This phone number is already registered',
+    'email_required' => 'Enter your email address',
+    'email_invalid' => 'Invalid email address',
+    'email_taken' => 'This email address is already registered',
+    'identifier_required' => 'Enter your email address or phone number',
+    'affiliate_identifier_required' => 'Enter your phone number or email address',
+    'password_required' => 'Enter your password',
+    'new_password_required' => 'Enter a new password',
+    'current_password_required' => 'Enter your current password',
+    'current_password_incorrect' => 'Your current password is incorrect',
+    'password_rules' => 'Password must be at least 8 characters and contain letters and numbers',
+    'password_mismatch' => 'Passwords do not match',
+    'password_same_as_current' => 'Choose a password different from your current one',
+    'file_type' => 'Unsupported file type',
+    'image_type' => 'Unsupported file type, use PNG, JPG or WEBP',
+    'file_too_large' => 'The file is larger than :size MB',
+    'image_too_large' => 'The image is larger than :size MB',
+    'store_missing' => 'No store specified',
+    'store_not_found' => 'Store not found',
+    'store_name_required' => 'Enter the store name',
+    'store_name_min' => 'The store name is too short',
+    'slug_required' => 'Choose a link for your store',
+    'slug_format' => 'Use lowercase English letters, numbers and hyphens (-) only, 3 to 40 characters',
+    'slug_taken' => 'This link is taken, try another one',
+    'governorate_required' => 'Choose a governorate',
+    'city_required' => 'Choose a city',
+    'city_mismatch' => 'The city is not in the selected governorate',
+
+];

@@ -1,4 +1,5 @@
 import { useId } from 'react';
+import { t } from '@/i18n';
 import { cn } from '@/lib/format';
 
 /**
@@ -9,7 +10,7 @@ export function LogoMark({ className = 'size-10' }) {
     const id = useId().replace(/:/g, '');
 
     return (
-        <svg viewBox="0 0 48 48" className={className} role="img" aria-label="مخزن">
+        <svg viewBox="0 0 48 48" className={className} role="img" aria-label={t('مخزن')}>
             <LogoMarkPaths id={id} />
         </svg>
     );
@@ -20,7 +21,7 @@ export function Logo({ className, showTagline = true }) {
     const id = useId().replace(/:/g, '');
 
     return (
-        <svg viewBox="0 0 168 48" className={cn('h-10 w-auto text-ink', className)} role="img" aria-label="مخزن - Makhzan">
+        <svg viewBox="0 0 168 48" className={cn('h-10 w-auto text-ink', className)} role="img" aria-label={t('مخزن - Makhzan')}>
             <defs>
                 <linearGradient id={`${id}-word`} x1="0" y1="0" x2="110" y2="0" gradientUnits="userSpaceOnUse">
                     <stop stopColor="#0EA5E9" />
@@ -31,6 +32,7 @@ export function Logo({ className, showTagline = true }) {
                 <LogoMarkPaths id={id} />
             </g>
             <text x="110" y={showTagline ? 27 : 33} direction="ltr" textAnchor="end" fontFamily="Alexandria, sans-serif" fontWeight="800" fontSize="25" fill="currentColor">
+                {/* The Arabic wordmark is part of the logo in every language; MAKHZAN below is the Latin name. */}
                 مخزن
             </text>
             {showTagline && (

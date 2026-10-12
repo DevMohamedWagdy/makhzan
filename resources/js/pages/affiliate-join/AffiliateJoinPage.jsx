@@ -9,6 +9,7 @@ import { Skeleton } from '@/components/ui/Spinner';
 import { PAYOUT_INITIAL_VALUES, PayoutMethodFields, buildPayoutPayload, mapServerErrors, payoutSchema } from '@/features/affiliates/payoutFields';
 import { useCopy } from '@/hooks/common';
 import { useForm } from '@/hooks/useForm';
+import { t } from '@/i18n';
 import { AFFILIATE_TIERS } from '@/lib/constants';
 import { normalizePhone, rules } from '@/lib/validators';
 import { affiliateRegistrationApi } from '@/services/affiliateRegistrationApi';
@@ -24,19 +25,19 @@ const INITIAL_VALUES = {
 };
 
 const schema = (values) => ({
-    full_name: [rules.required('أدخل اسمك بالكامل'), rules.minLength(5, 'اكتب الاسم الثنائي على الأقل')],
-    phone: [rules.required('أدخل رقم هاتفك'), rules.phone()],
+    full_name: [rules.required(t('أدخل اسمك بالكامل')), rules.minLength(5, t('اكتب الاسم الثنائي على الأقل'))],
+    phone: [rules.required(t('أدخل رقم هاتفك')), rules.phone()],
     email: [rules.email()],
-    password: [rules.required('أدخل كلمة المرور'), rules.password()],
-    password_confirmation: [rules.required('أعد كتابة كلمة المرور'), rules.matches('password')],
-    accept_terms: [(value) => (value ? null : 'يجب الموافقة على شروط برنامج المسوقين للمتابعة')],
+    password: [rules.required(t('أدخل كلمة المرور')), rules.password()],
+    password_confirmation: [rules.required(t('أعد كتابة كلمة المرور')), rules.matches('password')],
+    accept_terms: [(value) => (value ? null : t('يجب الموافقة على شروط برنامج المسوقين للمتابعة'))],
     ...payoutSchema(values),
 });
 
 const STEPS = [
-    { icon: 'user-plus', title: 'سجّل بياناتك', text: 'دقيقتان فقط ولا تحتاج أي رسوم.' },
-    { icon: 'link', title: 'شارك رابطك', text: 'انشر رابط الإحالة الخاص بك على صفحاتك وجروباتك.' },
-    { icon: 'wallet', title: 'اربح عمولتك', text: 'عمولة على كل طلب يتم توصيله، تُحوَّل لمحفظتك.' },
+    { icon: 'user-plus', title: t('سجّل بياناتك'), text: t('دقيقتان فقط ولا تحتاج أي رسوم.') },
+    { icon: 'link', title: t('شارك رابطك'), text: t('انشر رابط الإحالة الخاص بك على صفحاتك وجروباتك.') },
+    { icon: 'wallet', title: t('اربح عمولتك'), text: t('عمولة على كل طلب يتم توصيله، تُحوَّل لمحفظتك.') },
 ];
 
 function InvalidLink() {
@@ -46,9 +47,9 @@ function InvalidLink() {
                 <span className="mx-auto grid size-16 place-items-center rounded-2xl bg-danger-soft text-danger">
                     <Icon name="link" className="size-8" />
                 </span>
-                <h1 className="mt-6 text-2xl font-bold text-ink">رابط التسجيل غير متاح</h1>
+                <h1 className="mt-6 text-2xl font-bold text-ink">{t('رابط التسجيل غير متاح')}</h1>
                 <p className="mt-3 text-sm leading-relaxed text-muted">
-                    قد يكون الرابط منتهياً، أو أوقفه صاحب المتجر مؤقتاً، أو تم نسخه بشكل ناقص. تواصل مع المتجر للحصول على رابط تسجيل جديد.
+                    {t('قد يكون الرابط منتهياً، أو أوقفه صاحب المتجر مؤقتاً، أو تم نسخه بشكل ناقص. تواصل مع المتجر للحصول على رابط تسجيل جديد.')}
                 </p>
             </div>
         </StorePublicLayout>
@@ -65,34 +66,34 @@ function SuccessScreen({ store, result }) {
                     <span className="mx-auto grid size-16 place-items-center rounded-2xl bg-warning-soft text-warning">
                         <Icon name="check-circle" className="size-8" />
                     </span>
-                    <h1 className="mt-6 text-2xl font-bold text-ink">تم استلام طلبك يا {result.full_name.split(' ')[0]}</h1>
+                    <h1 className="mt-6 text-2xl font-bold text-ink">{t('تم استلام طلبك يا {value}', { value: result.full_name.split(' ')[0] })}</h1>
                     <p className="mt-3 text-sm leading-relaxed text-muted">{result.message}</p>
                     <div className="mk-card mt-8 p-5 text-start">
-                        <p className="text-sm font-semibold text-ink">ماذا بعد؟</p>
+                        <p className="text-sm font-semibold text-ink">{t('ماذا بعد؟')}</p>
                         <ul className="mt-3 flex flex-col gap-2 text-sm text-ink-2">
                             <li className="flex gap-2">
                                 <Icon name="shield-check" className="mt-0.5 size-4 shrink-0 text-primary" />
-                                يراجع فريق {store.name} طلبك عادةً خلال ٤٨ ساعة.
+                                {t('يراجع فريق {name} طلبك عادةً خلال ٤٨ ساعة.', { name: store.name })}
                             </li>
                             <li className="flex gap-2">
                                 <Icon name="link" className="mt-0.5 size-4 shrink-0 text-primary" />
-                                بعد الموافقة يتم إنشاء رابط الإحالة الخاص بك تلقائياً.
+                                {t('بعد الموافقة يتم إنشاء رابط الإحالة الخاص بك تلقائياً.')}
                             </li>
                             <li className="flex gap-2">
                                 <Icon name="log-in" className="mt-0.5 size-4 shrink-0 text-primary" />
-                                ادخل بعدها إلى لوحتك برقم هاتفك وكلمة المرور التي اخترتها.
+                                {t('ادخل بعدها إلى لوحتك برقم هاتفك وكلمة المرور التي اخترتها.')}
                             </li>
                         </ul>
                     </div>
                     <Button to={`/${store.slug}/affiliates/login`} variant="secondary" size="lg" icon="log-in" className="mt-4 w-full">
-                        صفحة دخول المسوقين
+                        {t('صفحة دخول المسوقين')}
                     </Button>
                 </div>
             </StorePublicLayout>
         );
     }
 
-    const shareText = encodeURIComponent(`تسوّق من ${store.name} عبر رابطي 🛍️\n${result.referral_url}`);
+    const shareText = encodeURIComponent(t('تسوّق من {name} عبر رابطي 🛍️\n{referral_url}', { name: store.name, referral_url: result.referral_url }));
 
     return (
         <StorePublicLayout store={store}>
@@ -100,22 +101,22 @@ function SuccessScreen({ store, result }) {
                 <span className="mx-auto grid size-16 place-items-center rounded-2xl bg-success-soft text-success">
                     <Icon name="sparkles" className="size-8" />
                 </span>
-                <h1 className="mt-6 text-2xl font-bold text-ink">أهلاً بك في فريق {store.name}!</h1>
+                <h1 className="mt-6 text-2xl font-bold text-ink">{t('أهلاً بك في فريق {name}!', { name: store.name })}</h1>
                 <p className="mt-3 text-sm leading-relaxed text-muted">{result.message}</p>
 
                 <div className="mk-card mt-8 p-5 text-start">
-                    <p className="text-xs text-muted">كود الإحالة الخاص بك</p>
+                    <p className="text-xs text-muted">{t('كود الإحالة الخاص بك')}</p>
                     <div className="mt-2 flex items-center justify-between gap-3">
                         <span className="ltr rounded-lg bg-primary-soft px-3 py-1.5 font-mono text-lg font-bold text-primary">{result.referral_code}</span>
                         <Button size="sm" variant={copiedValue === result.referral_code ? 'success' : 'secondary'} icon={copiedValue === result.referral_code ? 'check' : 'copy'} onClick={() => copy(result.referral_code)}>
-                            {copiedValue === result.referral_code ? 'تم النسخ' : 'نسخ الكود'}
+                            {copiedValue === result.referral_code ? t('تم النسخ') : t('نسخ الكود')}
                         </Button>
                     </div>
-                    <p className="mt-5 text-xs text-muted">رابط الإحالة</p>
+                    <p className="mt-5 text-xs text-muted">{t('رابط الإحالة')}</p>
                     <div className="mt-2 flex items-center gap-2" dir="ltr">
                         <code className="min-w-0 flex-1 truncate rounded-lg border border-line bg-surface-2 px-3 py-2.5 font-mono text-xs text-ink-2">{result.referral_url}</code>
                         <Button icon={copiedValue === result.referral_url ? 'check' : 'copy'} variant={copiedValue === result.referral_url ? 'success' : 'primary'} onClick={() => copy(result.referral_url)}>
-                            {copiedValue === result.referral_url ? 'تم' : 'نسخ'}
+                            {copiedValue === result.referral_url ? t('تم') : t('نسخ')}
                         </Button>
                     </div>
                     <a
@@ -125,11 +126,11 @@ function SuccessScreen({ store, result }) {
                         className="mt-4 flex h-11 items-center justify-center gap-2 rounded-xl bg-[#25D366] text-sm font-semibold text-white hover:opacity-90"
                     >
                         <Icon name="phone" className="size-4" />
-                        شارك الرابط عبر واتساب
+                        {t('شارك الرابط عبر واتساب')}
                     </a>
                 </div>
                 <Button to={`/${store.slug}/affiliates/login`} variant="secondary" size="lg" icon="log-in" className="mt-4 w-full">
-                    الدخول إلى لوحة المسوق
+                    {t('الدخول إلى لوحة المسوق')}
                 </Button>
             </div>
         </StorePublicLayout>
@@ -163,7 +164,7 @@ export function AffiliateJoinPage() {
                 if (!cancelled) {
                     setLink(data);
                     setLoadState('ready');
-                    document.title = `انضم لفريق مسوقي ${data.store.name} | مخزن`;
+                    document.title = t('انضم لفريق مسوقي {name} | مخزن', { name: data.store.name });
                 }
             })
             .catch(() => !cancelled && setLoadState('invalid'));
@@ -212,7 +213,7 @@ export function AffiliateJoinPage() {
             }
 
             setErrors(mapServerErrors(error.errors));
-            setFormError(error.status === 429 ? 'محاولات كثيرة من هذا الجهاز. انتظر قليلاً ثم حاول مرة أخرى.' : error.message);
+            setFormError(error.status === 429 ? t('محاولات كثيرة من هذا الجهاز. انتظر قليلاً ثم حاول مرة أخرى.') : error.message);
         } finally {
             setSubmitting(false);
         }
@@ -229,10 +230,10 @@ export function AffiliateJoinPage() {
                         {store ? (
                             <>
                                 <Badge tone="primary" icon="megaphone">
-                                    برنامج المسوقين
+                                    {t('برنامج المسوقين')}
                                 </Badge>
-                                <h1 className="mt-4 text-3xl leading-tight font-bold text-ink">انضم لفريق مسوقي {store.name}</h1>
-                                <p className="mt-3 text-sm leading-relaxed text-muted">سوّق منتجات {store.name} لمتابعيك واربح عمولة على كل طلب يتم توصيله عبر رابطك.</p>
+                                <h1 className="mt-4 text-3xl leading-tight font-bold text-ink">{t('انضم لفريق مسوقي {name}', { name: store.name })}</h1>
+                                <p className="mt-3 text-sm leading-relaxed text-muted">{t('سوّق منتجات {name} لمتابعيك واربح عمولة على كل طلب يتم توصيله عبر رابطك.', { name: store.name })}</p>
                             </>
                         ) : (
                             <div className="flex flex-col gap-3">
@@ -244,9 +245,9 @@ export function AffiliateJoinPage() {
                     </div>
 
                     <div className="rounded-2xl bg-gradient-to-br from-indigo-600 to-sky-500 p-6 text-white shadow-lg shadow-primary/20">
-                        <p className="text-sm text-indigo-100">عمولتك على كل طلب</p>
+                        <p className="text-sm text-indigo-100">{t('عمولتك على كل طلب')}</p>
                         <p className="mt-1 text-4xl font-bold">{link ? `${link.commission_percentage}%` : '—'}</p>
-                        <p className="mt-2 text-xs text-indigo-100">{tier ? `تبدأ كـ «${tier.label}» ويمكن ترقيتك حسب أدائك` : ' '}</p>
+                        <p className="mt-2 text-xs text-indigo-100">{tier ? t('تبدأ كـ «{label}» ويمكن ترقيتك حسب أدائك', { label: tier.label }) : ' '}</p>
                     </div>
 
                     <ol className="flex flex-col gap-4">
@@ -268,35 +269,35 @@ export function AffiliateJoinPage() {
 
                 <form onSubmit={onSubmit} noValidate className="mk-card overflow-hidden">
                     <div className="border-b border-line bg-surface-2 px-6 py-5">
-                        <h2 className="text-lg font-semibold text-ink">بيانات التسجيل</h2>
+                        <h2 className="text-lg font-semibold text-ink">{t('بيانات التسجيل')}</h2>
                         <p className="mt-1 text-xs text-muted">
-                            {link?.requires_approval ? 'سيراجع صاحب المتجر طلبك قبل تفعيل حسابك.' : 'سيتم تفعيل حسابك فوراً بعد التسجيل.'}
+                            {link?.requires_approval ? t('سيراجع صاحب المتجر طلبك قبل تفعيل حسابك.') : t('سيتم تفعيل حسابك فوراً بعد التسجيل.')}
                         </p>
                     </div>
 
                     <fieldset disabled={loadState !== 'ready' || submitting} className="grid gap-5 p-6 sm:grid-cols-2">
                         {formError && <Alert tone="danger" className="sm:col-span-2">{formError}</Alert>}
 
-                        <Field label="الاسم بالكامل" error={errors.full_name} required className="sm:col-span-2">
-                            {(props) => <Input {...props} {...bind('full_name')} icon="user" autoComplete="name" placeholder="مثال: سارة محمود إبراهيم" />}
+                        <Field label={t('الاسم بالكامل')} error={errors.full_name} required className="sm:col-span-2">
+                            {(props) => <Input {...props} {...bind('full_name')} icon="user" autoComplete="name" placeholder={t('مثال: سارة محمود إبراهيم')} />}
                         </Field>
-                        <Field label="رقم الهاتف / الواتساب" error={errors.phone} required>
+                        <Field label={t('رقم الهاتف / الواتساب')} error={errors.phone} required>
                             {(props) => <Input {...props} {...bind('phone')} icon="phone" type="tel" dir="ltr" inputMode="tel" className="text-start" autoComplete="tel" placeholder="01012345678" />}
                         </Field>
-                        <Field label="البريد الإلكتروني" optional error={errors.email}>
+                        <Field label={t('البريد الإلكتروني')} optional error={errors.email}>
                             {(props) => <Input {...props} {...bind('email')} icon="mail" type="email" dir="ltr" className="text-start" autoComplete="email" placeholder="name@example.com" />}
                         </Field>
-                        <Field label="كلمة المرور" error={errors.password} required>
-                            {(props) => <PasswordInput {...props} {...bind('password')} showStrength placeholder="٨ أحرف على الأقل" />}
+                        <Field label={t('كلمة المرور')} error={errors.password} required>
+                            {(props) => <PasswordInput {...props} {...bind('password')} showStrength placeholder={t('٨ أحرف على الأقل')} />}
                         </Field>
-                        <Field label="تأكيد كلمة المرور" error={errors.password_confirmation} required>
-                            {(props) => <PasswordInput {...props} {...bind('password_confirmation')} placeholder="أعد كتابة كلمة المرور" />}
+                        <Field label={t('تأكيد كلمة المرور')} error={errors.password_confirmation} required>
+                            {(props) => <PasswordInput {...props} {...bind('password_confirmation')} placeholder={t('أعد كتابة كلمة المرور')} />}
                         </Field>
 
                         <div className="h-px bg-line sm:col-span-2" />
                         <div className="sm:col-span-2">
-                            <h3 className="text-sm font-semibold text-ink">أين تريد استلام أرباحك؟</h3>
-                            <p className="mt-0.5 text-xs text-muted">يمكنك تغييرها لاحقاً بالتواصل مع المتجر.</p>
+                            <h3 className="text-sm font-semibold text-ink">{t('أين تريد استلام أرباحك؟')}</h3>
+                            <p className="mt-0.5 text-xs text-muted">{t('يمكنك تغييرها لاحقاً بالتواصل مع المتجر.')}</p>
                         </div>
                         <PayoutMethodFields values={values} errors={errors} bind={bind} setValues={setValues} />
 
@@ -304,20 +305,20 @@ export function AffiliateJoinPage() {
                             <Checkbox
                                 checked={values.accept_terms}
                                 onChange={(event) => setField('accept_terms', event.target.checked)}
-                                label={`أوافق على شروط برنامج المسوقين الخاص بـ ${store?.name ?? 'المتجر'} وسياسة الخصوصية`}
+                                label={t('أوافق على شروط برنامج المسوقين الخاص بـ {value} وسياسة الخصوصية', { value: store?.name ?? 'المتجر' })}
                             />
                             {errors.accept_terms && <p className="mt-1.5 text-xs text-danger">{errors.accept_terms}</p>}
                         </div>
 
                         <Button type="submit" size="lg" loading={submitting} icon="user-plus" className="w-full sm:col-span-2">
-                            {submitting ? 'جارٍ إرسال الطلب...' : link?.requires_approval ? 'إرسال طلب الانضمام' : 'إنشاء حسابي'}
+                            {submitting ? t('جارٍ إرسال الطلب...') : link?.requires_approval ? t('إرسال طلب الانضمام') : t('إنشاء حسابي')}
                         </Button>
 
                         {store && (
                             <p className="text-center text-sm text-muted sm:col-span-2">
-                                لديك حساب بالفعل؟{' '}
+                                {t('لديك حساب بالفعل؟ ')}
                                 <Link to={`/${store.slug}/affiliates/login`} className="font-semibold text-primary hover:underline">
-                                    سجّل دخولك
+                                    {t('سجّل دخولك')}
                                 </Link>
                             </p>
                         )}

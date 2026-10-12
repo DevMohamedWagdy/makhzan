@@ -47,18 +47,16 @@ class AffiliatePayoutRequestedNotification extends Notification implements Shoul
     }
 
     /**
-     * Payload of the dashboard notification.
+     * Payload of the dashboard notification; the message is rendered in the reader's
+     * language by NotificationResource::message().
      *
-     * @return array{message: string, affiliate_id: int, affiliate_name: string, payout_id: int, amount: float}
+     * @return array{affiliate_id: int, affiliate_name: string, payout_id: int, amount: float}
      */
     public function toArray(object $notifiable): array
     {
-        $affiliate = $this->payout->affiliate;
-
         return [
-            'message' => "طلب {$affiliate->full_name} تحويل ".number_format($this->payout->amount, 2).' ج.م من رصيد عمولاته',
-            'affiliate_id' => $affiliate->id,
-            'affiliate_name' => $affiliate->full_name,
+            'affiliate_id' => $this->payout->affiliate->id,
+            'affiliate_name' => $this->payout->affiliate->full_name,
             'payout_id' => $this->payout->id,
             'amount' => $this->payout->amount,
         ];
@@ -73,11 +71,11 @@ class AffiliatePayoutRequestedNotification extends Notification implements Shoul
         $amount = number_format($this->payout->amount, 2);
 
         return (new MailMessage)
-            ->subject("طلب تحويل عمولة من {$affiliate->full_name}")
-            ->greeting('مرحباً '.$notifiable->full_name)
-            ->line("طلب المسوق {$affiliate->full_name} تحويل {$amount} ج.م من رصيد عمولاته.")
-            ->when($this->payout->request_note, fn (MailMessage $message) => $message->line('ملاحظة المسوق: '.$this->payout->request_note))
-            ->action('مراجعة الطلب', url('/dashboard/payout-requests'))
-            ->line('بعد التحويل، سجّل الدفعة من ملف المسوق ليُخصم المبلغ من رصيده.');
+            ->subject(__('notifications.payout_requested.subject', ['affiliate' => $affiliate->full_name]))
+            ->greeting(__('notifications.greeting', ['name' => $notifiable->full_name]))
+            ->line(__('notifications.payout_requested.line', ['affiliate' => $affiliate->full_name, 'amount' => $amount]))
+            ->when($this->payout->request_note, fn (MailMessage $message) => $message->line(__('notifications.payout_requested.note', ['note' => $this->payout->request_note])))
+            ->action(__('notifications.payout_requested.action'), url('/dashboard/payout-requests'))
+            ->line(__('notifications.payout_requested.outro'));
     }
 }

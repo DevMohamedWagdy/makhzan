@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useLockBodyScroll } from '@/hooks/common';
+import { t } from '@/i18n';
 import { cn } from '@/lib/format';
 import { Icon } from './Icon';
 
@@ -86,7 +87,7 @@ function DialogHeader({ titleId, title, description, icon, iconTone = 'primary',
                 </h2>
                 {description && <p className="mt-1 text-sm leading-relaxed text-muted">{description}</p>}
             </div>
-            <button type="button" onClick={onClose} className="grid size-9 shrink-0 place-items-center rounded-lg text-muted transition hover:bg-surface-3 hover:text-ink" aria-label="إغلاق" title="إغلاق">
+            <button type="button" onClick={onClose} className="grid size-9 shrink-0 place-items-center rounded-lg text-muted transition hover:bg-surface-3 hover:text-ink" aria-label={t('إغلاق')} title={t('إغلاق')}>
                 <Icon name="x" />
             </button>
         </header>
@@ -126,7 +127,7 @@ export function Modal({ open, onClose, title, description, icon, iconTone, size 
     );
 }
 
-/** Side panel. In RTL it opens from the left (inline-end) edge, Metronic-style. */
+/** Side panel opening from the inline-end edge (the left in Arabic), Metronic-style. */
 export function Drawer({ open, onClose, title, description, icon, size = 'md', footer, header, children }) {
     const titleId = useId();
     const panelRef = useRef(null);
@@ -148,7 +149,7 @@ export function Drawer({ open, onClose, title, description, icon, size = 'md', f
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby={titleId}
-                className={cn('animate-slide-in absolute inset-y-0 left-0 flex w-full flex-col border-e border-line bg-surface shadow-pop', widths[size])}
+                className={cn('animate-slide-in absolute inset-y-0 end-0 flex w-full flex-col border-e border-line bg-surface shadow-pop', widths[size])}
             >
                 {header ?? <DialogHeader titleId={titleId} title={title} description={description} icon={icon} onClose={onClose} />}
                 {header && <h2 id={titleId} className="sr-only">{title}</h2>}

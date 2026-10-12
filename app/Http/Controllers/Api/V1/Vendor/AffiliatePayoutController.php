@@ -54,7 +54,7 @@ class AffiliatePayoutController extends Controller
     public function reject(RejectAffiliatePayoutRequest $request, Affiliate $affiliate, AffiliatePayout $payout): AffiliateResource
     {
         if ($payout->status !== PayoutStatus::Requested) {
-            throw ValidationException::withMessages(['payout' => 'تمت معالجة هذا الطلب بالفعل']);
+            throw ValidationException::withMessages(['payout' => __('payouts.already_processed')]);
         }
 
         $payout->reject($request->validated('note'));

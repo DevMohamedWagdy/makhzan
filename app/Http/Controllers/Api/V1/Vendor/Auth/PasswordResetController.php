@@ -34,7 +34,7 @@ class PasswordResetController extends Controller
 
         return response()->json([
             'channel' => 'email',
-            'message' => 'إذا كان الحساب موجوداً، ستصلك رسالة على بريدك الإلكتروني المسجل بخطوات إعادة تعيين كلمة المرور.',
+            'message' => __('auth.vendor_reset_link_sent'),
         ]);
     }
 
@@ -54,9 +54,9 @@ class PasswordResetController extends Controller
         );
 
         if ($status !== Password::PASSWORD_RESET) {
-            throw ValidationException::withMessages(['email' => 'رابط إعادة التعيين غير صالح أو منتهي الصلاحية']);
+            throw ValidationException::withMessages(['email' => __('auth.reset_link_invalid')]);
         }
 
-        return response()->json(['message' => 'تم تغيير كلمة المرور بنجاح، يمكنك تسجيل الدخول الآن.']);
+        return response()->json(['message' => __('auth.vendor_password_reset')]);
     }
 }

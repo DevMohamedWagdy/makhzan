@@ -5,6 +5,7 @@ import { Field, Input, OptionCards, PasswordInput } from '@/components/ui/Form';
 import { ImageUpload } from '@/components/ui/Upload';
 import { useToast } from '@/context/ToastContext';
 import { useForm } from '@/hooks/useForm';
+import { t } from '@/i18n';
 import { AFFILIATE_TIERS, MAX_AVATAR_SIZE_MB } from '@/lib/constants';
 import { normalizePhone, rules } from '@/lib/validators';
 import { affiliatesApi } from '@/services/affiliatesApi';
@@ -14,17 +15,17 @@ const TIER_OPTIONS = Object.entries(AFFILIATE_TIERS).map(([value, tier]) => ({
     value,
     label: tier.label,
     icon: value === 'vip' ? 'sparkles' : value === 'new' ? 'user-plus' : 'users',
-    description: `عمولة افتراضية ${tier.default_commission}% — ${tier.description}`,
+    description: t('عمولة افتراضية {default_commission}% — {description}', { default_commission: tier.default_commission, description: tier.description }),
 }));
 
 function buildSchema(isEdit) {
     return (values) => ({
-        full_name: [rules.required('أدخل اسم المسوق بالكامل'), rules.minLength(5, 'اكتب الاسم الثنائي على الأقل')],
-        phone: [rules.required('أدخل رقم هاتف المسوق'), rules.phone()],
+        full_name: [rules.required(t('أدخل اسم المسوق بالكامل')), rules.minLength(5, t('اكتب الاسم الثنائي على الأقل'))],
+        phone: [rules.required(t('أدخل رقم هاتف المسوق')), rules.phone()],
         email: [rules.email()],
         // On edit, password is optional: leaving it blank keeps the current one.
-        password: isEdit ? [rules.password()] : [rules.required('أدخل كلمة مرور للمسوق'), rules.password()],
-        password_confirmation: isEdit && !values.password ? [] : [rules.required('أعد كتابة كلمة المرور'), rules.matches('password')],
+        password: isEdit ? [rules.password()] : [rules.required(t('أدخل كلمة مرور للمسوق')), rules.password()],
+        password_confirmation: isEdit && !values.password ? [] : [rules.required(t('أعد كتابة كلمة المرور')), rules.matches('password')],
         ...payoutSchema(values),
     });
 }
@@ -95,7 +96,7 @@ export function AffiliateForm({ affiliate, onSaved, onCancel }) {
         try {
             const saved = isEdit ? await affiliatesApi.update(affiliate.affiliate_id, payload) : await affiliatesApi.create(payload);
 
-            toast.success(isEdit ? 'تم حفظ التعديلات' : 'تمت إضافة المسوق بنجاح', isEdit ? undefined : `تم إنشاء كود الإحالة ${saved.referral_codes[0]?.code ?? ''} تلقائياً.`);
+            toast.success(isEdit ? t('تم حفظ التعديلات') : t('تمت إضافة المسوق بنجاح'), isEdit ? undefined : t('تم إنشاء كود الإحالة {value} تلقائياً.', { value: saved.referral_codes[0]?.code ?? '' }));
             onSaved(saved);
         } catch (error) {
             setErrors(mapServerErrors(error.errors));
@@ -110,9 +111,9 @@ export function AffiliateForm({ affiliate, onSaved, onCancel }) {
             <div className="grid flex-1 gap-5 p-6 sm:grid-cols-2">
                 {formError && <Alert tone="danger" className="sm:col-span-2">{formError}</Alert>}
 
-                <SectionTitle index="١" title="البيانات الشخصية" description="بيانات التواصل مع المسوق ودخوله لحسابه" />
+                <SectionTitle index={t('١')} title={t('البيانات الشخصية')} description={t('بيانات التواصل مع المسوق ودخوله لحسابه')} />
 
-                <Field label="الصورة الشخصية" optional error={errors.avatar} className="sm:col-span-2">
+                <Field label={t('الصورة الشخصية')} optional error={errors.avatar} className="sm:col-span-2">
                     {() => (
                         <ImageUpload
                             value={values.avatar}
@@ -120,33 +121,33 @@ export function AffiliateForm({ affiliate, onSaved, onCancel }) {
                             onError={(message) => setErrors((previous) => ({ ...previous, avatar: message ?? undefined }))}
                             shape="circle"
                             maxSizeMb={MAX_AVATAR_SIZE_MB}
-                            label="رفع صورة"
+                            label={t('رفع صورة')}
                         />
                     )}
                 </Field>
-                <Field label="الاسم بالكامل" error={errors.full_name} required className="sm:col-span-2">
-                    {(props) => <Input {...props} {...bind('full_name')} icon="user" placeholder="مثال: سارة محمود إبراهيم" data-autofocus />}
+                <Field label={t('الاسم بالكامل')} error={errors.full_name} required className="sm:col-span-2">
+                    {(props) => <Input {...props} {...bind('full_name')} icon="user" placeholder={t('مثال: سارة محمود إبراهيم')} data-autofocus />}
                 </Field>
-                <Field label="رقم الهاتف" error={errors.phone} required>
+                <Field label={t('رقم الهاتف')} error={errors.phone} required>
                     {(props) => <Input {...props} {...bind('phone')} icon="phone" type="tel" dir="ltr" className="text-start" placeholder="01012345678" />}
                 </Field>
-                <Field label="البريد الإلكتروني" optional error={errors.email}>
+                <Field label={t('البريد الإلكتروني')} optional error={errors.email}>
                     {(props) => <Input {...props} {...bind('email')} icon="mail" type="email" dir="ltr" className="text-start" placeholder="name@example.com" />}
                 </Field>
-                <Field label={isEdit ? 'كلمة مرور جديدة' : 'كلمة المرور'} error={errors.password} hint={isEdit ? 'اتركها فارغة للإبقاء على كلمة المرور الحالية' : undefined} required={!isEdit}>
-                    {(props) => <PasswordInput {...props} {...bind('password')} showStrength placeholder="٨ أحرف على الأقل" />}
+                <Field label={isEdit ? t('كلمة مرور جديدة') : t('كلمة المرور')} error={errors.password} hint={isEdit ? t('اتركها فارغة للإبقاء على كلمة المرور الحالية') : undefined} required={!isEdit}>
+                    {(props) => <PasswordInput {...props} {...bind('password')} showStrength placeholder={t('٨ أحرف على الأقل')} />}
                 </Field>
-                <Field label="تأكيد كلمة المرور" error={errors.password_confirmation} required={!isEdit}>
-                    {(props) => <PasswordInput {...props} {...bind('password_confirmation')} placeholder="أعد كتابة كلمة المرور" />}
+                <Field label={t('تأكيد كلمة المرور')} error={errors.password_confirmation} required={!isEdit}>
+                    {(props) => <PasswordInput {...props} {...bind('password_confirmation')} placeholder={t('أعد كتابة كلمة المرور')} />}
                 </Field>
 
                 <div className="h-px bg-line sm:col-span-2" />
-                <SectionTitle index="٢" title="وسيلة السحب المفضلة" description="الحساب الذي ستُحوَّل إليه أرباح المسوق" />
+                <SectionTitle index={t('٢')} title={t('وسيلة السحب المفضلة')} description={t('الحساب الذي ستُحوَّل إليه أرباح المسوق')} />
 
                 <PayoutMethodFields values={values} errors={errors} bind={bind} setValues={setValues} />
 
                 <div className="h-px bg-line sm:col-span-2" />
-                <SectionTitle index="٣" title="شريحة المسوق" description="تحدد نسبة العمولة الافتراضية، ويمكنك تخصيصها لاحقاً" />
+                <SectionTitle index={t('٣')} title={t('شريحة المسوق')} description={t('تحدد نسبة العمولة الافتراضية، ويمكنك تخصيصها لاحقاً')} />
                 <div className="sm:col-span-2">
                     <OptionCards options={TIER_OPTIONS} value={values.tier} onChange={(tier) => setValues({ ...values, tier })} name="tier" />
                 </div>
@@ -154,10 +155,10 @@ export function AffiliateForm({ affiliate, onSaved, onCancel }) {
 
             <div className="sticky bottom-0 flex items-center justify-end gap-2 border-t border-line bg-surface-2 px-6 py-4">
                 <Button variant="secondary" onClick={onCancel} disabled={submitting}>
-                    إلغاء
+                    {t('إلغاء')}
                 </Button>
                 <Button type="submit" loading={submitting} icon={isEdit ? 'check' : 'user-plus'}>
-                    {isEdit ? 'حفظ التعديلات' : 'إضافة المسوق'}
+                    {isEdit ? t('حفظ التعديلات') : t('إضافة المسوق')}
                 </Button>
             </div>
         </form>

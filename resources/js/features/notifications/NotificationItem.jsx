@@ -1,4 +1,5 @@
 import { Icon } from '@/components/ui/Icon';
+import { t } from '@/i18n';
 import { cn, formatRelative } from '@/lib/format';
 
 const TYPES = {
@@ -28,7 +29,7 @@ export function NotificationItem({ notification, onOpen, compact = false }) {
                 <span className={cn('block text-sm leading-relaxed', unread ? 'font-semibold text-ink' : 'text-ink-2')}>{notification.message}</span>
                 <span className="mt-0.5 block text-xs text-muted">{formatRelative(notification.created_at)}</span>
             </span>
-            {unread && <span className="mt-2 size-2 shrink-0 rounded-full bg-primary" aria-label="غير مقروء" />}
+            {unread && <span className="mt-2 size-2 shrink-0 rounded-full bg-primary" aria-label={t('غير مقروء')} />}
         </button>
     );
 }

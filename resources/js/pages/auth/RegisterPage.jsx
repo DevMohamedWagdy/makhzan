@@ -11,6 +11,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
 import { useSlugAvailability } from '@/features/auth/useSlugAvailability';
 import { useForm } from '@/hooks/useForm';
+import { t } from '@/i18n';
 import { APP_DOMAIN, MAX_LOGO_SIZE_MB } from '@/lib/constants';
 import { cn } from '@/lib/format';
 import { GOVERNORATES, findGovernorate } from '@/lib/locations';
@@ -18,8 +19,8 @@ import { slugify } from '@/lib/slug';
 import { normalizePhone, rules } from '@/lib/validators';
 
 const STEPS = [
-    { title: 'البيانات الأساسية', description: 'بياناتك الشخصية وكلمة المرور', icon: 'user' },
-    { title: 'بيانات المتجر', description: 'هوية متجرك وعنوانه', icon: 'store' },
+    { title: t('البيانات الأساسية'), description: t('بياناتك الشخصية وكلمة المرور'), icon: 'user' },
+    { title: t('بيانات المتجر'), description: t('هوية متجرك وعنوانه'), icon: 'store' },
 ];
 
 const STEP_FIELDS = [
@@ -42,16 +43,16 @@ const INITIAL_VALUES = {
 };
 
 const schema = {
-    full_name: [rules.required('أدخل اسمك بالكامل'), rules.minLength(5, 'اكتب الاسم الثنائي على الأقل')],
-    phone: [rules.required('أدخل رقم الهاتف / الواتساب'), rules.phone()],
-    email: [rules.required('أدخل البريد الإلكتروني'), rules.email()],
-    password: [rules.required('أدخل كلمة المرور'), rules.password()],
-    password_confirmation: [rules.required('أعد كتابة كلمة المرور'), rules.matches('password')],
-    store_name: [rules.required('أدخل اسم المتجر'), rules.minLength(2, 'اسم المتجر قصير جداً')],
-    governorate_id: [rules.required('اختر المحافظة')],
-    city_id: [rules.required('اختر المدينة')],
-    slug: [rules.required('اختر رابطاً لمتجرك'), rules.slug()],
-    accept_terms: [(value) => (value ? null : 'يجب الموافقة على الشروط والأحكام للمتابعة')],
+    full_name: [rules.required(t('أدخل اسمك بالكامل')), rules.minLength(5, t('اكتب الاسم الثنائي على الأقل'))],
+    phone: [rules.required(t('أدخل رقم الهاتف / الواتساب')), rules.phone()],
+    email: [rules.required(t('أدخل البريد الإلكتروني')), rules.email()],
+    password: [rules.required(t('أدخل كلمة المرور')), rules.password()],
+    password_confirmation: [rules.required(t('أعد كتابة كلمة المرور')), rules.matches('password')],
+    store_name: [rules.required(t('أدخل اسم المتجر')), rules.minLength(2, t('اسم المتجر قصير جداً'))],
+    governorate_id: [rules.required(t('اختر المحافظة'))],
+    city_id: [rules.required(t('اختر المدينة'))],
+    slug: [rules.required(t('اختر رابطاً لمتجرك')), rules.slug()],
+    accept_terms: [(value) => (value ? null : t('يجب الموافقة على الشروط والأحكام للمتابعة'))],
 };
 
 /** Maps API validation keys ("vendor.email") back to wizard field names. */
@@ -68,9 +69,9 @@ const SERVER_FIELD_MAP = {
 };
 
 const SLUG_STATUS = {
-    checking: { icon: null, text: 'جارٍ التحقق من توفر الرابط...', className: 'text-muted' },
-    available: { icon: 'check-circle', text: 'رائع! هذا الرابط متاح لمتجرك', className: 'text-success' },
-    taken: { icon: 'alert-circle', text: 'هذا الرابط محجوز، جرّب اسماً آخر', className: 'text-danger' },
+    checking: { icon: null, text: t('جارٍ التحقق من توفر الرابط...'), className: 'text-muted' },
+    available: { icon: 'check-circle', text: t('رائع! هذا الرابط متاح لمتجرك'), className: 'text-success' },
+    taken: { icon: 'alert-circle', text: t('هذا الرابط محجوز، جرّب اسماً آخر'), className: 'text-danger' },
 };
 
 export function RegisterPage() {
@@ -140,7 +141,7 @@ export function RegisterPage() {
                 },
             });
 
-            toast.success(`تم إنشاء متجر «${vendor.store.name}» بنجاح 🎉`, 'مرحباً بك في مخزن، يمكنك البدء بإضافة مسوقيك الآن.');
+            toast.success(t('تم إنشاء متجر «{name}» بنجاح 🎉', { name: vendor.store.name }), t('مرحباً بك في مخزن، يمكنك البدء بإضافة مسوقيك الآن.'));
             navigate('/dashboard/affiliates', { replace: true });
         } catch (error) {
             const fieldErrors = Object.fromEntries(Object.entries(error.errors ?? {}).map(([key, message]) => [SERVER_FIELD_MAP[key] ?? key, message]));
@@ -158,7 +159,7 @@ export function RegisterPage() {
 
     return (
         <AuthLayout wide>
-            <AuthHeading title="أنشئ متجرك على مخزن" subtitle="خطوتان فقط وتبدأ في إدارة مخزونك ومسوقيك من مكان واحد." />
+            <AuthHeading title={t('أنشئ متجرك على مخزن')} subtitle={t('خطوتان فقط وتبدأ في إدارة مخزونك ومسوقيك من مكان واحد.')} />
 
             <div className="mk-card overflow-hidden">
                 <div className="border-b border-line bg-surface-2 px-6 py-5">
@@ -171,71 +172,71 @@ export function RegisterPage() {
                     {step === 0 ? (
                         <div key="step-1" className="animate-step-in grid gap-5 sm:grid-cols-2">
                             <div className="sm:col-span-2">
-                                <p className="text-xs font-semibold text-primary">الخطوة ١ من ٢</p>
-                                <h2 className="mt-1 text-lg font-semibold text-ink">البيانات الأساسية</h2>
+                                <p className="text-xs font-semibold text-primary">{t('الخطوة ١ من ٢')}</p>
+                                <h2 className="mt-1 text-lg font-semibold text-ink">{t('البيانات الأساسية')}</h2>
                             </div>
-                            <Field label="الاسم بالكامل" error={errors.full_name} required className="sm:col-span-2">
-                                {(props) => <Input {...props} {...bind('full_name')} icon="user" autoComplete="name" placeholder="مثال: محمد أحمد علي" autoFocus />}
+                            <Field label={t('الاسم بالكامل')} error={errors.full_name} required className="sm:col-span-2">
+                                {(props) => <Input {...props} {...bind('full_name')} icon="user" autoComplete="name" placeholder={t('مثال: محمد أحمد علي')} autoFocus />}
                             </Field>
-                            <Field label="رقم الهاتف / الواتساب" error={errors.phone} hint="سنستخدمه لإرسال إشعارات الطلبات على الواتساب" required>
+                            <Field label={t('رقم الهاتف / الواتساب')} error={errors.phone} hint={t('سنستخدمه لإرسال إشعارات الطلبات على الواتساب')} required>
                                 {(props) => <Input {...props} {...bind('phone')} icon="phone" type="tel" dir="ltr" inputMode="tel" className="text-start" autoComplete="tel" placeholder="01012345678" />}
                             </Field>
-                            <Field label="البريد الإلكتروني" error={errors.email} required>
+                            <Field label={t('البريد الإلكتروني')} error={errors.email} required>
                                 {(props) => <Input {...props} {...bind('email')} icon="mail" type="email" dir="ltr" className="text-start" autoComplete="email" placeholder="name@example.com" />}
                             </Field>
-                            <Field label="كلمة المرور" error={errors.password} required>
-                                {(props) => <PasswordInput {...props} {...bind('password')} showStrength placeholder="٨ أحرف على الأقل" />}
+                            <Field label={t('كلمة المرور')} error={errors.password} required>
+                                {(props) => <PasswordInput {...props} {...bind('password')} showStrength placeholder={t('٨ أحرف على الأقل')} />}
                             </Field>
-                            <Field label="تأكيد كلمة المرور" error={errors.password_confirmation} required>
-                                {(props) => <PasswordInput {...props} {...bind('password_confirmation')} placeholder="أعد كتابة كلمة المرور" />}
+                            <Field label={t('تأكيد كلمة المرور')} error={errors.password_confirmation} required>
+                                {(props) => <PasswordInput {...props} {...bind('password_confirmation')} placeholder={t('أعد كتابة كلمة المرور')} />}
                             </Field>
                         </div>
                     ) : (
                         <div key="step-2" className="animate-step-in grid gap-5 sm:grid-cols-2">
                             <div className="sm:col-span-2">
-                                <p className="text-xs font-semibold text-primary">الخطوة ٢ من ٢</p>
-                                <h2 className="mt-1 text-lg font-semibold text-ink">بيانات المتجر</h2>
+                                <p className="text-xs font-semibold text-primary">{t('الخطوة ٢ من ٢')}</p>
+                                <h2 className="mt-1 text-lg font-semibold text-ink">{t('بيانات المتجر')}</h2>
                             </div>
-                            <Field label="لوجو المتجر" optional error={errors.store_logo} className="sm:col-span-2">
+                            <Field label={t('لوجو المتجر')} optional error={errors.store_logo} className="sm:col-span-2">
                                 {() => (
                                     <ImageUpload
                                         value={values.store_logo}
                                         onChange={(file) => setField('store_logo', file)}
                                         onError={(message) => setErrors((previous) => ({ ...previous, store_logo: message ?? undefined }))}
-                                        label="رفع لوجو المتجر"
+                                        label={t('رفع لوجو المتجر')}
                                         maxSizeMb={MAX_LOGO_SIZE_MB}
-                                        hint={`يفضّل صورة مربعة ٥١٢×٥١٢ بكسل — PNG أو JPG أو WEBP، بحد أقصى ${MAX_LOGO_SIZE_MB} ميجابايت`}
+                                        hint={t('يفضّل صورة مربعة ٥١٢×٥١٢ بكسل — PNG أو JPG أو WEBP، بحد أقصى {MAX_LOGO_SIZE_MB} ميجابايت', { MAX_LOGO_SIZE_MB })}
                                     />
                                 )}
                             </Field>
-                            <Field label="اسم المتجر" error={errors.store_name} required className="sm:col-span-2">
-                                {(props) => <Input {...props} {...bind('store_name')} onChange={onStoreNameChange} icon="store" placeholder="مثال: نور للأزياء" autoFocus />}
+                            <Field label={t('اسم المتجر')} error={errors.store_name} required className="sm:col-span-2">
+                                {(props) => <Input {...props} {...bind('store_name')} onChange={onStoreNameChange} icon="store" placeholder={t('مثال: نور للأزياء')} autoFocus />}
                             </Field>
-                            <Field label="المحافظة" error={errors.governorate_id} required>
+                            <Field label={t('المحافظة')} error={errors.governorate_id} required>
                                 {(props) => (
                                     <Select
                                         {...props}
                                         {...bind('governorate_id')}
                                         onChange={(event) => setValues({ ...values, governorate_id: event.target.value, city_id: '' })}
                                         icon="map-pin"
-                                        placeholder="اختر المحافظة"
+                                        placeholder={t('اختر المحافظة')}
                                         options={GOVERNORATES.map((governorate) => ({ value: governorate.id, label: governorate.name }))}
                                     />
                                 )}
                             </Field>
-                            <Field label="المدينة" error={errors.city_id} required>
+                            <Field label={t('المدينة')} error={errors.city_id} required>
                                 {(props) => (
                                     <Select
                                         {...props}
                                         {...bind('city_id')}
                                         disabled={!values.governorate_id}
                                         icon="building"
-                                        placeholder={values.governorate_id ? 'اختر المدينة' : 'اختر المحافظة أولاً'}
+                                        placeholder={values.governorate_id ? t('اختر المدينة') : t('اختر المحافظة أولاً')}
                                         options={cities.map((city) => ({ value: city.id, label: city.name }))}
                                     />
                                 )}
                             </Field>
-                            <Field label="رابط المتجر" error={errors.slug} hint={!errors.slug && !SLUG_STATUS[slugStatus] ? 'حروف إنجليزية صغيرة وأرقام وشرطة (-) فقط' : undefined} required className="sm:col-span-2">
+                            <Field label={t('رابط المتجر')} error={errors.slug} hint={!errors.slug && !SLUG_STATUS[slugStatus] ? t('حروف إنجليزية صغيرة وأرقام وشرطة (-) فقط') : undefined} required className="sm:col-span-2">
                                 {(props) => (
                                     <div className="flex flex-col gap-2">
                                         <div
@@ -275,15 +276,15 @@ export function RegisterPage() {
                                     onChange={(event) => setField('accept_terms', event.target.checked)}
                                     label={
                                         <>
-                                            أوافق على{' '}
+                                            {t('أوافق على ')}
                                             <a href="#" className="font-medium text-primary hover:underline">
-                                                الشروط والأحكام
+                                                {t('الشروط والأحكام')}
                                             </a>{' '}
-                                            و{' '}
+                                            {t('و ')}
                                             <a href="#" className="font-medium text-primary hover:underline">
-                                                سياسة الخصوصية
+                                                {t('سياسة الخصوصية')}
                                             </a>{' '}
-                                            الخاصة بمنصة مخزن
+                                            {t('الخاصة بمنصة مخزن')}
                                         </>
                                     }
                                 />
@@ -295,22 +296,22 @@ export function RegisterPage() {
                     <div className="mt-8 flex items-center justify-between gap-3 border-t border-line pt-6">
                         {step === 1 ? (
                             <Button variant="secondary" icon="arrow-right" onClick={() => setStep(0)} disabled={submitting}>
-                                السابق
+                                {t('السابق')}
                             </Button>
                         ) : (
                             <span />
                         )}
                         <Button type="submit" size="lg" loading={submitting} iconEnd={step === 0 ? 'arrow-left' : 'check'}>
-                            {step === 0 ? 'التالي: بيانات المتجر' : submitting ? 'جارٍ إنشاء المتجر...' : 'إنشاء المتجر'}
+                            {step === 0 ? t('التالي: بيانات المتجر') : submitting ? t('جارٍ إنشاء المتجر...') : t('إنشاء المتجر')}
                         </Button>
                     </div>
                 </form>
             </div>
 
             <p className="mt-8 text-center text-sm text-muted">
-                لديك حساب بالفعل؟{' '}
+                {t('لديك حساب بالفعل؟ ')}
                 <Link to="/login" className="font-semibold text-primary hover:underline">
-                    سجّل الدخول
+                    {t('سجّل الدخول')}
                 </Link>
             </p>
         </AuthLayout>

@@ -8,12 +8,13 @@ import { Icon } from '@/components/ui/Icon';
 import { StoreNotFound, StoreStatusScreen } from '@/features/affiliate-portal/StoreStatusScreen';
 import { useStoreBySlug } from '@/features/affiliate-portal/useStoreBySlug';
 import { useForm } from '@/hooks/useForm';
+import { t } from '@/i18n';
 import { rules } from '@/lib/validators';
 import { affiliatePortalApi } from '@/services/affiliatePortalApi';
 
 const schema = {
-    password: [rules.required('أدخل كلمة المرور الجديدة'), rules.password()],
-    password_confirmation: [rules.required('أعد كتابة كلمة المرور'), rules.matches('password')],
+    password: [rules.required(t('أدخل كلمة المرور الجديدة')), rules.password()],
+    password_confirmation: [rules.required(t('أعد كتابة كلمة المرور')), rules.matches('password')],
 };
 
 /**
@@ -25,7 +26,7 @@ export function AffiliateResetPasswordPage() {
     const [searchParams] = useSearchParams();
     const token = searchParams.get('token') ?? '';
     const affiliateId = Number(searchParams.get('id'));
-    const { store, missing } = useStoreBySlug(storeSlug, 'تعيين كلمة مرور جديدة');
+    const { store, missing } = useStoreBySlug(storeSlug, t('تعيين كلمة مرور جديدة'));
     const [submitting, setSubmitting] = useState(false);
     const [done, setDone] = useState(false);
     const [linkError, setLinkError] = useState(null);
@@ -39,16 +40,16 @@ export function AffiliateResetPasswordPage() {
 
     if (!token || !Number.isInteger(affiliateId) || affiliateId <= 0) {
         return (
-            <StoreStatusScreen store={store} icon="alert-triangle" tone="danger" title="رابط غير مكتمل" actions={<Button to={forgotPath} size="lg" className="w-full" icon="refresh">طلب رابط جديد</Button>}>
-                يبدو أن رابط إعادة التعيين ناقص أو تم نسخه بشكل غير صحيح. افتح الرابط من الرسالة مباشرة، أو اطلب رابطاً جديداً.
+            <StoreStatusScreen store={store} icon="alert-triangle" tone="danger" title={t('رابط غير مكتمل')} actions={<Button to={forgotPath} size="lg" className="w-full" icon="refresh">{t('طلب رابط جديد')}</Button>}>
+                {t('يبدو أن رابط إعادة التعيين ناقص أو تم نسخه بشكل غير صحيح. افتح الرابط من الرسالة مباشرة، أو اطلب رابطاً جديداً.')}
             </StoreStatusScreen>
         );
     }
 
     if (done) {
         return (
-            <StoreStatusScreen store={store} icon="check-circle" tone="success" title="تم تعيين كلمة المرور" actions={<Button to={loginPath} size="lg" className="w-full" icon="log-in">تسجيل الدخول</Button>}>
-                أصبحت كلمة مرورك الجديدة جاهزة، وتم تسجيل الخروج من جميع الأجهزة الأخرى لحمايتك.
+            <StoreStatusScreen store={store} icon="check-circle" tone="success" title={t('تم تعيين كلمة المرور')} actions={<Button to={loginPath} size="lg" className="w-full" icon="log-in">{t('تسجيل الدخول')}</Button>}>
+                {t('أصبحت كلمة مرورك الجديدة جاهزة، وتم تسجيل الخروج من جميع الأجهزة الأخرى لحمايتك.')}
             </StoreStatusScreen>
         );
     }
@@ -83,32 +84,32 @@ export function AffiliateResetPasswordPage() {
                 <span className="mx-auto grid size-14 place-items-center rounded-2xl bg-primary-soft text-primary">
                     <Icon name="shield-check" className="size-7" />
                 </span>
-                <h1 className="mt-5 text-2xl font-bold text-ink">تعيين كلمة مرور جديدة</h1>
-                <p className="mt-2 text-sm text-muted">اختر كلمة مرور قوية لحسابك كمسوق{store ? ` في ${store.name}` : ''}.</p>
+                <h1 className="mt-5 text-2xl font-bold text-ink">{t('تعيين كلمة مرور جديدة')}</h1>
+                <p className="mt-2 text-sm text-muted">{t('{value}', { value: t('اختر كلمة مرور قوية لحسابك كمسوق{value}.', { value: store ? t(' في {name}', { name: store.name }) : '' }) })}</p>
             </div>
 
             <form onSubmit={onSubmit} noValidate className="mk-card flex flex-col gap-5 p-6">
                 {linkError && (
                     <Alert tone="danger" title={linkError}>
                         <Link to={forgotPath} className="mt-1 inline-block font-semibold underline underline-offset-4">
-                            اطلب رابطاً جديداً
+                            {t('اطلب رابطاً جديداً')}
                         </Link>
                     </Alert>
                 )}
-                <Field label="كلمة المرور الجديدة" error={errors.password} required>
-                    {(props) => <PasswordInput {...props} {...bind('password')} showStrength placeholder="٨ أحرف على الأقل" autoFocus />}
+                <Field label={t('كلمة المرور الجديدة')} error={errors.password} required>
+                    {(props) => <PasswordInput {...props} {...bind('password')} showStrength placeholder={t('٨ أحرف على الأقل')} autoFocus />}
                 </Field>
-                <Field label="تأكيد كلمة المرور" error={errors.password_confirmation} required>
-                    {(props) => <PasswordInput {...props} {...bind('password_confirmation')} placeholder="أعد كتابة كلمة المرور" />}
+                <Field label={t('تأكيد كلمة المرور')} error={errors.password_confirmation} required>
+                    {(props) => <PasswordInput {...props} {...bind('password_confirmation')} placeholder={t('أعد كتابة كلمة المرور')} />}
                 </Field>
                 <Button type="submit" size="lg" loading={submitting} disabled={!store} className="w-full">
-                    {submitting ? 'جارٍ الحفظ...' : 'حفظ كلمة المرور'}
+                    {submitting ? t('جارٍ الحفظ...') : t('حفظ كلمة المرور')}
                 </Button>
             </form>
 
             <Link to={loginPath} className="mt-6 flex items-center justify-center gap-2 text-sm font-medium text-muted hover:text-primary">
                 <Icon name="arrow-right" className="size-4" />
-                العودة لتسجيل الدخول
+                {t('العودة لتسجيل الدخول')}
             </Link>
         </StorePublicLayout>
     );

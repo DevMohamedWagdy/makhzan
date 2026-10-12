@@ -1,5 +1,6 @@
 import { Badge } from '@/components/ui/Display';
 import { Icon } from '@/components/ui/Icon';
+import { t } from '@/i18n';
 import { AFFILIATE_STATUSES, AFFILIATE_TIERS, CURRENCY, PAYOUT_METHODS } from '@/lib/constants';
 import { formatNumber } from '@/lib/format';
 
@@ -55,7 +56,7 @@ export function getEffectiveCommission(affiliate) {
 }
 
 export function formatCommission({ type, value }) {
-    return type === 'percentage' ? `${formatNumber(value)}%` : `${formatNumber(value)} ${CURRENCY} / طلب`;
+    return type === 'percentage' ? `${formatNumber(value)}%` : t('{value} {CURRENCY} / طلب', { value: formatNumber(value), CURRENCY });
 }
 
 export function CommissionCell({ affiliate }) {
@@ -65,8 +66,8 @@ export function CommissionCell({ affiliate }) {
         <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
             <span className="text-sm font-semibold text-ink">{formatCommission(commission)}</span>
             {commission.isCustom && (
-                <span className="rounded bg-warning-soft px-1.5 py-0.5 text-[10px] font-medium text-warning" title={commission.note ?? 'عمولة مخصصة'}>
-                    مخصصة
+                <span className="rounded bg-warning-soft px-1.5 py-0.5 text-[10px] font-medium text-warning" title={commission.note ?? t('عمولة مخصصة')}>
+                    {t('مخصصة')}
                 </span>
             )}
         </span>

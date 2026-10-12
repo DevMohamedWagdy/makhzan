@@ -49,12 +49,12 @@ class SaveProductCategoryRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'name.required' => 'أدخل اسم القسم',
-            'name.max' => 'اسم القسم طويل جداً',
-            'name.unique' => 'يوجد قسم بنفس الاسم بالفعل',
-            'image.image' => 'نوع الملف غير مدعوم',
-            'image.mimes' => 'نوع الملف غير مدعوم، استخدم PNG أو JPG أو WEBP',
-            'image.max' => 'حجم الصورة يتجاوز ٢ ميجابايت',
+            'name.required' => __('products.category_name_required'),
+            'name.max' => __('products.category_name_max'),
+            'name.unique' => __('products.category_name_taken'),
+            'image.image' => __('forms.file_type'),
+            'image.mimes' => __('forms.image_type'),
+            'image.max' => __('forms.image_too_large', ['size' => 2]),
         ];
     }
 }

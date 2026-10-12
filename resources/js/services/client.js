@@ -1,3 +1,5 @@
+import { locale } from '@/i18n';
+import { t } from '@/i18n';
 import { ApiError, handleMockRequest } from './mock/server';
 import { sessionStore, tokenFor } from './session';
 
@@ -53,6 +55,7 @@ async function httpRequest(method, path, { body, query, auth = 'vendor' } = {}) 
     const headers = {
         Accept: 'application/json',
         'X-Requested-With': 'XMLHttpRequest',
+        'Accept-Language': locale,
         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content ?? '',
     };
     const token = tokenFor(auth);
@@ -80,7 +83,7 @@ async function httpRequest(method, path, { body, query, auth = 'vendor' } = {}) 
     }
 
     if (!response.ok) {
-        throw new ApiError(response.status, data.message ?? 'حدث خطأ غير متوقع', normalizeErrors(data.errors));
+        throw new ApiError(response.status, data.message ?? t('حدث خطأ غير متوقع'), normalizeErrors(data.errors));
     }
 
     // Unwrap single API resources ({ data }), but keep paginated collections ({ data, meta }) intact.

@@ -41,12 +41,12 @@ class ImportAffiliatesRequest extends FormRequest
         $maxRows = config('makhzan.affiliates.import_max_rows');
 
         return [
-            'file.required_without' => 'ارفع ملف CSV يحتوي على بيانات المسوقين',
-            'file.mimes' => 'نوع الملف غير مدعوم، احفظ ملف Excel بصيغة CSV ثم ارفعه',
-            'file.max' => 'حجم الملف يتجاوز ٥ ميجابايت',
-            'rows.required_without' => 'لا توجد صفوف للاستيراد',
-            'rows.min' => 'لا توجد صفوف للاستيراد',
-            'rows.max' => "الحد الأقصى {$maxRows} صف في المرة الواحدة",
+            'file.required_without' => __('affiliates.import.file_required'),
+            'file.mimes' => __('affiliates.import.file_type'),
+            'file.max' => __('forms.file_too_large', ['size' => 5]),
+            'rows.required_without' => __('affiliates.import.no_rows'),
+            'rows.min' => __('affiliates.import.no_rows'),
+            'rows.max' => __('affiliates.import.too_many_rows', ['max' => $maxRows]),
         ];
     }
 }

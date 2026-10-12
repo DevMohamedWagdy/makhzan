@@ -1,3 +1,5 @@
+import { t } from '@/i18n';
+
 /**
  * Product options/variants form state:
  * {
@@ -103,15 +105,15 @@ function rowErrors(row) {
     const price = Number(row.price);
 
     if (row.price === '' || Number.isNaN(price) || price < 0) {
-        errors.price = 'أدخل السعر';
+        errors.price = t('أدخل السعر');
     }
 
     if (row.compare_at_price !== '' && !(Number(row.compare_at_price) > price)) {
-        errors.compare_at_price = 'يجب أن يكون أكبر من السعر';
+        errors.compare_at_price = t('يجب أن يكون أكبر من السعر');
     }
 
     if (row.stock === '' || !Number.isInteger(Number(row.stock)) || Number(row.stock) < 0) {
-        errors.stock = 'أدخل كمية صحيحة';
+        errors.stock = t('أدخل كمية صحيحة');
     }
 
     return errors;
@@ -132,27 +134,27 @@ export function validateVariants(state) {
     }
 
     if (state.options.length === 0) {
-        errors.options = 'أضف خياراً واحداً على الأقل، أو أوقف خيار المقاسات والألوان';
+        errors.options = t('أضف خياراً واحداً على الأقل، أو أوقف خيار المقاسات والألوان');
     }
 
     const names = state.options.map((option) => option.name.trim().toLowerCase());
 
     state.options.forEach((option, index) => {
         if (!option.name.trim()) {
-            errors[`options.${index}.name`] = 'أدخل اسم الخيار';
+            errors[`options.${index}.name`] = t('أدخل اسم الخيار');
         } else if (names.indexOf(option.name.trim().toLowerCase()) !== index) {
-            errors[`options.${index}.name`] = 'اسم الخيار مكرر';
+            errors[`options.${index}.name`] = t('اسم الخيار مكرر');
         }
 
         if (option.values.length === 0) {
-            errors[`options.${index}.values`] = 'أضف قيمة واحدة على الأقل';
+            errors[`options.${index}.values`] = t('أضف قيمة واحدة على الأقل');
         }
     });
 
     const enabled = combinations(state.options).filter((values) => state.rows[comboKey(values)]?.enabled);
 
     if (state.options.length > 0 && enabled.length === 0 && !Object.keys(errors).some((key) => key.startsWith('options.'))) {
-        errors.options = 'فعّل تركيبة واحدة على الأقل';
+        errors.options = t('فعّل تركيبة واحدة على الأقل');
     }
 
     enabled.forEach((values) => addRowErrors(`rows.${comboKey(values)}`, state.rows[comboKey(values)]));

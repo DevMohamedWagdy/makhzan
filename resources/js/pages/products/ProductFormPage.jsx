@@ -12,6 +12,7 @@ import { ProductImagesField } from '@/features/products/ProductImagesField';
 import { useCategories } from '@/features/products/useCategories';
 import { VariantsEditor } from '@/features/products/VariantsEditor';
 import { buildVariantsPayload, emptyVariantsState, mapVariantServerErrors, validateVariants, variantsStateFromProduct } from '@/features/products/variants';
+import { t } from '@/i18n';
 import { PRODUCT_STATUSES } from '@/lib/constants';
 import { productsApi } from '@/services/productsApi';
 
@@ -83,15 +84,15 @@ export function ProductFormPage() {
         event.preventDefault();
 
         const clientErrors = {
-            ...(!details.name.trim() && { name: 'أدخل اسم المنتج' }),
-            ...(!details.category_id && { category_id: 'اختر القسم' }),
+            ...(!details.name.trim() && { name: t('أدخل اسم المنتج') }),
+            ...(!details.category_id && { category_id: t('اختر القسم') }),
             ...validateVariants(variants),
         };
 
         setErrors(clientErrors);
 
         if (Object.keys(clientErrors).length) {
-            toast.error('راجع بيانات المنتج', 'بعض الحقول تحتاج إلى تصحيح.');
+            toast.error(t('راجع بيانات المنتج'), t('بعض الحقول تحتاج إلى تصحيح.'));
 
             return;
         }
@@ -107,20 +108,20 @@ export function ProductFormPage() {
 
                 setProduct(saved);
                 setVariants(variantsStateFromProduct(saved));
-                toast.success('تم حفظ المنتج', saved.name);
+                toast.success(t('تم حفظ المنتج'), saved.name);
             } else {
                 const saved = await productsApi.create(payload);
 
                 if (pendingFiles.length) {
-                    await productsApi.uploadImages(saved.product_id, pendingFiles).catch((error) => toast.error('تم حفظ المنتج لكن تعذر رفع الصور', error.message));
+                    await productsApi.uploadImages(saved.product_id, pendingFiles).catch((error) => toast.error(t('تم حفظ المنتج لكن تعذر رفع الصور'), error.message));
                 }
 
-                toast.success('تمت إضافة المنتج', saved.name);
+                toast.success(t('تمت إضافة المنتج'), saved.name);
                 navigate('/dashboard/products');
             }
         } catch (error) {
             setErrors(mapVariantServerErrors(error.errors ?? {}, keys));
-            toast.error('تعذر حفظ المنتج', Object.values(error.errors ?? {})[0] ?? error.message);
+            toast.error(t('تعذر حفظ المنتج'), Object.values(error.errors ?? {})[0] ?? error.message);
         } finally {
             setSaving(false);
         }
@@ -131,22 +132,22 @@ export function ProductFormPage() {
 
         try {
             await productsApi.remove(productId);
-            toast.success('تم حذف المنتج', product.name);
+            toast.success(t('تم حذف المنتج'), product.name);
             navigate('/dashboard/products');
         } catch (error) {
-            toast.error('تعذر حذف المنتج', error.message);
+            toast.error(t('تعذر حذف المنتج'), error.message);
             setDeleting(false);
         }
     };
 
-    const title = isEdit ? (product?.name ?? 'تعديل المنتج') : 'إضافة منتج';
-    const header = <PageHeader title={title} breadcrumbs={['لوحة التحكم', 'المنتجات', isEdit ? 'تعديل' : 'منتج جديد']} />;
+    const title = isEdit ? (product?.name ?? t('تعديل المنتج')) : t('إضافة منتج');
+    const header = <PageHeader title={title} breadcrumbs={[t('لوحة التحكم'), t('المنتجات'), isEdit ? t('تعديل') : t('منتج جديد')]} />;
 
     if (loadError) {
         return (
             <>
                 {header}
-                <EmptyState icon="alert-triangle" title="تعذر تحميل المنتج" description={loadError} action={<Button variant="secondary" to="/dashboard/products">العودة للمنتجات</Button>} />
+                <EmptyState icon="alert-triangle" title={t('تعذر تحميل المنتج')} description={loadError} action={<Button variant="secondary" to="/dashboard/products">{t('العودة للمنتجات')}</Button>} />
             </>
         );
     }
@@ -169,11 +170,11 @@ export function ProductFormPage() {
                 {header}
                 <EmptyState
                     icon="grid"
-                    title="أضف قسماً أولاً"
-                    description="كل منتج يجب أن يتبع قسماً. أضف القسم الذي ينتمي له هذا المنتج، ثم أكمل إضافته."
+                    title={t('أضف قسماً أولاً')}
+                    description={t('كل منتج يجب أن يتبع قسماً. أضف القسم الذي ينتمي له هذا المنتج، ثم أكمل إضافته.')}
                     action={
                         <Button icon="plus" onClick={() => setCategoryModalOpen(true)}>
-                            إضافة قسم
+                            {t('إضافة قسم')}
                         </Button>
                     }
                 />
@@ -195,14 +196,14 @@ export function ProductFormPage() {
             <form onSubmit={submit} noValidate>
                 <PageHeader
                     title={title}
-                    breadcrumbs={['لوحة التحكم', 'المنتجات', isEdit ? 'تعديل' : 'منتج جديد']}
+                    breadcrumbs={[t('لوحة التحكم'), t('المنتجات'), isEdit ? t('تعديل') : t('منتج جديد')]}
                     actions={
                         <>
                             <Button variant="secondary" to="/dashboard/products" disabled={saving}>
-                                إلغاء
+                                {t('إلغاء')}
                             </Button>
                             <Button type="submit" icon="check" loading={saving}>
-                                {isEdit ? 'حفظ التعديلات' : 'حفظ المنتج'}
+                                {isEdit ? t('حفظ التعديلات') : t('حفظ المنتج')}
                             </Button>
                         </>
                     }
@@ -210,30 +211,30 @@ export function ProductFormPage() {
 
                 <div className="grid items-start gap-6 xl:grid-cols-[1fr_320px]">
                     <div className="flex min-w-0 flex-col gap-6">
-                        <Card title="بيانات المنتج">
+                        <Card title={t('بيانات المنتج')}>
                             <div className="flex flex-col gap-5">
-                                <Field label="اسم المنتج" required error={errors.name}>
-                                    {(props) => <Input {...props} data-autofocus value={details.name} onChange={(event) => setDetail('name', event.target.value)} aria-invalid={errors.name ? 'true' : undefined} placeholder="مثال: فستان سهرة ستان" maxLength={150} />}
+                                <Field label={t('اسم المنتج')} required error={errors.name}>
+                                    {(props) => <Input {...props} data-autofocus value={details.name} onChange={(event) => setDetail('name', event.target.value)} aria-invalid={errors.name ? 'true' : undefined} placeholder={t('مثال: فستان سهرة ستان')} maxLength={150} />}
                                 </Field>
-                                <Field label="الوصف" optional error={errors.description} hint="الخامة، المقاسات، طريقة العناية... يظهر في صفحة المنتج بالمتجر">
+                                <Field label={t('الوصف')} optional error={errors.description} hint={t('الخامة، المقاسات، طريقة العناية... يظهر في صفحة المنتج بالمتجر')}>
                                     {(props) => <Textarea {...props} value={details.description} onChange={(event) => setDetail('description', event.target.value)} className="min-h-32" maxLength={5000} />}
                                 </Field>
                             </div>
                         </Card>
 
-                        <Card title="الصور" description={isEdit ? 'التغييرات على الصور تُحفظ مباشرة' : 'تُرفع الصور بعد حفظ المنتج'}>
+                        <Card title={t('الصور')} description={isEdit ? t('التغييرات على الصور تُحفظ مباشرة') : t('تُرفع الصور بعد حفظ المنتج')}>
                             <ProductImagesField productId={isEdit ? productId : null} images={images} onImagesChange={setImages} pendingFiles={pendingFiles} onPendingChange={setPendingFiles} />
                         </Card>
 
-                        <Card title="السعر والمخزون">
+                        <Card title={t('السعر والمخزون')}>
                             <VariantsEditor value={variants} onChange={setVariants} errors={errors} />
                         </Card>
 
                         {isEdit && (
-                            <Alert tone="danger" icon="trash" title="حذف المنتج">
-                                <p>سيختفي المنتج من لوحة التحكم والمتجر.</p>
+                            <Alert tone="danger" icon="trash" title={t('حذف المنتج')}>
+                                <p>{t('سيختفي المنتج من لوحة التحكم والمتجر.')}</p>
                                 <Button variant="danger-soft" size="sm" icon="trash" className="mt-3" onClick={() => setDeleteOpen(true)}>
-                                    حذف المنتج
+                                    {t('حذف المنتج')}
                                 </Button>
                             </Alert>
                         )}
@@ -241,28 +242,28 @@ export function ProductFormPage() {
 
                     {/* Category and status come first on narrower screens: the category is required. */}
                     <div className="order-first grid gap-6 md:grid-cols-2 xl:sticky xl:top-24 xl:order-last xl:flex xl:flex-col">
-                        <Card title="القسم">
-                            <Field label="قسم المنتج" required error={errors.category_id}>
+                        <Card title={t('القسم')}>
+                            <Field label={t('قسم المنتج')} required error={errors.category_id}>
                                 {(props) => (
                                     <Select
                                         {...props}
                                         value={details.category_id}
                                         onChange={(event) => setDetail('category_id', event.target.value)}
-                                        placeholder="اختر القسم"
+                                        placeholder={t('اختر القسم')}
                                         options={categories.map((category) => ({ value: String(category.category_id), label: category.name }))}
                                         aria-invalid={errors.category_id ? 'true' : undefined}
                                     />
                                 )}
                             </Field>
                             <button type="button" onClick={() => setCategoryModalOpen(true)} className="mt-2 text-xs font-medium text-primary hover:underline">
-                                + قسم جديد
+                                {t('+ قسم جديد')}
                             </button>
                         </Card>
 
-                        <Card title="حالة المنتج">
+                        <Card title={t('حالة المنتج')}>
                             <OptionCards columns={1} value={details.status} onChange={(status) => setDetail('status', status)} options={STATUS_OPTIONS} />
                             <div className="mt-4 border-t border-line pt-4">
-                                <Switch checked={details.is_featured} onChange={(value) => setDetail('is_featured', value)} label="منتج مميز" description="يظهر في الصفحة الرئيسية للمتجر" />
+                                <Switch checked={details.is_featured} onChange={(value) => setDetail('is_featured', value)} label={t('منتج مميز')} description={t('يظهر في الصفحة الرئيسية للمتجر')} />
                             </div>
                         </Card>
 
@@ -275,7 +276,7 @@ export function ProductFormPage() {
                 onClose={() => setCategoryModalOpen(false)}
                 onSaved={async (category) => {
                     setCategoryModalOpen(false);
-                    toast.success('تمت إضافة القسم', category.name);
+                    toast.success(t('تمت إضافة القسم'), category.name);
                     await reloadCategories();
                     setDetail('category_id', String(category.category_id));
                 }}
@@ -287,9 +288,9 @@ export function ProductFormPage() {
                 onConfirm={remove}
                 loading={deleting}
                 icon="trash"
-                title={`حذف «${product?.name ?? ''}»؟`}
-                description="لإيقاف بيعه مؤقتاً اختر «مؤرشف» من حالة المنتج بدلاً من الحذف."
-                confirmLabel="حذف المنتج"
+                title={t('حذف «{value}»؟', { value: product?.name ?? '' })}
+                description={t('لإيقاف بيعه مؤقتاً اختر «مؤرشف» من حالة المنتج بدلاً من الحذف.')}
+                confirmLabel={t('حذف المنتج')}
             />
         </>
     );

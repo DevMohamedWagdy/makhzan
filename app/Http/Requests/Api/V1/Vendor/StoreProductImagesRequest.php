@@ -44,7 +44,7 @@ class StoreProductImagesRequest extends FormRequest
                 $total = $this->route('product')->images()->count() + count((array) $this->file('images'));
 
                 if ($total > $max) {
-                    $validator->errors()->add('images', "الحد الأقصى {$max} صور للمنتج");
+                    $validator->errors()->add('images', __('products.images_max', ['max' => $max]));
                 }
             },
         ];
@@ -56,10 +56,10 @@ class StoreProductImagesRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'images.required' => 'اختر صورة واحدة على الأقل',
-            'images.*.image' => 'نوع الملف غير مدعوم',
-            'images.*.mimes' => 'نوع الملف غير مدعوم، استخدم PNG أو JPG أو WEBP',
-            'images.*.max' => 'حجم الصورة يتجاوز ٤ ميجابايت',
+            'images.required' => __('products.images_required'),
+            'images.*.image' => __('forms.file_type'),
+            'images.*.mimes' => __('forms.image_type'),
+            'images.*.max' => __('forms.image_too_large', ['size' => 4]),
         ];
     }
 }

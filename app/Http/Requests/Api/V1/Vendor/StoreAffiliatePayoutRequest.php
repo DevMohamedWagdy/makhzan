@@ -44,7 +44,7 @@ class StoreAffiliatePayoutRequest extends FormRequest
         return [
             function (Validator $validator): void {
                 if ($this->route('affiliate')->status === AffiliateStatus::Pending) {
-                    $validator->errors()->add('amount', 'لا يمكن تسجيل دفعة لمسوق لم تتم الموافقة عليه بعد');
+                    $validator->errors()->add('amount', __('payouts.pending_affiliate'));
                 }
             },
         ];
@@ -56,10 +56,10 @@ class StoreAffiliatePayoutRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'amount.required' => 'أدخل المبلغ المحوّل',
-            'amount.numeric' => 'المبلغ يجب أن يكون رقماً',
-            'amount.min' => 'أقل مبلغ للتحويل 1 ج.م',
-            'paid_at.before_or_equal' => 'تاريخ التحويل لا يمكن أن يكون في المستقبل',
+            'amount.required' => __('payouts.amount_required'),
+            'amount.numeric' => __('payouts.amount_numeric'),
+            'amount.min' => __('payouts.amount_min'),
+            'paid_at.before_or_equal' => __('payouts.paid_at_future'),
         ];
     }
 }

@@ -23,7 +23,7 @@ class AffiliateImpersonationController extends Controller
         Gate::authorize('impersonate', $affiliate);
 
         if ($affiliate->status === AffiliateStatus::Pending) {
-            throw ValidationException::withMessages(['affiliate' => 'لا يمكن الدخول بحساب مسوق لم تتم الموافقة عليه بعد']);
+            throw ValidationException::withMessages(['affiliate' => __('affiliates.cannot_impersonate_pending')]);
         }
 
         $vendor = $request->user();

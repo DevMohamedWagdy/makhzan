@@ -2,6 +2,7 @@ import { useId, useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Field, Input, Switch } from '@/components/ui/Form';
 import { Icon } from '@/components/ui/Icon';
+import { t } from '@/i18n';
 import { CURRENCY, OPTION_SUGGESTIONS } from '@/lib/constants';
 import { cn } from '@/lib/format';
 import { combinations, comboKey, syncRows } from './variants';
@@ -30,7 +31,7 @@ function ValuesInput({ values, onChange, invalid, placeholder }) {
             {values.map((value) => (
                 <span key={value} className="inline-flex items-center gap-1 rounded-md bg-primary-soft px-2 py-0.5 text-xs font-medium text-primary">
                     {value}
-                    <button type="button" onClick={() => onChange(values.filter((item) => item !== value))} className="hover:text-danger" aria-label={`حذف ${value}`}>
+                    <button type="button" onClick={() => onChange(values.filter((item) => item !== value))} className="hover:text-danger" aria-label={t('حذف {value}', { value })}>
                         <Icon name="x" className="size-3" />
                     </button>
                 </span>
@@ -47,9 +48,9 @@ function ValuesInput({ values, onChange, invalid, placeholder }) {
                     }
                 }}
                 onBlur={() => commit()}
-                placeholder={values.length ? 'أضف قيمة...' : placeholder}
+                placeholder={values.length ? t('أضف قيمة...') : placeholder}
                 className="min-w-24 flex-1 bg-transparent text-sm outline-none"
-                aria-label="قيم الخيار"
+                aria-label={t('قيم الخيار')}
             />
         </div>
     );
@@ -76,11 +77,11 @@ function PriceInputs({ row, errors, prefix, onChange, compact = false }) {
         return (
             <>
                 <td className="px-2 py-2">
-                    {input('price', { suffix: money, 'aria-label': 'السعر' })}
+                    {input('price', { suffix: money, 'aria-label': t('السعر') })}
                     {errors[`${prefix}.price`] && <p className="mt-1 text-[11px] text-danger">{errors[`${prefix}.price`]}</p>}
                 </td>
                 <td className="px-2 py-2">
-                    {input('compare_at_price', { suffix: money, 'aria-label': 'السعر قبل الخصم', placeholder: '—' })}
+                    {input('compare_at_price', { suffix: money, 'aria-label': t('السعر قبل الخصم'), placeholder: '—' })}
                     {errors[`${prefix}.compare_at_price`] && <p className="mt-1 text-[11px] text-danger">{errors[`${prefix}.compare_at_price`]}</p>}
                 </td>
                 <td className="px-2 py-2">
@@ -88,7 +89,7 @@ function PriceInputs({ row, errors, prefix, onChange, compact = false }) {
                     {errors[`${prefix}.sku`] && <p className="mt-1 text-[11px] text-danger">{errors[`${prefix}.sku`]}</p>}
                 </td>
                 <td className="px-2 py-2">
-                    {input('stock', { step: 1, 'aria-label': 'الكمية' })}
+                    {input('stock', { step: 1, 'aria-label': t('الكمية') })}
                     {errors[`${prefix}.stock`] && <p className="mt-1 text-[11px] text-danger">{errors[`${prefix}.stock`]}</p>}
                 </td>
             </>
@@ -97,16 +98,16 @@ function PriceInputs({ row, errors, prefix, onChange, compact = false }) {
 
     return (
         <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="سعر البيع" required error={errors[`${prefix}.price`]}>
+            <Field label={t('سعر البيع')} required error={errors[`${prefix}.price`]}>
                 {(props) => input('price', { ...props, suffix: money, placeholder: '0' })}
             </Field>
-            <Field label="السعر قبل الخصم" optional error={errors[`${prefix}.compare_at_price`]} hint="يظهر مشطوباً بجانب السعر">
+            <Field label={t('السعر قبل الخصم')} optional error={errors[`${prefix}.compare_at_price`]} hint={t('يظهر مشطوباً بجانب السعر')}>
                 {(props) => input('compare_at_price', { ...props, suffix: money })}
             </Field>
-            <Field label="رمز المنتج (SKU)" optional error={errors[`${prefix}.sku`]}>
+            <Field label={t('رمز المنتج (SKU)')} optional error={errors[`${prefix}.sku`]}>
                 {(props) => <Input {...props} value={row.sku} onChange={(event) => onChange({ sku: event.target.value })} dir="ltr" className="text-start" placeholder="NF-1001" maxLength={60} />}
             </Field>
-            <Field label="الكمية المتاحة" required error={errors[`${prefix}.stock`]}>
+            <Field label={t('الكمية المتاحة')} required error={errors[`${prefix}.stock`]}>
                 {(props) => input('stock', { ...props, step: 1 })}
             </Field>
         </div>
@@ -127,7 +128,7 @@ export function VariantsEditor({ value, onChange, errors }) {
 
     const toggleOptions = (enabled) => {
         if (enabled && value.options.length === 0) {
-            update({ hasOptions: true, options: [{ name: 'المقاس', values: [] }] });
+            update({ hasOptions: true, options: [{ name: t('المقاس'), values: [] }] });
         } else {
             update({ hasOptions: enabled });
         }
@@ -148,7 +149,7 @@ export function VariantsEditor({ value, onChange, errors }) {
     return (
         <div className="flex flex-col gap-5">
             <div className="rounded-xl border border-line bg-surface-2 p-4">
-                <Switch checked={value.hasOptions} onChange={toggleOptions} label="المنتج له مقاسات أو ألوان" description="فعّله لتحديد سعر وكمية لكل تركيبة، مثل: أسود / L." />
+                <Switch checked={value.hasOptions} onChange={toggleOptions} label={t('المنتج له مقاسات أو ألوان')} description={t('فعّله لتحديد سعر وكمية لكل تركيبة، مثل: أسود / L.')} />
             </div>
 
             {!value.hasOptions ? (
@@ -165,22 +166,22 @@ export function VariantsEditor({ value, onChange, errors }) {
                         {value.options.map((option, index) => (
                             <div key={index} className="grid gap-3 rounded-xl border border-line p-3 sm:grid-cols-[180px_1fr_auto] sm:items-start">
                                 <div>
-                                    <Input list={suggestionsId} value={option.name} onChange={(event) => setOption(index, { name: event.target.value })} placeholder="اسم الخيار" aria-label={`اسم الخيار ${index + 1}`} maxLength={30} aria-invalid={errors[`options.${index}.name`] ? 'true' : undefined} />
+                                    <Input list={suggestionsId} value={option.name} onChange={(event) => setOption(index, { name: event.target.value })} placeholder={t('اسم الخيار')} aria-label={t('اسم الخيار {value}', { value: index + 1 })} maxLength={30} aria-invalid={errors[`options.${index}.name`] ? 'true' : undefined} />
                                     {errors[`options.${index}.name`] && <p className="mt-1 text-xs text-danger">{errors[`options.${index}.name`]}</p>}
                                 </div>
                                 <div>
-                                    <ValuesInput values={option.values} onChange={(values) => setOption(index, { values })} invalid={Boolean(errors[`options.${index}.values`])} placeholder={option.name === 'اللون' ? 'مثال: أسود، أحمر' : 'مثال: S، M، L'} />
+                                    <ValuesInput values={option.values} onChange={(values) => setOption(index, { values })} invalid={Boolean(errors[`options.${index}.values`])} placeholder={option.name === t('اللون') ? t('مثال: أسود، أحمر') : t('مثال: S، M، L')} />
                                     {errors[`options.${index}.values`] && <p className="mt-1 text-xs text-danger">{errors[`options.${index}.values`]}</p>}
                                 </div>
-                                <Button variant="ghost" size="icon" onClick={() => update({ options: value.options.filter((_, position) => position !== index) })} aria-label={`حذف الخيار ${option.name}`} title="حذف الخيار">
+                                <Button variant="ghost" size="icon" onClick={() => update({ options: value.options.filter((_, position) => position !== index) })} aria-label={t('حذف الخيار {name}', { name: option.name })} title={t('حذف الخيار')}>
                                     <Icon name="trash" className="size-4" />
                                 </Button>
                             </div>
                         ))}
                         {errors.options && <p className="text-xs text-danger">{errors.options}</p>}
                         {value.options.length < MAX_OPTIONS && (
-                            <Button variant="soft" size="sm" icon="plus" className="self-start" onClick={() => update({ options: [...value.options, { name: value.options.some((option) => option.name === 'اللون') ? '' : 'اللون', values: [] }] })}>
-                                إضافة خيار
+                            <Button variant="soft" size="sm" icon="plus" className="self-start" onClick={() => update({ options: [...value.options, { name: value.options.some((option) => option.name === t('اللون')) ? '' : t('اللون'), values: [] }] })}>
+                                {t('إضافة خيار')}
                             </Button>
                         )}
                     </div>
@@ -189,23 +190,23 @@ export function VariantsEditor({ value, onChange, errors }) {
                         <div className="overflow-hidden rounded-xl border border-line">
                             <div className="flex flex-wrap items-end gap-2 border-b border-line bg-surface-2 p-3">
                                 <p className="me-auto text-sm font-semibold text-ink">
-                                    التركيبات <span className="font-normal text-muted">({combos.filter((values) => value.rows[comboKey(values)]?.enabled).length} من {combos.length})</span>
+                                    {t('التركيبات')} <span className="font-normal text-muted">({t('{count} من {total}', { count: combos.filter((values) => value.rows[comboKey(values)]?.enabled).length, total: combos.length })})</span>
                                 </p>
-                                <Input type="number" min={0} value={bulk.price} onChange={(event) => setBulk({ ...bulk, price: event.target.value })} placeholder="سعر للكل" className="h-9 w-28 text-sm" aria-label="سعر لكل التركيبات" />
-                                <Input type="number" min={0} value={bulk.stock} onChange={(event) => setBulk({ ...bulk, stock: event.target.value })} placeholder="كمية للكل" className="h-9 w-28 text-sm" aria-label="كمية لكل التركيبات" />
+                                <Input type="number" min={0} value={bulk.price} onChange={(event) => setBulk({ ...bulk, price: event.target.value })} placeholder={t('سعر للكل')} className="h-9 w-28 text-sm" aria-label={t('سعر لكل التركيبات')} />
+                                <Input type="number" min={0} value={bulk.stock} onChange={(event) => setBulk({ ...bulk, stock: event.target.value })} placeholder={t('كمية للكل')} className="h-9 w-28 text-sm" aria-label={t('كمية لكل التركيبات')} />
                                 <Button size="sm" variant="secondary" onClick={applyBulk} disabled={bulk.price === '' && bulk.stock === ''}>
-                                    تطبيق على الكل
+                                    {t('تطبيق على الكل')}
                                 </Button>
                             </div>
                             <div className="mk-scroll overflow-x-auto">
                                 <table className="w-full min-w-[640px] text-sm">
                                     <thead className="text-xs text-muted">
                                         <tr>
-                                            <th className="px-3 py-2 text-start font-medium">التركيبة</th>
-                                            <th className="px-2 py-2 text-start font-medium">السعر</th>
-                                            <th className="px-2 py-2 text-start font-medium">قبل الخصم</th>
+                                            <th className="px-3 py-2 text-start font-medium">{t('التركيبة')}</th>
+                                            <th className="px-2 py-2 text-start font-medium">{t('السعر')}</th>
+                                            <th className="px-2 py-2 text-start font-medium">{t('قبل الخصم')}</th>
                                             <th className="px-2 py-2 text-start font-medium">SKU</th>
-                                            <th className="w-24 px-2 py-2 text-start font-medium">الكمية</th>
+                                            <th className="w-24 px-2 py-2 text-start font-medium">{t('الكمية')}</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-line">
@@ -217,7 +218,7 @@ export function VariantsEditor({ value, onChange, errors }) {
                                                 <tr key={key} className={cn(!row.enabled && 'bg-surface-2 opacity-60')}>
                                                     <td className="px-3 py-2">
                                                         <label className="flex cursor-pointer items-center gap-2 font-medium whitespace-nowrap text-ink">
-                                                            <input type="checkbox" checked={row.enabled} onChange={(event) => updateRow(key, { enabled: event.target.checked })} className="size-4 accent-[var(--color-primary)]" aria-label={`بيع ${values.join(' / ')}`} />
+                                                            <input type="checkbox" checked={row.enabled} onChange={(event) => updateRow(key, { enabled: event.target.checked })} className="size-4 accent-[var(--color-primary)]" aria-label={t('بيع {value}', { value: values.join(' / ') })} />
                                                             {values.join(' / ')}
                                                         </label>
                                                     </td>
@@ -225,7 +226,7 @@ export function VariantsEditor({ value, onChange, errors }) {
                                                         <PriceInputs row={row} errors={errors} prefix={`rows.${key}`} onChange={(patch) => updateRow(key, patch)} compact />
                                                     ) : (
                                                         <td colSpan={4} className="px-2 py-2 text-xs text-muted">
-                                                            غير متاحة للبيع
+                                                            {t('غير متاحة للبيع')}
                                                         </td>
                                                     )}
                                                 </tr>

@@ -19,8 +19,6 @@ class AffiliateLoginRequest extends FormRequest
 {
     private const MAX_ATTEMPTS = 5;
 
-    private const INVALID_CREDENTIALS = 'رقم الهاتف / البريد الإلكتروني أو كلمة المرور غير صحيحة';
-
     /**
      * Get the validation rules that apply to the request.
      *
@@ -43,10 +41,10 @@ class AffiliateLoginRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'store_slug.required' => 'المتجر غير محدد',
-            'store_slug.exists' => 'المتجر غير موجود',
-            'identifier.required' => 'أدخل رقم الهاتف أو البريد الإلكتروني',
-            'password.required' => 'أدخل كلمة المرور',
+            'store_slug.required' => __('forms.store_missing'),
+            'store_slug.exists' => __('forms.store_not_found'),
+            'identifier.required' => __('forms.affiliate_identifier_required'),
+            'password.required' => __('forms.password_required'),
         ];
     }
 
@@ -74,14 +72,14 @@ class AffiliateLoginRequest extends FormRequest
         if (! $affiliate || ! $affiliate->password || ! $passwordMatches) {
             RateLimiter::hit($this->throttleKey());
 
-            throw ValidationException::withMessages(['identifier' => self::INVALID_CREDENTIALS]);
+            throw ValidationException::withMessages(['identifier' => __('auth.affiliate_invalid_credentials')]);
         }
 
         RateLimiter::clear($this->throttleKey());
 
         $statusMessage = match ($affiliate->status) {
-            AffiliateStatus::Pending => 'طلب انضمامك قيد المراجعة، وستتمكن من الدخول فور موافقة صاحب المتجر.',
-            AffiliateStatus::Frozen => 'حسابك موقوف حالياً، تواصل مع المتجر لمزيد من التفاصيل.',
+            AffiliateStatus::Pending => __('auth.affiliate_pending'),
+            AffiliateStatus::Frozen => __('auth.affiliate_frozen'),
             AffiliateStatus::Active => null,
         };
 
@@ -106,7 +104,7 @@ class AffiliateLoginRequest extends FormRequest
         $minutes = (int) ceil(RateLimiter::availableIn($this->throttleKey()) / 60);
 
         throw ValidationException::withMessages([
-            'identifier' => "محاولات دخول كثيرة. حاول مرة أخرى بعد {$minutes} دقيقة.",
+            'identifier' => __('auth.throttle_minutes', ['minutes' => $minutes]),
         ])->status(429);
     }
 

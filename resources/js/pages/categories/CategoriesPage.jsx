@@ -9,6 +9,7 @@ import { useToast } from '@/context/ToastContext';
 import { CategoryFormModal } from '@/features/products/CategoryFormModal';
 import { ProductThumb } from '@/features/products/ProductBadges';
 import { useCategories } from '@/features/products/useCategories';
+import { t } from '@/i18n';
 import { formatNumber } from '@/lib/format';
 import { categoriesApi } from '@/services/productsApi';
 
@@ -31,7 +32,7 @@ export function CategoriesPage() {
             await Promise.all(ordered.map((category, position) => category.position !== position && categoriesApi.update(category.category_id, { name: category.name, position })).filter(Boolean));
             await reload();
         } catch (moveError) {
-            toast.error('تعذر تغيير الترتيب', moveError.message);
+            toast.error(t('تعذر تغيير الترتيب'), moveError.message);
         } finally {
             setBusy(false);
         }
@@ -42,11 +43,11 @@ export function CategoriesPage() {
 
         try {
             await categoriesApi.remove(dialog.category.category_id);
-            toast.success('تم حذف القسم');
+            toast.success(t('تم حذف القسم'));
             setDialog(null);
             reload();
         } catch (removeError) {
-            toast.error('تعذر حذف القسم', removeError.errors?.category ?? removeError.message);
+            toast.error(t('تعذر حذف القسم'), removeError.errors?.category ?? removeError.message);
         } finally {
             setBusy(false);
         }
@@ -55,12 +56,12 @@ export function CategoriesPage() {
     return (
         <>
             <PageHeader
-                title="الأقسام"
-                description="نظّم منتجاتك في أقسام تظهر في متجرك. كل منتج يجب أن يتبع قسماً."
-                breadcrumbs={['لوحة التحكم', 'التجارة', 'الأقسام']}
+                title={t('الأقسام')}
+                description={t('نظّم منتجاتك في أقسام تظهر في متجرك. كل منتج يجب أن يتبع قسماً.')}
+                breadcrumbs={[t('لوحة التحكم'), t('التجارة'), t('الأقسام')]}
                 actions={
                     <Button icon="plus" onClick={() => setDialog({ type: 'form' })}>
-                        إضافة قسم
+                        {t('إضافة قسم')}
                     </Button>
                 }
             />
@@ -68,7 +69,7 @@ export function CategoriesPage() {
             <section className="mk-card overflow-hidden">
                 {error ? (
                     <div className="p-6">
-                        <EmptyState icon="alert-triangle" title="تعذر تحميل الأقسام" description={error} action={<Button variant="secondary" icon="refresh" onClick={reload}>إعادة المحاولة</Button>} />
+                        <EmptyState icon="alert-triangle" title={t('تعذر تحميل الأقسام')} description={error} action={<Button variant="secondary" icon="refresh" onClick={reload}>{t('إعادة المحاولة')}</Button>} />
                     </div>
                 ) : !categories ? (
                     <div className="flex flex-col gap-3 p-4">
@@ -80,11 +81,11 @@ export function CategoriesPage() {
                     <div className="p-6">
                         <EmptyState
                             icon="grid"
-                            title="لا توجد أقسام بعد"
-                            description="ابدأ بإضافة الأقسام التي تعمل بها، مثل: فساتين، عبايات، إكسسوارات، ثم أضف منتجاتك إليها."
+                            title={t('لا توجد أقسام بعد')}
+                            description={t('ابدأ بإضافة الأقسام التي تعمل بها، مثل: فساتين، عبايات، إكسسوارات، ثم أضف منتجاتك إليها.')}
                             action={
                                 <Button icon="plus" onClick={() => setDialog({ type: 'form' })}>
-                                    إضافة أول قسم
+                                    {t('إضافة أول قسم')}
                                 </Button>
                             }
                         />
@@ -94,10 +95,10 @@ export function CategoriesPage() {
                         {categories.map((category, index) => (
                             <li key={category.category_id} className="flex flex-wrap items-center gap-4 p-4">
                                 <div className="flex flex-col">
-                                    <button type="button" onClick={() => move(index, -1)} disabled={busy || index === 0} className="grid size-6 place-items-center rounded text-muted hover:bg-surface-3 hover:text-ink disabled:opacity-30" aria-label={`نقل ${category.name} لأعلى`}>
+                                    <button type="button" onClick={() => move(index, -1)} disabled={busy || index === 0} className="grid size-6 place-items-center rounded text-muted hover:bg-surface-3 hover:text-ink disabled:opacity-30" aria-label={t('نقل {name} لأعلى', { name: category.name })}>
                                         <Icon name="chevron-down" className="size-4 rotate-180" />
                                     </button>
-                                    <button type="button" onClick={() => move(index, 1)} disabled={busy || index === categories.length - 1} className="grid size-6 place-items-center rounded text-muted hover:bg-surface-3 hover:text-ink disabled:opacity-30" aria-label={`نقل ${category.name} لأسفل`}>
+                                    <button type="button" onClick={() => move(index, 1)} disabled={busy || index === categories.length - 1} className="grid size-6 place-items-center rounded text-muted hover:bg-surface-3 hover:text-ink disabled:opacity-30" aria-label={t('نقل {name} لأسفل', { name: category.name })}>
                                         <Icon name="chevron-down" className="size-4" />
                                     </button>
                                 </div>
@@ -105,18 +106,18 @@ export function CategoriesPage() {
                                 <div className="min-w-0 flex-1">
                                     <div className="flex flex-wrap items-center gap-2">
                                         <span className="font-semibold text-ink">{category.name}</span>
-                                        {!category.is_active && <Badge tone="neutral" icon="eye-off">مخفي من المتجر</Badge>}
+                                        {!category.is_active && <Badge tone="neutral" icon="eye-off">{t('مخفي من المتجر')}</Badge>}
                                     </div>
                                     {category.description && <p className="mt-0.5 truncate text-xs text-muted">{category.description}</p>}
                                 </div>
                                 <Button variant="ghost" size="sm" to={`/dashboard/products?category_id=${category.category_id}`}>
-                                    {formatNumber(category.products_count)} منتج
+                                    {t('{value} منتج', { value: formatNumber(category.products_count) })}
                                 </Button>
                                 <div className="flex gap-1">
                                     <Button variant="secondary" size="sm" icon="edit" onClick={() => setDialog({ type: 'form', category })}>
-                                        تعديل
+                                        {t('تعديل')}
                                     </Button>
-                                    <Button variant="danger-soft" size="icon" onClick={() => (category.products_count ? toast.error('لا يمكن حذف هذا القسم', `به ${category.products_count} منتج. انقل منتجاته لقسم آخر أولاً، ثم احذفه.`) : setDialog({ type: 'delete', category }))} aria-label={`حذف ${category.name}`} title="حذف">
+                                    <Button variant="danger-soft" size="icon" onClick={() => (category.products_count ? toast.error(t('لا يمكن حذف هذا القسم'), t('به {products_count} منتج. انقل منتجاته لقسم آخر أولاً، ثم احذفه.', { products_count: category.products_count })) : setDialog({ type: 'delete', category }))} aria-label={t('حذف {name}', { name: category.name })} title={t('حذف')}>
                                         <Icon name="trash" className="size-4" />
                                     </Button>
                                 </div>
@@ -131,7 +132,7 @@ export function CategoriesPage() {
                 open={dialog?.type === 'form'}
                 onClose={() => setDialog(null)}
                 onSaved={(saved) => {
-                    toast.success(dialog.category ? 'تم حفظ القسم' : 'تمت إضافة القسم', saved.name);
+                    toast.success(dialog.category ? t('تم حفظ القسم') : t('تمت إضافة القسم'), saved.name);
                     setDialog(null);
                     reload();
                 }}
@@ -143,9 +144,9 @@ export function CategoriesPage() {
                 onConfirm={remove}
                 loading={busy}
                 icon="trash"
-                title={`حذف قسم «${dialog?.category?.name ?? ''}»؟`}
-                description="سيتم حذف القسم نهائياً."
-                confirmLabel="حذف القسم"
+                title={t('حذف قسم «{value}»؟', { value: dialog?.category?.name ?? '' })}
+                description={t('سيتم حذف القسم نهائياً.')}
+                confirmLabel={t('حذف القسم')}
             />
         </>
     );

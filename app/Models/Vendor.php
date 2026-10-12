@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasPreferredLocale;
 use App\Notifications\VendorResetPasswordNotification;
 use Database\Factories\VendorFactory;
+use Illuminate\Contracts\Translation\HasLocalePreference;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -15,13 +17,13 @@ use Laravel\Sanctum\HasApiTokens;
 
 #[Fillable(['full_name', 'phone', 'email', 'password'])]
 #[Hidden(['password', 'remember_token'])]
-class Vendor extends Authenticatable
+class Vendor extends Authenticatable implements HasLocalePreference
 {
     /** Ability granted to vendor dashboard tokens. */
     public const TOKEN_ABILITY = 'vendor';
 
     /** @use HasFactory<VendorFactory> */
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, HasPreferredLocale, Notifiable;
 
     /**
      * Get the attributes that should be cast.

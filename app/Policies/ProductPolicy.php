@@ -39,6 +39,6 @@ class ProductPolicy
     {
         return $vendor->store?->id === $product->store_id
             ? Response::allow()
-            : Response::denyAsNotFound('المنتج غير موجود');
+            : Response::denyAsNotFound(__('products.not_found'));
     }
 }

@@ -109,14 +109,14 @@ class SaveProductRequest extends FormRequest
         $names = array_map('mb_strtolower', array_column($options, 'name'));
 
         if (count($names) !== count(array_unique($names))) {
-            $validator->errors()->add('options', 'لا يمكن تكرار اسم الخيار');
+            $validator->errors()->add('options', __('products.option_name_duplicate'));
         }
 
         foreach ($options as $index => $option) {
             $values = array_map('mb_strtolower', $option['values']);
 
             if (count($values) !== count(array_unique($values))) {
-                $validator->errors()->add("options.{$index}.values", "قيم الخيار «{$option['name']}» مكررة");
+                $validator->errors()->add("options.{$index}.values", __('products.option_values_duplicate', ['option' => $option['name']]));
             }
         }
     }
@@ -127,7 +127,7 @@ class SaveProductRequest extends FormRequest
         $variants = $this->input('variants');
 
         if ($options === [] && count($variants) !== 1) {
-            $validator->errors()->add('variants', 'المنتج بدون خيارات يجب أن يكون له سعر ومخزون واحد فقط');
+            $validator->errors()->add('variants', __('products.simple_single_variant'));
 
             return;
         }
@@ -140,7 +140,7 @@ class SaveProductRequest extends FormRequest
                 && collect($values)->every(fn (string $value, int $position): bool => in_array($value, $options[$position]['values'], true));
 
             if (! $matchesOptions) {
-                $validator->errors()->add("variants.{$index}.option_values", 'هذه التركيبة لا تطابق خيارات المنتج');
+                $validator->errors()->add("variants.{$index}.option_values", __('products.variant_mismatch'));
 
                 continue;
             }
@@ -148,13 +148,13 @@ class SaveProductRequest extends FormRequest
             $key = mb_strtolower(implode('|', $values));
 
             if (isset($combinations[$key])) {
-                $validator->errors()->add("variants.{$index}.option_values", 'هذه التركيبة مكررة');
+                $validator->errors()->add("variants.{$index}.option_values", __('products.variant_duplicate'));
             }
 
             $combinations[$key] = true;
 
             if (isset($variant['compare_at_price']) && (float) $variant['compare_at_price'] <= (float) $variant['price']) {
-                $validator->errors()->add("variants.{$index}.compare_at_price", 'السعر قبل الخصم يجب أن يكون أكبر من سعر البيع');
+                $validator->errors()->add("variants.{$index}.compare_at_price", __('products.compare_at_price_invalid'));
             }
         }
 
@@ -163,7 +163,7 @@ class SaveProductRequest extends FormRequest
         $foreignIds = collect($variants)->pluck('id')->filter()->diff($ownIds);
 
         if ($foreignIds->isNotEmpty()) {
-            $validator->errors()->add('variants', 'بعض التركيبات لا تخص هذا المنتج');
+            $validator->errors()->add('variants', __('products.variant_foreign'));
         }
     }
 
@@ -175,7 +175,7 @@ class SaveProductRequest extends FormRequest
         $skus = collect($this->input('variants'))->pluck('sku')->filter();
 
         foreach ($skus->duplicates() as $index => $sku) {
-            $validator->errors()->add("variants.{$index}.sku", 'رمز SKU مكرر');
+            $validator->errors()->add("variants.{$index}.sku", __('products.sku_duplicate'));
         }
 
         if ($skus->isEmpty()) {
@@ -191,7 +191,7 @@ class SaveProductRequest extends FormRequest
 
         foreach ($skus as $index => $sku) {
             if (in_array($sku, $taken, true)) {
-                $validator->errors()->add("variants.{$index}.sku", 'رمز SKU مستخدم لمنتج آخر');
+                $validator->errors()->add("variants.{$index}.sku", __('products.sku_taken'));
             }
         }
     }
@@ -202,23 +202,23 @@ class SaveProductRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'category_id.required' => 'اختر القسم',
-            'category_id.exists' => 'القسم غير موجود',
-            'name.required' => 'أدخل اسم المنتج',
-            'name.max' => 'اسم المنتج طويل جداً',
-            'status.required' => 'اختر حالة المنتج',
-            'options.max' => 'الحد الأقصى ٣ خيارات للمنتج',
-            'options.*.name.required' => 'أدخل اسم الخيار',
-            'options.*.values.required' => 'أضف قيمة واحدة على الأقل',
-            'options.*.values.max' => 'الحد الأقصى ٣٠ قيمة للخيار',
-            'variants.required' => 'أضف سعر ومخزون المنتج',
-            'variants.max' => 'عدد التركيبات أكبر من المسموح',
-            'variants.*.price.required' => 'أدخل السعر',
-            'variants.*.price.numeric' => 'السعر يجب أن يكون رقماً',
-            'variants.*.price.min' => 'السعر لا يمكن أن يكون سالباً',
-            'variants.*.stock.required' => 'أدخل الكمية',
-            'variants.*.stock.integer' => 'الكمية يجب أن تكون رقماً صحيحاً',
-            'variants.*.stock.min' => 'الكمية لا يمكن أن تكون سالبة',
+            'category_id.required' => __('products.category_required'),
+            'category_id.exists' => __('products.category_not_found'),
+            'name.required' => __('products.name_required'),
+            'name.max' => __('products.name_max'),
+            'status.required' => __('products.status_required'),
+            'options.max' => __('products.options_max'),
+            'options.*.name.required' => __('products.option_name_required'),
+            'options.*.values.required' => __('products.option_values_required'),
+            'options.*.values.max' => __('products.option_values_max'),
+            'variants.required' => __('products.variants_required'),
+            'variants.max' => __('products.variants_max'),
+            'variants.*.price.required' => __('products.price_required'),
+            'variants.*.price.numeric' => __('products.price_numeric'),
+            'variants.*.price.min' => __('products.price_min'),
+            'variants.*.stock.required' => __('products.stock_required'),
+            'variants.*.stock.integer' => __('products.stock_integer'),
+            'variants.*.stock.min' => __('products.stock_min'),
         ];
     }
 }

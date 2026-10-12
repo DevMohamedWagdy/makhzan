@@ -1,4 +1,5 @@
 import { Field, Input, OptionCards } from '@/components/ui/Form';
+import { t } from '@/i18n';
 import { PAYOUT_METHODS } from '@/lib/constants';
 import { rules } from '@/lib/validators';
 
@@ -39,9 +40,9 @@ export function payoutSchema(values) {
     const method = PAYOUT_METHODS[values.payout_type];
 
     return {
-        payout_account_number: [rules.required(`أدخل ${method.numberLabel}`)],
-        payout_account_name: [rules.required('أدخل اسم صاحب الحساب')],
-        payout_bank_name: method.needsBank ? [rules.required('أدخل اسم البنك')] : [],
+        payout_account_number: [rules.required(t('أدخل {numberLabel}', { numberLabel: method.numberLabel }))],
+        payout_account_name: [rules.required(t('أدخل اسم صاحب الحساب'))],
+        payout_bank_name: method.needsBank ? [rules.required(t('أدخل اسم البنك'))] : [],
     };
 }
 
@@ -66,18 +67,18 @@ export function PayoutMethodFields({ values, errors, bind, setValues }) {
             <div className="sm:col-span-2">
                 <OptionCards options={PAYOUT_OPTIONS} value={values.payout_type} onChange={(type) => setValues({ ...values, payout_type: type })} columns={2} name="payout_type" />
             </div>
-            <Field label="اسم صاحب الحساب" error={errors.payout_account_name} required>
-                {(props) => <Input {...props} {...bind('payout_account_name')} placeholder={values.full_name || 'كما هو مسجل في المحفظة أو البنك'} />}
+            <Field label={t('اسم صاحب الحساب')} error={errors.payout_account_name} required>
+                {(props) => <Input {...props} {...bind('payout_account_name')} placeholder={values.full_name || t('كما هو مسجل في المحفظة أو البنك')} />}
             </Field>
             <Field label={method.numberLabel} error={errors.payout_account_number} required>
                 {(props) => <Input {...props} {...bind('payout_account_number')} dir="ltr" className="text-start" placeholder={method.numberPlaceholder} />}
             </Field>
             {method.needsBank && (
                 <>
-                    <Field label="اسم البنك" error={errors.payout_bank_name} required>
-                        {(props) => <Input {...props} {...bind('payout_bank_name')} icon="building" placeholder="مثال: البنك الأهلي المصري" />}
+                    <Field label={t('اسم البنك')} error={errors.payout_bank_name} required>
+                        {(props) => <Input {...props} {...bind('payout_bank_name')} icon="building" placeholder={t('مثال: البنك الأهلي المصري')} />}
                     </Field>
-                    <Field label="رقم الآيبان IBAN" optional error={errors.payout_iban}>
+                    <Field label={t('رقم الآيبان IBAN')} optional error={errors.payout_iban}>
                         {(props) => <Input {...props} {...bind('payout_iban')} dir="ltr" className="text-start" placeholder="EG00 0000 0000 0000 0000 0000 000" />}
                     </Field>
                 </>

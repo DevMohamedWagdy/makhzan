@@ -1,11 +1,10 @@
+import { intlLocale, locale, t } from '@/i18n';
 import { CURRENCY } from './constants';
 
-// Arabic locale with Latin digits: easier to scan in data-dense tables.
-const LOCALE = 'ar-EG-u-nu-latn';
-
-const numberFormatter = new Intl.NumberFormat(LOCALE);
-const dateFormatter = new Intl.DateTimeFormat(LOCALE, { day: 'numeric', month: 'short', year: 'numeric' });
-const relativeFormatter = new Intl.RelativeTimeFormat('ar', { numeric: 'auto' });
+// Arabic uses Latin digits (ar-EG-u-nu-latn): easier to scan in data-dense tables.
+const numberFormatter = new Intl.NumberFormat(intlLocale);
+const dateFormatter = new Intl.DateTimeFormat(intlLocale, { day: 'numeric', month: 'short', year: 'numeric' });
+const relativeFormatter = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' });
 
 export function formatNumber(value) {
     return numberFormatter.format(value ?? 0);
@@ -21,7 +20,7 @@ export function formatDate(value) {
 
 export function formatRelative(value) {
     if (!value) {
-        return 'لم ينشط بعد';
+        return t('لم ينشط بعد');
     }
 
     const diffSeconds = (new Date(value).getTime() - Date.now()) / 1000;
@@ -40,19 +39,19 @@ export function formatRelative(value) {
         }
     }
 
-    return 'الآن';
+    return t('الآن');
 }
 
 export function formatFileSize(bytes) {
     if (bytes < 1024) {
-        return `${bytes} بايت`;
+        return t('{bytes} بايت', { bytes });
     }
 
     if (bytes < 1024 * 1024) {
-        return `${(bytes / 1024).toFixed(0)} ك.ب`;
+        return t('{value} ك.ب', { value: (bytes / 1024).toFixed(0) });
     }
 
-    return `${(bytes / (1024 * 1024)).toFixed(1)} م.ب`;
+    return t('{value} م.ب', { value: (bytes / (1024 * 1024)).toFixed(1) });
 }
 
 export function initials(name = '') {

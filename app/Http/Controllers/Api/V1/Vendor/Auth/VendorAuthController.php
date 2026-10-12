@@ -20,6 +20,7 @@ class VendorAuthController extends Controller
     public function login(LoginRequest $request): JsonResponse
     {
         $vendor = $request->authenticate();
+        $vendor->rememberLocale();
 
         return $this->tokenResponse($vendor, $vendor->issueToken($request->boolean('remember')));
     }
@@ -41,6 +42,8 @@ class VendorAuthController extends Controller
 
             return $vendor;
         });
+
+        $vendor->rememberLocale();
 
         return $this->tokenResponse($vendor, $vendor->issueToken(remember: true), Response::HTTP_CREATED);
     }

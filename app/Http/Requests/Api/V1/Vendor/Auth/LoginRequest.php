@@ -35,8 +35,8 @@ class LoginRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'identifier.required' => 'أدخل البريد الإلكتروني أو رقم الهاتف',
-            'password.required' => 'أدخل كلمة المرور',
+            'identifier.required' => __('forms.identifier_required'),
+            'password.required' => __('forms.password_required'),
         ];
     }
 
@@ -63,7 +63,7 @@ class LoginRequest extends FormRequest
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
-                'identifier' => 'البريد الإلكتروني / رقم الهاتف أو كلمة المرور غير صحيحة',
+                'identifier' => __('auth.vendor_invalid_credentials'),
             ]);
         }
 
@@ -86,7 +86,7 @@ class LoginRequest extends FormRequest
         $minutes = (int) ceil(RateLimiter::availableIn($this->throttleKey()) / 60);
 
         throw ValidationException::withMessages([
-            'identifier' => "محاولات دخول كثيرة. حاول مرة أخرى بعد {$minutes} دقيقة.",
+            'identifier' => __('auth.throttle_minutes', ['minutes' => $minutes]),
         ])->status(429);
     }
 

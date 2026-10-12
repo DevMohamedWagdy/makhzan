@@ -18,6 +18,7 @@ class AffiliateAuthController extends Controller
     {
         $affiliate = $request->authenticate();
         $affiliate->forceFill(['last_active_at' => now()])->save();
+        $affiliate->rememberLocale();
 
         return response()->json([
             'token' => $affiliate->issueToken($request->boolean('remember')),

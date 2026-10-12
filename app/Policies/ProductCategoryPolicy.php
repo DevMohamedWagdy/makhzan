@@ -39,6 +39,6 @@ class ProductCategoryPolicy
     {
         return $vendor->store?->id === $category->store_id
             ? Response::allow()
-            : Response::denyAsNotFound('القسم غير موجود');
+            : Response::denyAsNotFound(__('products.category_not_found'));
     }
 }

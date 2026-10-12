@@ -1,5 +1,6 @@
 import { StorePublicLayout } from '@/components/layout/StorePublicLayout';
 import { Icon } from '@/components/ui/Icon';
+import { t } from '@/i18n';
 
 const TONES = {
     success: 'bg-success-soft text-success',
@@ -25,8 +26,8 @@ export function StoreStatusScreen({ store, icon, tone = 'primary', title, childr
 
 export function StoreNotFound() {
     return (
-        <StoreStatusScreen icon="store" tone="danger" title="المتجر غير موجود">
-            تأكد من الرابط الذي أرسله لك المتجر.
+        <StoreStatusScreen icon="store" tone="danger" title={t('المتجر غير موجود')}>
+            {t('تأكد من الرابط الذي أرسله لك المتجر.')}
         </StoreStatusScreen>
     );
 }

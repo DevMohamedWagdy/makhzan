@@ -8,13 +8,14 @@ import { Icon } from '@/components/ui/Icon';
 import { StoreNotFound, StoreStatusScreen } from '@/features/affiliate-portal/StoreStatusScreen';
 import { useStoreBySlug } from '@/features/affiliate-portal/useStoreBySlug';
 import { useForm } from '@/hooks/useForm';
+import { t } from '@/i18n';
 import { isEmail, isPhone, rules } from '@/lib/validators';
 import { affiliatePortalApi } from '@/services/affiliatePortalApi';
 
 const schema = {
     identifier: [
-        rules.required('أدخل رقم الهاتف أو البريد الإلكتروني'),
-        (value) => (value && !isEmail(value) && !isPhone(value) ? 'أدخل رقم هاتف أو بريداً إلكترونياً صحيحاً' : null),
+        rules.required(t('أدخل رقم الهاتف أو البريد الإلكتروني')),
+        (value) => (value && !isEmail(value) && !isPhone(value) ? t('أدخل رقم هاتف أو بريداً إلكترونياً صحيحاً') : null),
     ],
 };
 
@@ -25,7 +26,7 @@ const schema = {
 export function AffiliateForgotPasswordPage() {
     const { storeSlug } = useParams();
     const location = useLocation();
-    const { store, missing } = useStoreBySlug(storeSlug, 'نسيت كلمة المرور');
+    const { store, missing } = useStoreBySlug(storeSlug, t('نسيت كلمة المرور'));
     const [result, setResult] = useState(null);
     const [submitting, setSubmitting] = useState(false);
     const [formError, setFormError] = useState(null);
@@ -42,21 +43,21 @@ export function AffiliateForgotPasswordPage() {
                 store={store}
                 icon="mail"
                 tone="success"
-                title="تحقق من بريدك الإلكتروني"
+                title={t('تحقق من بريدك الإلكتروني')}
                 actions={
                     <>
                         <Button to={loginPath} state={{ identifier: values.identifier }} size="lg" className="w-full" icon="arrow-right">
-                            العودة لتسجيل الدخول
+                            {t('العودة لتسجيل الدخول')}
                         </Button>
                         <button type="button" onClick={() => setResult(null)} className="text-sm text-primary hover:underline">
-                            لم تصلك الرسالة؟ أعد المحاولة
+                            {t('لم تصلك الرسالة؟ أعد المحاولة')}
                         </button>
                     </>
                 }
             >
                 <p>{result.message}</p>
                 <Alert tone="info" className="mt-5 text-start">
-                    إذا سجّلت برقم هاتف فقط دون بريد إلكتروني، تواصل مع {store?.name ?? 'المتجر'} ليعيّن لك كلمة مرور جديدة.
+                    {t('إذا سجّلت برقم هاتف فقط دون بريد إلكتروني، تواصل مع {value} ليعيّن لك كلمة مرور جديدة.', { value: store?.name ?? t('المتجر') })}
                 </Alert>
             </StoreStatusScreen>
         );
@@ -75,7 +76,7 @@ export function AffiliateForgotPasswordPage() {
         try {
             setResult(await affiliatePortalApi.forgotPassword({ store_slug: storeSlug, identifier: values.identifier }));
         } catch (error) {
-            setFormError(error.status === 429 ? 'محاولات كثيرة، انتظر دقيقة ثم حاول مرة أخرى.' : (error.errors?.identifier ?? error.message));
+            setFormError(error.status === 429 ? t('محاولات كثيرة، انتظر دقيقة ثم حاول مرة أخرى.') : (error.errors?.identifier ?? error.message));
         } finally {
             setSubmitting(false);
         }
@@ -87,23 +88,23 @@ export function AffiliateForgotPasswordPage() {
                 <span className="mx-auto grid size-14 place-items-center rounded-2xl bg-primary-soft text-primary">
                     <Icon name="lock" className="size-7" />
                 </span>
-                <h1 className="mt-5 text-2xl font-bold text-ink">نسيت كلمة المرور؟</h1>
-                <p className="mt-2 text-sm leading-relaxed text-muted">أدخل رقم هاتفك أو بريدك الإلكتروني المسجل، وسنرسل رابط إعادة التعيين إلى بريدك.</p>
+                <h1 className="mt-5 text-2xl font-bold text-ink">{t('نسيت كلمة المرور؟')}</h1>
+                <p className="mt-2 text-sm leading-relaxed text-muted">{t('أدخل رقم هاتفك أو بريدك الإلكتروني المسجل، وسنرسل رابط إعادة التعيين إلى بريدك.')}</p>
             </div>
 
             <form onSubmit={onSubmit} noValidate className="mk-card flex flex-col gap-5 p-6">
                 {formError && <Alert tone="danger">{formError}</Alert>}
-                <Field label="رقم الهاتف أو البريد الإلكتروني" error={errors.identifier} required>
+                <Field label={t('رقم الهاتف أو البريد الإلكتروني')} error={errors.identifier} required>
                     {(props) => <Input {...props} {...bind('identifier')} icon="phone" dir="ltr" className="text-start" autoComplete="username" placeholder="01012345678" autoFocus />}
                 </Field>
                 <Button type="submit" size="lg" loading={submitting} disabled={!store} className="w-full">
-                    إرسال رابط إعادة التعيين
+                    {t('إرسال رابط إعادة التعيين')}
                 </Button>
             </form>
 
             <Link to={loginPath} className="mt-6 flex items-center justify-center gap-2 text-sm font-medium text-muted hover:text-primary">
                 <Icon name="arrow-right" className="size-4" />
-                العودة لتسجيل الدخول
+                {t('العودة لتسجيل الدخول')}
             </Link>
         </StorePublicLayout>
     );

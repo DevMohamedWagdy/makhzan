@@ -1,5 +1,6 @@
 import { useId, useRef, useState } from 'react';
 import { useObjectUrl } from '@/hooks/common';
+import { t } from '@/i18n';
 import { cn, formatFileSize } from '@/lib/format';
 import { Icon } from './Icon';
 
@@ -9,11 +10,11 @@ function validateFile(file, { accept, maxSizeMb }) {
     const typeOk = accepted.some((type) => type === extension || type === file.type || (type.endsWith('/*') && file.type.startsWith(type.slice(0, -1))));
 
     if (!typeOk) {
-        return 'نوع الملف غير مدعوم';
+        return t('نوع الملف غير مدعوم');
     }
 
     if (file.size > maxSizeMb * 1024 * 1024) {
-        return `حجم الملف يتجاوز ${maxSizeMb} ميجابايت`;
+        return t('حجم الملف يتجاوز {maxSizeMb} ميجابايت', { maxSizeMb });
     }
 
     return null;
@@ -44,7 +45,7 @@ function useDropTarget(onFile) {
 }
 
 /** Square image picker with preview (store logo, affiliate avatar). */
-export function ImageUpload({ value, onChange, onError, label = 'رفع صورة', hint, maxSizeMb = 2, shape = 'rounded', accept = 'image/png,image/jpeg,image/webp' }) {
+export function ImageUpload({ value, onChange, onError, label = t('رفع صورة'), hint, maxSizeMb = 2, shape = 'rounded', accept = 'image/png,image/jpeg,image/webp' }) {
     const inputId = useId();
     const inputRef = useRef(null);
     const preview = useObjectUrl(value);
@@ -90,7 +91,7 @@ export function ImageUpload({ value, onChange, onError, label = 'رفع صورة
             <div className="flex flex-col gap-1.5">
                 <div className="flex flex-wrap items-center gap-2">
                     <button type="button" onClick={() => inputRef.current?.click()} className="text-sm font-semibold text-primary hover:underline">
-                        {preview ? 'تغيير الصورة' : label}
+                        {preview ? t('تغيير الصورة') : label}
                     </button>
                     {preview && (
                         <button
@@ -101,11 +102,11 @@ export function ImageUpload({ value, onChange, onError, label = 'رفع صورة
                             }}
                             className="text-sm text-danger hover:underline"
                         >
-                            إزالة
+                            {t('إزالة')}
                         </button>
                     )}
                 </div>
-                <p className="text-xs leading-relaxed text-muted">{hint ?? `PNG أو JPG أو WEBP، بحد أقصى ${maxSizeMb} ميجابايت`}</p>
+                <p className="text-xs leading-relaxed text-muted">{hint ?? t('PNG أو JPG أو WEBP، بحد أقصى {maxSizeMb} ميجابايت', { maxSizeMb })}</p>
                 {value instanceof File && <p className="ltr text-xs text-ink-2">{value.name}</p>}
             </div>
         </div>
@@ -150,8 +151,8 @@ export function DropZone({ accept, maxSizeMb = 5, onFile, onError, title, descri
                         }
                     }}
                     className="grid size-9 place-items-center rounded-lg text-muted hover:bg-danger-soft hover:text-danger"
-                    aria-label="إزالة الملف"
-                    title="إزالة الملف"
+                    aria-label={t('إزالة الملف')}
+                    title={t('إزالة الملف')}
                 >
                     <Icon name="trash" className="size-[18px]" />
                 </button>

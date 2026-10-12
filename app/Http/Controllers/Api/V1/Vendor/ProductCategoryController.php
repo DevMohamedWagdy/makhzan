@@ -74,7 +74,7 @@ class ProductCategoryController extends Controller
         Gate::authorize('delete', $category);
 
         if ($category->products()->withTrashed()->exists()) {
-            throw ValidationException::withMessages(['category' => 'لا يمكن حذف قسم به منتجات، انقل منتجاته لقسم آخر أولاً']);
+            throw ValidationException::withMessages(['category' => __('products.category_has_products')]);
         }
 
         $category->delete();

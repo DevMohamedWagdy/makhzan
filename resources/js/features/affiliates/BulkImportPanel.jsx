@@ -4,6 +4,7 @@ import { Alert, Badge } from '@/components/ui/Display';
 import { Icon } from '@/components/ui/Icon';
 import { DropZone } from '@/components/ui/Upload';
 import { useToast } from '@/context/ToastContext';
+import { t } from '@/i18n';
 import { AFFILIATE_TIERS, BULK_IMPORT_COLUMNS, MAX_IMPORT_SIZE_MB, PAYOUT_METHODS } from '@/lib/constants';
 import { csvToObjects, downloadCsv } from '@/lib/csv';
 import { formatNumber } from '@/lib/format';
@@ -12,7 +13,7 @@ import { affiliatesApi } from '@/services/affiliatesApi';
 
 const ACCEPT = '.csv,text/csv';
 
-/** Accept both machine keys ("vip") and the Arabic labels vendors are likely to type. */
+/** Accept both machine keys ("vip") and the labels vendors are likely to type, in the dashboard language. */
 function resolveKey(value, map) {
     const needle = String(value ?? '').trim().toLowerCase();
 
@@ -27,37 +28,38 @@ function validateRow(row, seenPhones) {
     const payoutType = row.payout_type ? resolveKey(row.payout_type, PAYOUT_METHODS) : 'vodafone_cash';
 
     if (!row.full_name) {
-        errors.push('الاسم مطلوب');
+        errors.push(t('الاسم مطلوب'));
     }
 
     if (!isPhone(phone)) {
-        errors.push('رقم الهاتف غير صحيح');
+        errors.push(t('رقم الهاتف غير صحيح'));
     } else if (seenPhones.has(phone)) {
-        errors.push('رقم مكرر في الملف');
+        errors.push(t('رقم مكرر في الملف'));
     }
 
     if (row.email && !isEmail(row.email)) {
-        errors.push('البريد غير صحيح');
+        errors.push(t('البريد غير صحيح'));
     }
 
     if (!tier) {
-        errors.push('شريحة غير معروفة');
+        errors.push(t('شريحة غير معروفة'));
     }
 
     if (!payoutType) {
-        errors.push('وسيلة سحب غير معروفة');
+        errors.push(t('وسيلة سحب غير معروفة'));
     }
 
     seenPhones.add(phone);
 
-    return { errors };
+    // Send the keys, not the typed labels: labels depend on the dashboard language.
+    return { errors, resolved: { tier, payout_type: payoutType } };
 }
 
 function downloadTemplate() {
     downloadCsv('makhzan-affiliates-template.csv', [
         BULK_IMPORT_COLUMNS,
-        ['سارة محمود', '01012345678', 'sara@example.com', 'general', 'vodafone_cash', 'سارة محمود', '01012345678'],
-        ['أحمد علي', '01198765432', '', 'vip', 'instapay', 'أحمد علي', 'ahmed@instapay'],
+        [t('سارة محمود'), '01012345678', 'sara@example.com', 'general', 'vodafone_cash', t('سارة محمود'), '01012345678'],
+        [t('أحمد علي'), '01198765432', '', 'vip', 'instapay', t('أحمد علي'), 'ahmed@instapay'],
     ]);
 }
 
@@ -91,9 +93,9 @@ export function BulkImportPanel({ onImported }) {
         const missing = ['full_name', 'phone'].filter((column) => !(parsed[0] && column in parsed[0]));
 
         if (!parsed.length) {
-            setFileError('الملف فارغ أو لا يحتوي على صفوف بيانات');
+            setFileError(t('الملف فارغ أو لا يحتوي على صفوف بيانات'));
         } else if (missing.length) {
-            setFileError(`الأعمدة المطلوبة غير موجودة: ${missing.join('، ')}. استخدم القالب الجاهز.`);
+            setFileError(t('الأعمدة المطلوبة غير موجودة: {value}. استخدم القالب الجاهز.', { value: missing.join('، ') }));
         } else {
             setRows(parsed);
         }
@@ -111,13 +113,13 @@ export function BulkImportPanel({ onImported }) {
 
         try {
             // The server re-validates every row; the preview above is only for fast feedback.
-            const response = await affiliatesApi.importRows(validRows.map((entry) => ({ ...entry.row, line: entry.line })));
+            const response = await affiliatesApi.importRows(validRows.map((entry) => ({ ...entry.row, ...entry.resolved, line: entry.line })));
 
             setResult(response);
-            toast.success(`تم استيراد ${formatNumber(response.imported)} مسوق بنجاح`);
+            toast.success(t('تم استيراد {value} مسوق بنجاح', { value: formatNumber(response.imported) }));
             onImported();
         } catch (error) {
-            toast.error('فشل الاستيراد', error.message);
+            toast.error(t('فشل الاستيراد'), error.message);
         } finally {
             setImporting(false);
         }
@@ -129,28 +131,23 @@ export function BulkImportPanel({ onImported }) {
                 <span className="grid size-16 place-items-center rounded-2xl bg-success-soft text-success">
                     <Icon name="check-circle" className="size-8" />
                 </span>
-                <h3 className="text-lg font-semibold text-ink">اكتمل الاستيراد</h3>
+                <h3 className="text-lg font-semibold text-ink">{t('اكتمل الاستيراد')}</h3>
                 <p className="text-sm leading-relaxed text-muted">
-                    تمت إضافة <strong className="text-success">{formatNumber(result.imported)}</strong> مسوق
-                    {result.skipped > 0 && (
-                        <>
-                            {' '}
-                            وتم تخطي <strong className="text-danger">{formatNumber(result.skipped)}</strong> صف
-                        </>
-                    )}
-                    . سيحتاج المسوقون المستوردون إلى تعيين كلمة مرور قبل أول تسجيل دخول.
+                    {t('تمت إضافة {count} مسوق', { count: formatNumber(result.imported) })}
+                    {result.skipped > 0 && ` ${t('وتم تخطي {count} صف', { count: formatNumber(result.skipped) })}`}
+                    {t('. سيحتاج المسوقون المستوردون إلى تعيين كلمة مرور قبل أول تسجيل دخول.')}
                 </p>
                 {result.errors.length > 0 && (
                     <ul className="w-full max-w-md text-start text-xs text-danger">
                         {result.errors.map((error) => (
                             <li key={error.row}>
-                                صف {error.row}: {error.message}
+                                {t('صف {row}: {message}', { row: error.row, message: error.message })}
                             </li>
                         ))}
                     </ul>
                 )}
                 <Button variant="secondary" icon="upload" onClick={clear}>
-                    رفع ملف آخر
+                    {t('رفع ملف آخر')}
                 </Button>
             </div>
         );
@@ -164,12 +161,12 @@ export function BulkImportPanel({ onImported }) {
                         <Icon name="file-spreadsheet" />
                     </span>
                     <div>
-                        <p className="text-sm font-semibold text-ink">ابدأ بالقالب الجاهز</p>
-                        <p className="text-xs text-muted">يحتوي على الأعمدة المطلوبة وأمثلة للتعبئة</p>
+                        <p className="text-sm font-semibold text-ink">{t('ابدأ بالقالب الجاهز')}</p>
+                        <p className="text-xs text-muted">{t('يحتوي على الأعمدة المطلوبة وأمثلة للتعبئة')}</p>
                     </div>
                 </div>
                 <Button variant="secondary" size="sm" icon="download" onClick={downloadTemplate}>
-                    تحميل القالب (CSV)
+                    {t('تحميل القالب (CSV)')}
                 </Button>
             </div>
 
@@ -180,23 +177,22 @@ export function BulkImportPanel({ onImported }) {
                 onFile={onFile}
                 onClear={clear}
                 onError={setFileError}
-                title="اسحب ملف المسوقين وأفلته هنا، أو اضغط للاختيار"
-                description={`ملف CSV بحد أقصى ${MAX_IMPORT_SIZE_MB} ميجابايت و ١٠٠٠ صف — لملفات Excel: احفظها بصيغة CSV أولاً`}
+                title={t('اسحب ملف المسوقين وأفلته هنا، أو اضغط للاختيار')}
+                description={t('ملف CSV بحد أقصى {MAX_IMPORT_SIZE_MB} ميجابايت و ١٠٠٠ صف — لملفات Excel: احفظها بصيغة CSV أولاً', { MAX_IMPORT_SIZE_MB })}
             />
 
             {fileError && <Alert tone="danger">{fileError}</Alert>}
 
-
             {validated && (
                 <div className="mk-card overflow-hidden">
                     <div className="flex flex-wrap items-center gap-2 border-b border-line px-4 py-3">
-                        <p className="me-auto text-sm font-semibold text-ink">معاينة البيانات</p>
+                        <p className="me-auto text-sm font-semibold text-ink">{t('معاينة البيانات')}</p>
                         <Badge tone="success" icon="check">
-                            {formatNumber(validRows.length)} صالح
+                            {t('{value} صالح', { value: formatNumber(validRows.length) })}
                         </Badge>
                         {invalidRows.length > 0 && (
                             <Badge tone="danger" icon="alert-circle">
-                                {formatNumber(invalidRows.length)} به أخطاء
+                                {t('{value} به أخطاء', { value: formatNumber(invalidRows.length) })}
                             </Badge>
                         )}
                     </div>
@@ -205,9 +201,9 @@ export function BulkImportPanel({ onImported }) {
                             <thead className="sticky top-0 bg-surface-2 text-xs text-muted">
                                 <tr>
                                     <th className="px-4 py-2.5 text-start font-medium">#</th>
-                                    <th className="px-4 py-2.5 text-start font-medium">الاسم</th>
-                                    <th className="px-4 py-2.5 text-start font-medium">الهاتف</th>
-                                    <th className="px-4 py-2.5 text-start font-medium">الحالة</th>
+                                    <th className="px-4 py-2.5 text-start font-medium">{t('الاسم')}</th>
+                                    <th className="px-4 py-2.5 text-start font-medium">{t('الهاتف')}</th>
+                                    <th className="px-4 py-2.5 text-start font-medium">{t('الحالة')}</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-line">
@@ -217,7 +213,7 @@ export function BulkImportPanel({ onImported }) {
                                         <td className="px-4 py-2.5 text-ink">{entry.row.full_name || '—'}</td>
                                         <td className="ltr px-4 py-2.5 text-start text-ink-2">{entry.row.phone || '—'}</td>
                                         <td className="px-4 py-2.5">
-                                            {entry.errors.length ? <span className="text-xs text-danger">{entry.errors.join('، ')}</span> : <Icon name="check-circle" className="size-[18px] text-success" />}
+                                            {entry.errors.length ? <span className="text-xs text-danger">{entry.errors.join(t('، '))}</span> : <Icon name="check-circle" className="size-[18px] text-success" />}
                                         </td>
                                     </tr>
                                 ))}
@@ -229,9 +225,9 @@ export function BulkImportPanel({ onImported }) {
 
             {file && !fileError && (
                 <div className="flex items-center justify-between gap-3">
-                    <p className="text-xs text-muted">{invalidRows.length > 0 ? 'سيتم تخطي الصفوف التي بها أخطاء.' : 'المسوقون المستوردون يبدأون بحالة «نشط».'}</p>
+                    <p className="text-xs text-muted">{invalidRows.length > 0 ? t('سيتم تخطي الصفوف التي بها أخطاء.') : t('المسوقون المستوردون يبدأون بحالة «نشط».')}</p>
                     <Button icon="upload" loading={importing} onClick={runImport} disabled={validRows.length === 0}>
-                        {`استيراد ${formatNumber(validRows.length)} مسوق`}
+                        {t('استيراد {value} مسوق', { value: formatNumber(validRows.length) })}
                     </Button>
                 </div>
             )}

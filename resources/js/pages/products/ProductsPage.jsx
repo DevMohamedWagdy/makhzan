@@ -13,12 +13,13 @@ import { useToast } from '@/context/ToastContext';
 import { PriceCell, ProductStatusBadge, ProductThumb, StockBadge } from '@/features/products/ProductBadges';
 import { useCategories } from '@/features/products/useCategories';
 import { useDebouncedValue } from '@/hooks/common';
+import { t } from '@/i18n';
 import { PER_PAGE_OPTIONS, PRODUCT_STATUSES, STOCK_LEVELS } from '@/lib/constants';
 import { cn, formatNumber, formatRelative } from '@/lib/format';
 import { productsApi } from '@/services/productsApi';
 
 const FILTER_KEYS = ['search', 'category_id', 'status', 'stock', 'page', 'per_page'];
-const COLUMNS = ['المنتج', 'القسم', 'السعر', 'المخزون', 'الحالة', 'آخر تحديث', ''];
+const COLUMNS = [t('المنتج'), t('القسم'), t('السعر'), t('المخزون'), t('الحالة'), t('آخر تحديث'), ''];
 
 /** Reads list filters from the URL so filtered views survive reloads and can be linked to. */
 function useProductFilters() {
@@ -91,10 +92,10 @@ export function ProductsPage() {
     const setStatus = async (product, status) => {
         try {
             await productsApi.update(product.product_id, toPayload(product, { status }));
-            toast.success(status === 'active' ? 'تم نشر المنتج' : status === 'archived' ? 'تمت أرشفة المنتج' : 'تم تحويل المنتج لمسودة', product.name);
+            toast.success(status === 'active' ? t('تم نشر المنتج') : status === 'archived' ? t('تمت أرشفة المنتج') : t('تم تحويل المنتج لمسودة'), product.name);
             load();
         } catch (updateError) {
-            toast.error('تعذر تحديث المنتج', updateError.message);
+            toast.error(t('تعذر تحديث المنتج'), updateError.message);
         }
     };
 
@@ -103,11 +104,11 @@ export function ProductsPage() {
 
         try {
             await productsApi.remove(deleting.product_id);
-            toast.success('تم حذف المنتج', deleting.name);
+            toast.success(t('تم حذف المنتج'), deleting.name);
             setDeleting(null);
             load();
         } catch (removeError) {
-            toast.error('تعذر حذف المنتج', removeError.message);
+            toast.error(t('تعذر حذف المنتج'), removeError.message);
         } finally {
             setBusy(false);
         }
@@ -120,16 +121,16 @@ export function ProductsPage() {
     return (
         <>
             <PageHeader
-                title="المنتجات"
-                description="أضف منتجاتك بأسعارها ومقاساتها وألوانها، وتابع المخزون"
-                breadcrumbs={['لوحة التحكم', 'التجارة', 'المنتجات']}
+                title={t('المنتجات')}
+                description={t('أضف منتجاتك بأسعارها ومقاساتها وألوانها، وتابع المخزون')}
+                breadcrumbs={[t('لوحة التحكم'), t('التجارة'), t('المنتجات')]}
                 actions={
                     <>
                         <Button variant="secondary" icon="grid" to="/dashboard/categories">
-                            الأقسام
+                            {t('الأقسام')}
                         </Button>
                         <Button icon="plus" to={hasCategories ? '/dashboard/products/new' : undefined} disabled={!hasCategories}>
-                            إضافة منتج
+                            {t('إضافة منتج')}
                         </Button>
                     </>
                 }
@@ -139,11 +140,11 @@ export function ProductsPage() {
                 <div className="mb-6">
                     <EmptyState
                         icon="grid"
-                        title="أضف قسماً أولاً"
-                        description="كل منتج يجب أن يتبع قسماً. ابدأ بإضافة الأقسام التي تعمل بها، ثم أضف منتجاتك."
+                        title={t('أضف قسماً أولاً')}
+                        description={t('كل منتج يجب أن يتبع قسماً. ابدأ بإضافة الأقسام التي تعمل بها، ثم أضف منتجاتك.')}
                         action={
                             <Button icon="plus" to="/dashboard/categories">
-                                إدارة الأقسام
+                                {t('إدارة الأقسام')}
                             </Button>
                         }
                     />
@@ -151,17 +152,17 @@ export function ProductsPage() {
             )}
 
             <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                <StatCard label="إجمالي المنتجات" value={summary ? formatNumber(summary.total) : '—'} icon="box" tone="primary" hint={summary && `${formatNumber(summary.draft)} مسودة`} />
-                <StatCard label="منشور في المتجر" value={summary ? formatNumber(summary.active) : '—'} icon="store" tone="success" />
-                <StatCard label="مخزون منخفض" value={summary ? formatNumber(summary.low_stock) : '—'} icon="alert-triangle" tone="warning" hint={summary && `${summary.low_stock_threshold} قطع أو أقل`} />
-                <StatCard label="نفد المخزون" value={summary ? formatNumber(summary.out_of_stock) : '—'} icon="x" tone="danger" />
+                <StatCard label={t('إجمالي المنتجات')} value={summary ? formatNumber(summary.total) : '—'} icon="box" tone="primary" hint={summary && t('{value} مسودة', { value: formatNumber(summary.draft) })} />
+                <StatCard label={t('منشور في المتجر')} value={summary ? formatNumber(summary.active) : '—'} icon="store" tone="success" />
+                <StatCard label={t('مخزون منخفض')} value={summary ? formatNumber(summary.low_stock) : '—'} icon="alert-triangle" tone="warning" hint={summary && t('{low_stock_threshold} قطع أو أقل', { low_stock_threshold: summary.low_stock_threshold })} />
+                <StatCard label={t('نفد المخزون')} value={summary ? formatNumber(summary.out_of_stock) : '—'} icon="x" tone="danger" />
             </div>
 
             <section className="mk-card overflow-hidden">
                 <div className="border-b border-line">
                     <Tabs
                         tabs={[
-                            { value: '', label: 'كل المنتجات', count: summary?.total },
+                            { value: '', label: t('كل المنتجات'), count: summary?.total },
                             ...Object.entries(PRODUCT_STATUSES).map(([value, config]) => ({ value, label: config.label, count: summary?.[value] })),
                         ]}
                         value={filters.status}
@@ -172,43 +173,43 @@ export function ProductsPage() {
 
                 <div className="flex flex-col gap-3 p-4 lg:flex-row lg:items-center">
                     <div className="lg:w-80">
-                        <Input type="search" icon="search" value={filters.search} onChange={(event) => setFilters({ search: event.target.value })} placeholder="ابحث باسم المنتج أو SKU..." aria-label="بحث في المنتجات" />
+                        <Input type="search" icon="search" value={filters.search} onChange={(event) => setFilters({ search: event.target.value })} placeholder={t('ابحث باسم المنتج أو SKU...')} aria-label={t('بحث في المنتجات')} />
                     </div>
                     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:flex lg:flex-1">
                         <Select
-                            aria-label="فلترة حسب القسم"
+                            aria-label={t('فلترة حسب القسم')}
                             value={filters.category_id}
                             onChange={(event) => setFilters({ category_id: event.target.value })}
-                            placeholder="كل الأقسام"
+                            placeholder={t('كل الأقسام')}
                             options={(categories ?? []).map((category) => ({ value: category.category_id, label: category.name }))}
                             className="lg:w-44"
                         />
-                        <Select aria-label="فلترة حسب المخزون" value={filters.stock} onChange={(event) => setFilters({ stock: event.target.value })} placeholder="كل حالات المخزون" options={Object.entries(STOCK_LEVELS).map(([value, label]) => ({ value, label }))} className="lg:w-44" />
+                        <Select aria-label={t('فلترة حسب المخزون')} value={filters.stock} onChange={(event) => setFilters({ stock: event.target.value })} placeholder={t('كل حالات المخزون')} options={Object.entries(STOCK_LEVELS).map(([value, label]) => ({ value, label }))} className="lg:w-44" />
                         <Select
-                            aria-label="عدد النتائج في الصفحة"
+                            aria-label={t('عدد النتائج في الصفحة')}
                             value={filters.per_page}
                             onChange={(event) => setFilters({ per_page: Number(event.target.value) })}
-                            options={PER_PAGE_OPTIONS.map((count) => ({ value: count, label: `${count} في الصفحة` }))}
+                            options={PER_PAGE_OPTIONS.map((count) => ({ value: count, label: t('{count} في الصفحة', { count }) }))}
                             className="lg:w-36"
                         />
                     </div>
                     {hasActiveFilters && (
                         <Button variant="ghost" icon="x" onClick={resetFilters} className="lg:ms-auto">
-                            مسح الفلاتر
+                            {t('مسح الفلاتر')}
                         </Button>
                     )}
                 </div>
 
                 {error ? (
                     <div className="p-6">
-                        <EmptyState icon="alert-triangle" title="تعذر تحميل المنتجات" description={error} action={<Button variant="secondary" icon="refresh" onClick={load}>إعادة المحاولة</Button>} />
+                        <EmptyState icon="alert-triangle" title={t('تعذر تحميل المنتجات')} description={error} action={<Button variant="secondary" icon="refresh" onClick={load}>{t('إعادة المحاولة')}</Button>} />
                     </div>
                 ) : !loading && items.length === 0 ? (
                     <div className="p-6">
                         {hasActiveFilters || filters.status ? (
-                            <EmptyState icon="search" title="لا توجد منتجات مطابقة" description="جرّب تغيير البحث أو الفلاتر." action={<Button variant="secondary" onClick={resetFilters}>مسح الفلاتر</Button>} />
+                            <EmptyState icon="search" title={t('لا توجد منتجات مطابقة')} description={t('جرّب تغيير البحث أو الفلاتر.')} action={<Button variant="secondary" onClick={resetFilters}>{t('مسح الفلاتر')}</Button>} />
                         ) : (
-                            <EmptyState icon="box" title="لا توجد منتجات بعد" description="أضف أول منتج لمتجرك بصوره وأسعاره ومقاساته." action={hasCategories && <Button icon="plus" to="/dashboard/products/new">إضافة منتج</Button>} />
+                            <EmptyState icon="box" title={t('لا توجد منتجات بعد')} description={t('أضف أول منتج لمتجرك بصوره وأسعاره ومقاساته.')} action={hasCategories && <Button icon="plus" to="/dashboard/products/new">{t('إضافة منتج')}</Button>} />
                         )}
                     </div>
                 ) : (
@@ -241,7 +242,7 @@ export function ProductsPage() {
                                                       <ProductThumb src={product.image_url} name={product.name} />
                                                       <div className="min-w-0">
                                                           <span className="block max-w-64 truncate font-semibold text-ink group-hover:text-primary">{product.name}</span>
-                                                          <span className="text-xs text-muted">{product.options.length ? `${product.variants.length} تركيبة · ${product.options.map((option) => option.name).join('، ')}` : 'بدون خيارات'}</span>
+                                                          <span className="text-xs text-muted">{product.options.length ? t('{length} تركيبة · {value}', { length: product.variants.length, value: product.options.map((option) => option.name).join('، ') }) : t('بدون خيارات')}</span>
                                                       </div>
                                                   </div>
                                               </td>
@@ -258,19 +259,19 @@ export function ProductsPage() {
                                               <td className="px-4 py-3 text-xs whitespace-nowrap text-muted">{formatRelative(product.updated_at)}</td>
                                               <td className="px-4 py-3" onClick={(event) => event.stopPropagation()}>
                                                   <Dropdown
-                                                      label={`إجراءات ${product.name}`}
+                                                      label={t('إجراءات {name}', { name: product.name })}
                                                       trigger={(props) => (
                                                           <button type="button" {...props} className="grid size-8 place-items-center rounded-lg text-muted transition hover:bg-surface-3 hover:text-ink">
                                                               <Icon name="more-vertical" className="size-[18px]" />
                                                           </button>
                                                       )}
                                                       items={[
-                                                          { label: 'تعديل المنتج', icon: 'edit', onClick: () => navigate(`/dashboard/products/${product.product_id}`) },
-                                                          { label: 'نشر في المتجر', icon: 'store', tone: 'success', onClick: () => setStatus(product, 'active'), hidden: product.status === 'active' },
-                                                          { label: 'تحويل لمسودة', icon: 'eye-off', onClick: () => setStatus(product, 'draft'), hidden: product.status === 'draft' },
-                                                          { label: 'أرشفة', icon: 'box', onClick: () => setStatus(product, 'archived'), hidden: product.status === 'archived' },
+                                                          { label: t('تعديل المنتج'), icon: 'edit', onClick: () => navigate(`/dashboard/products/${product.product_id}`) },
+                                                          { label: t('نشر في المتجر'), icon: 'store', tone: 'success', onClick: () => setStatus(product, 'active'), hidden: product.status === 'active' },
+                                                          { label: t('تحويل لمسودة'), icon: 'eye-off', onClick: () => setStatus(product, 'draft'), hidden: product.status === 'draft' },
+                                                          { label: t('أرشفة'), icon: 'box', onClick: () => setStatus(product, 'archived'), hidden: product.status === 'archived' },
                                                           { divider: true },
-                                                          { label: 'حذف المنتج', icon: 'trash', tone: 'danger', onClick: () => setDeleting(product) },
+                                                          { label: t('حذف المنتج'), icon: 'trash', tone: 'danger', onClick: () => setDeleting(product) },
                                                       ]}
                                                   />
                                               </td>
@@ -294,9 +295,9 @@ export function ProductsPage() {
                 onConfirm={remove}
                 loading={busy}
                 icon="trash"
-                title={`حذف «${deleting?.name ?? ''}»؟`}
-                description="سيختفي المنتج من لوحة التحكم والمتجر. لإيقاف بيعه مؤقتاً استخدم الأرشفة بدلاً من الحذف."
-                confirmLabel="حذف المنتج"
+                title={t('حذف «{value}»؟', { value: deleting?.name ?? '' })}
+                description={t('سيختفي المنتج من لوحة التحكم والمتجر. لإيقاف بيعه مؤقتاً استخدم الأرشفة بدلاً من الحذف.')}
+                confirmLabel={t('حذف المنتج')}
             />
         </>
     );

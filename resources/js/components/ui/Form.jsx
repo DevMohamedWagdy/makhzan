@@ -1,4 +1,5 @@
 import { forwardRef, useId, useState } from 'react';
+import { isRtl, t } from '@/i18n';
 import { cn } from '@/lib/format';
 import { passwordStrength } from '@/lib/validators';
 import { Icon } from './Icon';
@@ -15,7 +16,7 @@ export function Field({ label, hint, error, required, optional, className, child
                     <label htmlFor={id} className="text-sm font-medium text-ink">
                         {label}
                         {required && <span className="ms-0.5 text-danger">*</span>}
-                        {optional && <span className="ms-1.5 text-xs font-normal text-muted">(اختياري)</span>}
+                        {optional && <span className="ms-1.5 text-xs font-normal text-muted">{t('(اختياري)')}</span>}
                     </label>
                     {action}
                 </div>
@@ -34,10 +35,10 @@ export function Field({ label, hint, error, required, optional, className, child
 export const Input = forwardRef(function Input({ icon, suffix, className, ...props }, ref) {
     return (
         <div className="relative flex items-center">
-            {icon && <Icon name={icon} className="pointer-events-none absolute right-3.5 size-[18px] text-muted" />}
-            {/* Physical padding on purpose: the app shell is RTL, but LTR inputs (email, phone) would flip logical ps/pe away from the icon. */}
-            <input ref={ref} className={cn('mk-input', icon && 'pr-10', suffix && 'pl-11', className)} {...props} />
-            {suffix && <div className="absolute left-1.5 flex items-center">{suffix}</div>}
+            {icon && <Icon name={icon} className={cn('pointer-events-none absolute size-[18px] text-muted', isRtl ? 'right-3.5' : 'left-3.5')} />}
+            {/* Physical sides from the app language on purpose: an LTR input (email, phone) inside the Arabic shell would flip logical ps/pe away from the icon. */}
+            <input ref={ref} className={cn('mk-input', icon && (isRtl ? 'pr-10' : 'pl-10'), suffix && (isRtl ? 'pl-11' : 'pr-11'), className)} {...props} />
+            {suffix && <div className={cn('absolute flex items-center', isRtl ? 'left-1.5' : 'right-1.5')}>{suffix}</div>}
         </div>
     );
 });
@@ -61,8 +62,8 @@ export const PasswordInput = forwardRef(function PasswordInput({ showStrength = 
                         type="button"
                         onClick={() => setVisible((value) => !value)}
                         className="grid size-8 place-items-center rounded-md text-muted transition hover:bg-surface-3 hover:text-ink"
-                        aria-label={visible ? 'إخفاء كلمة المرور' : 'إظهار كلمة المرور'}
-                        title={visible ? 'إخفاء كلمة المرور' : 'إظهار كلمة المرور'}
+                        aria-label={visible ? t('إخفاء كلمة المرور') : t('إظهار كلمة المرور')}
+                        title={visible ? t('إخفاء كلمة المرور') : t('إظهار كلمة المرور')}
                     >
                         <Icon name={visible ? 'eye-off' : 'eye'} className="size-[18px]" />
                     </button>
@@ -76,7 +77,7 @@ export const PasswordInput = forwardRef(function PasswordInput({ showStrength = 
                             <span key={index} className={cn('h-1 flex-1 rounded-full transition', index < strength.score ? colors[strength.score] : 'bg-surface-3')} />
                         ))}
                     </div>
-                    <span className="text-xs text-muted">قوة كلمة المرور: {strength.label}</span>
+                    <span className="text-xs text-muted">{t('قوة كلمة المرور: {label}', { label: strength.label })}</span>
                 </div>
             )}
         </div>

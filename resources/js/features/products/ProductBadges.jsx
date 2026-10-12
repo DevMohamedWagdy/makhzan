@@ -1,4 +1,5 @@
 import { Badge } from '@/components/ui/Display';
+import { t } from '@/i18n';
 import { PRODUCT_STATUSES } from '@/lib/constants';
 import { formatMoney } from '@/lib/format';
 
@@ -16,10 +17,10 @@ export function ProductStatusBadge({ status }) {
 
 export function StockBadge({ stock }) {
     if (stock === 0) {
-        return <Badge tone="danger">نفد المخزون</Badge>;
+        return <Badge tone="danger">{t('نفد المخزون')}</Badge>;
     }
 
-    return <Badge tone={stock <= LOW_STOCK_THRESHOLD ? 'warning' : 'success'}>{`${stock} قطعة`}</Badge>;
+    return <Badge tone={stock <= LOW_STOCK_THRESHOLD ? 'warning' : 'success'}>{t('{stock} قطعة', { stock })}</Badge>;
 }
 
 /** "450 ج.م" or "450 – 520 ج.م" across variants, with the pre-discount price struck through. */

@@ -8,6 +8,7 @@ import { Skeleton } from '@/components/ui/Spinner';
 import { PayoutStatusBadge } from '@/features/affiliates/PayoutHistory';
 import { RecordPayoutModal, RejectPayoutDialog } from '@/features/affiliates/PayoutModals';
 import { useAffiliateActions } from '@/features/affiliates/useAffiliateActions';
+import { t } from '@/i18n';
 import { PAYOUT_METHODS, PAYOUT_STATUSES } from '@/lib/constants';
 import { formatDate, formatMoney, formatRelative } from '@/lib/format';
 import { affiliatesApi } from '@/services/affiliatesApi';
@@ -44,8 +45,8 @@ export function PayoutRequestsPage() {
 
     const tabs = useMemo(
         () => [
-            ...STATUS_KEYS.map((key) => ({ value: key, label: key === 'requested' ? 'بانتظار التحويل' : PAYOUT_STATUSES[key].label, count: summary?.[key] })),
-            { value: '', label: 'الكل' },
+            ...STATUS_KEYS.map((key) => ({ value: key, label: key === 'requested' ? t('بانتظار التحويل') : PAYOUT_STATUSES[key].label, count: summary?.[key] })),
+            { value: '', label: t('الكل') },
         ],
         [summary],
     );
@@ -58,14 +59,14 @@ export function PayoutRequestsPage() {
 
     return (
         <>
-            <PageHeader title="طلبات التحويل" description="طلبات المسوقين لتحويل عمولاتهم، وسجل التحويلات التي تمت" breadcrumbs={['لوحة التحكم', 'التسويق', 'طلبات التحويل']} />
+            <PageHeader title={t('طلبات التحويل')} description={t('طلبات المسوقين لتحويل عمولاتهم، وسجل التحويلات التي تمت')} breadcrumbs={[t('لوحة التحكم'), t('التسويق'), t('طلبات التحويل')]} />
 
             <section className="mk-card overflow-hidden">
                 <Tabs tabs={tabs} value={status} onChange={(value) => setQuery({ status: value, page: 1 })} className="px-3" />
 
                 {error ? (
                     <div className="p-6">
-                        <EmptyState icon="alert-triangle" title="تعذر تحميل التحويلات" description={error} action={<Button variant="secondary" icon="refresh" onClick={load}>إعادة المحاولة</Button>} />
+                        <EmptyState icon="alert-triangle" title={t('تعذر تحميل التحويلات')} description={error} action={<Button variant="secondary" icon="refresh" onClick={load}>{t('إعادة المحاولة')}</Button>} />
                     </div>
                 ) : !result ? (
                     <div className="flex flex-col gap-3 p-4">
@@ -75,7 +76,7 @@ export function PayoutRequestsPage() {
                     </div>
                 ) : result.data.length === 0 ? (
                     <div className="p-6">
-                        <EmptyState icon="send" title={status === 'requested' ? 'لا توجد طلبات تحويل حالياً' : 'لا توجد تحويلات'} description="عندما يطلب مسوق تحويل عمولته سيظهر طلبه هنا ويصلك إشعار به." />
+                        <EmptyState icon="send" title={status === 'requested' ? t('لا توجد طلبات تحويل حالياً') : t('لا توجد تحويلات')} description={t('عندما يطلب مسوق تحويل عمولته سيظهر طلبه هنا ويصلك إشعار به.')} />
                     </div>
                 ) : (
                     <ul className="divide-y divide-line">
@@ -98,27 +99,27 @@ export function PayoutRequestsPage() {
                                         <span>
                                             {PAYOUT_METHODS[payout.payout_method.type]?.label} <span className="ltr inline-block font-mono">•••• {payout.payout_method.account_number_last4}</span>
                                         </span>
-                                        {payout.status === 'requested' && <span>طُلب {formatRelative(payout.created_at)}</span>}
-                                        {payout.status === 'paid' && <span>حُوِّل في {formatDate(payout.paid_at)}</span>}
-                                        {payout.status === 'rejected' && <span>رُفض في {formatDate(payout.rejected_at)}</span>}
+                                        {payout.status === 'requested' && <span>{t('طُلب {value}', { value: formatRelative(payout.created_at) })}</span>}
+                                        {payout.status === 'paid' && <span>{t('حُوِّل في {value}', { value: formatDate(payout.paid_at) })}</span>}
+                                        {payout.status === 'rejected' && <span>{t('رُفض في {value}', { value: formatDate(payout.rejected_at) })}</span>}
                                         {payout.reference && (
                                             <span>
-                                                رقم العملية: <span className="ltr inline-block font-mono text-ink-2">{payout.reference}</span>
+                                                {t('رقم العملية:')} <span className="ltr inline-block font-mono text-ink-2">{payout.reference}</span>
                                             </span>
                                         )}
-                                        {payout.status === 'requested' && <span>الرصيد المعلق: {formatMoney(payout.affiliate.stats.pending_balance)}</span>}
+                                        {payout.status === 'requested' && <span>{t('الرصيد المعلق: {value}', { value: formatMoney(payout.affiliate.stats.pending_balance) })}</span>}
                                     </div>
-                                    {payout.request_note && <p className="mt-1.5 text-xs text-ink-2">ملاحظة المسوق: {payout.request_note}</p>}
-                                    {payout.note && <p className="mt-1 text-xs text-ink-2">ملاحظة المتجر: {payout.note}</p>}
+                                    {payout.request_note && <p className="mt-1.5 text-xs text-ink-2">{t('ملاحظة المسوق: {request_note}', { request_note: payout.request_note })}</p>}
+                                    {payout.note && <p className="mt-1 text-xs text-ink-2">{t('ملاحظة المتجر: {note}', { note: payout.note })}</p>}
                                 </div>
 
                                 {payout.status === 'requested' && (
                                     <div className="flex gap-2">
                                         <Button size="sm" variant="success" icon="check" onClick={() => setDialog({ type: 'pay', affiliate: payout.affiliate })}>
-                                            تأكيد التحويل
+                                            {t('تأكيد التحويل')}
                                         </Button>
                                         <Button size="sm" variant="danger-soft" icon="x" onClick={() => setDialog({ type: 'reject', affiliate: payout.affiliate })}>
-                                            رفض
+                                            {t('رفض')}
                                         </Button>
                                     </div>
                                 )}

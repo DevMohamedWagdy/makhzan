@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { t } from '@/i18n';
 import { Button } from './Button';
 import { Field, Input } from './Form';
 import { Modal } from './Overlay';
@@ -7,7 +8,7 @@ import { Modal } from './Overlay';
  * Confirmation modal. Pass `confirmPhrase` to require typing a word before
  * destructive actions are enabled.
  */
-export function ConfirmDialog({ open, onClose, onConfirm, title, description, icon = 'alert-triangle', tone = 'danger', confirmLabel = 'تأكيد', confirmPhrase, loading = false, children }) {
+export function ConfirmDialog({ open, onClose, onConfirm, title, description, icon = 'alert-triangle', tone = 'danger', confirmLabel = t('تأكيد'), confirmPhrase, loading = false, children }) {
     const [typed, setTyped] = useState('');
 
     useEffect(() => {
@@ -31,7 +32,7 @@ export function ConfirmDialog({ open, onClose, onConfirm, title, description, ic
             footer={
                 <>
                     <Button variant="secondary" onClick={onClose} disabled={loading}>
-                        إلغاء
+                        {t('إلغاء')}
                     </Button>
                     <Button variant={tone === 'danger' ? 'danger' : 'primary'} onClick={onConfirm} loading={loading} disabled={blocked}>
                         {confirmLabel}
@@ -42,7 +43,7 @@ export function ConfirmDialog({ open, onClose, onConfirm, title, description, ic
             <div className="flex flex-col gap-4">
                 {children}
                 {confirmPhrase && (
-                    <Field label={`للتأكيد، اكتب «${confirmPhrase}» في الحقل التالي`}>
+                    <Field label={t('للتأكيد، اكتب «{confirmPhrase}» في الحقل التالي', { confirmPhrase })}>
                         {(props) => <Input {...props} data-autofocus value={typed} onChange={(event) => setTyped(event.target.value)} placeholder={confirmPhrase} autoComplete="off" />}
                     </Field>
                 )}

@@ -8,9 +8,11 @@ use App\Enums\AffiliateTier;
 use App\Enums\CommissionType;
 use App\Enums\PayoutMethod;
 use App\Enums\PayoutStatus;
+use App\Models\Concerns\HasPreferredLocale;
 use App\Support\PhoneNumber;
 use Carbon\CarbonInterface;
 use Database\Factories\AffiliateFactory;
+use Illuminate\Contracts\Translation\HasLocalePreference;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -32,7 +34,7 @@ use Laravel\Sanctum\HasApiTokens;
     'payout_type', 'payout_account_name', 'payout_account_number', 'payout_bank_name', 'payout_iban',
 ])]
 #[Hidden(['password', 'remember_token', 'payout_account_number', 'payout_iban'])]
-class Affiliate extends Authenticatable
+class Affiliate extends Authenticatable implements HasLocalePreference
 {
     /** Ability granted to the affiliate's own portal tokens. */
     public const TOKEN_ABILITY = 'affiliate';
@@ -41,7 +43,7 @@ class Affiliate extends Authenticatable
     public const IMPERSONATION_ABILITY = 'affiliate:impersonated';
 
     /** @use HasFactory<AffiliateFactory> */
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, HasPreferredLocale, Notifiable;
 
     /**
      * Every vendor and affiliate view shows an open transfer request.
@@ -206,7 +208,7 @@ class Affiliate extends Authenticatable
             $this->assertWithinPendingBalance($amount);
 
             if ($this->pendingPayoutRequest()->exists()) {
-                throw ValidationException::withMessages(['amount' => 'لديك طلب تحويل قيد المراجعة بالفعل']);
+                throw ValidationException::withMessages(['amount' => __('payouts.request_already_open')]);
             }
 
             return $this->payouts()->create([
@@ -257,7 +259,7 @@ class Affiliate extends Authenticatable
         $balance = (float) static::query()->whereKey($this->id)->lockForUpdate()->value('pending_balance');
 
         if (round($amount, 2) > round($balance, 2)) {
-            throw ValidationException::withMessages(['amount' => 'المبلغ أكبر من الرصيد المعلق']);
+            throw ValidationException::withMessages(['amount' => __('payouts.exceeds_balance')]);
         }
 
         return $balance;

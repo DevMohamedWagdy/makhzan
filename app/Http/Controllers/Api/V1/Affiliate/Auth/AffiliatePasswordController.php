@@ -18,6 +18,6 @@ class AffiliatePasswordController extends Controller
 
         $affiliate->tokens()->whereKeyNot($affiliate->currentAccessToken()->getKey())->delete();
 
-        return response()->json(['message' => 'تم تغيير كلمة المرور، وتم تسجيل الخروج من الأجهزة الأخرى.']);
+        return response()->json(['message' => __('auth.password_changed')]);
     }
 }

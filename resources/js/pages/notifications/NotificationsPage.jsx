@@ -8,6 +8,7 @@ import { Skeleton } from '@/components/ui/Spinner';
 import { useDashboardAlerts } from '@/context/DashboardAlertsContext';
 import { useToast } from '@/context/ToastContext';
 import { NotificationItem, notificationTarget } from '@/features/notifications/NotificationItem';
+import { t } from '@/i18n';
 import { notificationsApi } from '@/services/notificationsApi';
 
 /** Every vendor notification, newest first, with an unread filter. */
@@ -44,20 +45,20 @@ export function NotificationsPage() {
             await markAllRead();
             load();
         } catch (readError) {
-            toast.error('تعذر تحديث الإشعارات', readError.message);
+            toast.error(t('تعذر تحديث الإشعارات'), readError.message);
         }
     };
 
     return (
         <>
             <PageHeader
-                title="الإشعارات"
-                description="طلبات الانضمام الجديدة وطلبات تحويل العمولة من المسوقين"
-                breadcrumbs={['لوحة التحكم', 'الإشعارات']}
+                title={t('الإشعارات')}
+                description={t('طلبات الانضمام الجديدة وطلبات تحويل العمولة من المسوقين')}
+                breadcrumbs={[t('لوحة التحكم'), t('الإشعارات')]}
                 actions={
                     unreadCount > 0 && (
                         <Button variant="secondary" icon="check" onClick={readAll}>
-                            تحديد الكل كمقروء
+                            {t('تحديد الكل كمقروء')}
                         </Button>
                     )
                 }
@@ -66,8 +67,8 @@ export function NotificationsPage() {
             <section className="mk-card overflow-hidden">
                 <Tabs
                     tabs={[
-                        { value: '', label: 'كل الإشعارات' },
-                        { value: 'unread', label: 'غير المقروءة', count: unreadCount },
+                        { value: '', label: t('كل الإشعارات') },
+                        { value: 'unread', label: t('غير المقروءة'), count: unreadCount },
                     ]}
                     value={filter}
                     onChange={(value) => setQuery({ filter: value, page: 1 })}
@@ -76,7 +77,7 @@ export function NotificationsPage() {
 
                 <div className="p-3">
                     {error ? (
-                        <EmptyState icon="alert-triangle" title="تعذر تحميل الإشعارات" description={error} action={<Button variant="secondary" icon="refresh" onClick={load}>إعادة المحاولة</Button>} />
+                        <EmptyState icon="alert-triangle" title={t('تعذر تحميل الإشعارات')} description={error} action={<Button variant="secondary" icon="refresh" onClick={load}>{t('إعادة المحاولة')}</Button>} />
                     ) : !result ? (
                         <div className="flex flex-col gap-2">
                             {[0, 1, 2].map((index) => (
@@ -84,7 +85,7 @@ export function NotificationsPage() {
                             ))}
                         </div>
                     ) : result.data.length === 0 ? (
-                        <EmptyState icon="bell" title={filter ? 'لا توجد إشعارات غير مقروءة' : 'لا توجد إشعارات بعد'} description="ستصلك هنا طلبات الانضمام وطلبات تحويل العمولة من المسوقين." />
+                        <EmptyState icon="bell" title={filter ? t('لا توجد إشعارات غير مقروءة') : t('لا توجد إشعارات بعد')} description={t('ستصلك هنا طلبات الانضمام وطلبات تحويل العمولة من المسوقين.')} />
                     ) : (
                         <div className="flex flex-col gap-1">
                             {result.data.map((notification) => (

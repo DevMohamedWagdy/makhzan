@@ -33,7 +33,7 @@ class ImportAffiliates
             [$attributes, $message] = $this->normalizeRow($row);
 
             if ($message === null && isset($existingPhones[$attributes['phone']])) {
-                $message = 'رقم الهاتف مسجل لمسوق آخر بالفعل';
+                $message = __('affiliates.phone_taken');
             }
 
             if ($message !== null) {
@@ -112,13 +112,13 @@ class ImportAffiliates
             'payout_method.type' => ['required'],
             'payout_method.account_number' => ['required', 'string', 'max:64'],
         ], [
-            'full_name.required' => 'الاسم مطلوب',
-            'phone.required' => 'رقم الهاتف غير صحيح',
-            'phone.regex' => 'رقم الهاتف غير صحيح',
-            'email.email' => 'البريد غير صحيح',
-            'tier.required' => 'شريحة غير معروفة',
-            'payout_method.type.required' => 'وسيلة سحب غير معروفة',
-            'payout_method.account_number.required' => 'رقم الحساب مطلوب',
+            'full_name.required' => __('affiliates.import.name_required'),
+            'phone.required' => __('affiliates.import.phone_invalid'),
+            'phone.regex' => __('affiliates.import.phone_invalid'),
+            'email.email' => __('affiliates.import.email_invalid'),
+            'tier.required' => __('affiliates.tier_unknown'),
+            'payout_method.type.required' => __('affiliates.payout_method_unknown'),
+            'payout_method.account_number.required' => __('affiliates.import.account_number_required'),
         ]);
 
         return [$attributes, $validator->fails() ? $validator->errors()->first() : null];
