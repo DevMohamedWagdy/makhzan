@@ -110,6 +110,37 @@ class Product extends Model
     }
 
     /**
+     * Products shoppers can see: published, in a category that is shown in the store.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function visibleInStore(Builder $query): void
+    {
+        $query->where('status', ProductStatus::Active)
+            ->whereHas('category', fn (Builder $query) => $query->where('is_active', true));
+    }
+
+    /**
+     * Storefront ordering: "newest" (default), "price_asc" or "price_desc" by the cheapest variant.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function sortForStorefront(Builder $query, ?string $sort): void
+    {
+        $cheapestPrice = ProductVariant::query()->select('price')->whereColumn('product_variants.product_id', 'products.id')->orderBy('price')->limit(1);
+
+        match ($sort) {
+            'price_asc' => $query->orderBy($cheapestPrice),
+            'price_desc' => $query->orderByDesc($cheapestPrice),
+            default => $query->latest(),
+        };
+
+        $query->latest('id');
+    }
+
+    /**
      * URL-friendly slug, unique within the store (Arabic names are transliterated).
      */
     public static function uniqueSlug(int $storeId, string $name, ?int $ignoreId = null): string

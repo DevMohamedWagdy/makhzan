@@ -6,6 +6,10 @@ use App\Http\Controllers\Api\V1\Affiliate\Auth\AffiliatePasswordResetController;
 use App\Http\Controllers\Api\V1\Affiliate\PayoutController;
 use App\Http\Controllers\Api\V1\Public\AffiliateRegistrationController;
 use App\Http\Controllers\Api\V1\Public\StoreController;
+use App\Http\Controllers\Api\V1\Storefront\CartController;
+use App\Http\Controllers\Api\V1\Storefront\ProductController as StorefrontProductController;
+use App\Http\Controllers\Api\V1\Storefront\ReferralClickController;
+use App\Http\Controllers\Api\V1\Storefront\StorefrontController;
 use App\Http\Controllers\Api\V1\Vendor\AffiliateCommissionController;
 use App\Http\Controllers\Api\V1\Vendor\AffiliateController;
 use App\Http\Controllers\Api\V1\Vendor\AffiliateImpersonationController;
@@ -46,6 +50,21 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         ->middleware('throttle:60,1')
         ->missing(fn () => abort(404, 'المتجر غير موجود'))
         ->name('stores.show');
+
+    /*
+    | Storefront (public, for shoppers)
+    */
+    Route::prefix('storefront/{store:slug}')
+        ->name('storefront.')
+        ->middleware('throttle:120,1')
+        ->missing(fn () => abort(404, __('forms.store_not_found')))
+        ->group(function () {
+            Route::get('/', [StorefrontController::class, 'show'])->name('show');
+            Route::get('products', [StorefrontProductController::class, 'index'])->name('products.index');
+            Route::get('products/{productSlug}', [StorefrontProductController::class, 'show'])->name('products.show');
+            Route::post('referral-clicks', ReferralClickController::class)->middleware('throttle:30,1')->name('referral-clicks.store');
+            Route::post('cart/quote', [CartController::class, 'quote'])->name('cart.quote');
+        });
 
     /*
     | Affiliate portal

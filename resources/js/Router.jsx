@@ -6,6 +6,7 @@ import { AffiliateAuthProvider, useAffiliateAuth } from '@/context/AffiliateAuth
 import { AuthProvider, useAuth } from '@/context/AuthContext';
 import { ThemeProvider } from '@/context/ThemeContext';
 import { ToastProvider } from '@/context/ToastContext';
+import { StorefrontLayout } from '@/features/storefront/StorefrontLayout';
 import { t } from '@/i18n';
 import { AffiliateJoinPage } from '@/pages/affiliate-join/AffiliateJoinPage';
 import { AffiliateDashboardPage } from '@/pages/affiliate/AffiliateDashboardPage';
@@ -15,6 +16,10 @@ import { AffiliateResetPasswordPage } from '@/pages/affiliate/AffiliateResetPass
 import { AffiliatesPage } from '@/pages/affiliates/AffiliatesPage';
 import { CategoriesPage } from '@/pages/categories/CategoriesPage';
 import { NotificationsPage } from '@/pages/notifications/NotificationsPage';
+import { StoreCartPage } from '@/pages/storefront/StoreCartPage';
+import { StoreCatalogPage } from '@/pages/storefront/StoreCatalogPage';
+import { StoreHomePage } from '@/pages/storefront/StoreHomePage';
+import { StoreProductPage } from '@/pages/storefront/StoreProductPage';
 import { ProductFormPage } from '@/pages/products/ProductFormPage';
 import { ProductsPage } from '@/pages/products/ProductsPage';
 import { PayoutRequestsPage } from '@/pages/payouts/PayoutRequestsPage';
@@ -103,6 +108,15 @@ export function App() {
                             <Route path="/:storeSlug/affiliates/login" element={<AffiliateLoginPage />} />
                             <Route path="/:storeSlug/affiliates/forgot-password" element={<AffiliateForgotPasswordPage />} />
                             <Route path="/:storeSlug/affiliates/reset-password" element={<AffiliateResetPasswordPage />} />
+                            {/* Public storefront: /{store-slug}, its categories, products, search and cart. */}
+                            <Route path="/:storeSlug" element={<StorefrontLayout />}>
+                                <Route index element={<StoreHomePage />} />
+                                <Route path="products" element={<StoreCatalogPage />} />
+                                <Route path="c/:categorySlug" element={<StoreCatalogPage mode="category" />} />
+                                <Route path="search" element={<StoreCatalogPage mode="search" />} />
+                                <Route path="p/:productSlug" element={<StoreProductPage />} />
+                                <Route path="cart" element={<StoreCartPage />} />
+                            </Route>
                             <Route path="*" element={<Navigate to="/dashboard" replace />} />
                         </Routes>
                     </BrowserRouter>

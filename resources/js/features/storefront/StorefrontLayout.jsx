@@ -1,0 +1,211 @@
+import { createContext, useContext, useEffect, useState } from 'react';
+import { Link, NavLink, Outlet, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { LogoMark } from '@/components/brand/Logo';
+import { Avatar } from '@/components/ui/Display';
+import { Icon } from '@/components/ui/Icon';
+import { LanguageToggle } from '@/components/ui/LanguageToggle';
+import { Skeleton } from '@/components/ui/Spinner';
+import { ThemeToggle } from '@/components/ui/ThemeToggle';
+import { t } from '@/i18n';
+import { cn } from '@/lib/format';
+import { storefrontApi } from '@/services/storefrontApi';
+import { CartProvider, useCart } from './CartContext';
+import { captureReferral } from './referral';
+
+const StorefrontContext = createContext(null);
+
+/** `{ storeSlug, store, categories, featured, latest }` from the store home endpoint. */
+export function useStorefront() {
+    return useContext(StorefrontContext);
+}
+
+function SearchBox({ storeSlug, className }) {
+    const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    const [term, setTerm] = useState(searchParams.get('q') ?? '');
+
+    return (
+        <form
+            role="search"
+            className={cn('relative', className)}
+            onSubmit={(event) => {
+                event.preventDefault();
+                term.trim() && navigate(`/${storeSlug}/search?q=${encodeURIComponent(term.trim())}`);
+            }}
+        >
+            <Icon name="search" className="pointer-events-none absolute start-3.5 top-1/2 size-[18px] -translate-y-1/2 text-muted" />
+            <input type="search" value={term} onChange={(event) => setTerm(event.target.value)} placeholder={t('ابحث عن منتج...')} aria-label={t('بحث في المتجر')} className="mk-input h-10 rounded-full bg-surface-2 ps-10" />
+        </form>
+    );
+}
+
+function CartButton({ storeSlug }) {
+    const { count } = useCart();
+
+    return (
+        <Link to={`/${storeSlug}/cart`} className="relative grid size-10 place-items-center rounded-xl border border-line bg-surface text-ink-2 transition hover:border-line-strong hover:text-ink" aria-label={t('السلة ({count})', { count })} title={t('السلة')}>
+            <Icon name="shopping-bag" />
+            {count > 0 && <span className="absolute -top-1.5 -end-1.5 grid h-5 min-w-5 place-items-center rounded-full bg-primary px-1 text-[10px] font-bold text-white ring-2 ring-surface">{count > 99 ? '99+' : count}</span>}
+        </Link>
+    );
+}
+
+function StoreNotFound() {
+    return (
+        <div className="grid min-h-dvh place-items-center px-6 text-center">
+            <div>
+                <span className="mx-auto grid size-16 place-items-center rounded-2xl bg-surface-3 text-muted">
+                    <Icon name="store" className="size-8" />
+                </span>
+                <h1 className="mt-6 text-2xl font-bold text-ink">{t('المتجر غير موجود')}</h1>
+                <p className="mt-2 text-sm text-muted">{t('تأكد من الرابط، فقد يكون المتجر غير متاح حالياً.')}</p>
+            </div>
+        </div>
+    );
+}
+
+/**
+ * Public store shell at /{store-slug}: header with search and cart, category bar, footer.
+ * Also captures referral codes (?ref=CODE) on any store page.
+ */
+export function StorefrontLayout() {
+    const { storeSlug } = useParams();
+    const location = useLocation();
+    const [searchParams, setSearchParams] = useSearchParams();
+    const [home, setHome] = useState(null);
+    const [missing, setMissing] = useState(false);
+
+    useEffect(() => {
+        let cancelled = false;
+
+        setHome(null);
+        setMissing(false);
+        storefrontApi
+            .home(storeSlug)
+            .then((data) => !cancelled && setHome(data))
+            .catch(() => !cancelled && setMissing(true));
+
+        return () => {
+            cancelled = true;
+        };
+    }, [storeSlug]);
+
+    useEffect(() => {
+        const ref = searchParams.get('ref');
+
+        if (ref) {
+            captureReferral(storeSlug, ref);
+            setSearchParams(
+                (previous) => {
+                    const next = new URLSearchParams(previous);
+
+                    next.delete('ref');
+
+                    return next;
+                },
+                { replace: true },
+            );
+        }
+    }, [searchParams, setSearchParams, storeSlug]);
+
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    }, [location.pathname]);
+
+    if (missing) {
+        return <StoreNotFound />;
+    }
+
+    const store = home?.store;
+    const categories = home?.categories ?? [];
+
+    return (
+        <StorefrontContext.Provider value={{ storeSlug, ...home }}>
+            <CartProvider storeSlug={storeSlug}>
+                <div className="flex min-h-dvh flex-col bg-surface-2/40">
+                    <header className="sticky top-0 z-30 border-b border-line bg-surface/90 backdrop-blur-md">
+                        <div className="mx-auto flex h-16 max-w-7xl items-center gap-3 px-4 sm:px-6">
+                            <Link to={`/${storeSlug}`} className="flex min-w-0 items-center gap-2.5">
+                                {store ? <Avatar name={store.name} src={store.logo_url} size="md" /> : <Skeleton className="size-10 rounded-xl" />}
+                                <span className="truncate text-lg font-bold text-ink">{store?.name}</span>
+                            </Link>
+                            <SearchBox storeSlug={storeSlug} className="mx-auto hidden w-full max-w-md md:block" />
+                            <div className="ms-auto flex items-center gap-2 md:ms-0">
+                                <LanguageToggle />
+                                <ThemeToggle className="hidden sm:grid" />
+                                <CartButton storeSlug={storeSlug} />
+                            </div>
+                        </div>
+                        <div className="mx-auto max-w-7xl px-4 pb-3 sm:px-6 md:hidden">
+                            <SearchBox storeSlug={storeSlug} />
+                        </div>
+                        {categories.length > 0 && (
+                            <nav aria-label={t('أقسام المتجر')} className="border-t border-line">
+                                <ul className="mk-scroll mx-auto flex max-w-7xl gap-1 overflow-x-auto px-4 py-2 sm:px-6">
+                                    <li>
+                                        <NavLink end to={`/${storeSlug}`} className={({ isActive }) => cn('block rounded-full px-4 py-1.5 text-sm whitespace-nowrap transition', isActive ? 'bg-primary text-white' : 'text-ink-2 hover:bg-surface-3')}>
+                                            {t('الرئيسية')}
+                                        </NavLink>
+                                    </li>
+                                    {categories.map((category) => (
+                                        <li key={category.slug}>
+                                            <NavLink to={`/${storeSlug}/c/${category.slug}`} className={({ isActive }) => cn('block rounded-full px-4 py-1.5 text-sm whitespace-nowrap transition', isActive ? 'bg-primary text-white' : 'text-ink-2 hover:bg-surface-3')}>
+                                                {category.name}
+                                            </NavLink>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </nav>
+                        )}
+                    </header>
+
+                    <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6 sm:py-8">
+                        <Outlet />
+                    </main>
+
+                    <footer className="border-t border-line bg-surface">
+                        <div className="mx-auto grid max-w-7xl gap-8 px-4 py-10 sm:grid-cols-3 sm:px-6">
+                            <div>
+                                <p className="text-lg font-bold text-ink">{store?.name}</p>
+                                <p className="mt-2 text-sm leading-relaxed text-muted">{t('تسوّق بأمان والدفع عند الاستلام.')}</p>
+                            </div>
+                            {categories.length > 0 && (
+                                <div>
+                                    <p className="text-sm font-semibold text-ink">{t('الأقسام')}</p>
+                                    <ul className="mt-3 flex flex-col gap-2 text-sm">
+                                        {categories.slice(0, 6).map((category) => (
+                                            <li key={category.slug}>
+                                                <Link to={`/${storeSlug}/c/${category.slug}`} className="text-muted hover:text-primary">
+                                                    {category.name}
+                                                </Link>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
+                            <div>
+                                <p className="text-sm font-semibold text-ink">{t('حسابي')}</p>
+                                <ul className="mt-3 flex flex-col gap-2 text-sm">
+                                    <li>
+                                        <Link to={`/${storeSlug}/cart`} className="text-muted hover:text-primary">
+                                            {t('السلة')}
+                                        </Link>
+                                    </li>
+                                    <li>
+                                        <Link to={`/${storeSlug}/affiliates/login`} className="text-muted hover:text-primary">
+                                            {t('دخول المسوقين')}
+                                        </Link>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div className="flex items-center justify-center gap-2 border-t border-line py-4 text-xs text-muted">
+                            <LogoMark className="size-5" />
+                            {t('مدعوم من منصة مخزن')}
+                        </div>
+                    </footer>
+                </div>
+            </CartProvider>
+        </StorefrontContext.Provider>
+    );
+}
