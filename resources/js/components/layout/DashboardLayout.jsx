@@ -27,8 +27,8 @@ const NAV_SECTIONS = [
             { label: t('الأقسام'), icon: 'grid', to: '/dashboard/categories' },
             { label: t('المنتجات'), icon: 'box', to: '/dashboard/products' },
             { label: t('المخزون'), icon: 'warehouse', soon: true },
-            { label: t('الطلبات'), icon: 'shopping-bag', soon: true },
-            { label: t('الشحن'), icon: 'truck', soon: true },
+            { label: t('الطلبات'), icon: 'shopping-bag', to: '/dashboard/orders', counter: 'pendingOrdersCount' },
+            { label: t('الشحن'), icon: 'truck', to: '/dashboard/shipping' },
         ],
     },
     {

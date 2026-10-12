@@ -26,6 +26,8 @@ class AppServiceProvider extends ServiceProvider
         Route::pattern('affiliate', '[0-9]+');
         Route::pattern('product', '[0-9]+');
         Route::pattern('category', '[0-9]+');
+        Route::pattern('order', '[0-9]+');
+        Route::pattern('address', '[0-9]+');
 
         $this->configureRateLimiting();
     }

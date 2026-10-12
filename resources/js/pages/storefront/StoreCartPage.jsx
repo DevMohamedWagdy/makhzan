@@ -161,7 +161,7 @@ export function StoreCartPage() {
                         </div>
                     </dl>
                     {blocked && <Alert tone="warning">{t('بعض المنتجات لم تعد متاحة، احذفها لإتمام الطلب.')}</Alert>}
-                    <Button size="lg" icon="check" disabled={blocked} onClick={() => toast.info(t('إتمام الطلب قريباً'), t('نجهّز صفحة إتمام الطلب والدفع عند الاستلام.'))}>
+                    <Button size="lg" icon="check" disabled={blocked} to={blocked ? undefined : `/${storeSlug}/checkout`}>
                         {t('إتمام الطلب')}
                     </Button>
                     <Link to={`/${storeSlug}`} className="text-center text-sm font-medium text-primary hover:underline">

@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { LogoMark } from '@/components/brand/Logo';
 import { Avatar } from '@/components/ui/Display';
+import { Dropdown } from '@/components/ui/Dropdown';
 import { Icon } from '@/components/ui/Icon';
 import { LanguageToggle } from '@/components/ui/LanguageToggle';
 import { Skeleton } from '@/components/ui/Spinner';
@@ -10,6 +11,7 @@ import { t } from '@/i18n';
 import { cn } from '@/lib/format';
 import { storefrontApi } from '@/services/storefrontApi';
 import { CartProvider, useCart } from './CartContext';
+import { CustomerAuthProvider, useCustomerAuth } from './CustomerAuthContext';
 import { captureReferral } from './referral';
 
 const StorefrontContext = createContext(null);
@@ -47,6 +49,44 @@ function CartButton({ storeSlug }) {
             <Icon name="shopping-bag" />
             {count > 0 && <span className="absolute -top-1.5 -end-1.5 grid h-5 min-w-5 place-items-center rounded-full bg-primary px-1 text-[10px] font-bold text-white ring-2 ring-surface">{count > 99 ? '99+' : count}</span>}
         </Link>
+    );
+}
+
+function AccountButton({ storeSlug }) {
+    const { customer, isAuthenticated, logout } = useCustomerAuth();
+    const navigate = useNavigate();
+    const buttonClass = 'grid size-10 place-items-center rounded-xl border border-line bg-surface text-ink-2 transition hover:border-line-strong hover:text-ink';
+
+    if (!isAuthenticated) {
+        return (
+            <Link to={`/${storeSlug}/account/login`} className={buttonClass} aria-label={t('تسجيل الدخول')} title={t('تسجيل الدخول')}>
+                <Icon name="user" />
+            </Link>
+        );
+    }
+
+    return (
+        <Dropdown
+            label={t('حسابي')}
+            trigger={(props) => (
+                <button type="button" {...props} className={buttonClass} title={customer?.full_name}>
+                    <Avatar name={customer?.full_name} size="sm" className="size-8" />
+                </button>
+            )}
+            items={[
+                { label: t('طلباتي'), icon: 'shopping-bag', onClick: () => navigate(`/${storeSlug}/account/orders`) },
+                { divider: true },
+                {
+                    label: t('تسجيل الخروج'),
+                    icon: 'log-out',
+                    tone: 'danger',
+                    onClick: () => {
+                        logout();
+                        navigate(`/${storeSlug}`);
+                    },
+                },
+            ]}
+        />
     );
 }
 
@@ -121,6 +161,7 @@ export function StorefrontLayout() {
 
     return (
         <StorefrontContext.Provider value={{ storeSlug, ...home }}>
+            <CustomerAuthProvider storeSlug={storeSlug}>
             <CartProvider storeSlug={storeSlug}>
                 <div className="flex min-h-dvh flex-col bg-surface-2/40">
                     <header className="sticky top-0 z-30 border-b border-line bg-surface/90 backdrop-blur-md">
@@ -133,6 +174,7 @@ export function StorefrontLayout() {
                             <div className="ms-auto flex items-center gap-2 md:ms-0">
                                 <LanguageToggle />
                                 <ThemeToggle className="hidden sm:grid" />
+                                <AccountButton storeSlug={storeSlug} />
                                 <CartButton storeSlug={storeSlug} />
                             </div>
                         </div>
@@ -187,6 +229,11 @@ export function StorefrontLayout() {
                                 <p className="text-sm font-semibold text-ink">{t('حسابي')}</p>
                                 <ul className="mt-3 flex flex-col gap-2 text-sm">
                                     <li>
+                                        <Link to={`/${storeSlug}/account/orders`} className="text-muted hover:text-primary">
+                                            {t('طلباتي')}
+                                        </Link>
+                                    </li>
+                                    <li>
                                         <Link to={`/${storeSlug}/cart`} className="text-muted hover:text-primary">
                                             {t('السلة')}
                                         </Link>
@@ -206,6 +253,7 @@ export function StorefrontLayout() {
                     </footer>
                 </div>
             </CartProvider>
+            </CustomerAuthProvider>
         </StorefrontContext.Provider>
     );
 }

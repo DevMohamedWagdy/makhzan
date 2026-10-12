@@ -19,6 +19,19 @@ class Store extends Model
     use HasFactory;
 
     /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'default_shipping_price' => 'float',
+            'free_shipping_threshold' => 'float',
+        ];
+    }
+
+    /**
      * @return BelongsTo<Vendor, $this>
      */
     public function vendor(): BelongsTo
@@ -48,6 +61,47 @@ class Store extends Model
     public function products(): HasMany
     {
         return $this->hasMany(Product::class);
+    }
+
+    /**
+     * @return HasMany<ShippingRate, $this>
+     */
+    public function shippingRates(): HasMany
+    {
+        return $this->hasMany(ShippingRate::class);
+    }
+
+    /**
+     * @return HasMany<Customer, $this>
+     */
+    public function customers(): HasMany
+    {
+        return $this->hasMany(Customer::class);
+    }
+
+    /**
+     * @return HasMany<Order, $this>
+     */
+    public function orders(): HasMany
+    {
+        return $this->hasMany(Order::class);
+    }
+
+    /**
+     * Delivery price to a governorate for an order of this subtotal; null when the store
+     * doesn't deliver there. Free above the store's threshold.
+     */
+    public function shippingFeeFor(string $governorateId, float $subtotal): ?float
+    {
+        $rates = $this->relationLoaded('shippingRates') ? $this->shippingRates : $this->shippingRates()->get();
+        $rate = $rates->firstWhere('governorate_id', $governorateId);
+        $price = $rate ? ($rate->is_enabled ? ($rate->price ?? $this->default_shipping_price) : null) : $this->default_shipping_price;
+
+        if ($price === null) {
+            return null;
+        }
+
+        return $this->free_shipping_threshold !== null && $subtotal >= $this->free_shipping_threshold ? 0.0 : (float) $price;
     }
 
     /**

@@ -7,8 +7,12 @@ use App\Http\Controllers\Api\V1\Affiliate\PayoutController;
 use App\Http\Controllers\Api\V1\Public\AffiliateRegistrationController;
 use App\Http\Controllers\Api\V1\Public\StoreController;
 use App\Http\Controllers\Api\V1\Storefront\CartController;
+use App\Http\Controllers\Api\V1\Storefront\Customer\AddressController as CustomerAddressController;
+use App\Http\Controllers\Api\V1\Storefront\Customer\AuthController as CustomerAuthController;
+use App\Http\Controllers\Api\V1\Storefront\Customer\OrderController as CustomerOrderController;
 use App\Http\Controllers\Api\V1\Storefront\ProductController as StorefrontProductController;
 use App\Http\Controllers\Api\V1\Storefront\ReferralClickController;
+use App\Http\Controllers\Api\V1\Storefront\ShippingController;
 use App\Http\Controllers\Api\V1\Storefront\StorefrontController;
 use App\Http\Controllers\Api\V1\Vendor\AffiliateCommissionController;
 use App\Http\Controllers\Api\V1\Vendor\AffiliateController;
@@ -22,11 +26,14 @@ use App\Http\Controllers\Api\V1\Vendor\AffiliateSummaryController;
 use App\Http\Controllers\Api\V1\Vendor\Auth\PasswordResetController;
 use App\Http\Controllers\Api\V1\Vendor\Auth\VendorAuthController;
 use App\Http\Controllers\Api\V1\Vendor\NotificationController;
+use App\Http\Controllers\Api\V1\Vendor\OrderController as VendorOrderController;
+use App\Http\Controllers\Api\V1\Vendor\OrderSummaryController;
 use App\Http\Controllers\Api\V1\Vendor\PayoutController as VendorPayoutController;
 use App\Http\Controllers\Api\V1\Vendor\ProductCategoryController;
 use App\Http\Controllers\Api\V1\Vendor\ProductController;
 use App\Http\Controllers\Api\V1\Vendor\ProductImageController;
 use App\Http\Controllers\Api\V1\Vendor\ProductSummaryController;
+use App\Http\Controllers\Api\V1\Vendor\ShippingSettingsController;
 use App\Http\Controllers\Api\V1\Vendor\StoreSlugAvailabilityController;
 use Illuminate\Support\Facades\Route;
 
@@ -64,6 +71,21 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
             Route::get('products/{productSlug}', [StorefrontProductController::class, 'show'])->name('products.show');
             Route::post('referral-clicks', ReferralClickController::class)->middleware('throttle:30,1')->name('referral-clicks.store');
             Route::post('cart/quote', [CartController::class, 'quote'])->name('cart.quote');
+            Route::get('shipping', ShippingController::class)->name('shipping');
+
+            // Shopper accounts (one per store).
+            Route::post('customer/register', [CustomerAuthController::class, 'register'])->middleware('throttle:10,1')->name('customer.register');
+            Route::post('customer/login', [CustomerAuthController::class, 'login'])->name('customer.login');
+
+            Route::middleware(['auth:sanctum', 'customer'])->prefix('customer')->name('customer.')->group(function () {
+                Route::get('me', [CustomerAuthController::class, 'me'])->name('me');
+                Route::post('logout', [CustomerAuthController::class, 'logout'])->name('logout');
+                Route::apiResource('addresses', CustomerAddressController::class)->except('show');
+                Route::get('orders', [CustomerOrderController::class, 'index'])->name('orders.index');
+                Route::post('orders', [CustomerOrderController::class, 'store'])->middleware('throttle:10,1')->name('orders.store');
+                Route::get('orders/{number}', [CustomerOrderController::class, 'show'])->whereNumber('number')->name('orders.show');
+                Route::post('orders/{number}/cancel', [CustomerOrderController::class, 'cancel'])->whereNumber('number')->name('orders.cancel');
+            });
         });
 
     /*
@@ -134,6 +156,14 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::apiResource('product-categories', ProductCategoryController::class)
             ->except('show')
             ->parameters(['product-categories' => 'category']);
+
+        Route::get('orders/summary', OrderSummaryController::class)->name('orders.summary');
+        Route::get('orders', [VendorOrderController::class, 'index'])->name('orders.index');
+        Route::get('orders/{order}', [VendorOrderController::class, 'show'])->name('orders.show');
+        Route::patch('orders/{order}/status', [VendorOrderController::class, 'updateStatus'])->name('orders.status');
+
+        Route::get('shipping', [ShippingSettingsController::class, 'show'])->name('shipping.show');
+        Route::put('shipping', [ShippingSettingsController::class, 'update'])->name('shipping.update');
 
         Route::get('products/summary', ProductSummaryController::class)->name('products.summary');
         Route::post('products/{product}/images', [ProductImageController::class, 'store'])->middleware('throttle:30,1')->name('products.images.store');

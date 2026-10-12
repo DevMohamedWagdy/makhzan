@@ -5,11 +5,12 @@ import { cn, formatRelative } from '@/lib/format';
 const TYPES = {
     payout_requested: { icon: 'send', className: 'bg-warning-soft text-warning' },
     affiliate_registered: { icon: 'user-plus', className: 'bg-primary-soft text-primary' },
+    order_placed: { icon: 'shopping-bag', className: 'bg-success-soft text-success' },
 };
 
-/** Where clicking a notification takes the vendor: the affiliate's profile in both cases. */
+/** Where clicking a notification takes the vendor: the order, or the affiliate's profile. */
 export function notificationTarget(notification) {
-    return `/dashboard/affiliates?affiliate=${notification.details.affiliate_id}`;
+    return notification.type === 'order_placed' ? `/dashboard/orders?order=${notification.details.order_id}` : `/dashboard/affiliates?affiliate=${notification.details.affiliate_id}`;
 }
 
 export function NotificationItem({ notification, onOpen, compact = false }) {

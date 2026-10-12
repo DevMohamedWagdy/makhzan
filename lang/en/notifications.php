@@ -31,5 +31,11 @@ return [
         'action' => 'Reset password',
         'expiry' => 'This link expires in :minutes minutes.',
     ],
+    'order_placed' => [
+        'message' => 'New order #:number from :customer for :total EGP',
+        'subject' => 'New order #:number',
+        'line' => 'You received a new order #:number from :customer for :total EGP.',
+        'action' => 'View order',
+    ],
 
 ];

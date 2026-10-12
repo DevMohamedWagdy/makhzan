@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { affiliatesApi } from '@/services/affiliatesApi';
 import { notificationsApi } from '@/services/notificationsApi';
+import { ordersApi } from '@/services/ordersApi';
 
 const DashboardAlertsContext = createContext(null);
 
@@ -18,14 +19,16 @@ export function DashboardAlertsProvider({ children }) {
     const [notifications, setNotifications] = useState([]);
     const [unreadCount, setUnreadCount] = useState(0);
     const [payoutRequestsCount, setPayoutRequestsCount] = useState(0);
+    const [pendingOrdersCount, setPendingOrdersCount] = useState(0);
 
     const refresh = useCallback(async () => {
         try {
-            const [list, summary] = await Promise.all([notificationsApi.list({ per_page: 8 }), affiliatesApi.summary()]);
+            const [list, summary, orders] = await Promise.all([notificationsApi.list({ per_page: 8 }), affiliatesApi.summary(), ordersApi.summary()]);
 
             setNotifications(list.data);
             setUnreadCount(list.summary.unread_count);
             setPayoutRequestsCount(summary.payout_requests);
+            setPendingOrdersCount(orders.pending);
         } catch {
             // Counters are best-effort; the next poll retries.
         }
@@ -62,8 +65,8 @@ export function DashboardAlertsProvider({ children }) {
     }, [refresh]);
 
     const value = useMemo(
-        () => ({ notifications, unreadCount, payoutRequestsCount, refresh, markRead, markAllRead }),
-        [notifications, unreadCount, payoutRequestsCount, refresh, markRead, markAllRead],
+        () => ({ notifications, unreadCount, payoutRequestsCount, pendingOrdersCount, refresh, markRead, markAllRead }),
+        [notifications, unreadCount, payoutRequestsCount, pendingOrdersCount, refresh, markRead, markAllRead],
     );
 
     return <DashboardAlertsContext.Provider value={value}>{children}</DashboardAlertsContext.Provider>;

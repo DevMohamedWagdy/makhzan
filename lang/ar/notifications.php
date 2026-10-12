@@ -31,5 +31,11 @@ return [
         'action' => 'إعادة تعيين كلمة المرور',
         'expiry' => 'ينتهي هذا الرابط خلال :minutes دقيقة.',
     ],
+    'order_placed' => [
+        'message' => 'طلب جديد #:number من :customer بقيمة :total ج.م',
+        'subject' => 'طلب جديد #:number',
+        'line' => 'وصلك طلب جديد #:number من :customer بقيمة :total ج.م.',
+        'action' => 'عرض الطلب',
+    ],
 
 ];

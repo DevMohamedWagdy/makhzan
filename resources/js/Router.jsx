@@ -16,9 +16,15 @@ import { AffiliateResetPasswordPage } from '@/pages/affiliate/AffiliateResetPass
 import { AffiliatesPage } from '@/pages/affiliates/AffiliatesPage';
 import { CategoriesPage } from '@/pages/categories/CategoriesPage';
 import { NotificationsPage } from '@/pages/notifications/NotificationsPage';
+import { OrdersPage } from '@/pages/orders/OrdersPage';
+import { ShippingPage } from '@/pages/shipping/ShippingPage';
+import { StoreAuthPage } from '@/pages/storefront/StoreAuthPage';
 import { StoreCartPage } from '@/pages/storefront/StoreCartPage';
+import { StoreCheckoutPage } from '@/pages/storefront/StoreCheckoutPage';
 import { StoreCatalogPage } from '@/pages/storefront/StoreCatalogPage';
 import { StoreHomePage } from '@/pages/storefront/StoreHomePage';
+import { StoreOrderPage } from '@/pages/storefront/StoreOrderPage';
+import { StoreOrdersPage } from '@/pages/storefront/StoreOrdersPage';
 import { StoreProductPage } from '@/pages/storefront/StoreProductPage';
 import { ProductFormPage } from '@/pages/products/ProductFormPage';
 import { ProductsPage } from '@/pages/products/ProductsPage';
@@ -94,6 +100,8 @@ export function App() {
                                     <Route path="payout-requests" element={<PayoutRequestsPage />} />
                                     <Route path="notifications" element={<NotificationsPage />} />
                                     <Route path="categories" element={<CategoriesPage />} />
+                                    <Route path="orders" element={<OrdersPage />} />
+                                    <Route path="shipping" element={<ShippingPage />} />
                                     <Route path="products" element={<ProductsPage />} />
                                     <Route path="products/new" element={<ProductFormPage />} />
                                     <Route path="products/:productId" element={<ProductFormPage />} />
@@ -116,6 +124,11 @@ export function App() {
                                 <Route path="search" element={<StoreCatalogPage mode="search" />} />
                                 <Route path="p/:productSlug" element={<StoreProductPage />} />
                                 <Route path="cart" element={<StoreCartPage />} />
+                                <Route path="checkout" element={<StoreCheckoutPage />} />
+                                <Route path="account/login" element={<StoreAuthPage mode="login" />} />
+                                <Route path="account/register" element={<StoreAuthPage mode="register" />} />
+                                <Route path="account/orders" element={<StoreOrdersPage />} />
+                                <Route path="account/orders/:number" element={<StoreOrderPage />} />
                             </Route>
                             <Route path="*" element={<Navigate to="/dashboard" replace />} />
                         </Routes>

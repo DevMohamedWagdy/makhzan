@@ -18,6 +18,16 @@ export const AFFILIATE_STATUSES = {
     pending: { label: t('بانتظار المراجعة'), tone: 'warning' },
 };
 
+/** @type {Record<'pending' | 'confirmed' | 'shipped' | 'delivered' | 'cancelled' | 'returned', { label: string, tone: string, icon: string, action?: string }>} */
+export const ORDER_STATUSES = {
+    pending: { label: t('بانتظار التأكيد'), tone: 'warning', icon: 'refresh' },
+    confirmed: { label: t('مؤكد'), tone: 'info', icon: 'check', action: t('تأكيد الطلب') },
+    shipped: { label: t('تم الشحن'), tone: 'primary', icon: 'truck', action: t('تم الشحن') },
+    delivered: { label: t('تم التوصيل'), tone: 'success', icon: 'check-circle', action: t('تم التوصيل') },
+    cancelled: { label: t('ملغي'), tone: 'danger', icon: 'x', action: t('إلغاء الطلب') },
+    returned: { label: t('مرتجع'), tone: 'neutral', icon: 'refresh', action: t('تسجيل كمرتجع') },
+};
+
 /** @type {Record<'draft' | 'active' | 'archived', { label: string, tone: string, description: string }>} */
 export const PRODUCT_STATUSES = {
     active: { label: t('منشور'), tone: 'success', description: t('ظاهر في المتجر ومتاح للشراء') },
