@@ -1195,4 +1195,7 @@ export default {
     'مكتسبة من الطلبات المسلّمة': 'Earned on delivered orders',
     'عملاء جدد': 'New customers',
     'المبيعات تشمل كل الطلبات غير الملغاة، والإيرادات المحصّلة تشمل الطلبات المسلّمة فقط': 'Sales include every order not cancelled; collected revenue includes delivered orders only',
+    'زيارة المتجر': 'Visit store',
+    'تم نسخ رابط المتجر': 'Store link copied',
+    'شاركه مع عملائك ليطلبوا من متجرك مباشرة.': 'Share it with your customers so they can order from your store directly.',
 };

@@ -50,6 +50,7 @@ class VendorAuthControllerTest extends TestCase
         $response->assertOk()
             ->assertJsonPath('vendor.vendor_id', $vendor->id)
             ->assertJsonPath('vendor.store.store_id', $vendor->store->id)
+            ->assertJsonPath('vendor.store.url', config('makhzan.storefront_url').'/'.$vendor->store->slug)
             ->assertJsonStructure(['token', 'vendor' => ['full_name', 'phone', 'email', 'store' => ['slug', 'logo_url']]]);
         $this->assertTrue(PersonalAccessToken::findToken($response->json('token'))->can(Vendor::TOKEN_ABILITY));
     }

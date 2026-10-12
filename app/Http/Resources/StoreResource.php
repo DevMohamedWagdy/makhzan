@@ -23,6 +23,7 @@ class StoreResource extends JsonResource
             'vendor_id' => $this->vendor_id,
             'name' => $this->name,
             'slug' => $this->slug,
+            'url' => $this->storefrontUrl(),
             'logo_url' => $this->logo_url,
             'governorate_id' => $this->governorate_id,
             'city_id' => $this->city_id,

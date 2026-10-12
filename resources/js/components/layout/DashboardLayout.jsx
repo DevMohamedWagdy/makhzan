@@ -8,10 +8,11 @@ import { LanguageToggle } from '@/components/ui/LanguageToggle';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { useAuth } from '@/context/AuthContext';
 import { DashboardAlertsProvider, useDashboardAlerts } from '@/context/DashboardAlertsContext';
+import { useToast } from '@/context/ToastContext';
 import { notificationTarget } from '@/features/notifications/NotificationItem';
 import { NotificationsMenu } from '@/features/notifications/NotificationsMenu';
+import { useCopy } from '@/hooks/common';
 import { isRtl, t } from '@/i18n';
-import { APP_DOMAIN } from '@/lib/constants';
 import { cn } from '@/lib/format';
 
 const NAV_SECTIONS = [
@@ -51,9 +52,21 @@ const NAV_SECTIONS = [
     },
 ];
 
+/**
+ * The public storefront link customers order from. Sessions saved before the API returned
+ * `store.url` fall back to this app's address.
+ */
+function storefrontUrl(store) {
+    return store?.url ?? `${window.location.origin}/${store?.slug ?? ''}`;
+}
+
 function Sidebar({ open, onClose }) {
     const { store } = useAuth();
     const alerts = useDashboardAlerts();
+    const toast = useToast();
+    const { copy, copiedValue } = useCopy();
+    const storeUrl = storefrontUrl(store);
+    const copied = copiedValue === storeUrl;
 
     return (
         <>
@@ -77,10 +90,35 @@ function Sidebar({ open, onClose }) {
                         <Avatar name={store?.name} src={store?.logo_url} size="md" />
                         <div className="min-w-0">
                             <p className="truncate text-sm font-semibold text-ink">{store?.name}</p>
-                            <p className="ltr truncate text-start text-xs text-muted">
-                                {APP_DOMAIN}/{store?.slug}
+                            <p className="ltr truncate text-start text-xs text-muted" title={storeUrl}>
+                                {storeUrl.replace(/^https?:\/\//, '')}
                             </p>
                         </div>
+                    </div>
+                    <div className="mt-2 grid grid-cols-2 gap-2">
+                        <a
+                            href={storeUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-line bg-surface px-2 text-xs font-medium text-ink transition hover:bg-surface-3"
+                        >
+                            <Icon name="eye" className="size-3.5" />
+                            {t('زيارة المتجر')}
+                        </a>
+                        <button
+                            type="button"
+                            onClick={() => {
+                                copy(storeUrl);
+                                toast.success(t('تم نسخ رابط المتجر'), t('شاركه مع عملائك ليطلبوا من متجرك مباشرة.'));
+                            }}
+                            className={cn(
+                                'inline-flex h-8 items-center justify-center gap-1.5 rounded-lg px-2 text-xs font-medium transition',
+                                copied ? 'bg-success-soft text-success' : 'bg-primary-soft text-primary hover:bg-primary/15',
+                            )}
+                        >
+                            <Icon name={copied ? 'check' : 'copy'} className="size-3.5" />
+                            {copied ? t('تم النسخ') : t('نسخ الرابط')}
+                        </button>
                     </div>
                 </div>
 
