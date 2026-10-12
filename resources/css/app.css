@@ -2,8 +2,232 @@
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
+@source '../js/**/*.{js,jsx}';
 
-@theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
+ * Makhzan design tokens.
+ * Semantic colors live in CSS variables so Light/Dark switch by toggling `.dark` on <html>.
+ */
+:root {
+    --mk-bg: #f5f7fb;
+    --mk-surface: #ffffff;
+    --mk-surface-2: #f9fafc;
+    --mk-surface-3: #f1f3f8;
+    --mk-border: #e7eaf1;
+    --mk-border-strong: #d5dae5;
+    --mk-text: #0f172a;
+    --mk-text-2: #475467;
+    --mk-muted: #8a94a6;
+    --mk-primary: #4f46e5;
+    --mk-primary-hover: #4338ca;
+    --mk-primary-soft: #eef0ff;
+    --mk-accent: #0ea5e9;
+    --mk-success: #16a34a;
+    --mk-success-soft: #e9f9ef;
+    --mk-warning: #d97706;
+    --mk-warning-soft: #fff6e6;
+    --mk-danger: #dc2626;
+    --mk-danger-soft: #feeeee;
+    --mk-info: #0284c7;
+    --mk-info-soft: #e8f6fd;
+    --mk-shadow: 0 1px 2px rgb(16 24 40 / 0.04), 0 6px 20px -8px rgb(16 24 40 / 0.08);
+    --mk-shadow-lg: 0 24px 60px -16px rgb(16 24 40 / 0.22);
+    color-scheme: light;
+}
+
+.dark {
+    --mk-bg: #0b0f19;
+    --mk-surface: #121826;
+    --mk-surface-2: #161d2e;
+    --mk-surface-3: #1c2438;
+    --mk-border: #232c40;
+    --mk-border-strong: #2f3a52;
+    --mk-text: #eef1f7;
+    --mk-text-2: #b2bccd;
+    --mk-muted: #7b879c;
+    --mk-primary: #7c74ff;
+    --mk-primary-hover: #8f88ff;
+    --mk-primary-soft: #221f4a;
+    --mk-accent: #38bdf8;
+    --mk-success: #34d399;
+    --mk-success-soft: #0f2a22;
+    --mk-warning: #fbbf24;
+    --mk-warning-soft: #2c2410;
+    --mk-danger: #f87171;
+    --mk-danger-soft: #331718;
+    --mk-info: #38bdf8;
+    --mk-info-soft: #0c2533;
+    --mk-shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 8px 24px -10px rgb(0 0 0 / 0.5);
+    --mk-shadow-lg: 0 24px 60px -16px rgb(0 0 0 / 0.7);
+    color-scheme: dark;
+}
+
+@theme inline {
+    --font-sans: 'Alexandria', ui-sans-serif, system-ui, sans-serif;
+
+    --color-bg: var(--mk-bg);
+    --color-surface: var(--mk-surface);
+    --color-surface-2: var(--mk-surface-2);
+    --color-surface-3: var(--mk-surface-3);
+    --color-line: var(--mk-border);
+    --color-line-strong: var(--mk-border-strong);
+    --color-ink: var(--mk-text);
+    --color-ink-2: var(--mk-text-2);
+    --color-muted: var(--mk-muted);
+    --color-primary: var(--mk-primary);
+    --color-primary-hover: var(--mk-primary-hover);
+    --color-primary-soft: var(--mk-primary-soft);
+    --color-accent: var(--mk-accent);
+    --color-success: var(--mk-success);
+    --color-success-soft: var(--mk-success-soft);
+    --color-warning: var(--mk-warning);
+    --color-warning-soft: var(--mk-warning-soft);
+    --color-danger: var(--mk-danger);
+    --color-danger-soft: var(--mk-danger-soft);
+    --color-info: var(--mk-info);
+    --color-info-soft: var(--mk-info-soft);
+
+    --shadow-card: var(--mk-shadow);
+    --shadow-pop: var(--mk-shadow-lg);
+}
+
+@layer base {
+    html {
+        font-family: var(--font-sans);
+    }
+
+    body {
+        background-color: var(--mk-bg);
+        color: var(--mk-text);
+        transition:
+            background-color 0.25s ease,
+            color 0.25s ease;
+    }
+
+    *,
+    ::before,
+    ::after {
+        border-color: var(--mk-border);
+    }
+
+    ::selection {
+        background: color-mix(in srgb, var(--mk-primary) 25%, transparent);
+    }
+
+    input,
+    select,
+    textarea,
+    button {
+        font-family: inherit;
+    }
+
+    /* Numbers, phones, emails and URLs read left-to-right inside RTL layouts. */
+    .ltr {
+        direction: ltr;
+        unicode-bidi: plaintext;
+    }
+}
+
+@layer components {
+    .mk-card {
+        @apply rounded-xl border border-line bg-surface shadow-card;
+    }
+
+    .mk-input {
+        @apply h-11 w-full rounded-lg border border-line bg-surface px-3.5 text-sm text-ink placeholder:text-muted transition outline-none;
+        @apply focus:border-primary focus:ring-4 focus:ring-primary/15;
+    }
+
+    .mk-input[aria-invalid='true'] {
+        @apply border-danger focus:ring-danger/15;
+    }
+
+    .mk-scroll::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+
+    .mk-scroll::-webkit-scrollbar-thumb {
+        background: var(--mk-border-strong);
+        border-radius: 999px;
+    }
+}
+
+/* Applied briefly while switching theme so every surface cross-fades together. */
+.mk-theming,
+.mk-theming *,
+.mk-theming *::before,
+.mk-theming *::after {
+    transition:
+        background-color 0.3s ease,
+        border-color 0.3s ease,
+        color 0.3s ease,
+        fill 0.3s ease !important;
+}
+
+@keyframes mk-fade-in {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes mk-slide-in {
+    from {
+        transform: translateX(-100%);
+    }
+    to {
+        transform: translateX(0);
+    }
+}
+
+@keyframes mk-pop {
+    from {
+        opacity: 0;
+        transform: translateY(8px) scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes mk-step-in {
+    from {
+        opacity: 0;
+        transform: translateX(-12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.animate-fade-in {
+    animation: mk-fade-in 0.18s ease-out;
+}
+
+.animate-slide-in {
+    animation: mk-slide-in 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.animate-pop {
+    animation: mk-pop 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.animate-step-in {
+    animation: mk-step-in 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+    }
 }

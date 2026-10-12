@@ -1,0 +1,155 @@
+import { Avatar, EmptyState } from '@/components/ui/Display';
+import { Dropdown } from '@/components/ui/Dropdown';
+import { Icon } from '@/components/ui/Icon';
+import { Skeleton } from '@/components/ui/Spinner';
+import { Button } from '@/components/ui/Button';
+import { cn, formatMoney, formatNumber, formatRelative } from '@/lib/format';
+import { CommissionCell, PayoutMethodLabel, StatusBadge, TierBadge } from './AffiliateBadges';
+
+const COLUMNS = ['المسوق', 'الهاتف', 'الشريحة', 'العمولة', 'وسيلة السحب', 'المبيعات', 'الحالة', 'آخر نشاط', ''];
+
+export function buildRowActions(affiliate, actions) {
+    if (affiliate.status === 'pending') {
+        return [
+            { label: 'عرض الطلب', icon: 'eye', onClick: () => actions.view(affiliate) },
+            { label: 'قبول المسوق', icon: 'check', tone: 'success', onClick: () => actions.approve(affiliate) },
+            { divider: true },
+            { label: 'رفض الطلب', icon: 'x', tone: 'danger', onClick: () => actions.reject(affiliate) },
+        ];
+    }
+
+    return [
+        { label: 'عرض الملف', icon: 'eye', onClick: () => actions.view(affiliate) },
+        { label: 'تعديل البيانات', icon: 'edit', onClick: () => actions.edit(affiliate) },
+        { label: 'تخصيص عمولة استثنائية', icon: 'percent', onClick: () => actions.commission(affiliate) },
+        { label: 'الدخول بصفة المسوق', icon: 'log-in', onClick: () => actions.impersonate(affiliate) },
+        { divider: true },
+        affiliate.status === 'frozen'
+            ? { label: 'إلغاء التجميد', icon: 'zap', tone: 'success', onClick: () => actions.activate(affiliate) }
+            : { label: 'تجميد / إيقاف الحساب', icon: 'snowflake', onClick: () => actions.freeze(affiliate) },
+        { label: 'حذف نهائي', icon: 'trash', tone: 'danger', onClick: () => actions.remove(affiliate) },
+    ];
+}
+
+function LoadingRows({ count }) {
+    return Array.from({ length: count }, (_, index) => (
+        <tr key={index}>
+            <td className="px-4 py-4">
+                <div className="flex items-center gap-3">
+                    <Skeleton className="size-10 rounded-xl" />
+                    <div className="flex flex-col gap-2">
+                        <Skeleton className="h-3.5 w-32" />
+                        <Skeleton className="h-3 w-24" />
+                    </div>
+                </div>
+            </td>
+            {COLUMNS.slice(1).map((column, cell) => (
+                <td key={cell} className="px-4 py-4">
+                    <Skeleton className="h-4 w-16" />
+                </td>
+            ))}
+        </tr>
+    ));
+}
+
+export function AffiliatesTable({ items, loading, error, perPage, actions, hasActiveFilters, onResetFilters, onAdd, onRetry }) {
+    if (error) {
+        return <EmptyState icon="alert-triangle" title="تعذر تحميل المسوقين" description={error} action={<Button variant="secondary" icon="refresh" onClick={onRetry}>إعادة المحاولة</Button>} />;
+    }
+
+    if (!loading && items.length === 0) {
+        return hasActiveFilters ? (
+            <EmptyState icon="search" title="لا توجد نتائج مطابقة" description="جرّب تغيير كلمات البحث أو إزالة بعض الفلاتر." action={<Button variant="secondary" icon="x" onClick={onResetFilters}>مسح الفلاتر</Button>} />
+        ) : (
+            <EmptyState icon="users" title="لم تضف أي مسوق بعد" description="ابدأ ببناء فريق المسوقين الخاص بمتجرك وتابع مبيعات كل واحد منهم." action={<Button icon="user-plus" onClick={onAdd}>إضافة أول مسوق</Button>} />
+        );
+    }
+
+    return (
+        <div className="mk-scroll relative overflow-x-auto">
+            <table className="w-full min-w-[980px] text-sm">
+                <thead>
+                    <tr className="border-y border-line bg-surface-2 text-xs text-muted">
+                        {COLUMNS.map((column, index) => (
+                            <th key={index} scope="col" className={cn('px-4 py-3 text-start font-medium whitespace-nowrap', !column && 'sticky left-0 bg-surface-2')}>
+                                {column || <span className="sr-only">الإجراءات</span>}
+                            </th>
+                        ))}
+                    </tr>
+                </thead>
+                {/* Skeleton on first load only; later refreshes keep rows visible to avoid flicker. */}
+                <tbody className={cn('divide-y divide-line transition-opacity', loading && items.length > 0 && 'opacity-60')} aria-busy={loading}>
+                    {loading && items.length === 0 ? (
+                        <LoadingRows count={Math.min(perPage, 8)} />
+                    ) : (
+                        items.map((affiliate) => (
+                            <tr key={affiliate.affiliate_id} className="group cursor-pointer transition hover:bg-surface-2" onClick={() => actions.view(affiliate)}>
+                                <td className="px-4 py-3.5">
+                                    <div className="flex items-center gap-3">
+                                        <Avatar name={affiliate.full_name} src={affiliate.avatar_url} />
+                                        <div className="min-w-0">
+                                            <button
+                                                type="button"
+                                                onClick={(event) => {
+                                                    event.stopPropagation();
+                                                    actions.view(affiliate);
+                                                }}
+                                                className="block truncate text-start font-semibold text-ink group-hover:text-primary hover:underline"
+                                            >
+                                                {affiliate.full_name}
+                                            </button>
+                                            <span className="ltr block truncate text-start text-xs text-muted">{affiliate.email ?? `#${affiliate.affiliate_id}`}</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td className="ltr px-4 py-3.5 text-start whitespace-nowrap text-ink-2">{affiliate.phone}</td>
+                                <td className="px-4 py-3.5">
+                                    <TierBadge tier={affiliate.tier} />
+                                </td>
+                                <td className="px-4 py-3.5">
+                                    <CommissionCell affiliate={affiliate} />
+                                </td>
+                                <td className="px-4 py-3.5">
+                                    <PayoutMethodLabel type={affiliate.payout_method.type} />
+                                </td>
+                                <td className="px-4 py-3.5 whitespace-nowrap">
+                                    <span className="block font-semibold text-ink">{formatMoney(affiliate.stats.sales_total)}</span>
+                                    <span className="text-xs text-muted">{formatNumber(affiliate.stats.orders_count)} طلب</span>
+                                </td>
+                                <td className="px-4 py-3.5">
+                                    <StatusBadge status={affiliate.status} />
+                                </td>
+                                <td className="px-4 py-3.5 text-xs whitespace-nowrap text-muted">{formatRelative(affiliate.last_active_at)}</td>
+                                {/* Actions stay pinned to the inline-end edge while the table scrolls horizontally. */}
+                                <td className="sticky left-0 bg-surface px-4 py-3.5 shadow-[8px_0_12px_-10px_rgb(0_0_0/0.25)] transition group-hover:bg-surface-2" onClick={(event) => event.stopPropagation()}>
+                                    <div className="flex items-center justify-end gap-1">
+                                        {affiliate.status === 'pending' && (
+                                            <button
+                                                type="button"
+                                                onClick={() => actions.approve(affiliate)}
+                                                className="grid size-8 place-items-center rounded-lg bg-success-soft text-success hover:bg-success hover:text-white"
+                                                aria-label={`قبول ${affiliate.full_name}`}
+                                                title="قبول"
+                                            >
+                                                <Icon name="check" className="size-4" />
+                                            </button>
+                                        )}
+                                        <Dropdown
+                                            label={`إجراءات ${affiliate.full_name}`}
+                                            items={buildRowActions(affiliate, actions)}
+                                            trigger={(props) => (
+                                                <button type="button" {...props} className="grid size-8 place-items-center rounded-lg text-muted transition hover:bg-surface-3 hover:text-ink aria-expanded:bg-surface-3 aria-expanded:text-ink">
+                                                    <Icon name="more-vertical" className="size-[18px]" />
+                                                </button>
+                                            )}
+                                        />
+                                    </div>
+                                </td>
+                            </tr>
+                        ))
+                    )}
+                </tbody>
+            </table>
+        </div>
+    );
+}

@@ -1,0 +1,96 @@
+<?php
+
+use App\Http\Controllers\Api\V1\Affiliate\Auth\AffiliateAuthController;
+use App\Http\Controllers\Api\V1\Affiliate\Auth\AffiliatePasswordController;
+use App\Http\Controllers\Api\V1\Affiliate\Auth\AffiliatePasswordResetController;
+use App\Http\Controllers\Api\V1\Public\AffiliateRegistrationController;
+use App\Http\Controllers\Api\V1\Public\StoreController;
+use App\Http\Controllers\Api\V1\Vendor\AffiliateCommissionController;
+use App\Http\Controllers\Api\V1\Vendor\AffiliateController;
+use App\Http\Controllers\Api\V1\Vendor\AffiliateImpersonationController;
+use App\Http\Controllers\Api\V1\Vendor\AffiliateImportController;
+use App\Http\Controllers\Api\V1\Vendor\AffiliateReferralCodeController;
+use App\Http\Controllers\Api\V1\Vendor\AffiliateRegistrationLinkController;
+use App\Http\Controllers\Api\V1\Vendor\AffiliateStatusController;
+use App\Http\Controllers\Api\V1\Vendor\AffiliateSummaryController;
+use App\Http\Controllers\Api\V1\Vendor\Auth\PasswordResetController;
+use App\Http\Controllers\Api\V1\Vendor\Auth\VendorAuthController;
+use App\Http\Controllers\Api\V1\Vendor\StoreSlugAvailabilityController;
+use Illuminate\Support\Facades\Route;
+
+Route::prefix('v1')->name('api.v1.')->group(function () {
+    /*
+    | Vendor authentication (public)
+    */
+    Route::prefix('vendor/auth')->name('vendor.auth.')->group(function () {
+        // Login is throttled per identifier + IP inside LoginRequest.
+        Route::post('login', [VendorAuthController::class, 'login'])->name('login');
+        Route::post('register', [VendorAuthController::class, 'register'])->middleware('throttle:vendor-register')->name('register');
+        Route::post('forgot-password', [PasswordResetController::class, 'store'])->middleware('throttle:vendor-password')->name('forgot-password');
+        Route::post('reset-password', [PasswordResetController::class, 'update'])->middleware('throttle:vendor-password')->name('reset-password');
+    });
+
+    Route::get('stores/slug-availability', StoreSlugAvailabilityController::class)
+        ->middleware('throttle:60,1')
+        ->name('stores.slug-availability');
+
+    Route::get('stores/{store:slug}', [StoreController::class, 'show'])
+        ->middleware('throttle:60,1')
+        ->missing(fn () => abort(404, 'المتجر غير موجود'))
+        ->name('stores.show');
+
+    /*
+    | Affiliate portal
+    */
+    Route::prefix('affiliate')->name('affiliate.')->group(function () {
+        // Login is throttled per store + identifier + IP inside AffiliateLoginRequest.
+        Route::post('auth/login', [AffiliateAuthController::class, 'login'])->name('auth.login');
+        Route::post('auth/forgot-password', [AffiliatePasswordResetController::class, 'store'])->middleware('throttle:affiliate-password')->name('auth.forgot-password');
+        Route::post('auth/reset-password', [AffiliatePasswordResetController::class, 'update'])->middleware('throttle:affiliate-password')->name('auth.reset-password');
+
+        Route::middleware(['auth:sanctum', 'affiliate'])->group(function () {
+            Route::get('auth/me', [AffiliateAuthController::class, 'me'])->name('auth.me');
+            Route::post('auth/logout', [AffiliateAuthController::class, 'logout'])->name('auth.logout');
+        });
+
+        // The affiliate acting as themselves only — never through a vendor's impersonation token.
+        Route::middleware(['auth:sanctum', 'affiliate:self'])->group(function () {
+            Route::put('auth/password', [AffiliatePasswordController::class, 'update'])->name('auth.password');
+        });
+    });
+
+    /*
+    | Affiliate self-registration through a store's public link (no auth)
+    */
+    Route::prefix('affiliate-registration/{registrationLink:token}')
+        ->name('affiliate-registration.')
+        ->missing(fn () => abort(404, 'رابط التسجيل غير صالح أو متوقف حالياً'))
+        ->group(function () {
+            Route::get('/', [AffiliateRegistrationController::class, 'show'])->middleware('throttle:60,1')->name('show');
+            Route::post('/', [AffiliateRegistrationController::class, 'store'])->middleware('throttle:affiliate-registration')->name('store');
+        });
+
+    /*
+    | Vendor dashboard (vendor bearer token required)
+    */
+    Route::middleware(['auth:sanctum', 'vendor'])->prefix('vendor')->name('vendor.')->group(function () {
+        Route::get('auth/me', [VendorAuthController::class, 'me'])->name('auth.me');
+        Route::post('auth/logout', [VendorAuthController::class, 'logout'])->name('auth.logout');
+
+        Route::prefix('affiliates')->name('affiliates.')->group(function () {
+            Route::get('summary', AffiliateSummaryController::class)->name('summary');
+            Route::post('import', AffiliateImportController::class)->middleware('throttle:10,1')->name('import');
+
+            Route::get('registration-link', [AffiliateRegistrationLinkController::class, 'show'])->name('registration-link.show');
+            Route::patch('registration-link', [AffiliateRegistrationLinkController::class, 'update'])->name('registration-link.update');
+            Route::post('registration-link/regenerate', [AffiliateRegistrationLinkController::class, 'regenerate'])->name('registration-link.regenerate');
+
+            Route::patch('{affiliate}/status', AffiliateStatusController::class)->name('status.update');
+            Route::put('{affiliate}/commission', AffiliateCommissionController::class)->name('commission.update');
+            Route::post('{affiliate}/referral-codes', [AffiliateReferralCodeController::class, 'store'])->name('referral-codes.store');
+            Route::post('{affiliate}/impersonate', [AffiliateImpersonationController::class, 'store'])->middleware('throttle:20,1')->name('impersonate');
+        });
+
+        Route::apiResource('affiliates', AffiliateController::class);
+    });
+});

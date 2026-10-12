@@ -1,0 +1,233 @@
+import { useEffect, useState } from 'react';
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { Logo } from '@/components/brand/Logo';
+import { Avatar } from '@/components/ui/Display';
+import { Dropdown } from '@/components/ui/Dropdown';
+import { Icon } from '@/components/ui/Icon';
+import { ThemeToggle } from '@/components/ui/ThemeToggle';
+import { useAuth } from '@/context/AuthContext';
+import { APP_DOMAIN } from '@/lib/constants';
+import { cn } from '@/lib/format';
+
+const NAV_SECTIONS = [
+    {
+        title: 'الرئيسية',
+        items: [{ label: 'لوحة التحكم', icon: 'grid', to: '/dashboard', soon: true }],
+    },
+    {
+        title: 'التجارة',
+        items: [
+            { label: 'المنتجات', icon: 'box', soon: true },
+            { label: 'المخزون', icon: 'warehouse', soon: true },
+            { label: 'الطلبات', icon: 'shopping-bag', soon: true },
+            { label: 'الشحن', icon: 'truck', soon: true },
+        ],
+    },
+    {
+        title: 'التسويق',
+        items: [
+            { label: 'المسوقين', icon: 'users', to: '/dashboard/affiliates' },
+            { label: 'الكوبونات', icon: 'gift', soon: true },
+            { label: 'الحملات', icon: 'megaphone', soon: true },
+        ],
+    },
+    {
+        title: 'الإدارة',
+        items: [
+            { label: 'التقارير', icon: 'bar-chart', soon: true },
+            { label: 'إعدادات المتجر', icon: 'settings', soon: true },
+        ],
+    },
+];
+
+function Sidebar({ open, onClose }) {
+    const { store } = useAuth();
+
+    return (
+        <>
+            {open && <div className="animate-fade-in fixed inset-0 z-30 bg-slate-950/50 lg:hidden" onClick={onClose} />}
+            <aside
+                className={cn(
+                    'fixed inset-y-0 start-0 z-40 flex w-[264px] flex-col border-e border-line bg-surface transition-transform duration-300 lg:translate-x-0',
+                    open ? 'translate-x-0' : 'translate-x-full',
+                )}
+                aria-label="القائمة الرئيسية"
+            >
+                <div className="flex h-[72px] items-center justify-between border-b border-line px-6">
+                    <Logo className="h-9" />
+                    <button type="button" onClick={onClose} className="grid size-9 place-items-center rounded-lg text-muted hover:bg-surface-3 lg:hidden" aria-label="إغلاق القائمة">
+                        <Icon name="x" />
+                    </button>
+                </div>
+
+                <div className="border-b border-line p-4">
+                    <div className="flex items-center gap-3 rounded-xl bg-surface-2 p-3">
+                        <Avatar name={store?.name} src={store?.logo_url} size="md" />
+                        <div className="min-w-0">
+                            <p className="truncate text-sm font-semibold text-ink">{store?.name}</p>
+                            <p className="ltr truncate text-start text-xs text-muted">
+                                {APP_DOMAIN}/{store?.slug}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <nav className="mk-scroll flex-1 overflow-y-auto px-3 py-4">
+                    {NAV_SECTIONS.map((section) => (
+                        <div key={section.title} className="mb-5">
+                            <p className="mb-2 px-3 text-[11px] font-semibold tracking-wide text-muted uppercase">{section.title}</p>
+                            <ul className="flex flex-col gap-0.5">
+                                {section.items.map((item) =>
+                                    item.soon ? (
+                                        <li key={item.label}>
+                                            <span className="flex cursor-not-allowed items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-muted" title="هذه الوحدة قيد التطوير">
+                                                <Icon name={item.icon} className="size-[18px]" />
+                                                {item.label}
+                                                <span className="ms-auto rounded-md bg-surface-3 px-1.5 py-0.5 text-[10px]">قريباً</span>
+                                            </span>
+                                        </li>
+                                    ) : (
+                                        <li key={item.label}>
+                                            <NavLink
+                                                to={item.to}
+                                                onClick={onClose}
+                                                className={({ isActive }) =>
+                                                    cn(
+                                                        'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition',
+                                                        isActive ? 'bg-primary-soft text-primary' : 'text-ink-2 hover:bg-surface-3 hover:text-ink',
+                                                    )
+                                                }
+                                            >
+                                                <Icon name={item.icon} className="size-[18px]" />
+                                                {item.label}
+                                            </NavLink>
+                                        </li>
+                                    ),
+                                )}
+                            </ul>
+                        </div>
+                    ))}
+                </nav>
+
+                <div className="m-4 rounded-xl bg-gradient-to-br from-indigo-600 to-sky-500 p-4 text-white">
+                    <p className="text-sm font-semibold">تحتاج مساعدة؟</p>
+                    <p className="mt-1 text-xs leading-relaxed text-indigo-100">فريق دعم مخزن متاح يومياً من ٩ صباحاً حتى ١٢ منتصف الليل.</p>
+                </div>
+            </aside>
+        </>
+    );
+}
+
+export function ImpersonationBanner() {
+    const { impersonation, stopImpersonating } = useAuth();
+    const navigate = useNavigate();
+
+    if (!impersonation) {
+        return null;
+    }
+
+    return (
+        <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 bg-warning px-4 py-2.5 text-sm font-medium text-slate-950">
+            <Icon name="eye" className="size-[18px]" />
+            <span>
+                أنت تتصفح الآن بصفة المسوق <strong>{impersonation.affiliate.full_name}</strong> — كل الإجراءات تُسجل باسمك.
+            </span>
+            <button
+                type="button"
+                onClick={() => {
+                    stopImpersonating();
+                    navigate('/dashboard/affiliates');
+                }}
+                className="rounded-lg bg-slate-950 px-3 py-1 text-xs font-semibold text-white hover:bg-slate-800"
+            >
+                العودة إلى حسابي
+            </button>
+        </div>
+    );
+}
+
+export function DashboardLayout() {
+    const [sidebarOpen, setSidebarOpen] = useState(false);
+    const { vendor, logout } = useAuth();
+    const navigate = useNavigate();
+    const location = useLocation();
+
+    useEffect(() => setSidebarOpen(false), [location.pathname]);
+
+    return (
+        <div className="min-h-dvh">
+            <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+            <div className="lg:ps-[264px]">
+                <ImpersonationBanner />
+                <header className="sticky top-0 z-20 flex h-[72px] items-center gap-3 border-b border-line bg-surface/85 px-4 backdrop-blur-md sm:px-8">
+                    <button type="button" onClick={() => setSidebarOpen(true)} className="grid size-10 place-items-center rounded-xl border border-line text-ink-2 lg:hidden" aria-label="فتح القائمة">
+                        <Icon name="menu" />
+                    </button>
+                    <div className="relative hidden max-w-md flex-1 md:block">
+                        <Icon name="search" className="pointer-events-none absolute start-3.5 top-1/2 size-[18px] -translate-y-1/2 text-muted" />
+                        <input type="search" placeholder="ابحث في الطلبات، المنتجات، المسوقين..." className="mk-input h-10 bg-surface-2 ps-10" aria-label="بحث عام" />
+                    </div>
+                    <div className="ms-auto flex items-center gap-2">
+                        <ThemeToggle />
+                        <button type="button" className="relative grid size-10 place-items-center rounded-xl border border-line text-ink-2 hover:text-ink" aria-label="الإشعارات" title="الإشعارات">
+                            <Icon name="bell" />
+                            <span className="absolute top-2 end-2.5 size-2 rounded-full bg-danger ring-2 ring-surface" />
+                        </button>
+                        <Dropdown
+                            label="قائمة الحساب"
+                            trigger={(props) => (
+                                <button type="button" {...props} className="flex items-center gap-2.5 rounded-xl p-1 pe-2 transition hover:bg-surface-3">
+                                    <Avatar name={vendor?.full_name} size="sm" />
+                                    <span className="hidden text-start sm:block">
+                                        <span className="block text-sm font-semibold text-ink">{vendor?.full_name}</span>
+                                        <span className="block text-xs text-muted">صاحب المتجر</span>
+                                    </span>
+                                    <Icon name="chevron-down" className="hidden size-4 text-muted sm:block" />
+                                </button>
+                            )}
+                            items={[
+                                { label: 'الملف الشخصي', icon: 'user', disabled: true, hint: 'قريباً' },
+                                { label: 'إعدادات المتجر', icon: 'store', disabled: true, hint: 'قريباً' },
+                                { divider: true },
+                                {
+                                    label: 'تسجيل الخروج',
+                                    icon: 'log-out',
+                                    tone: 'danger',
+                                    onClick: () => {
+                                        logout();
+                                        navigate('/login');
+                                    },
+                                },
+                            ]}
+                        />
+                    </div>
+                </header>
+                <main className="px-4 py-6 sm:px-8 sm:py-8">
+                    <Outlet />
+                </main>
+            </div>
+        </div>
+    );
+}
+
+export function PageHeader({ title, description, breadcrumbs = [], actions }) {
+    return (
+        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+                {breadcrumbs.length > 0 && (
+                    <nav aria-label="مسار التنقل" className="mb-2 flex items-center gap-1.5 text-xs text-muted">
+                        {breadcrumbs.map((crumb, index) => (
+                            <span key={crumb} className="flex items-center gap-1.5">
+                                {index > 0 && <Icon name="chevron-left" className="size-3" />}
+                                <span className={index === breadcrumbs.length - 1 ? 'text-ink-2' : undefined}>{crumb}</span>
+                            </span>
+                        ))}
+                    </nav>
+                )}
+                <h1 className="text-2xl font-bold text-ink">{title}</h1>
+                {description && <p className="mt-1 text-sm text-muted">{description}</p>}
+            </div>
+            {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
+        </div>
+    );
+}
