@@ -103,6 +103,16 @@ class Affiliate extends Authenticatable implements HasLocalePreference
     }
 
     /**
+     * Orders placed through the affiliate's referral codes.
+     *
+     * @return HasMany<Order, $this>
+     */
+    public function orders(): HasMany
+    {
+        return $this->hasMany(Order::class);
+    }
+
+    /**
      * @return HasMany<AffiliatePayout, $this>
      */
     public function payouts(): HasMany

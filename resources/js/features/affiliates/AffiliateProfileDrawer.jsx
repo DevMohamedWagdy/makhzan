@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
 import { Alert, Avatar, Badge, DetailRow } from '@/components/ui/Display';
 import { Dropdown } from '@/components/ui/Dropdown';
@@ -9,7 +10,9 @@ import { t } from '@/i18n';
 import { AFFILIATE_SOURCES, PAYOUT_METHODS } from '@/lib/constants';
 import { cn, formatDate, formatMoney, formatNumber, formatRelative, maskAccount } from '@/lib/format';
 import { affiliatesApi } from '@/services/affiliatesApi';
+import { ordersApi } from '@/services/ordersApi';
 import { PayoutMethodLabel, StatusBadge, TierBadge, formatCommission, getEffectiveCommission } from './AffiliateBadges';
+import { AffiliateOrdersList } from './AffiliateOrdersList';
 import { PayoutHistory } from './PayoutHistory';
 
 function Section({ title, icon, action, children }) {
@@ -52,6 +55,8 @@ export function AffiliateProfileDrawer({ affiliate, open, onClose, actions, crea
     const [revealAccount, setRevealAccount] = useState(false);
     const affiliateId = affiliate?.affiliate_id;
     const loadPayouts = useCallback((page) => affiliatesApi.listPayouts(affiliateId, page), [affiliateId]);
+    const loadOrders = useCallback((page) => ordersApi.list({ affiliate_id: affiliateId, page, per_page: 10 }), [affiliateId]);
+    const navigate = useNavigate();
 
     if (!affiliate) {
         return null;
@@ -228,6 +233,20 @@ export function AffiliateProfileDrawer({ affiliate, open, onClose, actions, crea
                         </dl>
                     </div>
                 </Section>
+
+                {!isPending && (
+                    <Section
+                        title={t('طلبات المسوق')}
+                        icon="shopping-bag"
+                        action={
+                            <Button size="sm" variant="ghost" to={`/dashboard/orders?affiliate_id=${affiliate.affiliate_id}`}>
+                                {t('عرض الكل')}
+                            </Button>
+                        }
+                    >
+                        <AffiliateOrdersList load={loadOrders} refreshKey={affiliate.stats.orders_count} onOpen={(order) => navigate(`/dashboard/orders?order=${order.order_id}`)} emptyText={t('لا توجد طلبات من روابط هذا المسوق بعد.')} />
+                    </Section>
+                )}
 
                 <Section
                     title={t('تحويلات العمولة')}

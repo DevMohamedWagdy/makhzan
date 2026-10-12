@@ -1080,4 +1080,13 @@ export default {
     'يمكنك إلغاء الطلب قبل أن يؤكده المتجر.': 'You can cancel the order before the store confirms it.',
     'تعذر تحميل طلباتك': 'Couldn\'t load your orders',
     'عندما تطلب من المتجر ستجد طلباتك وحالتها هنا.': 'When you order from the store, you\'ll find your orders and their status here.',
+    'لا توجد طلبات من روابطك بعد.': 'No orders from your links yet.',
+    'قيمة الطلب {amount}': 'Order value {amount}',
+    'طلبات المسوق': 'Affiliate\'s orders',
+    'لا توجد طلبات من روابط هذا المسوق بعد.': 'No orders from this affiliate\'s links yet.',
+    '+{amount} عند توصيل {count} طلب': '+{amount} when {count} orders are delivered',
+    'طلبات من روابطي': 'Orders from my links',
+    'العمولة تُضاف لرصيدك عند توصيل الطلب للعميل': 'The commission is added to your balance when the order is delivered',
+    'طلبات المسوق: {name}': 'Affiliate\'s orders: {name}',
+    'مكتسبة': 'Earned',
 };

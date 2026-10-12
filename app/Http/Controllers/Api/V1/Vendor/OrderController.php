@@ -27,6 +27,7 @@ class OrderController extends Controller
             ->search($filters['search'] ?? null)
             ->when($filters['status'] ?? null, fn ($query, $status) => $query->where('status', $status))
             ->when($request->boolean('affiliate'), fn ($query) => $query->whereNotNull('affiliate_id'))
+            ->when($filters['affiliate_id'] ?? null, fn ($query, $affiliateId) => $query->where('affiliate_id', $affiliateId))
             ->latest('id')
             ->paginate($filters['per_page'] ?? 20)
             ->withQueryString();

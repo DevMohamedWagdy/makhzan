@@ -24,6 +24,7 @@ export function OrdersPage() {
     const page = Number(searchParams.get('page')) || 1;
     const openOrderId = searchParams.get('order');
     const searchQuery = searchParams.get('search') ?? '';
+    const affiliateId = searchParams.get('affiliate_id') ?? '';
     const [searchTerm, setSearchTerm] = useState(searchParams.get('search') ?? '');
     const search = useDebouncedValue(searchTerm, 300);
     const [result, setResult] = useState(null);
@@ -58,7 +59,7 @@ export function OrdersPage() {
         setError(null);
 
         try {
-            const [list, counts] = await Promise.all([ordersApi.list({ status, search: searchQuery, page }), ordersApi.summary()]);
+            const [list, counts] = await Promise.all([ordersApi.list({ status, search: searchQuery, affiliate_id: affiliateId, page }), ordersApi.summary()]);
 
             setResult(list);
             setSummary(counts);
@@ -67,7 +68,7 @@ export function OrdersPage() {
         } finally {
             setLoading(false);
         }
-    }, [status, page, searchQuery]);
+    }, [status, page, searchQuery, affiliateId]);
 
     useEffect(() => {
         load();
@@ -98,8 +99,13 @@ export function OrdersPage() {
 
             <section className="mk-card overflow-hidden">
                 <Tabs tabs={tabs} value={status} onChange={(value) => setQuery({ status: value })} className="px-3" />
-                <div className="p-4">
+                <div className="flex flex-wrap items-center gap-3 p-4">
                     <Input type="search" icon="search" value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder={t('ابحث برقم الطلب أو اسم العميل أو هاتفه...')} aria-label={t('بحث في الطلبات')} className="lg:w-96" />
+                    {affiliateId && (
+                        <Button variant="soft" size="sm" iconEnd="x" onClick={() => setQuery({ affiliate_id: '' })}>
+                            {t('طلبات المسوق: {name}', { name: items[0]?.affiliate?.full_name ?? `#${affiliateId}` })}
+                        </Button>
+                    )}
                 </div>
 
                 {error ? (

@@ -19,6 +19,9 @@ export const affiliatePortalApi = {
     logout: () => request('POST', '/api/v1/affiliate/auth/logout', { auth: 'affiliate' }),
 
     /** Own payouts and transfer requests, newest first: { data, meta, summary: { total_paid } }. */
+    /** Orders from the affiliate's links: `{ data, meta, summary: { expected_commission, expected_orders } }` */
+    orders: (page = 1) => request('GET', '/api/v1/affiliate/orders', { query: { page }, auth: 'affiliate' }),
+
     payouts: (page = 1) => request('GET', '/api/v1/affiliate/payouts', { query: { page }, auth: 'affiliate' }),
 
     /** Asks the vendor to transfer commission. @param {{ amount: number, note?: string }} payload */

@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\V1\Affiliate\Auth\AffiliateAuthController;
 use App\Http\Controllers\Api\V1\Affiliate\Auth\AffiliatePasswordController;
 use App\Http\Controllers\Api\V1\Affiliate\Auth\AffiliatePasswordResetController;
+use App\Http\Controllers\Api\V1\Affiliate\OrderController as AffiliateOrderController;
 use App\Http\Controllers\Api\V1\Affiliate\PayoutController;
 use App\Http\Controllers\Api\V1\Public\AffiliateRegistrationController;
 use App\Http\Controllers\Api\V1\Public\StoreController;
@@ -101,6 +102,7 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
             Route::get('auth/me', [AffiliateAuthController::class, 'me'])->name('auth.me');
             Route::post('auth/logout', [AffiliateAuthController::class, 'logout'])->name('auth.logout');
             Route::get('payouts', [PayoutController::class, 'index'])->name('payouts.index');
+            Route::get('orders', [AffiliateOrderController::class, 'index'])->name('orders.index');
         });
 
         // The affiliate acting as themselves only — never through a vendor's impersonation token.

@@ -14,6 +14,7 @@ import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { useAffiliateAuth } from '@/context/AffiliateAuthContext';
 import { useToast } from '@/context/ToastContext';
 import { PayoutMethodLabel, StatusBadge, TierBadge, formatCommission } from '@/features/affiliates/AffiliateBadges';
+import { AffiliateOrdersList } from '@/features/affiliates/AffiliateOrdersList';
 import { PayoutHistory } from '@/features/affiliates/PayoutHistory';
 import { useCopy } from '@/hooks/common';
 import { useForm } from '@/hooks/useForm';
@@ -285,6 +286,16 @@ export function AffiliateDashboardPage() {
     const [passwordOpen, setPasswordOpen] = useState(false);
     const [payoutOpen, setPayoutOpen] = useState(false);
     const loadPayouts = useCallback((page) => affiliatePortalApi.payouts(page), []);
+    const [expected, setExpected] = useState(null);
+    const loadOrders = useCallback(
+        (page) =>
+            affiliatePortalApi.orders(page).then((response) => {
+                setExpected(response.summary);
+
+                return response;
+            }),
+        [],
+    );
 
     const load = useCallback(() => {
         setLoadError(null);
@@ -379,13 +390,17 @@ export function AffiliateDashboardPage() {
                             <StatCard label={t('طلباتي')} value={formatNumber(affiliate.stats.orders_count)} icon="shopping-bag" />
                             <StatCard label={t('مبيعاتي')} value={formatMoney(affiliate.stats.sales_total)} icon="bar-chart" tone="info" />
                             <StatCard label={t('إجمالي أرباحي')} value={formatMoney(affiliate.stats.earned_commission)} icon="wallet" tone="success" />
-                            <StatCard label={t('رصيد مستحق')} value={formatMoney(affiliate.stats.pending_balance)} icon="refresh" tone="warning" />
+                            <StatCard label={t('رصيد مستحق')} value={formatMoney(affiliate.stats.pending_balance)} icon="refresh" tone="warning" hint={expected?.expected_orders ? t('+{amount} عند توصيل {count} طلب', { amount: formatMoney(expected.expected_commission), count: expected.expected_orders }) : undefined} />
                         </div>
 
                         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
                             <div className="flex flex-col gap-6 lg:col-span-2">
                                 <Card title={t('روابط الإحالة الخاصة بي')} description={t('شارك هذه الروابط، وكل طلب يتم عبرها يُحسب لك')}>
                                     <ReferralLinks codes={affiliate.referral_codes} storeName={store.name} />
+                                </Card>
+
+                                <Card title={t('طلبات من روابطي')} description={t('العمولة تُضاف لرصيدك عند توصيل الطلب للعميل')}>
+                                    <AffiliateOrdersList load={loadOrders} refreshKey={affiliate.stats.orders_count} />
                                 </Card>
 
                                 <Card title={t('سجل تحويلاتي')} description={t('المبالغ التي حوّلها المتجر لك وطلبات التحويل')}>
@@ -425,7 +440,6 @@ export function AffiliateDashboardPage() {
                             </div>
                         </div>
 
-                        <p className="text-center text-xs text-muted">{t('سجل الطلبات التفصيلي سيتوفر هنا قريباً.')}</p>
                     </div>
                 )}
             </main>
