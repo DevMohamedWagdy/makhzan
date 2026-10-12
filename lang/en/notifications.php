@@ -73,5 +73,7 @@ return [
         'percentage' => 'Your commission is now :value% of each new order',
         'fixed' => 'Your commission is now :value EGP on each new order',
     ],
+    'stock_out' => ':product is out of stock',
+    'stock_low' => ':product is low on stock: only :stock left',
 
 ];

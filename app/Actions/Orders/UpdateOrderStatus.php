@@ -2,8 +2,10 @@
 
 namespace App\Actions\Orders;
 
+use App\Actions\Inventory\ChangeStock;
 use App\Enums\CommissionStatus;
 use App\Enums\OrderStatus;
+use App\Enums\StockMovementType;
 use App\Models\Affiliate;
 use App\Models\AffiliateReferralCode;
 use App\Models\Order;
@@ -14,6 +16,8 @@ use Illuminate\Validation\ValidationException;
 
 class UpdateOrderStatus
 {
+    public function __construct(private ChangeStock $changeStock) {}
+
     /**
      * Moves an order along its lifecycle (see OrderStatus::next()) and applies the side
      * effects: cancelled and returned orders go back to stock; the affiliate is credited when
@@ -42,7 +46,7 @@ class UpdateOrderStatus
             }
 
             if ($status->restocks()) {
-                $this->restock($order);
+                $this->restock($order, $status, $actor);
             }
 
             $commissionEvent = $this->settleCommission($order, $previous, $status);
@@ -60,10 +64,20 @@ class UpdateOrderStatus
         return $order;
     }
 
-    private function restock(Order $order): void
+    /**
+     * Puts the order's items back on the shelf, logged as a cancellation or a return.
+     * Variants deleted since the order was placed are skipped.
+     */
+    private function restock(Order $order, OrderStatus $status, string $actor): void
     {
+        $type = $status === OrderStatus::Returned ? StockMovementType::Return : StockMovementType::Cancellation;
+
         foreach ($order->items()->whereNotNull('product_variant_id')->get() as $item) {
-            ProductVariant::query()->whereKey($item->product_variant_id)->increment('stock', $item->quantity);
+            $variant = ProductVariant::query()->find($item->product_variant_id);
+
+            if ($variant) {
+                $this->changeStock->by($variant, $item->quantity, $type, $actor, $order);
+            }
         }
     }
 

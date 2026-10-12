@@ -57,6 +57,10 @@ class NotificationResource extends JsonResource
             'commission_changed' => __($details['type'] === 'fixed' ? 'notifications.commission_changed.fixed' : 'notifications.commission_changed.percentage', [
                 'value' => $details['type'] === 'fixed' ? number_format((float) $details['value'], 2) : rtrim(rtrim(number_format((float) $details['value'], 2), '0'), '.'),
             ]),
+            'stock_out', 'stock_low' => __("notifications.{$this->type}", [
+                'product' => trim($details['product_name'].($details['variant_title'] ? " ({$details['variant_title']})" : '')),
+                'stock' => $details['stock'],
+            ]),
             default => $details['message'] ?? '',
         };
     }

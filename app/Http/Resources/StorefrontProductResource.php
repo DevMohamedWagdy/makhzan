@@ -61,7 +61,7 @@ class StorefrontProductResource extends JsonResource
                     'price' => $variant->price,
                     'compare_at_price' => $variant->compare_at_price,
                     'available' => $variant->stock > 0,
-                    'stock_left' => $variant->stock > 0 && $variant->stock <= config('makhzan.products.low_stock_threshold') ? $variant->stock : null,
+                    'stock_left' => $variant->stock > 0 && $variant->stock <= ($request->route('store')?->low_stock_threshold ?? config('makhzan.products.low_stock_threshold')) ? $variant->stock : null,
                 ])->values(),
             ]),
         ];

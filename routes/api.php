@@ -29,6 +29,9 @@ use App\Http\Controllers\Api\V1\Vendor\Auth\PasswordResetController;
 use App\Http\Controllers\Api\V1\Vendor\Auth\VendorAuthController;
 use App\Http\Controllers\Api\V1\Vendor\CustomerController;
 use App\Http\Controllers\Api\V1\Vendor\CustomerSummaryController;
+use App\Http\Controllers\Api\V1\Vendor\InventoryController;
+use App\Http\Controllers\Api\V1\Vendor\InventorySettingsController;
+use App\Http\Controllers\Api\V1\Vendor\InventorySummaryController;
 use App\Http\Controllers\Api\V1\Vendor\NotificationController;
 use App\Http\Controllers\Api\V1\Vendor\OrderController as VendorOrderController;
 use App\Http\Controllers\Api\V1\Vendor\OrderSummaryController;
@@ -39,6 +42,7 @@ use App\Http\Controllers\Api\V1\Vendor\ProductImageController;
 use App\Http\Controllers\Api\V1\Vendor\ProductSummaryController;
 use App\Http\Controllers\Api\V1\Vendor\ReportController;
 use App\Http\Controllers\Api\V1\Vendor\ShippingSettingsController;
+use App\Http\Controllers\Api\V1\Vendor\StockMovementController;
 use App\Http\Controllers\Api\V1\Vendor\StoreSlugAvailabilityController;
 use Illuminate\Support\Facades\Route;
 
@@ -180,6 +184,15 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
 
         Route::get('shipping', [ShippingSettingsController::class, 'show'])->name('shipping.show');
         Route::put('shipping', [ShippingSettingsController::class, 'update'])->name('shipping.update');
+
+        Route::prefix('inventory')->name('inventory.')->group(function () {
+            Route::get('/', [InventoryController::class, 'index'])->name('index');
+            Route::get('summary', InventorySummaryController::class)->name('summary');
+            Route::put('settings', [InventorySettingsController::class, 'update'])->name('settings.update');
+            Route::get('movements', [StockMovementController::class, 'index'])->name('movements.index');
+            Route::patch('{variant}', [InventoryController::class, 'update'])->name('update');
+            Route::post('{variant}/movements', [StockMovementController::class, 'store'])->middleware('throttle:60,1')->name('movements.store');
+        });
 
         Route::get('products/summary', ProductSummaryController::class)->name('products.summary');
         Route::post('products/{product}/images', [ProductImageController::class, 'store'])->middleware('throttle:30,1')->name('products.images.store');

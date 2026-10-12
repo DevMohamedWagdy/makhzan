@@ -15,7 +15,9 @@ use Illuminate\Support\Facades\DB;
 /**
  * Sales report for the orders a store received between two dates (inclusive, by the day the
  * order was placed). "Sales" counts every order that wasn't cancelled or returned; revenue
- * counts delivered orders only, since payment is collected on delivery.
+ * counts delivered orders only, since payment is collected on delivery. Gross profit is the
+ * delivered products' value minus their cost (snapshotted when ordered) and affiliate
+ * commissions; items sold before a cost was set are counted in `uncosted_items`.
  */
 class BuildStoreReport
 {
@@ -69,7 +71,7 @@ class BuildStoreReport
     }
 
     /**
-     * @return array{orders: int, sales: float, average_order: float, revenue: float, delivered_orders: int, shipping_fees: float, commissions: float, net_revenue: float, cancelled: int, returned: int, new_customers: int}
+     * @return array{orders: int, sales: float, average_order: float, revenue: float, delivered_orders: int, shipping_fees: float, commissions: float, net_revenue: float, cost_of_goods: float, gross_profit: float, profit_margin: float|null, uncosted_items: int, cancelled: int, returned: int, new_customers: int}
      */
     private function totals(Store $store, CarbonImmutable $from, CarbonImmutable $to): array
     {
@@ -93,6 +95,17 @@ class BuildStoreReport
         $revenue = round((float) $row->revenue, 2);
         $commissions = round((float) $row->commissions, 2);
 
+        $goods = DB::table('order_items')
+            ->joinSub($this->orders($store, $from, $to)->getQuery()->where('orders.status', $delivered)->select('id'), 'delivered', 'delivered.id', '=', 'order_items.order_id')
+            ->selectRaw('coalesce(sum(order_items.line_total), 0) as products')
+            ->selectRaw('coalesce(sum(order_items.unit_cost * order_items.quantity), 0) as cost')
+            ->selectRaw('coalesce(sum(case when order_items.unit_cost is null then order_items.quantity else 0 end), 0) as uncosted')
+            ->first();
+
+        $products = round((float) $goods->products, 2);
+        $costOfGoods = round((float) $goods->cost, 2);
+        $grossProfit = round($products - $costOfGoods - $commissions, 2);
+
         return [
             'orders' => $orders,
             'sales' => $sales,
@@ -102,6 +115,10 @@ class BuildStoreReport
             'shipping_fees' => round((float) $row->shipping_fees, 2),
             'commissions' => $commissions,
             'net_revenue' => round($revenue - $commissions, 2),
+            'cost_of_goods' => $costOfGoods,
+            'gross_profit' => $grossProfit,
+            'profit_margin' => $products > 0 ? round($grossProfit / $products * 100, 1) : null,
+            'uncosted_items' => (int) $goods->uncosted,
             'cancelled' => (int) $row->cancelled,
             'returned' => (int) $row->returned,
             'new_customers' => $store->customers()->whereBetween('created_at', [$from, $to])->count(),

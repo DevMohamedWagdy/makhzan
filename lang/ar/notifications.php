@@ -73,5 +73,7 @@ return [
         'percentage' => 'تم تحديث عمولتك إلى :value% من قيمة كل طلب جديد',
         'fixed' => 'تم تحديث عمولتك إلى :value ج.م على كل طلب جديد',
     ],
+    'stock_out' => 'نفد مخزون :product',
+    'stock_low' => 'مخزون :product منخفض: متبقي :stock فقط',
 
 ];

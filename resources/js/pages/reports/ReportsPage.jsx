@@ -128,6 +128,24 @@ export function ReportsPage() {
                         />
                     </div>
 
+                    <div className="grid gap-4 sm:grid-cols-3">
+                        <StatCard label={t('تكلفة البضاعة المباعة')} value={formatMoney(totals.cost_of_goods)} icon="box" tone="neutral" hint={t('للطلبات المسلّمة في الفترة')} />
+                        <StatCard
+                            label={t('إجمالي الربح')}
+                            value={formatMoney(totals.gross_profit)}
+                            icon="sparkles"
+                            tone={totals.gross_profit < 0 ? 'danger' : 'success'}
+                            hint={<TrendBadge current={totals.gross_profit} previous={previous.gross_profit} />}
+                        />
+                        <StatCard
+                            label={t('هامش الربح')}
+                            value={totals.profit_margin == null ? '—' : t('{value}%', { value: formatNumber(totals.profit_margin) })}
+                            icon="percent"
+                            tone="info"
+                            hint={totals.uncosted_items ? t('{count} قطعة مباعة بدون تكلفة مسجلة', { count: formatNumber(totals.uncosted_items) }) : t('بعد التكلفة وعمولات المسوقين')}
+                        />
+                    </div>
+
                     <DailyChartCard daily={report.daily} description={t('المبيعات تشمل كل الطلبات غير الملغاة، والإيرادات المحصّلة تشمل الطلبات المسلّمة فقط')} />
 
                     <div className="grid gap-6 lg:grid-cols-2">

@@ -5,8 +5,8 @@ import { t } from '@/i18n';
  * {
  *   hasOptions: boolean,
  *   options: Array<{ name: string, values: string[] }>,
- *   rows: Record<comboKey, { id?: number, price: string, compare_at_price: string, sku: string, stock: string, enabled: boolean }>,
- *   simple: { id?: number, price: string, compare_at_price: string, sku: string, stock: string },
+ *   rows: Record<comboKey, { id?: number, price: string, compare_at_price: string, cost: string, sku: string, stock: string, enabled: boolean }>,
+ *   simple: { id?: number, price: string, compare_at_price: string, cost: string, sku: string, stock: string },
  * }
  * Rows are keyed by option combination so price/stock survive edits to the options.
  */
@@ -15,7 +15,7 @@ const SEPARATOR = '\u0001';
 
 export const comboKey = (values) => values.join(SEPARATOR);
 
-const blankRow = (defaults = {}) => ({ price: '', compare_at_price: '', sku: '', stock: '0', enabled: true, ...defaults });
+const blankRow = (defaults = {}) => ({ price: '', compare_at_price: '', cost: '', sku: '', stock: '0', enabled: true, ...defaults });
 
 const toField = (value) => (value === null || value === undefined ? '' : String(value));
 
@@ -43,6 +43,7 @@ export function variantsStateFromProduct(product) {
         id: variant.variant_id,
         price: toField(variant.price),
         compare_at_price: toField(variant.compare_at_price),
+        cost: toField(variant.cost),
         sku: toField(variant.sku),
         stock: toField(variant.stock),
         enabled: true,
@@ -86,6 +87,7 @@ export function buildVariantsPayload(state) {
         option_values: optionValues,
         price: numberOrNull(row.price),
         compare_at_price: numberOrNull(row.compare_at_price),
+        cost: numberOrNull(row.cost),
         sku: row.sku.trim() || null,
         stock: numberOrNull(row.stock) ?? 0,
     });
@@ -110,6 +112,10 @@ function rowErrors(row) {
 
     if (row.compare_at_price !== '' && !(Number(row.compare_at_price) > price)) {
         errors.compare_at_price = t('يجب أن يكون أكبر من السعر');
+    }
+
+    if (row.cost !== '' && (Number.isNaN(Number(row.cost)) || Number(row.cost) < 0)) {
+        errors.cost = t('أدخل تكلفة صحيحة');
     }
 
     if (row.stock === '' || !Number.isInteger(Number(row.stock)) || Number(row.stock) < 0) {

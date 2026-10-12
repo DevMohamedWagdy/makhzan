@@ -15,7 +15,7 @@ class ProductSummaryController extends Controller
     public function __invoke(Request $request): JsonResponse
     {
         $products = $request->user()->store->products();
-        $threshold = (int) config('makhzan.products.low_stock_threshold');
+        $threshold = $request->user()->store->low_stock_threshold;
 
         $totals = (clone $products)
             ->toBase()

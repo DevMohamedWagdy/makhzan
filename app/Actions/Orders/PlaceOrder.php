@@ -2,15 +2,18 @@
 
 namespace App\Actions\Orders;
 
+use App\Actions\Inventory\ChangeStock;
 use App\Enums\AffiliateStatus;
 use App\Enums\CommissionStatus;
 use App\Enums\CommissionType;
 use App\Enums\OrderStatus;
+use App\Enums\StockMovementType;
 use App\Models\AffiliateReferralCode;
 use App\Models\Customer;
 use App\Models\Order;
 use App\Models\OrderEvent;
 use App\Models\ProductVariant;
+use App\Models\StockMovement;
 use App\Models\Store;
 use App\Notifications\AffiliateCommissionNotification;
 use App\Notifications\OrderPlacedNotification;
@@ -20,6 +23,8 @@ use Illuminate\Validation\ValidationException;
 
 class PlaceOrder
 {
+    public function __construct(private ChangeStock $changeStock) {}
+
     /**
      * Places a cash-on-delivery order. Variant rows are locked while stock is checked and
      * deducted, so two shoppers can't buy the last piece twice. A valid referral code
@@ -75,11 +80,12 @@ class PlaceOrder
                     'sku' => $variant->sku,
                     'image_path' => $variant->product->images->first()?->path,
                     'unit_price' => $variant->price,
+                    'unit_cost' => $variant->cost,
                     'quantity' => $quantity,
                     'line_total' => round($variant->price * $quantity, 2),
                 ]);
 
-                $variant->decrement('stock', $quantity);
+                $this->changeStock->by($variant, -$quantity, StockMovementType::Sale, StockMovement::ACTOR_CUSTOMER, $order);
             }
 
             $order->events()->create(['status' => OrderStatus::Pending, 'actor' => OrderEvent::ACTOR_CUSTOMER]);

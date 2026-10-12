@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Storage;
 
-#[Fillable(['product_id', 'product_variant_id', 'product_name', 'variant_title', 'sku', 'image_path', 'unit_price', 'quantity', 'line_total'])]
+#[Fillable(['product_id', 'product_variant_id', 'product_name', 'variant_title', 'sku', 'image_path', 'unit_price', 'unit_cost', 'quantity', 'line_total'])]
 class OrderItem extends Model
 {
     /** @use HasFactory<OrderItemFactory> */
@@ -25,6 +25,7 @@ class OrderItem extends Model
     {
         return [
             'unit_price' => 'float',
+            'unit_cost' => 'float',
             'quantity' => 'integer',
             'line_total' => 'float',
         ];

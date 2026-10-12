@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Facades\Storage;
 
-#[Fillable(['name', 'slug', 'logo_path', 'governorate_id', 'city_id'])]
+#[Fillable(['name', 'slug', 'logo_path', 'governorate_id', 'city_id', 'low_stock_threshold'])]
 class Store extends Model
 {
     /** @use HasFactory<StoreFactory> */
@@ -28,6 +28,7 @@ class Store extends Model
         return [
             'default_shipping_price' => 'float',
             'free_shipping_threshold' => 'float',
+            'low_stock_threshold' => 'integer',
         ];
     }
 
@@ -85,6 +86,14 @@ class Store extends Model
     public function orders(): HasMany
     {
         return $this->hasMany(Order::class);
+    }
+
+    /**
+     * @return HasMany<StockMovement, $this>
+     */
+    public function stockMovements(): HasMany
+    {
+        return $this->hasMany(StockMovement::class);
     }
 
     /**

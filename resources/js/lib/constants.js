@@ -38,6 +38,18 @@ export const PRODUCT_STATUSES = {
 /** @type {Record<'in' | 'low' | 'out', string>} */
 export const STOCK_LEVELS = { in: t('متوفر'), low: t('مخزون منخفض'), out: t('نفد المخزون') };
 
+/** @type {Record<'initial'|'sale'|'cancellation'|'return'|'restock'|'adjustment'|'damage'|'product_edit', { label: string, tone: string, icon: string }>} */
+export const STOCK_MOVEMENT_TYPES = {
+    restock: { label: t('توريد'), tone: 'success', icon: 'download' },
+    adjustment: { label: t('تسوية جرد'), tone: 'info', icon: 'check-circle' },
+    damage: { label: t('تالف أو مفقود'), tone: 'danger', icon: 'alert-triangle' },
+    sale: { label: t('بيع'), tone: 'primary', icon: 'shopping-bag' },
+    cancellation: { label: t('إلغاء طلب'), tone: 'neutral', icon: 'x' },
+    return: { label: t('مرتجع'), tone: 'warning', icon: 'refresh' },
+    initial: { label: t('رصيد افتتاحي'), tone: 'neutral', icon: 'plus' },
+    product_edit: { label: t('تعديل من صفحة المنتج'), tone: 'neutral', icon: 'edit' },
+};
+
 /** Common option names offered as suggestions in the product form. */
 export const OPTION_SUGGESTIONS = [t('المقاس'), t('اللون'), t('الخامة'), t('الوزن')];
 
