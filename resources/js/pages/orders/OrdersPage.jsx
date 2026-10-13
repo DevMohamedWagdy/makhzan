@@ -96,7 +96,7 @@ export function OrdersPage() {
 
     return (
         <>
-            <PageHeader title={t('الطلبات')} description={t('تابع طلبات متجرك وغيّر حالتها حتى التوصيل')} breadcrumbs={[t('لوحة التحكم'), t('التجارة'), t('الطلبات')]} />
+            <PageHeader title={t('الطلبات')} description={t('تابع طلبات متجرك وغيّر حالتها حتى التوصيل')} breadcrumbs={[t('لوحة التحكم'), t('المبيعات'), t('الطلبات')]} />
 
             <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                 <StatCard label={t('بانتظار التأكيد')} value={summary ? formatNumber(summary.pending) : '—'} icon="refresh" tone="warning" />

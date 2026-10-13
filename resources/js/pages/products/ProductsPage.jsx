@@ -123,7 +123,7 @@ export function ProductsPage() {
             <PageHeader
                 title={t('المنتجات')}
                 description={t('أضف منتجاتك بأسعارها ومقاساتها وألوانها، وتابع المخزون')}
-                breadcrumbs={[t('لوحة التحكم'), t('التجارة'), t('المنتجات')]}
+                breadcrumbs={[t('لوحة التحكم'), t('الكتالوج'), t('المنتجات')]}
                 actions={
                     <>
                         <Button variant="secondary" icon="grid" to="/dashboard/categories">

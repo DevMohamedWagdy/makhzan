@@ -60,7 +60,7 @@ export function ShippingPage() {
         <PageHeader
             title={t('الشحن')}
             description={t('حدد أسعار التوصيل لكل محافظة، والمحافظات التي توصّل إليها')}
-            breadcrumbs={[t('لوحة التحكم'), t('التجارة'), t('الشحن')]}
+            breadcrumbs={[t('لوحة التحكم'), t('المبيعات'), t('الشحن')]}
             actions={
                 settings && (
                     <Button icon="check" loading={saving} onClick={save}>

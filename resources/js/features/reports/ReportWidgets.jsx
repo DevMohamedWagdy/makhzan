@@ -16,6 +16,34 @@ export function toDateString(date) {
     return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 }
 
+/** Period choices shared by date-filtered dashboard pages (reports, payments). */
+export const REPORT_PRESETS = {
+    7: t('آخر ٧ أيام'),
+    30: t('آخر ٣٠ يوماً'),
+    90: t('آخر ٩٠ يوماً'),
+    month: t('هذا الشهر'),
+    last_month: t('الشهر الماضي'),
+    custom: t('فترة مخصصة'),
+};
+
+/** The from/to dates (Y-m-d) a preset stands for, relative to today. */
+export function presetRange(preset) {
+    const today = new Date();
+
+    if (preset === 'month') {
+        return { from: toDateString(new Date(today.getFullYear(), today.getMonth(), 1)), to: toDateString(today) };
+    }
+
+    if (preset === 'last_month') {
+        return { from: toDateString(new Date(today.getFullYear(), today.getMonth() - 1, 1)), to: toDateString(new Date(today.getFullYear(), today.getMonth(), 0)) };
+    }
+
+    const from = new Date(today);
+    from.setDate(today.getDate() - Number(preset) + 1);
+
+    return { from: toDateString(from), to: toDateString(today) };
+}
+
 /** Midnight of a Y-m-d date in the browser's time zone. */
 export function parseDate(value) {
     const [year, month, day] = value.split('-').map(Number);

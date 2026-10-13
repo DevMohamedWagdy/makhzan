@@ -42,6 +42,7 @@ use App\Http\Controllers\Api\V1\Vendor\NotificationController;
 use App\Http\Controllers\Api\V1\Vendor\OrderController as VendorOrderController;
 use App\Http\Controllers\Api\V1\Vendor\OrderSummaryController;
 use App\Http\Controllers\Api\V1\Vendor\PaymentSettingsController;
+use App\Http\Controllers\Api\V1\Vendor\PaymentTransactionController;
 use App\Http\Controllers\Api\V1\Vendor\PayoutController as VendorPayoutController;
 use App\Http\Controllers\Api\V1\Vendor\ProductCategoryController;
 use App\Http\Controllers\Api\V1\Vendor\ProductController;
@@ -179,6 +180,10 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::get('payments', [PaymentSettingsController::class, 'show'])->name('payments.show');
         Route::put('payments', [PaymentSettingsController::class, 'update'])->middleware('throttle:20,1')->name('payments.update');
         Route::delete('payments/paymob', [PaymentSettingsController::class, 'disconnect'])->name('payments.disconnect');
+
+        Route::get('payment-transactions/summary', [PaymentTransactionController::class, 'summary'])->name('payment-transactions.summary');
+        Route::get('payment-transactions/export', [PaymentTransactionController::class, 'export'])->middleware('throttle:10,1')->name('payment-transactions.export');
+        Route::get('payment-transactions', [PaymentTransactionController::class, 'index'])->name('payment-transactions.index');
 
         Route::get('notifications', [NotificationController::class, 'index'])->name('notifications.index');
         Route::post('notifications/read-all', [NotificationController::class, 'readAll'])->name('notifications.read-all');

@@ -88,7 +88,7 @@ export function PurchaseOrdersPage() {
             <PageHeader
                 title={t('أوامر الشراء')}
                 description={t('اطلب البضاعة من موردينك، واستلمها كاملة أو على دفعات لتُضاف للمخزون')}
-                breadcrumbs={[t('لوحة التحكم'), t('التجارة'), t('أوامر الشراء')]}
+                breadcrumbs={[t('لوحة التحكم'), t('المخزون والمشتريات'), t('أوامر الشراء')]}
                 actions={
                     <>
                         <Button variant="secondary" icon="building" to="/dashboard/suppliers">

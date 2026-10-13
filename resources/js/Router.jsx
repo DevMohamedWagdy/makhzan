@@ -41,6 +41,7 @@ import { StorePolicyPage } from '@/pages/storefront/StorePolicyPage';
 import { StoreProductPage } from '@/pages/storefront/StoreProductPage';
 import { ProductFormPage } from '@/pages/products/ProductFormPage';
 import { ProductsPage } from '@/pages/products/ProductsPage';
+import { PaymentsPage } from '@/pages/payments/PaymentsPage';
 import { PayoutRequestsPage } from '@/pages/payouts/PayoutRequestsPage';
 import { PurchaseOrderFormPage } from '@/pages/purchasing/PurchaseOrderFormPage';
 import { PurchaseOrderPage } from '@/pages/purchasing/PurchaseOrderPage';
@@ -132,6 +133,7 @@ export function App() {
                                     <Route path="notifications" element={<NotificationsPage />} />
                                     <Route path="categories" element={<CategoriesPage />} />
                                     <Route path="orders" element={<OrdersPage />} />
+                                    <Route path="payments" element={<PaymentsPage />} />
                                     <Route path="shipping" element={<ShippingPage />} />
                                     <Route path="products" element={<ProductsPage />} />
                                     <Route path="products/new" element={<ProductFormPage />} />

@@ -6,37 +6,10 @@ import { TrendBadge } from '@/components/ui/Charts';
 import { EmptyState, StatCard } from '@/components/ui/Display';
 import { Input, Select } from '@/components/ui/Form';
 import { Skeleton } from '@/components/ui/Spinner';
-import { AffiliatesCard, DailyChartCard, GovernoratesCard, PaymentMethodsCard, StatusBreakdownCard, TopProductsCard, parseDate, toDateString } from '@/features/reports/ReportWidgets';
+import { AffiliatesCard, DailyChartCard, GovernoratesCard, PaymentMethodsCard, REPORT_PRESETS, StatusBreakdownCard, TopProductsCard, parseDate, presetRange, toDateString } from '@/features/reports/ReportWidgets';
 import { t } from '@/i18n';
 import { formatDate, formatMoney, formatNumber } from '@/lib/format';
 import { reportsApi } from '@/services/reportsApi';
-
-const PRESETS = {
-    7: t('آخر ٧ أيام'),
-    30: t('آخر ٣٠ يوماً'),
-    90: t('آخر ٩٠ يوماً'),
-    month: t('هذا الشهر'),
-    last_month: t('الشهر الماضي'),
-    custom: t('فترة مخصصة'),
-};
-
-/** The from/to dates (Y-m-d) a preset stands for, relative to today. */
-function presetRange(preset) {
-    const today = new Date();
-
-    if (preset === 'month') {
-        return { from: toDateString(new Date(today.getFullYear(), today.getMonth(), 1)), to: toDateString(today) };
-    }
-
-    if (preset === 'last_month') {
-        return { from: toDateString(new Date(today.getFullYear(), today.getMonth() - 1, 1)), to: toDateString(new Date(today.getFullYear(), today.getMonth(), 0)) };
-    }
-
-    const from = new Date(today);
-    from.setDate(today.getDate() - Number(preset) + 1);
-
-    return { from: toDateString(from), to: toDateString(today) };
-}
 
 function ReportSkeleton() {
     return (
@@ -56,7 +29,7 @@ export function ReportsPage() {
     const [searchParams, setSearchParams] = useSearchParams();
     const preset = searchParams.get('period') ?? (searchParams.get('from') ? 'custom' : '30');
     const range = useMemo(
-        () => (preset === 'custom' ? { from: searchParams.get('from') ?? presetRange(30).from, to: searchParams.get('to') ?? toDateString(new Date()) } : presetRange(preset in PRESETS ? preset : 30)),
+        () => (preset === 'custom' ? { from: searchParams.get('from') ?? presetRange(30).from, to: searchParams.get('to') ?? toDateString(new Date()) } : presetRange(preset in REPORT_PRESETS ? preset : 30)),
         [preset, searchParams],
     );
     const [report, setReport] = useState(null);
@@ -94,7 +67,7 @@ export function ReportsPage() {
                 breadcrumbs={[t('لوحة التحكم'), t('الإدارة'), t('التقارير')]}
                 actions={
                     <>
-                        <Select value={preset} onChange={(event) => choosePreset(event.target.value)} options={Object.entries(PRESETS).map(([value, label]) => ({ value, label }))} icon="bar-chart" aria-label={t('فترة التقرير')} className="h-10 w-48" />
+                        <Select value={preset} onChange={(event) => choosePreset(event.target.value)} options={Object.entries(REPORT_PRESETS).map(([value, label]) => ({ value, label }))} icon="bar-chart" aria-label={t('فترة التقرير')} className="h-10 w-48" />
                         {preset === 'custom' && (
                             <>
                                 <Input type="date" value={range.from} max={range.to} onChange={(event) => setCustomDate('from', event.target.value)} aria-label={t('من تاريخ')} className="h-10 w-40" />
