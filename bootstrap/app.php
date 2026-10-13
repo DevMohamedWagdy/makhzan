@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\EnsureAffiliateToken;
+use App\Http\Middleware\EnsureCustomerToken;
 use App\Http\Middleware\EnsureVendorToken;
 use App\Http\Middleware\SetLocale;
 use Illuminate\Foundation\Application;
@@ -22,6 +23,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'vendor' => EnsureVendorToken::class,
             'affiliate' => EnsureAffiliateToken::class,
+            'customer' => EnsureCustomerToken::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

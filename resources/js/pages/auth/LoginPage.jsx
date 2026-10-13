@@ -45,7 +45,7 @@ export function LoginPage() {
             const vendor = await login(values);
 
             toast.success(t('أهلاً بعودتك يا {value} 👋', { value: vendor.full_name.split(' ')[0] }), t('تم تسجيل الدخول بنجاح'));
-            navigate(location.state?.from ?? '/dashboard/affiliates', { replace: true });
+            navigate(location.state?.from ?? '/dashboard', { replace: true });
         } catch (error) {
             setFormError(error.errors?.identifier ?? error.message);
         } finally {

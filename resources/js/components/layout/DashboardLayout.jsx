@@ -8,16 +8,18 @@ import { LanguageToggle } from '@/components/ui/LanguageToggle';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { useAuth } from '@/context/AuthContext';
 import { DashboardAlertsProvider, useDashboardAlerts } from '@/context/DashboardAlertsContext';
+import { useToast } from '@/context/ToastContext';
+import { notificationTarget } from '@/features/notifications/NotificationItem';
 import { NotificationsMenu } from '@/features/notifications/NotificationsMenu';
+import { useCopy } from '@/hooks/common';
 import { isRtl, t } from '@/i18n';
-import { APP_DOMAIN } from '@/lib/constants';
 import { cn } from '@/lib/format';
 
 const NAV_SECTIONS = [
     {
         title: t('الرئيسية'),
         items: [
-            { label: t('لوحة التحكم'), icon: 'grid', to: '/dashboard', soon: true },
+            { label: t('لوحة التحكم'), icon: 'grid', to: '/dashboard', end: true },
             { label: t('الإشعارات'), icon: 'bell', to: '/dashboard/notifications', counter: 'unreadCount' },
         ],
     },
@@ -26,9 +28,13 @@ const NAV_SECTIONS = [
         items: [
             { label: t('الأقسام'), icon: 'grid', to: '/dashboard/categories' },
             { label: t('المنتجات'), icon: 'box', to: '/dashboard/products' },
-            { label: t('المخزون'), icon: 'warehouse', soon: true },
-            { label: t('الطلبات'), icon: 'shopping-bag', soon: true },
-            { label: t('الشحن'), icon: 'truck', soon: true },
+            { label: t('المخزون'), icon: 'warehouse', to: '/dashboard/inventory' },
+            { label: t('المخازن'), icon: 'building', to: '/dashboard/warehouses' },
+            { label: t('أوامر الشراء'), icon: 'download', to: '/dashboard/purchase-orders' },
+            { label: t('الموردين'), icon: 'users', to: '/dashboard/suppliers' },
+            { label: t('الطلبات'), icon: 'shopping-bag', to: '/dashboard/orders', counter: 'pendingOrdersCount' },
+            { label: t('العملاء'), icon: 'user', to: '/dashboard/customers' },
+            { label: t('الشحن'), icon: 'truck', to: '/dashboard/shipping' },
         ],
     },
     {
@@ -36,22 +42,34 @@ const NAV_SECTIONS = [
         items: [
             { label: t('المسوقين'), icon: 'users', to: '/dashboard/affiliates' },
             { label: t('طلبات التحويل'), icon: 'send', to: '/dashboard/payout-requests', counter: 'payoutRequestsCount' },
-            { label: t('الكوبونات'), icon: 'gift', soon: true },
+            { label: t('الكوبونات'), icon: 'gift', to: '/dashboard/coupons' },
             { label: t('الحملات'), icon: 'megaphone', soon: true },
         ],
     },
     {
         title: t('الإدارة'),
         items: [
-            { label: t('التقارير'), icon: 'bar-chart', soon: true },
-            { label: t('إعدادات المتجر'), icon: 'settings', soon: true },
+            { label: t('التقارير'), icon: 'bar-chart', to: '/dashboard/reports' },
+            { label: t('إعدادات المتجر'), icon: 'settings', to: '/dashboard/settings' },
         ],
     },
 ];
 
+/**
+ * The public storefront link customers order from. Sessions saved before the API returned
+ * `store.url` fall back to this app's address.
+ */
+function storefrontUrl(store) {
+    return store?.url ?? `${window.location.origin}/${store?.slug ?? ''}`;
+}
+
 function Sidebar({ open, onClose }) {
     const { store } = useAuth();
     const alerts = useDashboardAlerts();
+    const toast = useToast();
+    const { copy, copiedValue } = useCopy();
+    const storeUrl = storefrontUrl(store);
+    const copied = copiedValue === storeUrl;
 
     return (
         <>
@@ -75,10 +93,35 @@ function Sidebar({ open, onClose }) {
                         <Avatar name={store?.name} src={store?.logo_url} size="md" />
                         <div className="min-w-0">
                             <p className="truncate text-sm font-semibold text-ink">{store?.name}</p>
-                            <p className="ltr truncate text-start text-xs text-muted">
-                                {APP_DOMAIN}/{store?.slug}
+                            <p className="ltr truncate text-start text-xs text-muted" title={storeUrl}>
+                                {storeUrl.replace(/^https?:\/\//, '')}
                             </p>
                         </div>
+                    </div>
+                    <div className="mt-2 grid grid-cols-2 gap-2">
+                        <a
+                            href={storeUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-line bg-surface px-2 text-xs font-medium text-ink transition hover:bg-surface-3"
+                        >
+                            <Icon name="eye" className="size-3.5" />
+                            {t('زيارة المتجر')}
+                        </a>
+                        <button
+                            type="button"
+                            onClick={() => {
+                                copy(storeUrl);
+                                toast.success(t('تم نسخ رابط المتجر'), t('شاركه مع عملائك ليطلبوا من متجرك مباشرة.'));
+                            }}
+                            className={cn(
+                                'inline-flex h-8 items-center justify-center gap-1.5 rounded-lg px-2 text-xs font-medium transition',
+                                copied ? 'bg-success-soft text-success' : 'bg-primary-soft text-primary hover:bg-primary/15',
+                            )}
+                        >
+                            <Icon name={copied ? 'check' : 'copy'} className="size-3.5" />
+                            {copied ? t('تم النسخ') : t('نسخ الرابط')}
+                        </button>
                     </div>
                 </div>
 
@@ -100,6 +143,7 @@ function Sidebar({ open, onClose }) {
                                         <li key={item.label}>
                                             <NavLink
                                                 to={item.to}
+                                                end={item.end}
                                                 onClick={onClose}
                                                 className={({ isActive }) =>
                                                     cn(
@@ -173,6 +217,7 @@ export function DashboardLayout() {
 function DashboardShell() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const { vendor, logout } = useAuth();
+    const { notifications, unreadCount, markRead, markAllRead } = useDashboardAlerts();
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -194,7 +239,7 @@ function DashboardShell() {
                     <div className="ms-auto flex items-center gap-2">
                         <LanguageToggle />
                         <ThemeToggle />
-                        <NotificationsMenu />
+                        <NotificationsMenu notifications={notifications} unreadCount={unreadCount} markRead={markRead} markAllRead={markAllRead} target={notificationTarget} allHref="/dashboard/notifications" />
                         <Dropdown
                             label={t('قائمة الحساب')}
                             trigger={(props) => (
@@ -208,8 +253,8 @@ function DashboardShell() {
                                 </button>
                             )}
                             items={[
-                                { label: t('الملف الشخصي'), icon: 'user', disabled: true, hint: t('قريباً') },
-                                { label: t('إعدادات المتجر'), icon: 'store', disabled: true, hint: t('قريباً') },
+                                { label: t('الملف الشخصي'), icon: 'user', onClick: () => navigate('/dashboard/settings?tab=account') },
+                                { label: t('إعدادات المتجر'), icon: 'store', onClick: () => navigate('/dashboard/settings') },
                                 { divider: true },
                                 {
                                     label: t('تسجيل الخروج'),

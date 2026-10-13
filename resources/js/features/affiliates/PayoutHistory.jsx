@@ -16,6 +16,33 @@ export function PayoutStatusBadge({ status }) {
     );
 }
 
+/** One payout or transfer request: amount, status, destination, dates and notes. */
+export function PayoutItem({ payout }) {
+    return (
+        <li className="rounded-xl border border-line p-4">
+            <div className="flex items-center justify-between gap-3">
+                <span className="text-base font-bold text-ink">{formatMoney(payout.amount)}</span>
+                <PayoutStatusBadge status={payout.status} />
+            </div>
+            <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted">
+                <span>
+                    {PAYOUT_METHODS[payout.payout_method.type]?.label} <span className="ltr inline-block font-mono">•••• {payout.payout_method.account_number_last4}</span>
+                </span>
+                {payout.status === 'paid' && <span>{t('حُوِّل في {value}', { value: formatDate(payout.paid_at) })}</span>}
+                {payout.status === 'requested' && <span>{t('طُلب في {value}', { value: formatDate(payout.created_at) })}</span>}
+                {payout.status === 'rejected' && <span>{t('رُفض في {value}', { value: formatDate(payout.rejected_at) })}</span>}
+                {payout.reference && (
+                    <span>
+                        {t('رقم العملية:')} <span className="ltr inline-block font-mono text-ink-2">{payout.reference}</span>
+                    </span>
+                )}
+            </div>
+            {payout.request_note && <p className="mt-2 text-xs text-ink-2">{t('ملاحظة المسوق: {request_note}', { request_note: payout.request_note })}</p>}
+            {payout.note && <p className="mt-1 text-xs text-ink-2">{t('ملاحظة المتجر: {note}', { note: payout.note })}</p>}
+        </li>
+    );
+}
+
 /**
  * Payouts and transfer requests, newest first, shared by the vendor's affiliate profile
  * and the affiliate's own dashboard. `load(page)` returns a paginated `{ data, meta, summary }`;
@@ -80,27 +107,7 @@ export function PayoutHistory({ load, refreshKey, emptyText = t('لا توجد �
             </p>
             <ul className="flex flex-col gap-3">
                 {items.map((payout) => (
-                    <li key={payout.payout_id} className="rounded-xl border border-line p-4">
-                        <div className="flex items-center justify-between gap-3">
-                            <span className="text-base font-bold text-ink">{formatMoney(payout.amount)}</span>
-                            <PayoutStatusBadge status={payout.status} />
-                        </div>
-                        <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted">
-                            <span>
-                                {PAYOUT_METHODS[payout.payout_method.type]?.label} <span className="ltr inline-block font-mono">•••• {payout.payout_method.account_number_last4}</span>
-                            </span>
-                            {payout.status === 'paid' && <span>{t('حُوِّل في {value}', { value: formatDate(payout.paid_at) })}</span>}
-                            {payout.status === 'requested' && <span>{t('طُلب في {value}', { value: formatDate(payout.created_at) })}</span>}
-                            {payout.status === 'rejected' && <span>{t('رُفض في {value}', { value: formatDate(payout.rejected_at) })}</span>}
-                            {payout.reference && (
-                                <span>
-                                    {t('رقم العملية:')} <span className="ltr inline-block font-mono text-ink-2">{payout.reference}</span>
-                                </span>
-                            )}
-                        </div>
-                        {payout.request_note && <p className="mt-2 text-xs text-ink-2">{t('ملاحظة المسوق: {request_note}', { request_note: payout.request_note })}</p>}
-                        {payout.note && <p className="mt-1 text-xs text-ink-2">{t('ملاحظة المتجر: {note}', { note: payout.note })}</p>}
-                    </li>
+                    <PayoutItem key={payout.payout_id} payout={payout} />
                 ))}
             </ul>
             {meta && meta.current_page < meta.last_page && (

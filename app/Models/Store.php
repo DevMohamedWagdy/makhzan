@@ -12,11 +12,49 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Facades\Storage;
 
-#[Fillable(['name', 'slug', 'logo_path', 'governorate_id', 'city_id'])]
+#[Fillable([
+    'name', 'slug', 'logo_path', 'governorate_id', 'city_id', 'low_stock_threshold', 'description',
+    'contact_phone', 'whatsapp', 'contact_email', 'address', 'facebook_url', 'instagram_url', 'tiktok_url',
+    'announcement', 'accepting_orders', 'closed_message', 'min_order_total', 'return_policy', 'shipping_policy', 'privacy_policy', 'terms',
+])]
 class Store extends Model
 {
     /** @use HasFactory<StoreFactory> */
     use HasFactory;
+
+    /** Storefront policy pages, by URL key => column. */
+    public const POLICIES = [
+        'returns' => 'return_policy',
+        'shipping' => 'shipping_policy',
+        'privacy' => 'privacy_policy',
+        'terms' => 'terms',
+    ];
+
+    /**
+     * Every store starts with a main warehouse, which holds its stock until others are added.
+     */
+    protected static function booted(): void
+    {
+        static::created(function (Store $store): void {
+            $store->warehouses()->create(['name' => Warehouse::DEFAULT_NAME, 'priority' => 1]);
+        });
+    }
+
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'default_shipping_price' => 'float',
+            'free_shipping_threshold' => 'float',
+            'low_stock_threshold' => 'integer',
+            'accepting_orders' => 'boolean',
+            'min_order_total' => 'float',
+        ];
+    }
 
     /**
      * @return BelongsTo<Vendor, $this>
@@ -48,6 +86,105 @@ class Store extends Model
     public function products(): HasMany
     {
         return $this->hasMany(Product::class);
+    }
+
+    /**
+     * @return HasMany<ShippingRate, $this>
+     */
+    public function shippingRates(): HasMany
+    {
+        return $this->hasMany(ShippingRate::class);
+    }
+
+    /**
+     * @return HasMany<Customer, $this>
+     */
+    public function customers(): HasMany
+    {
+        return $this->hasMany(Customer::class);
+    }
+
+    /**
+     * @return HasMany<Order, $this>
+     */
+    public function orders(): HasMany
+    {
+        return $this->hasMany(Order::class);
+    }
+
+    /**
+     * Warehouses in fulfilment order: orders take stock from the first one that has it.
+     *
+     * @return HasMany<Warehouse, $this>
+     */
+    public function warehouses(): HasMany
+    {
+        return $this->hasMany(Warehouse::class)->orderBy('priority')->orderBy('id');
+    }
+
+    /**
+     * Where restocks, new products and purchase orders go unless told otherwise.
+     */
+    public function defaultWarehouse(): Warehouse
+    {
+        return $this->warehouses()->first() ?? $this->warehouses()->create(['name' => Warehouse::DEFAULT_NAME, 'priority' => 1]);
+    }
+
+    /**
+     * @return HasMany<Coupon, $this>
+     */
+    public function coupons(): HasMany
+    {
+        return $this->hasMany(Coupon::class);
+    }
+
+    /**
+     * @return HasMany<StockTransfer, $this>
+     */
+    public function stockTransfers(): HasMany
+    {
+        return $this->hasMany(StockTransfer::class);
+    }
+
+    /**
+     * @return HasMany<Supplier, $this>
+     */
+    public function suppliers(): HasMany
+    {
+        return $this->hasMany(Supplier::class);
+    }
+
+    /**
+     * @return HasMany<PurchaseOrder, $this>
+     */
+    public function purchaseOrders(): HasMany
+    {
+        return $this->hasMany(PurchaseOrder::class);
+    }
+
+    /**
+     * @return HasMany<StockMovement, $this>
+     */
+    public function stockMovements(): HasMany
+    {
+        return $this->hasMany(StockMovement::class);
+    }
+
+    /**
+     * Delivery price to a governorate for an order of this subtotal; null when the store
+     * doesn't deliver there. Free above the store's threshold.
+     */
+    public function shippingFeeFor(string $governorateId, float $subtotal): ?float
+    {
+        $rates = $this->relationLoaded('shippingRates') ? $this->shippingRates : $this->shippingRates()->get();
+        $rate = $rates->firstWhere('governorate_id', $governorateId);
+        $price = $rate ? ($rate->is_enabled ? ($rate->price ?? $this->default_shipping_price) : null) : $this->default_shipping_price;
+
+        if ($price === null) {
+            return null;
+        }
+
+        return $this->free_shipping_threshold !== null && $subtotal >= $this->free_shipping_threshold ? 0.0 : (float) $price;
     }
 
     /**

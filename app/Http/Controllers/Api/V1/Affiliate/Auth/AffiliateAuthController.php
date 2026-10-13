@@ -22,7 +22,7 @@ class AffiliateAuthController extends Controller
 
         return response()->json([
             'token' => $affiliate->issueToken($request->boolean('remember')),
-            'affiliate' => new AffiliateSelfResource($affiliate->load(['store', 'referralCodes.store'])),
+            'affiliate' => new AffiliateSelfResource($affiliate->load(['store', 'referralCodes.store', 'coupons' => fn ($query) => $query->inState('active')])),
         ]);
     }
 
@@ -31,7 +31,7 @@ class AffiliateAuthController extends Controller
      */
     public function me(Request $request): AffiliateSelfResource
     {
-        return new AffiliateSelfResource($request->user()->load(['store', 'referralCodes.store']));
+        return new AffiliateSelfResource($request->user()->load(['store', 'referralCodes.store', 'coupons' => fn ($query) => $query->inState('active')]));
     }
 
     /**

@@ -16,6 +16,12 @@ export const authApi = {
 
     logout: () => request('POST', '/api/v1/vendor/auth/logout'),
 
+    /** @param {{ full_name: string, phone: string, email: string }} payload  Returns the vendor with their store. */
+    updateProfile: (payload) => request('PUT', '/api/v1/vendor/auth/profile', { body: payload }),
+
+    /** Signs out the vendor's other sessions. @param {{ current_password: string, password: string, password_confirmation: string }} payload */
+    updatePassword: (payload) => request('PUT', '/api/v1/vendor/auth/password', { body: payload }),
+
     forgotPassword: (identifier) => request('POST', '/api/v1/vendor/auth/forgot-password', { body: { identifier } }),
 
     /** @param {{ token: string, email: string, password: string, password_confirmation: string }} payload */

@@ -5,11 +5,39 @@ import { cn, formatRelative } from '@/lib/format';
 const TYPES = {
     payout_requested: { icon: 'send', className: 'bg-warning-soft text-warning' },
     affiliate_registered: { icon: 'user-plus', className: 'bg-primary-soft text-primary' },
+    order_placed: { icon: 'shopping-bag', className: 'bg-success-soft text-success' },
+    stock_low: { icon: 'warehouse', className: 'bg-warning-soft text-warning' },
+    stock_out: { icon: 'box', className: 'bg-danger-soft text-danger' },
+    // Affiliate portal
+    account_approved: { icon: 'check-circle', className: 'bg-success-soft text-success' },
+    account_reactivated: { icon: 'check-circle', className: 'bg-success-soft text-success' },
+    account_frozen: { icon: 'snowflake', className: 'bg-danger-soft text-danger' },
+    payout_paid: { icon: 'wallet', className: 'bg-success-soft text-success' },
+    payout_rejected: { icon: 'x', className: 'bg-danger-soft text-danger' },
+    referral_order_placed: { icon: 'shopping-bag', className: 'bg-primary-soft text-primary' },
+    commission_earned: { icon: 'wallet', className: 'bg-success-soft text-success' },
+    commission_cancelled: { icon: 'x', className: 'bg-surface-3 text-ink-2' },
+    commission_reversed: { icon: 'refresh', className: 'bg-warning-soft text-warning' },
+    commission_changed: { icon: 'percent', className: 'bg-info-soft text-info' },
+    coupon_assigned: { icon: 'gift', className: 'bg-primary-soft text-primary' },
 };
 
-/** Where clicking a notification takes the vendor: the affiliate's profile in both cases. */
+/** Where clicking a notification takes the vendor: the order, the inventory, or the affiliate's profile. */
 export function notificationTarget(notification) {
-    return `/dashboard/affiliates?affiliate=${notification.details.affiliate_id}`;
+    if (notification.type === 'stock_low' || notification.type === 'stock_out') {
+        return `/dashboard/inventory?level=${notification.type === 'stock_out' ? 'out' : 'low'}&search=${encodeURIComponent(notification.details.product_name)}`;
+    }
+
+    return notification.type === 'order_placed' ? `/dashboard/orders?order=${notification.details.order_id}` : `/dashboard/affiliates?affiliate=${notification.details.affiliate_id}`;
+}
+
+/** Where clicking a notification takes the affiliate: their orders, payouts, account or home. */
+export function affiliateNotificationTarget(notification) {
+    if (notification.type.startsWith('commission_') && notification.type !== 'commission_changed') {
+        return '/affiliate/orders';
+    }
+
+    return { coupon_assigned: '/affiliate/links', referral_order_placed: '/affiliate/orders', payout_paid: '/affiliate/payouts', payout_rejected: '/affiliate/payouts', account_frozen: '/affiliate/account' }[notification.type] ?? '/affiliate';
 }
 
 export function NotificationItem({ notification, onOpen, compact = false }) {

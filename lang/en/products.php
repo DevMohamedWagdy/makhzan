@@ -30,6 +30,8 @@ return [
     'price_required' => 'Enter the price',
     'price_numeric' => 'The price must be a number',
     'price_min' => 'The price can\'t be negative',
+    'cost_numeric' => 'The cost must be a number',
+    'cost_min' => 'The cost cannot be negative',
     'stock_required' => 'Enter the quantity',
     'stock_integer' => 'The quantity must be a whole number',
     'stock_min' => 'The quantity can\'t be negative',

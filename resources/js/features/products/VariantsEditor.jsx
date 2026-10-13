@@ -85,6 +85,10 @@ function PriceInputs({ row, errors, prefix, onChange, compact = false }) {
                     {errors[`${prefix}.compare_at_price`] && <p className="mt-1 text-[11px] text-danger">{errors[`${prefix}.compare_at_price`]}</p>}
                 </td>
                 <td className="px-2 py-2">
+                    {input('cost', { suffix: money, 'aria-label': t('التكلفة'), placeholder: '—' })}
+                    {errors[`${prefix}.cost`] && <p className="mt-1 text-[11px] text-danger">{errors[`${prefix}.cost`]}</p>}
+                </td>
+                <td className="px-2 py-2">
                     <Input value={row.sku} onChange={(event) => onChange({ sku: event.target.value })} dir="ltr" className={cn(fieldClass, 'text-start')} aria-label="SKU" placeholder="—" maxLength={60} aria-invalid={errors[`${prefix}.sku`] ? 'true' : undefined} />
                     {errors[`${prefix}.sku`] && <p className="mt-1 text-[11px] text-danger">{errors[`${prefix}.sku`]}</p>}
                 </td>
@@ -103,6 +107,9 @@ function PriceInputs({ row, errors, prefix, onChange, compact = false }) {
             </Field>
             <Field label={t('السعر قبل الخصم')} optional error={errors[`${prefix}.compare_at_price`]} hint={t('يظهر مشطوباً بجانب السعر')}>
                 {(props) => input('compare_at_price', { ...props, suffix: money })}
+            </Field>
+            <Field label={t('تكلفة القطعة')} optional error={errors[`${prefix}.cost`]} hint={t('لا تظهر للعملاء، وتُستخدم لحساب الأرباح')}>
+                {(props) => input('cost', { ...props, suffix: money })}
             </Field>
             <Field label={t('رمز المنتج (SKU)')} optional error={errors[`${prefix}.sku`]}>
                 {(props) => <Input {...props} value={row.sku} onChange={(event) => onChange({ sku: event.target.value })} dir="ltr" className="text-start" placeholder="NF-1001" maxLength={60} />}
@@ -199,12 +206,13 @@ export function VariantsEditor({ value, onChange, errors }) {
                                 </Button>
                             </div>
                             <div className="mk-scroll overflow-x-auto">
-                                <table className="w-full min-w-[640px] text-sm">
+                                <table className="w-full min-w-[760px] text-sm">
                                     <thead className="text-xs text-muted">
                                         <tr>
                                             <th className="px-3 py-2 text-start font-medium">{t('التركيبة')}</th>
                                             <th className="px-2 py-2 text-start font-medium">{t('السعر')}</th>
                                             <th className="px-2 py-2 text-start font-medium">{t('قبل الخصم')}</th>
+                                            <th className="px-2 py-2 text-start font-medium">{t('التكلفة')}</th>
                                             <th className="px-2 py-2 text-start font-medium">SKU</th>
                                             <th className="w-24 px-2 py-2 text-start font-medium">{t('الكمية')}</th>
                                         </tr>

@@ -22,6 +22,18 @@ function createSessionStore(key) {
             localStorage.removeItem(key);
             sessionStorage.removeItem(key);
         },
+        /** Changes the saved session in place, keeping its "remember me" choice. */
+        update(patch) {
+            try {
+                const storage = localStorage.getItem(key) !== null ? localStorage : sessionStorage.getItem(key) !== null ? sessionStorage : null;
+
+                if (storage) {
+                    storage.setItem(key, JSON.stringify({ ...JSON.parse(storage.getItem(key)), ...patch }));
+                }
+            } catch {
+                // Storage unavailable: the in-memory session still updates.
+            }
+        },
     };
 
     return store;
@@ -56,11 +68,20 @@ export const lastAffiliateStore = {
     set: (slug) => localStorage.setItem('makhzan.affiliate_store', slug),
 };
 
+/** `{ token, customer }` — a shopper's account session in one store (accounts are per store). */
+export function customerSessionStore(storeSlug) {
+    return createSessionStore(`makhzan.customer.${storeSlug}`);
+}
+
 /**
  * Token for a request scope. A vendor impersonating in this tab takes precedence over an
  * affiliate's own session.
- * @param {'vendor' | 'affiliate'} scope
+ * @param {'vendor' | 'affiliate' | `customer:${string}`} scope  `customer:{store-slug}` for shoppers
  */
 export function tokenFor(scope) {
+    if (scope.startsWith('customer:')) {
+        return customerSessionStore(scope.slice('customer:'.length)).get()?.token;
+    }
+
     return scope === 'affiliate' ? (impersonationStore.get()?.token ?? affiliateSessionStore.get()?.token) : sessionStore.get()?.token;
 }

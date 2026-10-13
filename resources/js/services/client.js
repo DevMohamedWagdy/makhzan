@@ -43,8 +43,8 @@ function normalizeErrors(errors = {}) {
 }
 
 /**
- * @param {{ body?: object, query?: object, auth?: 'vendor' | 'affiliate' }} options
- *   `auth` picks which session's bearer token is sent (vendor by default).
+ * @param {{ body?: object, query?: object, auth?: 'vendor' | 'affiliate' | string }} options
+ *   `auth` picks which session's bearer token is sent (vendor by default; `customer:{store-slug}` for shoppers).
  */
 async function httpRequest(method, path, { body, query, auth = 'vendor' } = {}) {
     const url = new URL(path, window.location.origin);

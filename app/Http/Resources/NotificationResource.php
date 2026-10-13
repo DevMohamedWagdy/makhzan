@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Notifications\AffiliateCouponNotification;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Notifications\DatabaseNotification;
@@ -43,6 +44,25 @@ class NotificationResource extends JsonResource
             'affiliate_registered' => __($details['requires_approval'] ? 'notifications.affiliate_registered.pending' : 'notifications.affiliate_registered.active', [
                 'affiliate' => $details['affiliate_name'],
             ]),
+            'order_placed' => __('notifications.order_placed.message', [
+                'number' => $details['number'],
+                'customer' => $details['customer_name'],
+                'total' => number_format((float) $details['total'], 2),
+            ]),
+            'account_approved', 'account_frozen', 'account_reactivated' => __("notifications.{$this->type}.message", ['store' => $details['store_name']]),
+            'payout_paid', 'payout_rejected' => __("notifications.{$this->type}.message", ['amount' => number_format((float) $details['amount'], 2)]),
+            'referral_order_placed', 'commission_earned', 'commission_cancelled', 'commission_reversed' => __("notifications.{$this->type}", [
+                'number' => $details['number'],
+                'commission' => number_format((float) $details['commission'], 2),
+            ]),
+            'commission_changed' => __($details['type'] === 'fixed' ? 'notifications.commission_changed.fixed' : 'notifications.commission_changed.percentage', [
+                'value' => $details['type'] === 'fixed' ? number_format((float) $details['value'], 2) : rtrim(rtrim(number_format((float) $details['value'], 2), '0'), '.'),
+            ]),
+            'stock_out', 'stock_low' => __("notifications.{$this->type}", [
+                'product' => trim($details['product_name'].($details['variant_title'] ? " ({$details['variant_title']})" : '')),
+                'stock' => $details['stock'],
+            ]),
+            'coupon_assigned' => AffiliateCouponNotification::message($details['code'], $details['type'], $details['value']),
             default => $details['message'] ?? '',
         };
     }

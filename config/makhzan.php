@@ -93,7 +93,7 @@ return [
     */
 
     'products' => [
-        // Total stock at or below this (but above zero) counts as "low stock".
+        // Fallback "only N left" threshold; stores set their own (stores.low_stock_threshold, default 5).
         'low_stock_threshold' => 5,
         'max_images' => 10,
         'max_variants' => 100,

@@ -3,6 +3,7 @@ import { t } from '@/i18n';
 import { PRODUCT_STATUSES } from '@/lib/constants';
 import { formatMoney } from '@/lib/format';
 
+/** Used until the store's own threshold (from the summary endpoints) is known. */
 export const LOW_STOCK_THRESHOLD = 5;
 
 export function ProductStatusBadge({ status }) {
@@ -15,12 +16,12 @@ export function ProductStatusBadge({ status }) {
     );
 }
 
-export function StockBadge({ stock }) {
+export function StockBadge({ stock, threshold = LOW_STOCK_THRESHOLD }) {
     if (stock === 0) {
         return <Badge tone="danger">{t('نفد المخزون')}</Badge>;
     }
 
-    return <Badge tone={stock <= LOW_STOCK_THRESHOLD ? 'warning' : 'success'}>{t('{stock} قطعة', { stock })}</Badge>;
+    return <Badge tone={stock <= threshold ? 'warning' : 'success'}>{t('{stock} قطعة', { stock })}</Badge>;
 }
 
 /** "450 ج.م" or "450 – 520 ج.م" across variants, with the pre-discount price struck through. */

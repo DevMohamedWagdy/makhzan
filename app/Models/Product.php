@@ -91,7 +91,8 @@ class Product extends Model
     }
 
     /**
-     * Filter by total stock: "out" (nothing left), "low" (at or under the threshold) or "in".
+     * Filter by total stock: "out" (nothing left), "low" (at or under the store's low-stock
+     * threshold) or "in".
      *
      * @param  Builder<self>  $query
      */
@@ -99,14 +100,45 @@ class Product extends Model
     protected function stockLevel(Builder $query, ?string $level): void
     {
         $total = '(select coalesce(sum(stock), 0) from product_variants where product_variants.product_id = products.id)';
-        $threshold = (int) config('makhzan.products.low_stock_threshold');
+        $threshold = '(select low_stock_threshold from stores where stores.id = products.store_id)';
 
         match ($level) {
             'out' => $query->whereRaw("{$total} = 0"),
-            'low' => $query->whereRaw("{$total} between 1 and ?", [$threshold]),
-            'in' => $query->whereRaw("{$total} > ?", [$threshold]),
+            'low' => $query->whereRaw("{$total} between 1 and {$threshold}"),
+            'in' => $query->whereRaw("{$total} > {$threshold}"),
             default => null,
         };
+    }
+
+    /**
+     * Products shoppers can see: published, in a category that is shown in the store.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function visibleInStore(Builder $query): void
+    {
+        $query->where('status', ProductStatus::Active)
+            ->whereHas('category', fn (Builder $query) => $query->where('is_active', true));
+    }
+
+    /**
+     * Storefront ordering: "newest" (default), "price_asc" or "price_desc" by the cheapest variant.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function sortForStorefront(Builder $query, ?string $sort): void
+    {
+        $cheapestPrice = ProductVariant::query()->select('price')->whereColumn('product_variants.product_id', 'products.id')->orderBy('price')->limit(1);
+
+        match ($sort) {
+            'price_asc' => $query->orderBy($cheapestPrice),
+            'price_desc' => $query->orderByDesc($cheapestPrice),
+            default => $query->latest(),
+        };
+
+        $query->latest('id');
     }
 
     /**

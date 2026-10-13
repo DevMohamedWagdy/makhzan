@@ -1,14 +1,15 @@
 import { useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Icon } from '@/components/ui/Icon';
-import { useDashboardAlerts } from '@/context/DashboardAlertsContext';
 import { useClickOutside, useEscapeKey } from '@/hooks/common';
 import { t } from '@/i18n';
-import { NotificationItem, notificationTarget } from './NotificationItem';
+import { NotificationItem } from './NotificationItem';
 
-/** Header bell: unread badge and a panel with the latest notifications. */
-export function NotificationsMenu() {
-    const { notifications, unreadCount, markRead, markAllRead } = useDashboardAlerts();
+/**
+ * Header bell: unread badge and a panel with the latest notifications. Shared by the vendor
+ * dashboard and the affiliate portal; `target(notification)` is where opening one leads.
+ */
+export function NotificationsMenu({ notifications, unreadCount, markRead, markAllRead, target, allHref }) {
     const navigate = useNavigate();
     const [open, setOpen] = useState(false);
     const containerRef = useRef(null);
@@ -19,7 +20,7 @@ export function NotificationsMenu() {
     const openNotification = (notification) => {
         setOpen(false);
         markRead(notification);
-        navigate(notificationTarget(notification));
+        navigate(target(notification));
     };
 
     return (
@@ -44,7 +45,7 @@ export function NotificationsMenu() {
                 <div className="mk-card animate-pop fixed inset-x-4 top-[76px] z-50 shadow-pop sm:absolute sm:inset-x-auto sm:end-0 sm:top-12 sm:w-[22rem]">
                     <div className="flex items-center justify-between gap-3 border-b border-line px-4 py-3">
                         <p className="text-sm font-semibold text-ink">{t('الإشعارات')}</p>
-                        {unreadCount > 0 && (
+                        {unreadCount > 0 && markAllRead && (
                             <button type="button" onClick={markAllRead} className="text-xs font-medium text-primary hover:underline">
                                 {t('تحديد الكل كمقروء')}
                             </button>
@@ -57,7 +58,7 @@ export function NotificationsMenu() {
                             notifications.map((notification) => <NotificationItem key={notification.id} notification={notification} onOpen={openNotification} compact />)
                         )}
                     </div>
-                    <Link to="/dashboard/notifications" onClick={() => setOpen(false)} className="block border-t border-line px-4 py-3 text-center text-sm font-medium text-primary hover:bg-surface-2">
+                    <Link to={allHref} onClick={() => setOpen(false)} className="block border-t border-line px-4 py-3 text-center text-sm font-medium text-primary hover:bg-surface-2">
                         {t('عرض كل الإشعارات')}
                     </Link>
                 </div>

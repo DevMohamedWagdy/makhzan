@@ -78,6 +78,7 @@ class SaveProductRequest extends FormRequest
             'variants.*.option_values.*' => ['string'],
             'variants.*.price' => ['required', 'numeric', 'min:0', 'max:10000000'],
             'variants.*.compare_at_price' => ['nullable', 'numeric', 'max:10000000'],
+            'variants.*.cost' => ['nullable', 'numeric', 'min:0', 'max:10000000'],
             'variants.*.sku' => ['nullable', 'string', 'max:60'],
             'variants.*.stock' => ['required', 'integer', 'min:0', 'max:1000000'],
         ];
@@ -216,6 +217,8 @@ class SaveProductRequest extends FormRequest
             'variants.*.price.required' => __('products.price_required'),
             'variants.*.price.numeric' => __('products.price_numeric'),
             'variants.*.price.min' => __('products.price_min'),
+            'variants.*.cost.numeric' => __('products.cost_numeric'),
+            'variants.*.cost.min' => __('products.cost_min'),
             'variants.*.stock.required' => __('products.stock_required'),
             'variants.*.stock.integer' => __('products.stock_integer'),
             'variants.*.stock.min' => __('products.stock_min'),

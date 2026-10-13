@@ -251,7 +251,7 @@ export function ProductsPage() {
                                                   <PriceCell product={product} />
                                               </td>
                                               <td className="px-4 py-3">
-                                                  <StockBadge stock={product.stock_total} />
+                                                  <StockBadge stock={product.stock_total} threshold={summary?.low_stock_threshold} />
                                               </td>
                                               <td className="px-4 py-3">
                                                   <ProductStatusBadge status={product.status} />

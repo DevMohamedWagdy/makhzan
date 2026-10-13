@@ -19,8 +19,10 @@ export function StorePublicLayout({ store, children, narrow = false }) {
                         {store ? <Avatar name={store.name} src={store.logo_url} size="sm" /> : <Skeleton className="size-8 rounded-xl" />}
                         <span className="truncate font-semibold text-ink">{store?.name}</span>
                     </div>
-                    <LanguageToggle />
-                    <ThemeToggle />
+                    <div className="flex items-center gap-2">
+                        <LanguageToggle />
+                        <ThemeToggle />
+                    </div>
                 </div>
             </header>
             <main className={cn('mx-auto w-full flex-1 px-4 py-8 sm:px-6 sm:py-12', narrow ? 'max-w-md' : 'max-w-5xl')}>{children}</main>

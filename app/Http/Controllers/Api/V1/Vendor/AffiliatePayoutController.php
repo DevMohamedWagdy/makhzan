@@ -10,6 +10,7 @@ use App\Http\Resources\AffiliatePayoutResource;
 use App\Http\Resources\AffiliateResource;
 use App\Models\Affiliate;
 use App\Models\AffiliatePayout;
+use App\Notifications\AffiliatePayoutProcessedNotification;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
@@ -32,16 +33,18 @@ class AffiliatePayoutController extends Controller
 
     /**
      * Record a payment sent outside the app; fulfils the open transfer request, if any.
-     * Returns the affiliate with the reduced pending balance.
+     * Returns the affiliate with the reduced pending balance; the affiliate is notified.
      */
     public function store(StoreAffiliatePayoutRequest $request, Affiliate $affiliate): JsonResponse
     {
-        $affiliate->recordPayout(
+        $payout = $affiliate->recordPayout(
             (float) $request->validated('amount'),
             $request->validated('reference'),
             $request->validated('note'),
             $request->filled('paid_at') ? Date::parse($request->validated('paid_at')) : null,
         );
+
+        $affiliate->notify(new AffiliatePayoutProcessedNotification($payout));
 
         return (new AffiliateResource($affiliate->refresh()->load('referralCodes.store')))
             ->response()
@@ -49,7 +52,7 @@ class AffiliatePayoutController extends Controller
     }
 
     /**
-     * Decline an open transfer request; the pending balance stays as it is.
+     * Decline an open transfer request; the pending balance stays as it is and the affiliate is notified.
      */
     public function reject(RejectAffiliatePayoutRequest $request, Affiliate $affiliate, AffiliatePayout $payout): AffiliateResource
     {
@@ -58,6 +61,7 @@ class AffiliatePayoutController extends Controller
         }
 
         $payout->reject($request->validated('note'));
+        $affiliate->notify(new AffiliatePayoutProcessedNotification($payout));
 
         return new AffiliateResource($affiliate->refresh()->load('referralCodes.store'));
     }
