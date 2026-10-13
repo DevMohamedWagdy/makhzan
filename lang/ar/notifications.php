@@ -75,5 +75,12 @@ return [
     ],
     'stock_out' => 'نفد مخزون :product',
     'stock_low' => 'مخزون :product منخفض: متبقي :stock فقط',
+    'coupon_assigned' => [
+        'percentage' => 'أصبح لديك كود خصم :code بخصم :value% لعملائك',
+        'fixed' => 'أصبح لديك كود خصم :code بخصم :value ج.م لعملائك',
+        'free_shipping' => 'أصبح لديك كود خصم :code بشحن مجاني لعملائك',
+        'subject' => 'كود خصم جديد خاص بك: :code',
+        'line' => 'شاركه مع متابعيك؛ كل طلب يستخدمه يُحسب لك حتى بدون رابطك.',
+    ],
 
 ];

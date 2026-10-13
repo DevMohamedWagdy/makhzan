@@ -43,6 +43,7 @@ class AffiliateSelfResource extends JsonResource
             'referral_codes' => ReferralCodeResource::collection($this->whenLoaded('referralCodes')),
             'coupons' => $this->whenLoaded('coupons', fn () => $this->coupons->map(fn (Coupon $coupon): array => [
                 'code' => $coupon->code,
+                'url' => $this->store->storefrontUrl('?coupon='.urlencode($coupon->code)),
                 'type' => $coupon->type,
                 'value' => $coupon->value,
                 'max_discount' => $coupon->max_discount,

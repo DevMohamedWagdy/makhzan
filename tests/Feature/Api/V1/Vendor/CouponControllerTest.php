@@ -3,11 +3,13 @@
 namespace Tests\Feature\Api\V1\Vendor;
 
 use App\Enums\OrderStatus;
+use App\Models\Affiliate;
 use App\Models\Coupon;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\Vendor;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
 class CouponControllerTest extends TestCase
@@ -84,6 +86,36 @@ class CouponControllerTest extends TestCase
             ->assertJsonPath('data.0.code', 'ACTIVE')
             ->assertJsonPath('data.0.stats', ['uses' => 1, 'discount_total' => 50, 'sales_total' => 450]);
         $this->getJson('/api/v1/vendor/coupons?search=onc')->assertJsonPath('data.*.code', ['ONCE']);
+    }
+
+    public function test_the_affiliate_is_notified_once_when_given_a_coupon(): void
+    {
+        $affiliate = Affiliate::factory()->for($this->vendor)->for($this->vendor->store)->create();
+
+        $id = $this->postJson('/api/v1/vendor/coupons', $this->payload(['affiliate_id' => $affiliate->id]))
+            ->assertCreated()
+            ->assertJsonPath('data.url', config('makhzan.storefront_url').'/'.$this->vendor->store->slug.'?coupon=EID25')
+            ->json('data.coupon_id');
+        $this->putJson("/api/v1/vendor/coupons/{$id}", $this->payload(['affiliate_id' => $affiliate->id, 'value' => 30]))->assertOk();
+
+        $this->assertSame(1, $affiliate->notifications()->count());
+        $notification = $affiliate->notifications()->sole();
+
+        $this->assertSame('coupon_assigned', $notification->type);
+
+        Sanctum::actingAs($affiliate, [Affiliate::TOKEN_ABILITY]);
+
+        $this->getJson('/api/v1/affiliate/notifications')->assertJsonPath('data.0.message', 'أصبح لديك كود خصم EID25 بخصم 25% لعملائك');
+        $this->getJson('/api/v1/affiliate/auth/me')->assertJsonPath('data.coupons.0.code', 'EID25');
+    }
+
+    public function test_orders_can_be_filtered_by_coupon(): void
+    {
+        $coupon = Coupon::factory()->for($this->vendor->store)->create();
+        $used = Order::factory()->for($this->vendor->store)->create(['coupon_id' => $coupon->id, 'coupon_code' => $coupon->code]);
+        Order::factory()->for($this->vendor->store)->create();
+
+        $this->getJson("/api/v1/vendor/orders?coupon_id={$coupon->id}")->assertJsonPath('data.*.order_id', [$used->id]);
     }
 
     public function test_disables_used_coupons_and_deletes_unused_ones(): void

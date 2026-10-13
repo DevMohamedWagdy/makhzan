@@ -75,5 +75,12 @@ return [
     ],
     'stock_out' => ':product is out of stock',
     'stock_low' => ':product is low on stock: only :stock left',
+    'coupon_assigned' => [
+        'percentage' => 'You have a new discount code :code: :value% off for your customers',
+        'fixed' => 'You have a new discount code :code: :value EGP off for your customers',
+        'free_shipping' => 'You have a new discount code :code: free shipping for your customers',
+        'subject' => 'Your new discount code: :code',
+        'line' => 'Share it with your followers; every order using it counts for you, even without your link.',
+    ],
 
 ];

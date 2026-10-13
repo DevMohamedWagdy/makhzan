@@ -28,6 +28,8 @@ class CouponResource extends JsonResource
         return [
             'coupon_id' => $this->id,
             'code' => $this->code,
+            // Opening it applies the code at checkout.
+            'url' => $this->store->storefrontUrl('?coupon='.urlencode($this->code)),
             'description' => $this->description,
             'type' => $this->type,
             'value' => $this->value,

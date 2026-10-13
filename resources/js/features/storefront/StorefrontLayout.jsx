@@ -12,6 +12,8 @@ import { cn } from '@/lib/format';
 import { storefrontApi } from '@/services/storefrontApi';
 import { CartProvider, useCart } from './CartContext';
 import { CustomerAuthProvider, useCustomerAuth } from './CustomerAuthContext';
+import { useToast } from '@/context/ToastContext';
+import { captureCoupon } from './couponLink';
 import { captureReferral } from './referral';
 
 const StorefrontContext = createContext(null);
@@ -112,6 +114,7 @@ export function StorefrontLayout() {
     const { storeSlug } = useParams();
     const location = useLocation();
     const [searchParams, setSearchParams] = useSearchParams();
+    const toast = useToast();
     const [home, setHome] = useState(null);
     const [missing, setMissing] = useState(false);
 
@@ -130,22 +133,37 @@ export function StorefrontLayout() {
         };
     }, [storeSlug]);
 
+    // Referral (?ref=) and coupon (?coupon=) links: remember them, then tidy the address bar.
     useEffect(() => {
         const ref = searchParams.get('ref');
+        const coupon = searchParams.get('coupon');
+
+        if (!ref && !coupon) {
+            return;
+        }
 
         if (ref) {
             captureReferral(storeSlug, ref);
-            setSearchParams(
-                (previous) => {
-                    const next = new URLSearchParams(previous);
-
-                    next.delete('ref');
-
-                    return next;
-                },
-                { replace: true },
-            );
         }
+
+        if (coupon) {
+            const code = captureCoupon(storeSlug, coupon);
+
+            code && toast.success(t('تم حفظ كود الخصم {code}', { code }), t('سيُطبَّق تلقائياً عند إتمام الطلب.'));
+        }
+
+        setSearchParams(
+            (previous) => {
+                const next = new URLSearchParams(previous);
+
+                next.delete('ref');
+                next.delete('coupon');
+
+                return next;
+            },
+            { replace: true },
+        );
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [searchParams, setSearchParams, storeSlug]);
 
     useEffect(() => {

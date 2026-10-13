@@ -25,6 +25,7 @@ export function OrdersPage() {
     const openOrderId = searchParams.get('order');
     const searchQuery = searchParams.get('search') ?? '';
     const affiliateId = searchParams.get('affiliate_id') ?? '';
+    const couponId = searchParams.get('coupon_id') ?? '';
     const [searchTerm, setSearchTerm] = useState(searchParams.get('search') ?? '');
     const search = useDebouncedValue(searchTerm, 300);
     const [result, setResult] = useState(null);
@@ -59,7 +60,7 @@ export function OrdersPage() {
         setError(null);
 
         try {
-            const [list, counts] = await Promise.all([ordersApi.list({ status, search: searchQuery, affiliate_id: affiliateId, page }), ordersApi.summary()]);
+            const [list, counts] = await Promise.all([ordersApi.list({ status, search: searchQuery, affiliate_id: affiliateId, coupon_id: couponId, page }), ordersApi.summary()]);
 
             setResult(list);
             setSummary(counts);
@@ -68,7 +69,7 @@ export function OrdersPage() {
         } finally {
             setLoading(false);
         }
-    }, [status, page, searchQuery, affiliateId]);
+    }, [status, page, searchQuery, affiliateId, couponId]);
 
     useEffect(() => {
         load();
@@ -101,6 +102,11 @@ export function OrdersPage() {
                 <Tabs tabs={tabs} value={status} onChange={(value) => setQuery({ status: value })} className="px-3" />
                 <div className="flex flex-wrap items-center gap-3 p-4">
                     <Input type="search" icon="search" value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder={t('ابحث برقم الطلب أو اسم العميل أو هاتفه...')} aria-label={t('بحث في الطلبات')} className="lg:w-96" />
+                    {couponId && (
+                        <Button variant="soft" size="sm" iconEnd="x" onClick={() => setQuery({ coupon_id: '' })}>
+                            {t('طلبات الكوبون: {code}', { code: items[0]?.coupon_code ?? `#${couponId}` })}
+                        </Button>
+                    )}
                     {affiliateId && (
                         <Button variant="soft" size="sm" iconEnd="x" onClick={() => setQuery({ affiliate_id: '' })}>
                             {t('طلبات المسوق: {name}', { name: items[0]?.affiliate?.full_name ?? `#${affiliateId}` })}
@@ -151,7 +157,10 @@ export function OrdersPage() {
                                               </td>
                                               <td className="px-4 py-3.5 whitespace-nowrap text-ink-2">{findGovernorate(order.address.governorate_id)?.name}</td>
                                               <td className="px-4 py-3.5 text-ink-2">{t('{count} منتج', { count: order.items_count })}</td>
-                                              <td className="px-4 py-3.5 font-semibold whitespace-nowrap text-ink">{formatMoney(order.total)}</td>
+                                              <td className="px-4 py-3.5 whitespace-nowrap">
+                                                  <span className="block font-semibold text-ink">{formatMoney(order.total)}</span>
+                                                  {order.coupon_code && <span className="ltr block text-start font-mono text-[11px] text-success">{order.coupon_code}</span>}
+                                              </td>
                                               <td className="px-4 py-3.5 text-ink-2">{order.affiliate?.full_name ?? '—'}</td>
                                               <td className="px-4 py-3.5">
                                                   <OrderStatusBadge status={order.status} />

@@ -19,6 +19,7 @@ const TYPES = {
     commission_cancelled: { icon: 'x', className: 'bg-surface-3 text-ink-2' },
     commission_reversed: { icon: 'refresh', className: 'bg-warning-soft text-warning' },
     commission_changed: { icon: 'percent', className: 'bg-info-soft text-info' },
+    coupon_assigned: { icon: 'gift', className: 'bg-primary-soft text-primary' },
 };
 
 /** Where clicking a notification takes the vendor: the order, the inventory, or the affiliate's profile. */
@@ -36,7 +37,7 @@ export function affiliateNotificationTarget(notification) {
         return '/affiliate/orders';
     }
 
-    return { referral_order_placed: '/affiliate/orders', payout_paid: '/affiliate/payouts', payout_rejected: '/affiliate/payouts', account_frozen: '/affiliate/account' }[notification.type] ?? '/affiliate';
+    return { coupon_assigned: '/affiliate/links', referral_order_placed: '/affiliate/orders', payout_paid: '/affiliate/payouts', payout_rejected: '/affiliate/payouts', account_frozen: '/affiliate/account' }[notification.type] ?? '/affiliate';
 }
 
 export function NotificationItem({ notification, onOpen, compact = false }) {

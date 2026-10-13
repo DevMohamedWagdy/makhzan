@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { PageHeader } from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/Button';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
@@ -23,6 +23,7 @@ const COLUMNS = [t('الكود'), t('الخصم'), t('الشروط'), t('الا�
 /** Discount codes with state tabs, stats and the coupon form (?coupon={id} or ?coupon=new). */
 export function CouponsPage() {
     const toast = useToast();
+    const navigate = useNavigate();
     const { copy, copiedValue } = useCopy();
     const [searchParams, setSearchParams] = useSearchParams();
     const state = searchParams.get('state') ?? '';
@@ -179,7 +180,9 @@ export function CouponsPage() {
                                               <td className="px-4 py-3 font-medium whitespace-nowrap text-ink">{describeDiscount(coupon)}</td>
                                               <td className="px-4 py-3 text-xs text-ink-2">{describeConditions(coupon).join(' · ') || '—'}</td>
                                               <td className="px-4 py-3 whitespace-nowrap text-ink-2">
-                                                  {coupon.usage_limit ? t('{uses} من {limit}', { uses: formatNumber(coupon.stats.uses), limit: formatNumber(coupon.usage_limit) }) : formatNumber(coupon.stats.uses)}
+                                                  <Link to={`/dashboard/orders?coupon_id=${coupon.coupon_id}`} className="hover:text-primary hover:underline">
+                                                      {coupon.usage_limit ? t('{uses} من {limit}', { uses: formatNumber(coupon.stats.uses), limit: formatNumber(coupon.usage_limit) }) : formatNumber(coupon.stats.uses)}
+                                                  </Link>
                                               </td>
                                               <td className="px-4 py-3 whitespace-nowrap">
                                                   <span className="block font-semibold text-ink">{formatMoney(coupon.stats.discount_total)}</span>
@@ -200,6 +203,15 @@ export function CouponsPage() {
                                                       )}
                                                       items={[
                                                           { label: t('تعديل'), icon: 'edit', onClick: () => setQuery({ coupon: coupon.coupon_id }) },
+                                                          {
+                                                              label: t('نسخ رابط الكوبون'),
+                                                              icon: 'link',
+                                                              onClick: () => {
+                                                                  copy(coupon.url);
+                                                                  toast.success(t('تم نسخ رابط الكوبون'), t('من يفتح الرابط يُطبَّق عليه الخصم تلقائياً عند إتمام الطلب.'));
+                                                              },
+                                                          },
+                                                          { label: t('عرض الطلبات'), icon: 'shopping-bag', onClick: () => navigate(`/dashboard/orders?coupon_id=${coupon.coupon_id}`) },
                                                           { label: coupon.is_active ? t('إيقاف') : t('تفعيل'), icon: coupon.is_active ? 'eye-off' : 'check-circle', onClick: () => toggle(coupon) },
                                                           { divider: true },
                                                           { label: t('حذف'), icon: 'trash', tone: 'danger', onClick: () => setDeleting(coupon), disabled: coupon.stats.uses > 0, hint: coupon.stats.uses > 0 ? t('مستخدم في طلبات') : undefined },

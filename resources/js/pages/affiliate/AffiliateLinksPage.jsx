@@ -30,9 +30,14 @@ export function AffiliateLinksPage() {
                                     <span className="mt-1.5 block text-sm text-ink">{describeDiscount(coupon)}</span>
                                     {describeConditions(coupon).length > 0 && <span className="block text-xs text-muted">{describeConditions(coupon).join(' · ')}</span>}
                                 </span>
-                                <Button size="sm" variant={copiedValue === coupon.code ? 'success' : 'secondary'} icon={copiedValue === coupon.code ? 'check' : 'copy'} onClick={() => copy(coupon.code)}>
-                                    {copiedValue === coupon.code ? t('تم') : t('نسخ')}
-                                </Button>
+                                <span className="flex gap-2">
+                                    <Button size="sm" variant={copiedValue === coupon.code ? 'success' : 'secondary'} icon={copiedValue === coupon.code ? 'check' : 'copy'} onClick={() => copy(coupon.code)}>
+                                        {copiedValue === coupon.code ? t('تم') : t('نسخ الكود')}
+                                    </Button>
+                                    <Button size="sm" variant={copiedValue === coupon.url ? 'success' : 'primary'} icon={copiedValue === coupon.url ? 'check' : 'link'} onClick={() => copy(coupon.url)}>
+                                        {copiedValue === coupon.url ? t('تم') : t('نسخ الرابط بالكود')}
+                                    </Button>
+                                </span>
                             </li>
                         ))}
                     </ul>

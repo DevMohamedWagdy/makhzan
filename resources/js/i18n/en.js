@@ -1566,4 +1566,12 @@ export default {
     'أكواد الخصم الخاصة بك': 'Your discount codes',
     'شاركها مع متابعيك؛ كل طلب يستخدمها يُحسب لك حتى بدون رابطك.': 'Share them with your followers; every order using them counts for you, even without your link.',
     'بعد خصومات {amount}': 'after {amount} in discounts',
+    'تم حفظ كود الخصم {code}': 'Discount code {code} saved',
+    'سيُطبَّق تلقائياً عند إتمام الطلب.': 'It\'ll be applied automatically at checkout.',
+    'نسخ رابط الكوبون': 'Copy coupon link',
+    'تم نسخ رابط الكوبون': 'Coupon link copied',
+    'من يفتح الرابط يُطبَّق عليه الخصم تلقائياً عند إتمام الطلب.': 'Whoever opens the link gets the discount applied automatically at checkout.',
+    'عرض الطلبات': 'View orders',
+    'نسخ الرابط بالكود': 'Copy link with code',
+    'طلبات الكوبون: {code}': 'Coupon orders: {code}',
 };

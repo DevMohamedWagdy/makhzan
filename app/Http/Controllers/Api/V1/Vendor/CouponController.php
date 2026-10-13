@@ -8,6 +8,7 @@ use App\Http\Requests\Api\V1\Vendor\SaveCouponRequest;
 use App\Http\Resources\CouponResource;
 use App\Models\Coupon;
 use App\Models\Store;
+use App\Notifications\AffiliateCouponNotification;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Http\JsonResponse;
@@ -34,7 +35,7 @@ class CouponController extends Controller
         $search = Coupon::normalize($filters['search'] ?? '');
 
         $coupons = $this->withStats($store->coupons())
-            ->with('affiliate')
+            ->with(['affiliate', 'store'])
             ->inState($filters['state'] ?? null)
             ->when($search !== '', fn ($query) => $query->where('code', 'like', "%{$search}%"))
             ->latest('id')
@@ -58,6 +59,7 @@ class CouponController extends Controller
     public function store(SaveCouponRequest $request): JsonResponse
     {
         $coupon = $request->user()->store->coupons()->create($request->couponAttributes());
+        $this->notifyAffiliate($coupon);
 
         return (new CouponResource($this->fresh($coupon)))->response()->setStatusCode(Response::HTTP_CREATED);
     }
@@ -71,7 +73,12 @@ class CouponController extends Controller
 
     public function update(SaveCouponRequest $request, Coupon $coupon): CouponResource
     {
+        $previousAffiliate = $coupon->affiliate_id;
         $coupon->update($request->couponAttributes());
+
+        if ($coupon->affiliate_id !== $previousAffiliate) {
+            $this->notifyAffiliate($coupon);
+        }
 
         return new CouponResource($this->fresh($coupon));
     }
@@ -121,8 +128,18 @@ class CouponController extends Controller
             ->withSum(['orders as sales_total' => $notCancelled], 'total');
     }
 
+    /**
+     * Tells the affiliate a coupon now credits its orders to them (active coupons only).
+     */
+    private function notifyAffiliate(Coupon $coupon): void
+    {
+        if ($coupon->is_active && $coupon->affiliate) {
+            $coupon->affiliate->notify(new AffiliateCouponNotification($coupon));
+        }
+    }
+
     private function fresh(Coupon $coupon): Coupon
     {
-        return $this->withStats(Coupon::query()->whereKey($coupon->id))->with('affiliate')->firstOrFail();
+        return $this->withStats(Coupon::query()->whereKey($coupon->id))->with(['affiliate', 'store'])->firstOrFail();
     }
 }

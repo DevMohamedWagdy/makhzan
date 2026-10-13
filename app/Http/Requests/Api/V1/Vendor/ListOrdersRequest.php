@@ -22,6 +22,7 @@ class ListOrdersRequest extends FormRequest
             'affiliate' => ['nullable', 'boolean'],
             'affiliate_id' => ['nullable', 'integer'],
             'customer_id' => ['nullable', 'integer'],
+            'coupon_id' => ['nullable', 'integer'],
             'page' => ['nullable', 'integer', 'min:1'],
             'per_page' => ['nullable', 'integer', Rule::in([10, 20, 50])],
         ];

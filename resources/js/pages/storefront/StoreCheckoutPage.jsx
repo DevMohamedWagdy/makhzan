@@ -8,6 +8,7 @@ import { Skeleton } from '@/components/ui/Spinner';
 import { useToast } from '@/context/ToastContext';
 import { AddressFields, EMPTY_ADDRESS, formatAddress } from '@/features/storefront/AddressFields';
 import { CouponBox } from '@/features/storefront/CouponBox';
+import { clearSavedCoupon, getSavedCoupon } from '@/features/storefront/couponLink';
 import { useCart } from '@/features/storefront/CartContext';
 import { useCustomerAuth } from '@/features/storefront/CustomerAuthContext';
 import { ProductImage } from '@/features/storefront/ProductCard';
@@ -51,6 +52,17 @@ export function StoreCheckoutPage() {
             throw error;
         }
     };
+
+    // A code from a coupon link is applied as soon as the cart is loaded; if it no longer
+    // applies, the reason shows under the code box and it's forgotten.
+    useEffect(() => {
+        const saved = getSavedCoupon(storeSlug);
+
+        if (quote && saved && !coupon) {
+            applyCoupon(saved).catch(() => clearSavedCoupon(storeSlug));
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [quote]);
 
     // The cart changed: check the applied code again (the discount or eligibility may change).
     useEffect(() => {
@@ -144,6 +156,7 @@ export function StoreCheckoutPage() {
 
             navigate(`/${storeSlug}/account/orders/${order.number}?placed=1`, { replace: true });
             clear();
+            clearSavedCoupon(storeSlug);
         } catch (error) {
             const fieldErrors = Object.fromEntries(Object.entries(error.errors ?? {}).map(([key, message]) => [key.replace(/^address\./, ''), message]));
 
@@ -267,6 +280,7 @@ export function StoreCheckoutPage() {
                         onRemove={() => {
                             setCoupon(null);
                             setCouponError(null);
+                            clearSavedCoupon(storeSlug);
                         }}
                     />
                     {shipping.free_shipping_threshold !== null && quote.subtotal < shipping.free_shipping_threshold && (

@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Notifications\AffiliateCouponNotification;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Notifications\DatabaseNotification;
@@ -61,6 +62,7 @@ class NotificationResource extends JsonResource
                 'product' => trim($details['product_name'].($details['variant_title'] ? " ({$details['variant_title']})" : '')),
                 'stock' => $details['stock'],
             ]),
+            'coupon_assigned' => AffiliateCouponNotification::message($details['code'], $details['type'], $details['value']),
             default => $details['message'] ?? '',
         };
     }
