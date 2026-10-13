@@ -25,8 +25,13 @@ export function customerApi(storeSlug) {
 
         orders: (page = 1) => request('GET', `${base}/customer/orders`, { query: { page }, auth }),
         order: (number) => request('GET', `${base}/customer/orders/${number}`, { auth }),
-        /** @param {{ items: Array<{ variant_id: number, quantity: number }>, address_id?: number, address?: object, save_address?: boolean, referral_code?: string|null, coupon_code?: string|null, note?: string }} payload */
+        /**
+         * Online orders come back with `payment.checkout_url` to send the customer to.
+         * @param {{ items: Array<{ variant_id: number, quantity: number }>, address_id?: number, address?: object, save_address?: boolean, referral_code?: string|null, coupon_code?: string|null, note?: string, payment_method?: 'cod'|'card'|'wallet' }} payload
+         */
         placeOrder: (payload) => request('POST', `${base}/customer/orders`, { body: payload, auth }),
+        /** Opens a new payment page for an unpaid online order: the order with `payment.checkout_url`. */
+        payOrder: (number) => request('POST', `${base}/customer/orders/${number}/pay`, { auth }),
         cancelOrder: (number, reason = null) => request('POST', `${base}/customer/orders/${number}/cancel`, { body: { reason }, auth }),
     };
 }

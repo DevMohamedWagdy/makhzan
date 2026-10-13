@@ -4,6 +4,7 @@ import { CURRENCY } from './constants';
 // Arabic uses Latin digits (ar-EG-u-nu-latn): easier to scan in data-dense tables.
 const numberFormatter = new Intl.NumberFormat(intlLocale);
 const dateFormatter = new Intl.DateTimeFormat(intlLocale, { day: 'numeric', month: 'short', year: 'numeric' });
+const timeFormatter = new Intl.DateTimeFormat(intlLocale, { hour: 'numeric', minute: '2-digit' });
 const relativeFormatter = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' });
 
 export function formatNumber(value) {
@@ -16,6 +17,11 @@ export function formatMoney(value) {
 
 export function formatDate(value) {
     return value ? dateFormatter.format(new Date(value)) : '—';
+}
+
+/** Time of day, e.g. "3:45 PM". */
+export function formatTime(value) {
+    return value ? timeFormatter.format(new Date(value)) : '—';
 }
 
 export function formatRelative(value) {

@@ -4,6 +4,8 @@ namespace Tests\Feature\Api\V1\Vendor;
 
 use App\Enums\CommissionStatus;
 use App\Enums\OrderStatus;
+use App\Enums\PaymentMethod;
+use App\Enums\PaymentStatus;
 use App\Models\Affiliate;
 use App\Models\Order;
 use App\Models\Product;
@@ -124,5 +126,17 @@ class OrderControllerTest extends TestCase
         $this->getJson("/api/v1/vendor/orders/{$foreign->id}")->assertNotFound();
         $this->moveTo($foreign, 'confirmed')->assertNotFound();
         $this->assertSame(OrderStatus::Pending, $foreign->fresh()->status);
+    }
+
+    public function test_filters_orders_by_payment_method_and_status(): void
+    {
+        $cod = $this->order();
+        $paid = Order::factory()->for($this->vendor->store)->online()->create();
+        $unpaid = Order::factory()->for($this->vendor->store)->online(PaymentStatus::Pending, PaymentMethod::Wallet)->create();
+
+        $this->getJson('/api/v1/vendor/orders?payment_method=cod')->assertJsonPath('data.*.order_id', [$cod->id]);
+        $this->getJson('/api/v1/vendor/orders?payment_status=pending')->assertJsonPath('data.*.order_id', [$unpaid->id]);
+        $this->getJson('/api/v1/vendor/orders?payment_method=card&payment_status=paid')->assertJsonPath('data.*.order_id', [$paid->id]);
+        $this->getJson('/api/v1/vendor/orders?payment_status=lost')->assertUnprocessable()->assertJsonValidationErrors('payment_status');
     }
 }

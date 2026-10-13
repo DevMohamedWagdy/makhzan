@@ -6,7 +6,7 @@ import { TrendBadge } from '@/components/ui/Charts';
 import { EmptyState, StatCard } from '@/components/ui/Display';
 import { Input, Select } from '@/components/ui/Form';
 import { Skeleton } from '@/components/ui/Spinner';
-import { AffiliatesCard, DailyChartCard, GovernoratesCard, StatusBreakdownCard, TopProductsCard, parseDate, toDateString } from '@/features/reports/ReportWidgets';
+import { AffiliatesCard, DailyChartCard, GovernoratesCard, PaymentMethodsCard, StatusBreakdownCard, TopProductsCard, parseDate, toDateString } from '@/features/reports/ReportWidgets';
 import { t } from '@/i18n';
 import { formatDate, formatMoney, formatNumber } from '@/lib/format';
 import { reportsApi } from '@/services/reportsApi';
@@ -161,6 +161,7 @@ export function ReportsPage() {
                     <div className="grid gap-6 lg:grid-cols-2">
                         <StatusBreakdownCard statuses={report.statuses} />
                         <GovernoratesCard governorates={report.governorates} />
+                        <PaymentMethodsCard methods={report.payment_methods ?? []} refunds={totals.refunds ?? 0} />
                         <TopProductsCard products={report.top_products} />
                         <AffiliatesCard affiliates={report.affiliates} />
                     </div>

@@ -3,6 +3,7 @@
 namespace App\Http\Resources;
 
 use App\Enums\OrderStatus;
+use App\Enums\PaymentStatus;
 use App\Models\Order;
 use App\Models\Vendor;
 use Illuminate\Http\Request;
@@ -30,15 +31,18 @@ class OrderResource extends JsonResource
             'order_id' => $this->id,
             'number' => $this->number,
             'status' => $this->status,
-            'next_statuses' => $forVendor ? $this->status->next() : [],
+            'next_statuses' => $forVendor ? $this->nextStatuses() : [],
             'can_cancel' => $this->status === OrderStatus::Pending,
             'payment_method' => $this->payment_method,
+            'payment_status' => $this->payment_status,
+            'payment' => $this->when($this->payment_method?->isOnline(), fn (): array => $this->payment($forVendor)),
             'subtotal' => $this->subtotal,
             'discount' => $this->discount,
             'shipping_fee' => $this->shipping_fee,
             'shipping_discount' => $this->shipping_discount,
             'coupon_code' => $this->coupon_code,
             'total' => $this->total,
+            'refunded_amount' => $this->refunded_amount,
             'items_count' => $this->whenLoaded('items', fn () => $this->items->sum('quantity')),
             'items' => OrderItemResource::collection($this->whenLoaded('items')),
             'address' => [
@@ -75,6 +79,45 @@ class OrderResource extends JsonResource
             'delivered_at' => $this->delivered_at?->toIso8601String(),
             'cancelled_at' => $this->cancelled_at?->toIso8601String(),
             'returned_at' => $this->returned_at?->toIso8601String(),
+        ];
+    }
+
+    /**
+     * An unpaid online order can only be cancelled until its payment comes through.
+     *
+     * @return list<OrderStatus>
+     */
+    private function nextStatuses(): array
+    {
+        return array_values(array_filter($this->status->next(), fn (OrderStatus $status): bool => ! ($status === OrderStatus::Confirmed && $this->awaitingPayment())));
+    }
+
+    /**
+     * Online payment details. The customer gets the open payment page while it can still be
+     * paid; the vendor gets refunds and what's left to refund.
+     *
+     * @return array<string, mixed>
+     */
+    private function payment(bool $forVendor): array
+    {
+        $latest = $this->relationLoaded('latestPayment') ? $this->latestPayment : null;
+
+        return [
+            'status' => $this->payment_status,
+            'paid_at' => $this->paid_at?->toIso8601String(),
+            'expires_at' => $this->awaitingPayment() ? $this->payment_expires_at?->toIso8601String() : null,
+            'can_pay' => ! $forVendor && $this->canPay(),
+            'checkout_url' => $this->when(! $forVendor, fn (): ?string => $this->canPay() && $latest?->status === PaymentStatus::Pending ? $latest->checkout_url : null),
+            'failure_reason' => $latest?->status === PaymentStatus::Failed ? $latest->failure_reason : null,
+            $this->mergeWhen($forVendor, fn (): array => [
+                'transaction_id' => $latest?->gateway_transaction_id,
+                'refundable' => round(max(0, ($this->payment_status?->isPaid() ? $this->total : 0) - $this->refunded_amount), 2),
+                'refunds' => $this->whenLoaded('refunds', fn () => $this->refunds->map(fn ($refund): array => [
+                    'amount' => $refund->amount,
+                    'reason' => $refund->reason,
+                    'created_at' => $refund->created_at?->toIso8601String(),
+                ])),
+            ]),
         ];
     }
 

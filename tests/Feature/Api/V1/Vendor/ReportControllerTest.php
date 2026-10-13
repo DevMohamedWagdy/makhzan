@@ -4,6 +4,8 @@ namespace Tests\Feature\Api\V1\Vendor;
 
 use App\Enums\CommissionStatus;
 use App\Enums\OrderStatus;
+use App\Enums\PaymentMethod;
+use App\Enums\PaymentStatus;
 use App\Models\Affiliate;
 use App\Models\Customer;
 use App\Models\Order;
@@ -101,5 +103,25 @@ class ReportControllerTest extends TestCase
     {
         $this->getJson('/api/v1/vendor/reports?from=2026-10-10&to=2026-10-01')->assertJsonValidationErrors('to');
         $this->getJson('/api/v1/vendor/reports?from=2024-01-01&to=2026-10-01')->assertJsonValidationErrors('from');
+    }
+
+    public function test_breaks_sales_down_by_payment_method_and_skips_unpaid_checkouts(): void
+    {
+        $this->order('2026-10-12 10:00:00', OrderStatus::Delivered, 400);
+        $this->order('2026-10-12 11:00:00', OrderStatus::Confirmed, 950, ['payment_method' => PaymentMethod::Card, 'payment_status' => PaymentStatus::PartiallyRefunded, 'refunded_amount' => 200]);
+        $this->order('2026-10-12 12:00:00', OrderStatus::Pending, 5000, ['payment_method' => PaymentMethod::Wallet, 'payment_status' => PaymentStatus::Pending]);
+        $this->order('2026-10-12 13:00:00', OrderStatus::Cancelled, 5000, ['payment_method' => PaymentMethod::Card, 'payment_status' => PaymentStatus::Failed]);
+
+        $this->getJson('/api/v1/vendor/reports?from=2026-10-12&to=2026-10-12')
+            ->assertOk()
+            ->assertJsonPath('totals.orders', 2)
+            ->assertJsonPath('totals.sales', 1450)
+            ->assertJsonPath('totals.cancelled', 0)
+            ->assertJsonPath('totals.refunds', 200)
+            ->assertJsonPath('payment_methods', [
+                ['method' => 'cod', 'orders' => 1, 'sales' => 450],
+                ['method' => 'card', 'orders' => 1, 'sales' => 1000],
+                ['method' => 'wallet', 'orders' => 0, 'sales' => 0],
+            ]);
     }
 }

@@ -2,20 +2,20 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
-import { Badge, DetailRow } from '@/components/ui/Display';
-import { Field, Textarea } from '@/components/ui/Form';
+import { Alert, Badge, DetailRow } from '@/components/ui/Display';
+import { Field, Input, Textarea } from '@/components/ui/Form';
 import { Icon } from '@/components/ui/Icon';
-import { Drawer } from '@/components/ui/Overlay';
+import { Drawer, Modal } from '@/components/ui/Overlay';
 import { Skeleton } from '@/components/ui/Spinner';
 import { refreshDashboardAlerts } from '@/context/DashboardAlertsContext';
 import { useToast } from '@/context/ToastContext';
 import { formatAddress } from '@/features/storefront/AddressFields';
 import { ProductImage } from '@/features/storefront/ProductCard';
 import { t } from '@/i18n';
-import { ORDER_STATUSES } from '@/lib/constants';
+import { CURRENCY, ORDER_STATUSES, PAYMENT_METHODS } from '@/lib/constants';
 import { formatDate, formatMoney, formatRelative } from '@/lib/format';
 import { ordersApi } from '@/services/ordersApi';
-import { OrderProgress, OrderStatusBadge } from './OrderBadges';
+import { OrderProgress, OrderStatusBadge, PaymentBadge } from './OrderBadges';
 
 const COMMISSION_STATUSES = {
     pending: { label: t('تُستحق عند التوصيل'), tone: 'warning' },
@@ -23,14 +23,15 @@ const COMMISSION_STATUSES = {
     cancelled: { label: t('أُلغيت'), tone: 'neutral' },
 };
 
-const ACTORS = { customer: t('العميل'), vendor: t('المتجر') };
+const ACTORS = { customer: t('العميل'), vendor: t('المتجر'), system: t('تلقائي') };
 
 /** Statuses that need a confirmation step (and allow a note). */
 const NEEDS_NOTE = ['cancelled', 'returned'];
 
 /**
- * Order details for the vendor: items, customer, address, affiliate commission and the
- * timeline, with buttons for the statuses the order can move to next.
+ * Order details for the vendor: items, payment (with refunds for online payments), customer,
+ * address, affiliate commission and the timeline, with buttons for the statuses the order can
+ * move to next.
  */
 export function OrderDrawer({ orderId, onClose, onChanged }) {
     const toast = useToast();
@@ -38,6 +39,10 @@ export function OrderDrawer({ orderId, onClose, onChanged }) {
     const [pending, setPending] = useState(null);
     const [confirm, setConfirm] = useState(null);
     const [note, setNote] = useState('');
+    const [refundOpen, setRefundOpen] = useState(false);
+    const [refund, setRefund] = useState({ amount: '', reason: '' });
+    const [refundError, setRefundError] = useState(null);
+    const [refunding, setRefunding] = useState(false);
 
     useEffect(() => {
         setOrder(null);
@@ -80,6 +85,30 @@ export function OrderDrawer({ orderId, onClose, onChanged }) {
         }
     };
 
+    const openRefund = () => {
+        setRefund({ amount: String(order.payment.refundable), reason: '' });
+        setRefundError(null);
+        setRefundOpen(true);
+    };
+
+    const submitRefund = async (event) => {
+        event.preventDefault();
+        setRefunding(true);
+
+        try {
+            const updated = await ordersApi.refund(order.order_id, Number(refund.amount), refund.reason.trim() || null);
+
+            setOrder(updated);
+            setRefundOpen(false);
+            toast.success(t('تم استرداد {amount} للعميل', { amount: formatMoney(Number(refund.amount)) }));
+            onChanged?.(updated);
+        } catch (error) {
+            setRefundError(error.errors?.amount ?? error.message);
+        } finally {
+            setRefunding(false);
+        }
+    };
+
     const whatsapp = order ? `https://wa.me/2${order.address.phone.replace(/^\+?2?/, '')}` : '#';
 
     return (
@@ -93,10 +122,20 @@ export function OrderDrawer({ orderId, onClose, onChanged }) {
                 <div className="flex flex-col divide-y divide-line">
                     <div className="flex flex-col gap-4 p-6">
                         <div className="flex flex-wrap items-center justify-between gap-3">
-                            <OrderStatusBadge status={order.status} />
+                            <span className="flex flex-wrap items-center gap-2">
+                                <OrderStatusBadge status={order.status} />
+                                <PaymentBadge order={order} />
+                            </span>
                             <span className="text-xl font-bold text-ink">{formatMoney(order.total)}</span>
                         </div>
                         <OrderProgress order={order} />
+                        {order.payment?.status === 'pending' && order.status === 'pending' && (
+                            <p className="rounded-xl bg-warning-soft px-4 py-3 text-sm text-ink-2">{t('العميل لم يدفع بعد. يمكنك تأكيد الطلب بعد وصول الدفع، وإلا يُلغى تلقائياً.')}</p>
+                        )}
+                        {order.payment?.status === 'failed' && order.status === 'pending' && (
+                            <p className="rounded-xl bg-danger-soft px-4 py-3 text-sm text-danger">{t('فشلت محاولة الدفع الأخيرة، ويمكن للعميل المحاولة مرة أخرى حتى انتهاء المهلة.')}</p>
+                        )}
+                        {order.status === 'cancelled' && order.payment?.refundable > 0 && <Alert tone="warning">{t('الطلب ملغي لكن العميل دفع {amount}. رجّع المبلغ له من قسم الدفع بالأسفل.', { amount: formatMoney(order.payment.refundable) })}</Alert>}
                         {order.next_statuses.length > 0 && (
                             <div className="flex flex-wrap gap-2">
                                 {order.next_statuses.map((status) => (
@@ -155,11 +194,50 @@ export function OrderDrawer({ orderId, onClose, onChanged }) {
                                 </div>
                             )}
                             <div className="flex justify-between font-semibold text-ink">
-                                <dt>{t('المطلوب تحصيله عند الاستلام')}</dt>
+                                <dt>{order.payment_method === 'cod' ? t('المطلوب تحصيله عند الاستلام') : t('الإجمالي')}</dt>
                                 <dd>{formatMoney(order.total)}</dd>
                             </div>
                         </dl>
                     </section>
+
+                    {order.payment && (
+                        <section className="p-6">
+                            <div className="mb-3 flex items-center justify-between gap-3">
+                                <h3 className="text-sm font-semibold text-ink">{t('الدفع')}</h3>
+                                {order.payment.refundable > 0 && (
+                                    <Button size="sm" variant="secondary" icon="refresh" onClick={openRefund}>
+                                        {t('استرداد مبلغ')}
+                                    </Button>
+                                )}
+                            </div>
+                            <dl className="divide-y divide-line">
+                                <DetailRow label={t('الطريقة')}>{PAYMENT_METHODS[order.payment_method]?.label}</DetailRow>
+                                <DetailRow label={t('الحالة')}>
+                                    <PaymentBadge order={order} />
+                                </DetailRow>
+                                {order.payment.paid_at && <DetailRow label={t('وقت الدفع')}>{formatDate(order.payment.paid_at)}</DetailRow>}
+                                {order.payment.transaction_id && (
+                                    <DetailRow label={t('رقم العملية في Paymob')} ltr>
+                                        {order.payment.transaction_id}
+                                    </DetailRow>
+                                )}
+                                {order.refunded_amount > 0 && <DetailRow label={t('تم استرداده')}>{formatMoney(order.refunded_amount)}</DetailRow>}
+                            </dl>
+                            {order.payment.refunds?.length > 0 && (
+                                <ul className="mt-3 flex flex-col gap-2 text-sm">
+                                    {order.payment.refunds.map((item, index) => (
+                                        <li key={index} className="flex items-start justify-between gap-3 rounded-xl bg-surface-2 px-3 py-2">
+                                            <span>
+                                                <span className="block text-ink-2">{item.reason || t('استرداد')}</span>
+                                                <span className="text-xs text-muted">{formatRelative(item.created_at)}</span>
+                                            </span>
+                                            <span className="ltr font-semibold text-ink">-{formatMoney(item.amount)}</span>
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                        </section>
+                    )}
 
                     {order.fulfillment?.length > 0 && (
                         <section className="p-6">
@@ -261,6 +339,45 @@ export function OrderDrawer({ orderId, onClose, onChanged }) {
                     {(props) => <Textarea {...props} value={note} onChange={(event) => setNote(event.target.value)} maxLength={200} />}
                 </Field>
             </ConfirmDialog>
+            <Modal
+                open={refundOpen}
+                onClose={() => setRefundOpen(false)}
+                icon="refresh"
+                title={t('استرداد مبلغ للعميل')}
+                description={order?.payment ? t('يُرجَع المبلغ لنفس الكارت أو المحفظة عبر Paymob. أقصى مبلغ {amount}.', { amount: formatMoney(order.payment.refundable) }) : undefined}
+                footer={
+                    <>
+                        <Button variant="ghost" onClick={() => setRefundOpen(false)}>
+                            {t('إلغاء')}
+                        </Button>
+                        <Button type="submit" form="refund-form" icon="refresh" loading={refunding} disabled={!(Number(refund.amount) > 0)}>
+                            {t('استرداد')}
+                        </Button>
+                    </>
+                }
+            >
+                <form id="refund-form" onSubmit={submitRefund} noValidate className="flex flex-col gap-4">
+                    <Field label={t('المبلغ')} required error={refundError}>
+                        {(props) => (
+                            <Input
+                                {...props}
+                                type="number"
+                                inputMode="decimal"
+                                min={0}
+                                max={order?.payment?.refundable}
+                                step="0.01"
+                                value={refund.amount}
+                                onChange={(event) => setRefund({ ...refund, amount: event.target.value })}
+                                suffix={<span className="px-2 text-sm text-muted">{CURRENCY}</span>}
+                            />
+                        )}
+                    </Field>
+                    <Field label={t('السبب')} optional>
+                        {(props) => <Textarea {...props} value={refund.reason} onChange={(event) => setRefund({ ...refund, reason: event.target.value })} maxLength={200} placeholder={t('مثال: قطعة تالفة')} />}
+                    </Field>
+                    {order?.affiliate && ['pending', 'earned'].includes(order.commission.status) && <Alert tone="info">{t('ستقل عمولة المسوق بنسبة المبلغ المسترد من المنتجات.')}</Alert>}
+                </form>
+            </Modal>
         </Drawer>
     );
 }

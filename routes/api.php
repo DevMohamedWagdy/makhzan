@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\V1\Affiliate\Auth\AffiliatePasswordResetController;
 use App\Http\Controllers\Api\V1\Affiliate\NotificationController as AffiliateNotificationController;
 use App\Http\Controllers\Api\V1\Affiliate\OrderController as AffiliateOrderController;
 use App\Http\Controllers\Api\V1\Affiliate\PayoutController;
+use App\Http\Controllers\Api\V1\Payments\PaymobCallbackController;
 use App\Http\Controllers\Api\V1\Public\AffiliateRegistrationController;
 use App\Http\Controllers\Api\V1\Public\StoreController;
 use App\Http\Controllers\Api\V1\Storefront\CartController;
@@ -40,6 +41,7 @@ use App\Http\Controllers\Api\V1\Vendor\InventorySummaryController;
 use App\Http\Controllers\Api\V1\Vendor\NotificationController;
 use App\Http\Controllers\Api\V1\Vendor\OrderController as VendorOrderController;
 use App\Http\Controllers\Api\V1\Vendor\OrderSummaryController;
+use App\Http\Controllers\Api\V1\Vendor\PaymentSettingsController;
 use App\Http\Controllers\Api\V1\Vendor\PayoutController as VendorPayoutController;
 use App\Http\Controllers\Api\V1\Vendor\ProductCategoryController;
 use App\Http\Controllers\Api\V1\Vendor\ProductController;
@@ -107,7 +109,19 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
                 Route::post('orders', [CustomerOrderController::class, 'store'])->middleware('throttle:10,1')->name('orders.store');
                 Route::get('orders/{number}', [CustomerOrderController::class, 'show'])->whereNumber('number')->name('orders.show');
                 Route::post('orders/{number}/cancel', [CustomerOrderController::class, 'cancel'])->whereNumber('number')->name('orders.cancel');
+                Route::post('orders/{number}/pay', [CustomerOrderController::class, 'pay'])->whereNumber('number')->middleware('throttle:10,1')->name('orders.pay');
             });
+        });
+
+    /*
+    | Payment gateway callbacks (public, verified by the store's signing secret)
+    */
+    Route::prefix('payments/paymob/{store:slug}')
+        ->name('payments.paymob.')
+        ->middleware('throttle:120,1')
+        ->group(function () {
+            Route::post('webhook', [PaymobCallbackController::class, 'webhook'])->name('webhook');
+            Route::get('return', [PaymobCallbackController::class, 'return'])->name('return');
         });
 
     /*
@@ -162,6 +176,10 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::post('store/logo', [StoreSettingsController::class, 'uploadLogo'])->middleware('throttle:20,1')->name('store.logo');
         Route::delete('store/logo', [StoreSettingsController::class, 'removeLogo'])->name('store.logo.remove');
 
+        Route::get('payments', [PaymentSettingsController::class, 'show'])->name('payments.show');
+        Route::put('payments', [PaymentSettingsController::class, 'update'])->middleware('throttle:20,1')->name('payments.update');
+        Route::delete('payments/paymob', [PaymentSettingsController::class, 'disconnect'])->name('payments.disconnect');
+
         Route::get('notifications', [NotificationController::class, 'index'])->name('notifications.index');
         Route::post('notifications/read-all', [NotificationController::class, 'readAll'])->name('notifications.read-all');
         Route::post('notifications/{notification}/read', [NotificationController::class, 'read'])->name('notifications.read');
@@ -204,6 +222,7 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::get('orders', [VendorOrderController::class, 'index'])->name('orders.index');
         Route::get('orders/{order}', [VendorOrderController::class, 'show'])->name('orders.show');
         Route::patch('orders/{order}/status', [VendorOrderController::class, 'updateStatus'])->name('orders.status');
+        Route::post('orders/{order}/refunds', [VendorOrderController::class, 'refund'])->middleware('throttle:20,1')->name('orders.refunds.store');
 
         Route::get('shipping', [ShippingSettingsController::class, 'show'])->name('shipping.show');
         Route::put('shipping', [ShippingSettingsController::class, 'update'])->name('shipping.update');

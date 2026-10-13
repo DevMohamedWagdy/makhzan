@@ -23,20 +23,32 @@ class UpdateOrderStatus
      * Moves an order along its lifecycle (see OrderStatus::next()) and applies the side
      * effects: cancelled and returned orders go back to stock; the affiliate is credited when
      * the order is delivered and debited if a delivered order is returned, and is notified
-     * whenever their commission changes.
+     * whenever their commission changes. An online order can't be confirmed before it's paid,
+     * and an affiliate never told about an unpaid order isn't told when it's dropped.
+     *
+     * With $onlyIfUnpaid, an order whose payment has come through is returned unchanged.
      *
      * @throws ValidationException
      */
-    public function handle(Order $order, OrderStatus $status, string $actor, ?string $note = null): Order
+    public function handle(Order $order, OrderStatus $status, string $actor, ?string $note = null, bool $onlyIfUnpaid = false): Order
     {
         $commissionEvent = null;
 
-        $order = DB::transaction(function () use ($order, $status, $actor, $note, &$commissionEvent): Order {
+        $order = DB::transaction(function () use ($order, $status, $actor, $note, $onlyIfUnpaid, &$commissionEvent): Order {
             $order = Order::query()->whereKey($order->id)->lockForUpdate()->firstOrFail();
             $previous = $order->status;
+            $unpaid = $order->awaitingPayment();
+
+            if ($onlyIfUnpaid && ! $unpaid) {
+                return $order;
+            }
 
             if (! $previous->canMoveTo($status)) {
                 throw ValidationException::withMessages(['status' => __('orders.invalid_transition')]);
+            }
+
+            if ($status === OrderStatus::Confirmed && $unpaid) {
+                throw ValidationException::withMessages(['status' => __('payments.awaiting_payment')]);
             }
 
             $order->status = $status;
@@ -51,6 +63,10 @@ class UpdateOrderStatus
             }
 
             $commissionEvent = $this->settleCommission($order, $previous, $status);
+
+            if ($unpaid) {
+                $commissionEvent = null;
+            }
 
             $order->save();
             $order->events()->create(['status' => $status, 'actor' => $actor, 'note' => $note]);

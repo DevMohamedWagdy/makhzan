@@ -8,6 +8,8 @@ use App\Enums\AffiliateStatus;
 use App\Enums\CommissionStatus;
 use App\Enums\CommissionType;
 use App\Enums\OrderStatus;
+use App\Enums\PaymentMethod;
+use App\Enums\PaymentStatus;
 use App\Models\Affiliate;
 use App\Models\AffiliateReferralCode;
 use App\Models\Coupon;
@@ -27,27 +29,35 @@ class PlaceOrder
     public function __construct(private ChangeStock $changeStock, private ApplyCoupon $applyCoupon) {}
 
     /**
-     * Places a cash-on-delivery order. Variant rows are locked while stock is checked and
+     * Places an order, paid on delivery or online. Variant rows are locked while stock is checked and
      * deducted, so two shoppers can't buy the last piece twice. A coupon is checked (and its
      * row locked, so its usage limit holds) and taken off the products or the shipping. The
      * order is attributed to the coupon's affiliate if it has one, otherwise to the referral
      * code's, with the commission in effect right now on the products after the discount.
+     *
+     * An online order holds its stock while it waits for payment (see StartPayment); the
+     * store and affiliate hear about it once it's paid (RecordPaymentResult), and it's
+     * cancelled if it isn't paid in time (makhzan:expire-unpaid-orders).
      *
      * @param  list<array{variant_id: int, quantity: int}>  $items
      * @param  array{recipient_name: string, phone: string, governorate_id: string, city_id: string, address_line: string, landmark?: string|null}  $address
      *
      * @throws ValidationException
      */
-    public function handle(Store $store, Customer $customer, array $items, array $address, ?string $referralCode = null, ?string $note = null, ?string $couponCode = null): Order
+    public function handle(Store $store, Customer $customer, array $items, array $address, ?string $referralCode = null, ?string $note = null, ?string $couponCode = null, PaymentMethod $paymentMethod = PaymentMethod::Cod): Order
     {
         $quantities = collect($items)->groupBy('variant_id')->map(fn (Collection $lines): int => $lines->sum('quantity'));
 
-        $order = DB::transaction(function () use ($store, $customer, $quantities, $address, $referralCode, $note, $couponCode): Order {
+        $order = DB::transaction(function () use ($store, $customer, $quantities, $address, $referralCode, $note, $couponCode, $paymentMethod): Order {
             // Serializes order numbers within the store (and reads its current settings).
             $store = Store::query()->whereKey($store->id)->lockForUpdate()->first();
 
             if (! $store->accepting_orders) {
                 throw ValidationException::withMessages(['store' => $store->closed_message ?: __('settings.store_closed')]);
+            }
+
+            if (! in_array($paymentMethod, $store->paymentMethods(), true)) {
+                throw ValidationException::withMessages(['payment_method' => __('payments.method_unavailable')]);
             }
 
             $variants = ProductVariant::query()
@@ -83,6 +93,9 @@ class PlaceOrder
                 'customer_id' => $customer->id,
                 'number' => ((int) $store->orders()->max('number') ?: 1000) + 1,
                 'status' => OrderStatus::Pending,
+                'payment_method' => $paymentMethod,
+                'payment_status' => $paymentMethod->isOnline() ? PaymentStatus::Pending : null,
+                'payment_expires_at' => $paymentMethod->isOnline() ? now()->addMinutes((int) config('makhzan.payments.expiry_minutes')) : null,
                 'subtotal' => $subtotal,
                 'discount' => $discount,
                 'shipping_fee' => $shippingFee,
@@ -118,8 +131,10 @@ class PlaceOrder
             return $order;
         });
 
-        $store->vendor->notify(new OrderPlacedNotification($order));
-        $order->affiliate?->notify(new AffiliateCommissionNotification($order, AffiliateCommissionNotification::ORDER_PLACED));
+        if (! $paymentMethod->isOnline()) {
+            $store->vendor->notify(new OrderPlacedNotification($order));
+            $order->affiliate?->notify(new AffiliateCommissionNotification($order, AffiliateCommissionNotification::ORDER_PLACED));
+        }
 
         return $order;
     }
