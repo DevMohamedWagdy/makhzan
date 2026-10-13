@@ -21,6 +21,7 @@ import { AffiliateLoginPage } from '@/pages/affiliate/AffiliateLoginPage';
 import { AffiliateResetPasswordPage } from '@/pages/affiliate/AffiliateResetPasswordPage';
 import { AffiliatesPage } from '@/pages/affiliates/AffiliatesPage';
 import { CategoriesPage } from '@/pages/categories/CategoriesPage';
+import { CouponsPage } from '@/pages/coupons/CouponsPage';
 import { CustomersPage } from '@/pages/customers/CustomersPage';
 import { DashboardHomePage } from '@/pages/dashboard/DashboardHomePage';
 import { InventoryPage } from '@/pages/inventory/InventoryPage';
@@ -114,6 +115,7 @@ export function App() {
                                     <Route index element={<DashboardHomePage />} />
                                     <Route path="reports" element={<ReportsPage />} />
                                     <Route path="customers" element={<CustomersPage />} />
+                                    <Route path="coupons" element={<CouponsPage />} />
                                     <Route path="inventory" element={<InventoryPage />} />
                                     <Route path="inventory/movements" element={<StockMovementsPage />} />
                                     <Route path="warehouses" element={<WarehousesPage />} />

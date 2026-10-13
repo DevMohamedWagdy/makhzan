@@ -3,6 +3,7 @@
 namespace App\Http\Resources;
 
 use App\Models\Affiliate;
+use App\Models\Coupon;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -40,6 +41,14 @@ class AffiliateSelfResource extends JsonResource
                 'bank_name' => $this->payout_bank_name,
             ],
             'referral_codes' => ReferralCodeResource::collection($this->whenLoaded('referralCodes')),
+            'coupons' => $this->whenLoaded('coupons', fn () => $this->coupons->map(fn (Coupon $coupon): array => [
+                'code' => $coupon->code,
+                'type' => $coupon->type,
+                'value' => $coupon->value,
+                'max_discount' => $coupon->max_discount,
+                'min_subtotal' => $coupon->min_subtotal,
+                'ends_at' => $coupon->ends_at?->toIso8601String(),
+            ])),
             'stats' => [
                 'orders_count' => $this->orders_count,
                 'sales_total' => $this->sales_total,

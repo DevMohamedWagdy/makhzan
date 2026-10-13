@@ -7,6 +7,7 @@ import { Icon } from '@/components/ui/Icon';
 import { Skeleton } from '@/components/ui/Spinner';
 import { useToast } from '@/context/ToastContext';
 import { AddressFields, EMPTY_ADDRESS, formatAddress } from '@/features/storefront/AddressFields';
+import { CouponBox } from '@/features/storefront/CouponBox';
 import { useCart } from '@/features/storefront/CartContext';
 import { useCustomerAuth } from '@/features/storefront/CustomerAuthContext';
 import { ProductImage } from '@/features/storefront/ProductCard';
@@ -36,6 +37,28 @@ export function StoreCheckoutPage() {
     const [note, setNote] = useState('');
     const [errors, setErrors] = useState({});
     const [placing, setPlacing] = useState(false);
+    const [coupon, setCoupon] = useState(null);
+    const [couponError, setCouponError] = useState(null);
+
+    const applyCoupon = async (code) => {
+        setCouponError(null);
+
+        try {
+            setCoupon(await api.checkCoupon(code, items));
+        } catch (error) {
+            setCoupon(null);
+            setCouponError(error.errors?.coupon_code ?? error.message);
+            throw error;
+        }
+    };
+
+    // The cart changed: check the applied code again (the discount or eligibility may change).
+    useEffect(() => {
+        if (coupon && items.length > 0) {
+            applyCoupon(coupon.code).catch(() => {});
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [items]);
 
     useEffect(() => {
         if (store) {
@@ -115,6 +138,7 @@ export function StoreCheckoutPage() {
                 items,
                 ...(choice === NEW_ADDRESS ? { address, save_address: saveAddress } : { address_id: choice }),
                 referral_code: getReferralCode(storeSlug),
+                coupon_code: coupon?.code ?? null,
                 note: note.trim() || null,
             });
 
@@ -124,6 +148,12 @@ export function StoreCheckoutPage() {
             const fieldErrors = Object.fromEntries(Object.entries(error.errors ?? {}).map(([key, message]) => [key.replace(/^address\./, ''), message]));
 
             setErrors(fieldErrors);
+
+            if (fieldErrors.coupon_code) {
+                setCoupon(null);
+                setCouponError(fieldErrors.coupon_code);
+            }
+
             toast.error(t('تعذر إتمام الطلب'), Object.values(fieldErrors)[0] ?? error.message);
             setPlacing(false);
         }
@@ -219,11 +249,26 @@ export function StoreCheckoutPage() {
                             <dt className="text-muted">{t('الشحن')}</dt>
                             <dd className="text-ink">{shippingFee === null ? t('اختر المحافظة') : shippingFee === 0 ? t('مجاني') : formatMoney(shippingFee)}</dd>
                         </div>
+                        {coupon && (coupon.discount > 0 || (coupon.free_shipping && shippingFee > 0)) && (
+                            <div className="flex justify-between text-success">
+                                <dt>{t('خصم الكوبون {code}', { code: coupon.code })}</dt>
+                                <dd className="ltr">-{formatMoney(coupon.free_shipping ? shippingFee : coupon.discount)}</dd>
+                            </div>
+                        )}
                         <div className="flex justify-between border-t border-line pt-3 text-base">
                             <dt className="font-semibold text-ink">{t('الإجمالي')}</dt>
-                            <dd className="font-bold text-ink">{formatMoney(quote.subtotal + (shippingFee ?? 0))}</dd>
+                            <dd className="font-bold text-ink">{formatMoney(Math.max(0, quote.subtotal - (coupon?.discount ?? 0)) + (coupon?.free_shipping ? 0 : (shippingFee ?? 0)))}</dd>
                         </div>
                     </dl>
+                    <CouponBox
+                        coupon={coupon}
+                        error={couponError}
+                        onApply={applyCoupon}
+                        onRemove={() => {
+                            setCoupon(null);
+                            setCouponError(null);
+                        }}
+                    />
                     {shipping.free_shipping_threshold !== null && quote.subtotal < shipping.free_shipping_threshold && (
                         <Alert tone="info" icon="truck">
                             {t('أضف منتجات بقيمة {amount} للحصول على شحن مجاني.', { amount: formatMoney(shipping.free_shipping_threshold - quote.subtotal) })}

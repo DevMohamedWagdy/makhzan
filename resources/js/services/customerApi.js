@@ -20,9 +20,12 @@ export function customerApi(storeSlug) {
         /** Governorates the store delivers to: `{ rates: [{ governorate_id, price }], free_shipping_threshold }` */
         shipping: () => request('GET', `${base}/shipping`),
 
+        /** Checks a discount code against the cart: `{ code, type, value, description, discount, free_shipping }` or 422 on coupon_code. */
+        checkCoupon: (couponCode, items) => request('POST', `${base}/customer/coupon`, { body: { coupon_code: couponCode, items }, auth }),
+
         orders: (page = 1) => request('GET', `${base}/customer/orders`, { query: { page }, auth }),
         order: (number) => request('GET', `${base}/customer/orders/${number}`, { auth }),
-        /** @param {{ items: Array<{ variant_id: number, quantity: number }>, address_id?: number, address?: object, save_address?: boolean, referral_code?: string|null, note?: string }} payload */
+        /** @param {{ items: Array<{ variant_id: number, quantity: number }>, address_id?: number, address?: object, save_address?: boolean, referral_code?: string|null, coupon_code?: string|null, note?: string }} payload */
         placeOrder: (payload) => request('POST', `${base}/customer/orders`, { body: payload, auth }),
         cancelOrder: (number, reason = null) => request('POST', `${base}/customer/orders/${number}/cancel`, { body: { reason }, auth }),
     };

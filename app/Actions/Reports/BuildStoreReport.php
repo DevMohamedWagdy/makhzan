@@ -71,7 +71,7 @@ class BuildStoreReport
     }
 
     /**
-     * @return array{orders: int, sales: float, average_order: float, revenue: float, delivered_orders: int, shipping_fees: float, commissions: float, net_revenue: float, cost_of_goods: float, gross_profit: float, profit_margin: float|null, uncosted_items: int, cancelled: int, returned: int, new_customers: int}
+     * @return array{orders: int, sales: float, average_order: float, revenue: float, discounts: float, delivered_orders: int, shipping_fees: float, commissions: float, net_revenue: float, cost_of_goods: float, gross_profit: float, profit_margin: float|null, uncosted_items: int, cancelled: int, returned: int, new_customers: int}
      */
     private function totals(Store $store, CarbonImmutable $from, CarbonImmutable $to): array
     {
@@ -82,6 +82,7 @@ class BuildStoreReport
             ->selectRaw('count(*) as placed')
             ->selectRaw('sum(case when status not in (?, ?) then 1 else 0 end) as orders', [$failedA, $failedB])
             ->selectRaw('coalesce(sum(case when status not in (?, ?) then total else 0 end), 0) as sales', [$failedA, $failedB])
+            ->selectRaw('coalesce(sum(case when status not in (?, ?) then discount + shipping_discount else 0 end), 0) as discounts', [$failedA, $failedB])
             ->selectRaw('sum(case when status = ? then 1 else 0 end) as delivered_orders', [$delivered])
             ->selectRaw('coalesce(sum(case when status = ? then total else 0 end), 0) as revenue', [$delivered])
             ->selectRaw('coalesce(sum(case when status = ? then shipping_fee else 0 end), 0) as shipping_fees', [$delivered])
@@ -115,6 +116,7 @@ class BuildStoreReport
             'shipping_fees' => round((float) $row->shipping_fees, 2),
             'commissions' => $commissions,
             'net_revenue' => round($revenue - $commissions, 2),
+            'discounts' => round((float) $row->discounts, 2),
             'cost_of_goods' => $costOfGoods,
             'gross_profit' => $grossProfit,
             'profit_margin' => $products > 0 ? round($grossProfit / $products * 100, 1) : null,

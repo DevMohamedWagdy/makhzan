@@ -112,7 +112,17 @@ export function ReportsPage() {
             ) : (
                 <div className={loading ? 'flex flex-col gap-6 opacity-60 transition-opacity' : 'flex flex-col gap-6 transition-opacity'}>
                     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                        <StatCard label={t('المبيعات')} value={formatMoney(totals.sales)} icon="bar-chart" hint={<TrendBadge current={totals.sales} previous={previous.sales} />} />
+                        <StatCard
+                            label={t('المبيعات')}
+                            value={formatMoney(totals.sales)}
+                            icon="bar-chart"
+                            hint={
+                                <>
+                                    <TrendBadge current={totals.sales} previous={previous.sales} />
+                                    {totals.discounts > 0 && <span className="ms-2 text-xs text-muted">{t('بعد خصومات {amount}', { amount: formatMoney(totals.discounts) })}</span>}
+                                </>
+                            }
+                        />
                         <StatCard label={t('الإيرادات المحصّلة')} value={formatMoney(totals.revenue)} icon="wallet" tone="success" hint={<TrendBadge current={totals.revenue} previous={previous.revenue} />} />
                         <StatCard label={t('الطلبات')} value={formatNumber(totals.orders)} icon="shopping-bag" tone="info" hint={<TrendBadge current={totals.orders} previous={previous.orders} />} />
                         <StatCard label={t('متوسط قيمة الطلب')} value={formatMoney(totals.average_order)} icon="sparkles" tone="primary" hint={<TrendBadge current={totals.average_order} previous={previous.average_order} />} />

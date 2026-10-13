@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\V1\Public\StoreController;
 use App\Http\Controllers\Api\V1\Storefront\CartController;
 use App\Http\Controllers\Api\V1\Storefront\Customer\AddressController as CustomerAddressController;
 use App\Http\Controllers\Api\V1\Storefront\Customer\AuthController as CustomerAuthController;
+use App\Http\Controllers\Api\V1\Storefront\Customer\CouponController as CustomerCouponController;
 use App\Http\Controllers\Api\V1\Storefront\Customer\OrderController as CustomerOrderController;
 use App\Http\Controllers\Api\V1\Storefront\ProductController as StorefrontProductController;
 use App\Http\Controllers\Api\V1\Storefront\ReferralClickController;
@@ -27,6 +28,7 @@ use App\Http\Controllers\Api\V1\Vendor\AffiliateStatusController;
 use App\Http\Controllers\Api\V1\Vendor\AffiliateSummaryController;
 use App\Http\Controllers\Api\V1\Vendor\Auth\PasswordResetController;
 use App\Http\Controllers\Api\V1\Vendor\Auth\VendorAuthController;
+use App\Http\Controllers\Api\V1\Vendor\CouponController;
 use App\Http\Controllers\Api\V1\Vendor\CustomerController;
 use App\Http\Controllers\Api\V1\Vendor\CustomerSummaryController;
 use App\Http\Controllers\Api\V1\Vendor\InventoryController;
@@ -95,6 +97,7 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
                 Route::get('me', [CustomerAuthController::class, 'me'])->name('me');
                 Route::post('logout', [CustomerAuthController::class, 'logout'])->name('logout');
                 Route::apiResource('addresses', CustomerAddressController::class)->except('show');
+                Route::post('coupon', CustomerCouponController::class)->middleware('throttle:30,1')->name('coupon');
                 Route::get('orders', [CustomerOrderController::class, 'index'])->name('orders.index');
                 Route::post('orders', [CustomerOrderController::class, 'store'])->middleware('throttle:10,1')->name('orders.store');
                 Route::get('orders/{number}', [CustomerOrderController::class, 'show'])->whereNumber('number')->name('orders.show');
@@ -154,6 +157,9 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::get('payouts', [VendorPayoutController::class, 'index'])->name('payouts.index');
 
         Route::get('reports', ReportController::class)->name('reports');
+
+        Route::patch('coupons/{coupon}/status', [CouponController::class, 'updateStatus'])->name('coupons.status');
+        Route::apiResource('coupons', CouponController::class);
 
         Route::get('customers/summary', CustomerSummaryController::class)->name('customers.summary');
         Route::get('customers', [CustomerController::class, 'index'])->name('customers.index');

@@ -43,7 +43,7 @@ class OrderController extends Controller
             ? $customer->addresses()->findOrFail($request->validated('address_id'))->toOrderAddress()
             : collect($request->validated('address'))->only(['recipient_name', 'phone', 'governorate_id', 'city_id', 'address_line', 'landmark'])->all();
 
-        $order = $placeOrder->handle($store, $customer, $request->validated('items'), $address, $request->validated('referral_code'), $request->validated('note'));
+        $order = $placeOrder->handle($store, $customer, $request->validated('items'), $address, $request->validated('referral_code'), $request->validated('note'), $request->validated('coupon_code'));
 
         if (! $request->filled('address_id') && $request->boolean('save_address')) {
             AddressController::save($customer, $address);

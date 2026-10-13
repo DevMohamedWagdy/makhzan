@@ -148,6 +148,12 @@ export function OrderDrawer({ orderId, onClose, onChanged }) {
                                 <dt className="text-muted">{t('الشحن')}</dt>
                                 <dd>{order.shipping_fee ? formatMoney(order.shipping_fee) : t('مجاني')}</dd>
                             </div>
+                            {order.discount + order.shipping_discount > 0 && (
+                                <div className="flex justify-between text-success">
+                                    <dt>{t('خصم الكوبون {code}', { code: order.coupon_code })}</dt>
+                                    <dd className="ltr">-{formatMoney(order.discount + order.shipping_discount)}</dd>
+                                </div>
+                            )}
                             <div className="flex justify-between font-semibold text-ink">
                                 <dt>{t('المطلوب تحصيله عند الاستلام')}</dt>
                                 <dd>{formatMoney(order.total)}</dd>

@@ -37,6 +37,7 @@ class PlaceOrderRequest extends FormRequest
             ...SaveAddressRequest::addressRules($this->input('address.governorate_id'), 'address.', $presence),
             'save_address' => ['sometimes', 'boolean'],
             'referral_code' => ['nullable', 'string', 'max:32'],
+            'coupon_code' => ['nullable', 'string', 'max:32'],
             'note' => ['nullable', 'string', 'max:500'],
         ];
     }

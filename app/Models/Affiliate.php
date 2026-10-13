@@ -113,6 +113,16 @@ class Affiliate extends Authenticatable implements HasLocalePreference
     }
 
     /**
+     * Discount codes that credit their orders to this affiliate.
+     *
+     * @return HasMany<Coupon, $this>
+     */
+    public function coupons(): HasMany
+    {
+        return $this->hasMany(Coupon::class);
+    }
+
+    /**
      * @return HasMany<AffiliatePayout, $this>
      */
     public function payouts(): HasMany

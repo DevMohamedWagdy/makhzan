@@ -20,7 +20,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * taken when it was placed; status changes go through App\Actions\Orders\UpdateOrderStatus.
  */
 #[Fillable([
-    'customer_id', 'number', 'status', 'payment_method', 'subtotal', 'shipping_fee', 'total',
+    'customer_id', 'number', 'status', 'payment_method', 'subtotal', 'discount', 'shipping_fee', 'shipping_discount', 'total', 'coupon_id', 'coupon_code',
     'recipient_name', 'phone', 'governorate_id', 'city_id', 'address_line', 'landmark', 'customer_note',
     'affiliate_id', 'referral_code_id', 'referral_code', 'commission_type', 'commission_rate', 'commission_amount', 'commission_status',
 ])]
@@ -40,7 +40,9 @@ class Order extends Model
             'number' => 'integer',
             'status' => OrderStatus::class,
             'subtotal' => 'float',
+            'discount' => 'float',
             'shipping_fee' => 'float',
+            'shipping_discount' => 'float',
             'total' => 'float',
             'commission_type' => CommissionType::class,
             'commission_rate' => 'float',
@@ -76,6 +78,14 @@ class Order extends Model
     public function affiliate(): BelongsTo
     {
         return $this->belongsTo(Affiliate::class);
+    }
+
+    /**
+     * @return BelongsTo<Coupon, $this>
+     */
+    public function coupon(): BelongsTo
+    {
+        return $this->belongsTo(Coupon::class);
     }
 
     /**

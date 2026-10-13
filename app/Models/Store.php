@@ -117,6 +117,14 @@ class Store extends Model
     }
 
     /**
+     * @return HasMany<Coupon, $this>
+     */
+    public function coupons(): HasMany
+    {
+        return $this->hasMany(Coupon::class);
+    }
+
+    /**
      * @return HasMany<StockTransfer, $this>
      */
     public function stockTransfers(): HasMany

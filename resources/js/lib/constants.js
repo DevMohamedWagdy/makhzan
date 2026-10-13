@@ -61,6 +61,14 @@ export const PURCHASE_ORDER_STATUSES = {
     cancelled: { label: t('ملغي'), tone: 'danger', icon: 'x' },
 };
 
+/** @type {Record<'active'|'scheduled'|'expired'|'disabled', { label: string, tone: string }>} */
+export const COUPON_STATES = {
+    active: { label: t('فعّال'), tone: 'success' },
+    scheduled: { label: t('مجدول'), tone: 'info' },
+    expired: { label: t('منتهي'), tone: 'neutral' },
+    disabled: { label: t('موقوف'), tone: 'danger' },
+};
+
 /** Common option names offered as suggestions in the product form. */
 export const OPTION_SUGGESTIONS = [t('المقاس'), t('اللون'), t('الخامة'), t('الوزن')];
 

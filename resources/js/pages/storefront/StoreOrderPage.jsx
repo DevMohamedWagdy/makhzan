@@ -138,6 +138,12 @@ export function StoreOrderPage() {
                         <dt className="text-muted">{t('الشحن')}</dt>
                         <dd className="text-ink">{order.shipping_fee ? formatMoney(order.shipping_fee) : t('مجاني')}</dd>
                     </div>
+                    {order.discount + order.shipping_discount > 0 && (
+                        <div className="flex justify-between text-success">
+                            <dt>{t('خصم الكوبون {code}', { code: order.coupon_code })}</dt>
+                            <dd className="ltr">-{formatMoney(order.discount + order.shipping_discount)}</dd>
+                        </div>
+                    )}
                     <div className="flex justify-between border-t border-line pt-2 text-base">
                         <dt className="font-semibold text-ink">{t('الإجمالي (الدفع عند الاستلام)')}</dt>
                         <dd className="font-bold text-ink">{formatMoney(order.total)}</dd>

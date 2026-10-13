@@ -2,12 +2,15 @@
 
 namespace App\Actions\Orders;
 
+use App\Actions\Coupons\ApplyCoupon;
 use App\Actions\Inventory\ChangeStock;
 use App\Enums\AffiliateStatus;
 use App\Enums\CommissionStatus;
 use App\Enums\CommissionType;
 use App\Enums\OrderStatus;
+use App\Models\Affiliate;
 use App\Models\AffiliateReferralCode;
+use App\Models\Coupon;
 use App\Models\Customer;
 use App\Models\Order;
 use App\Models\OrderEvent;
@@ -21,30 +24,32 @@ use Illuminate\Validation\ValidationException;
 
 class PlaceOrder
 {
-    public function __construct(private ChangeStock $changeStock) {}
+    public function __construct(private ChangeStock $changeStock, private ApplyCoupon $applyCoupon) {}
 
     /**
      * Places a cash-on-delivery order. Variant rows are locked while stock is checked and
-     * deducted, so two shoppers can't buy the last piece twice. A valid referral code
-     * attributes the order to its affiliate with the commission in effect right now.
+     * deducted, so two shoppers can't buy the last piece twice. A coupon is checked (and its
+     * row locked, so its usage limit holds) and taken off the products or the shipping. The
+     * order is attributed to the coupon's affiliate if it has one, otherwise to the referral
+     * code's, with the commission in effect right now on the products after the discount.
      *
      * @param  list<array{variant_id: int, quantity: int}>  $items
      * @param  array{recipient_name: string, phone: string, governorate_id: string, city_id: string, address_line: string, landmark?: string|null}  $address
      *
      * @throws ValidationException
      */
-    public function handle(Store $store, Customer $customer, array $items, array $address, ?string $referralCode = null, ?string $note = null): Order
+    public function handle(Store $store, Customer $customer, array $items, array $address, ?string $referralCode = null, ?string $note = null, ?string $couponCode = null): Order
     {
         $quantities = collect($items)->groupBy('variant_id')->map(fn (Collection $lines): int => $lines->sum('quantity'));
 
-        $order = DB::transaction(function () use ($store, $customer, $quantities, $address, $referralCode, $note): Order {
+        $order = DB::transaction(function () use ($store, $customer, $quantities, $address, $referralCode, $note, $couponCode): Order {
             // Serializes order numbers within the store.
             Store::query()->whereKey($store->id)->lockForUpdate()->first();
 
             $variants = ProductVariant::query()
                 ->whereIn('id', $quantities->keys())
                 ->whereHas('product', fn ($query) => $query->where('store_id', $store->id)->visibleInStore())
-                ->with('product.images')
+                ->with(['product.images', 'product.store'])
                 ->lockForUpdate()
                 ->get()
                 ->keyBy('id');
@@ -55,15 +60,25 @@ class PlaceOrder
             $shippingFee = $store->shippingFeeFor($address['governorate_id'], $subtotal)
                 ?? throw ValidationException::withMessages(['address.governorate_id' => __('orders.no_delivery')]);
 
+            $coupon = filled($couponCode)
+                ? $this->applyCoupon->handle($store, $customer, $couponCode, $quantities->map(fn (int $quantity, int $variantId): array => ['variant' => $variants[$variantId], 'quantity' => $quantity])->values(), lock: true)
+                : null;
+            $discount = $coupon['discount'] ?? 0.0;
+            $shippingDiscount = ($coupon['free_shipping'] ?? false) ? $shippingFee : 0.0;
+
             $order = $store->orders()->create([
                 ...$address,
-                ...$this->attribution($store, $customer, $referralCode, $subtotal),
+                ...$this->attribution($store, $customer, $referralCode, $subtotal - $discount, $coupon['coupon'] ?? null),
                 'customer_id' => $customer->id,
                 'number' => ((int) $store->orders()->max('number') ?: 1000) + 1,
                 'status' => OrderStatus::Pending,
                 'subtotal' => $subtotal,
+                'discount' => $discount,
                 'shipping_fee' => $shippingFee,
-                'total' => $subtotal + $shippingFee,
+                'shipping_discount' => $shippingDiscount,
+                'coupon_id' => $coupon['coupon']->id ?? null,
+                'coupon_code' => $coupon['coupon']->code ?? null,
+                'total' => round($subtotal - $discount + $shippingFee - $shippingDiscount, 2),
                 'customer_note' => $note,
             ]);
 
@@ -124,13 +139,23 @@ class PlaceOrder
     }
 
     /**
-     * Affiliate and commission for an order placed through a referral code. Codes that are
-     * unknown, disabled or belong to the customer themselves are ignored, not rejected.
+     * Affiliate and commission for an order: the coupon's affiliate (the shopper typed their
+     * code), else the referral code's. Referral codes that are unknown, disabled or belong to
+     * the customer themselves are ignored, not rejected. Commission is on $base, the
+     * products after any discount.
      *
      * @return array<string, mixed>
      */
-    private function attribution(Store $store, Customer $customer, ?string $code, float $subtotal): array
+    private function attribution(Store $store, Customer $customer, ?string $code, float $base, ?Coupon $coupon = null): array
     {
+        if ($coupon?->affiliate?->status === AffiliateStatus::Active) {
+            return [
+                'affiliate_id' => $coupon->affiliate_id,
+                'referral_code' => $coupon->code,
+                ...$this->commission($coupon->affiliate, $base),
+            ];
+        }
+
         $referral = $code ? AffiliateReferralCode::query()
             ->where('store_id', $store->id)
             ->where('code', strtoupper(trim($code)))
@@ -143,16 +168,27 @@ class PlaceOrder
             return ['commission_status' => CommissionStatus::None];
         }
 
-        $commission = $referral->affiliate->effectiveCommission();
-        $amount = $commission['type'] === CommissionType::Percentage ? round($subtotal * $commission['value'] / 100, 2) : $commission['value'];
-
         return [
             'affiliate_id' => $referral->affiliate_id,
             'referral_code_id' => $referral->id,
             'referral_code' => $referral->code,
+            ...$this->commission($referral->affiliate, $base),
+        ];
+    }
+
+    /**
+     * The affiliate's commission in effect now, on the given product total.
+     *
+     * @return array{commission_type: CommissionType, commission_rate: float, commission_amount: float, commission_status: CommissionStatus}
+     */
+    private function commission(Affiliate $affiliate, float $base): array
+    {
+        $commission = $affiliate->effectiveCommission();
+
+        return [
             'commission_type' => $commission['type'],
             'commission_rate' => $commission['value'],
-            'commission_amount' => $amount,
+            'commission_amount' => $commission['type'] === CommissionType::Percentage ? round($base * $commission['value'] / 100, 2) : $commission['value'],
             'commission_status' => CommissionStatus::Pending,
         ];
     }
