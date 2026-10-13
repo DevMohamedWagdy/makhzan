@@ -31,7 +31,7 @@ class PurchaseOrderController extends Controller
         $search = trim($filters['search'] ?? '', " \t#");
 
         $purchaseOrders = $store->purchaseOrders()
-            ->with(['supplier', 'items'])
+            ->with(['supplier', 'warehouse', 'items'])
             ->when($filters['status'] ?? null, fn ($query, $status) => $query->where('status', $status))
             ->when($filters['supplier_id'] ?? null, fn ($query, $supplierId) => $query->where('supplier_id', $supplierId))
             ->when($search !== '', fn ($query) => $query->where(fn ($query) => $query
@@ -68,7 +68,7 @@ class PurchaseOrderController extends Controller
     {
         Gate::authorize('view', $purchaseOrder);
 
-        return new PurchaseOrderResource($purchaseOrder->load(['supplier', 'items']));
+        return new PurchaseOrderResource($purchaseOrder->load(['supplier', 'warehouse', 'items']));
     }
 
     /**
@@ -142,6 +142,6 @@ class PurchaseOrderController extends Controller
 
         $purchaseOrder->forceFill(['status' => $to, $timestamp => now()])->save();
 
-        return new PurchaseOrderResource($purchaseOrder->load(['supplier', 'items']));
+        return new PurchaseOrderResource($purchaseOrder->load(['supplier', 'warehouse', 'items']));
     }
 }

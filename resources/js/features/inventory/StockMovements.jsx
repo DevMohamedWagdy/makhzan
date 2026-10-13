@@ -34,13 +34,14 @@ function MovementSource({ movement }) {
                     {t('الطلب #{number}', { number: movement.order.number })}
                 </Link>
             )}
+            {movement.transfer && <span className="font-medium text-info">{t('تحويل #{number}', { number: movement.transfer.number })}</span>}
             {movement.purchase_order && (
                 <Link to={`/dashboard/purchase-orders/${movement.purchase_order.purchase_order_id}`} className="font-medium text-primary hover:underline">
                     {t('أمر الشراء #{number}', { number: movement.purchase_order.number })}
                 </Link>
             )}
             {movement.note && !movement.purchase_order && <span className="text-ink-2">{movement.note}</span>}
-            {!movement.order && !movement.purchase_order && !movement.note && <span className="text-muted">{movement.actor === 'customer' ? t('العميل') : t('المتجر')}</span>}
+            {!movement.order && !movement.purchase_order && !movement.transfer && !movement.note && <span className="text-muted">{movement.actor === 'customer' ? t('العميل') : t('المتجر')}</span>}
             {movement.type === 'restock' && movement.unit_cost != null && <span className="text-muted">{t('تكلفة القطعة {value}', { value: formatMoney(movement.unit_cost) })}</span>}
         </span>
     );
@@ -48,7 +49,7 @@ function MovementSource({ movement }) {
 
 /** Movements as a table; `showProduct` adds the product column for the store-wide log. */
 export function MovementsTable({ movements, loading, showProduct = true }) {
-    const columns = [t('التاريخ'), ...(showProduct ? [t('المنتج')] : []), t('الحركة'), t('الكمية'), t('المخزون'), t('المصدر')];
+    const columns = [t('التاريخ'), ...(showProduct ? [t('المنتج')] : []), t('الحركة'), t('المخزن'), t('الكمية'), t('المخزون'), t('المصدر')];
 
     return (
         <div className="mk-scroll overflow-x-auto">
@@ -88,6 +89,7 @@ export function MovementsTable({ movements, loading, showProduct = true }) {
                                   <td className="px-4 py-3">
                                       <MovementTypeBadge type={movement.type} />
                                   </td>
+                                  <td className="px-4 py-3 whitespace-nowrap text-ink-2">{movement.warehouse?.name ?? '—'}</td>
                                   <td className="px-4 py-3">
                                       <QuantityChange value={movement.quantity} />
                                   </td>
@@ -95,6 +97,11 @@ export function MovementsTable({ movements, loading, showProduct = true }) {
                                       <span className="ltr inline-block">
                                           {formatNumber(movement.stock_before)} → <strong className="text-ink">{formatNumber(movement.stock_after)}</strong>
                                       </span>
+                                      {movement.warehouse_stock_after != null && movement.warehouse_stock_after !== movement.stock_after && (
+                                          <span className="block text-[11px] text-muted">
+                                              {t('في المخزن: {before} → {after}', { before: formatNumber(movement.warehouse_stock_before), after: formatNumber(movement.warehouse_stock_after) })}
+                                          </span>
+                                      )}
                                   </td>
                                   <td className="px-4 py-3">
                                       <MovementSource movement={movement} />

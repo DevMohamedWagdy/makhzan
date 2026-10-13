@@ -4,6 +4,7 @@ namespace App\Http\Requests\Api\V1\Vendor;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class ImportInventoryRequest extends FormRequest
 {
@@ -19,6 +20,7 @@ class ImportInventoryRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'warehouse_id' => ['nullable', 'integer', Rule::exists('warehouses', 'id')->where('store_id', $this->user()->store->id)],
             'rows' => ['required', 'array', 'min:1', 'max:'.self::MAX_ROWS],
             'rows.*' => ['array'],
             'rows.*.line' => ['nullable', 'integer'],

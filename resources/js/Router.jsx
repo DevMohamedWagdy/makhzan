@@ -25,6 +25,7 @@ import { CustomersPage } from '@/pages/customers/CustomersPage';
 import { DashboardHomePage } from '@/pages/dashboard/DashboardHomePage';
 import { InventoryPage } from '@/pages/inventory/InventoryPage';
 import { StockMovementsPage } from '@/pages/inventory/StockMovementsPage';
+import { WarehousesPage } from '@/pages/inventory/WarehousesPage';
 import { NotificationsPage } from '@/pages/notifications/NotificationsPage';
 import { OrdersPage } from '@/pages/orders/OrdersPage';
 import { ShippingPage } from '@/pages/shipping/ShippingPage';
@@ -115,6 +116,7 @@ export function App() {
                                     <Route path="customers" element={<CustomersPage />} />
                                     <Route path="inventory" element={<InventoryPage />} />
                                     <Route path="inventory/movements" element={<StockMovementsPage />} />
+                                    <Route path="warehouses" element={<WarehousesPage />} />
                                     <Route path="suppliers" element={<SuppliersPage />} />
                                     <Route path="purchase-orders" element={<PurchaseOrdersPage />} />
                                     <Route path="purchase-orders/new" element={<PurchaseOrderFormPage />} />

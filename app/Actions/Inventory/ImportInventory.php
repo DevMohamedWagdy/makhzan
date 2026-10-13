@@ -6,6 +6,7 @@ use App\Enums\StockMovementType;
 use App\Models\ProductVariant;
 use App\Models\StockMovement;
 use App\Models\Store;
+use App\Models\Warehouse;
 use Illuminate\Support\Collection;
 
 class ImportInventory
@@ -19,10 +20,12 @@ class ImportInventory
      * Bad rows are skipped and reported with their line numbers.
      *
      * @param  list<array<string, mixed>>  $rows
+     * @param  Warehouse|null  $warehouse  where counted quantities apply; the default warehouse when null
      * @return array{updated: int, unchanged: int, skipped: int, errors: list<array{row: int, message: string}>}
      */
-    public function handle(Store $store, array $rows): array
+    public function handle(Store $store, array $rows, ?Warehouse $warehouse = null): array
     {
+        $warehouse ??= $store->defaultWarehouse();
         $variants = ProductVariant::query()->inventoryOf($store)->get();
         $byId = $variants->keyBy('id');
         $bySku = $variants->filter(fn (ProductVariant $variant): bool => filled($variant->sku))->groupBy(fn (ProductVariant $variant): string => mb_strtolower(trim($variant->sku)));
@@ -49,7 +52,7 @@ class ImportInventory
                 $changed = true;
             }
 
-            if ($stock !== null && $this->changeStock->to($variant, $stock, StockMovementType::Adjustment, StockMovement::ACTOR_VENDOR, __('purchasing.import.note'))) {
+            if ($stock !== null && $this->changeStock->to($variant, $stock, StockMovementType::Adjustment, StockMovement::ACTOR_VENDOR, __('purchasing.import.note'), $warehouse)) {
                 $changed = true;
             }
 

@@ -7,13 +7,11 @@ use App\Enums\AffiliateStatus;
 use App\Enums\CommissionStatus;
 use App\Enums\CommissionType;
 use App\Enums\OrderStatus;
-use App\Enums\StockMovementType;
 use App\Models\AffiliateReferralCode;
 use App\Models\Customer;
 use App\Models\Order;
 use App\Models\OrderEvent;
 use App\Models\ProductVariant;
-use App\Models\StockMovement;
 use App\Models\Store;
 use App\Notifications\AffiliateCommissionNotification;
 use App\Notifications\OrderPlacedNotification;
@@ -85,7 +83,7 @@ class PlaceOrder
                     'line_total' => round($variant->price * $quantity, 2),
                 ]);
 
-                $this->changeStock->by($variant, -$quantity, StockMovementType::Sale, StockMovement::ACTOR_CUSTOMER, $order);
+                $this->changeStock->sell($variant, $quantity, $order);
             }
 
             $order->events()->create(['status' => OrderStatus::Pending, 'actor' => OrderEvent::ACTOR_CUSTOMER]);

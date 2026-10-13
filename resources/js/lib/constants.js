@@ -46,6 +46,7 @@ export const STOCK_MOVEMENT_TYPES = {
     sale: { label: t('بيع'), tone: 'primary', icon: 'shopping-bag' },
     cancellation: { label: t('إلغاء طلب'), tone: 'neutral', icon: 'x' },
     return: { label: t('مرتجع'), tone: 'warning', icon: 'refresh' },
+    transfer: { label: t('تحويل بين المخازن'), tone: 'info', icon: 'arrow-left' },
     initial: { label: t('رصيد افتتاحي'), tone: 'neutral', icon: 'plus' },
     product_edit: { label: t('تعديل من صفحة المنتج'), tone: 'neutral', icon: 'edit' },
 };

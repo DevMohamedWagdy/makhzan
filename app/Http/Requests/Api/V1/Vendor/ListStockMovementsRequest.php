@@ -19,6 +19,7 @@ class ListStockMovementsRequest extends FormRequest
         return [
             'type' => ['nullable', Rule::enum(StockMovementType::class)],
             'variant_id' => ['nullable', 'integer'],
+            'warehouse_id' => ['nullable', 'integer'],
             'search' => ['nullable', 'string', 'max:100'],
             'from' => ['nullable', 'date_format:Y-m-d'],
             'to' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:from'],

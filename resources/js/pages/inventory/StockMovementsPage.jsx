@@ -6,12 +6,13 @@ import { EmptyState } from '@/components/ui/Display';
 import { Input, Select } from '@/components/ui/Form';
 import { Pagination } from '@/components/ui/Navigation';
 import { MovementsTable } from '@/features/inventory/StockMovements';
+import { useWarehouses } from '@/features/inventory/useWarehouses';
 import { useDebouncedValue } from '@/hooks/common';
 import { t } from '@/i18n';
 import { STOCK_MOVEMENT_TYPES } from '@/lib/constants';
 import { inventoryApi } from '@/services/inventoryApi';
 
-const FILTER_KEYS = ['type', 'search', 'from', 'to'];
+const FILTER_KEYS = ['type', 'warehouse_id', 'search', 'from', 'to'];
 
 /** Every stock movement in the store, newest first, filtered by type, product and date. */
 export function StockMovementsPage() {
@@ -23,6 +24,7 @@ export function StockMovementsPage() {
     const [result, setResult] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const { warehouses } = useWarehouses();
 
     const setQuery = useCallback(
         (patch) =>
@@ -85,6 +87,9 @@ export function StockMovementsPage() {
                 <div className="flex flex-wrap items-center gap-3 p-4">
                     <Input type="search" icon="search" value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder={t('ابحث باسم المنتج...')} aria-label={t('بحث في الحركات')} className="lg:w-72" />
                     <Select aria-label={t('نوع الحركة')} value={filters.type} onChange={(event) => setQuery({ type: event.target.value })} placeholder={t('كل الحركات')} options={Object.entries(STOCK_MOVEMENT_TYPES).map(([value, config]) => ({ value, label: config.label }))} className="w-48" />
+                    {warehouses?.length > 1 && (
+                        <Select aria-label={t('المخزن')} value={filters.warehouse_id} onChange={(event) => setQuery({ warehouse_id: event.target.value })} placeholder={t('كل المخازن')} options={warehouses.map((warehouse) => ({ value: String(warehouse.warehouse_id), label: warehouse.name }))} className="w-48" />
+                    )}
                     <Input type="date" value={filters.from} max={filters.to || undefined} onChange={(event) => setQuery({ from: event.target.value })} aria-label={t('من تاريخ')} className="w-40" />
                     <Input type="date" value={filters.to} min={filters.from || undefined} onChange={(event) => setQuery({ to: event.target.value })} aria-label={t('إلى تاريخ')} className="w-40" />
                     {filtered && (

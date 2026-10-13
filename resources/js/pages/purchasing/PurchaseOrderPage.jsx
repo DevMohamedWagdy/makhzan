@@ -256,6 +256,7 @@ export function PurchaseOrderPage() {
                     <Card title={t('التفاصيل')}>
                         <dl className="divide-y divide-line">
                             <DetailRow label={t('المورد')}>{order.supplier.name}</DetailRow>
+                            {order.warehouse && <DetailRow label={t('مخزن الاستلام')}>{order.warehouse.name}</DetailRow>}
                             {order.supplier.phone && (
                                 <DetailRow label={t('الهاتف')} ltr>
                                     {order.supplier.phone}

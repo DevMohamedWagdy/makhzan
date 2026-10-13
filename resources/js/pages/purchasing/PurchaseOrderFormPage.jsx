@@ -1,97 +1,19 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { PageHeader } from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/Button';
 import { Alert, Card, EmptyState } from '@/components/ui/Display';
 import { Field, Input, Select, Textarea } from '@/components/ui/Form';
-import { Icon } from '@/components/ui/Icon';
-import { Skeleton, Spinner } from '@/components/ui/Spinner';
+import { Skeleton } from '@/components/ui/Spinner';
 import { useToast } from '@/context/ToastContext';
 import { itemLabel } from '@/features/inventory/InventoryModals';
-import { ProductThumb } from '@/features/products/ProductBadges';
+import { useWarehouses } from '@/features/inventory/useWarehouses';
+import { VariantPicker } from '@/features/inventory/VariantPicker';
 import { SupplierFormModal } from '@/features/purchasing/SupplierFormModal';
-import { useClickOutside, useDebouncedValue } from '@/hooks/common';
 import { t } from '@/i18n';
 import { CURRENCY } from '@/lib/constants';
 import { formatMoney, formatNumber } from '@/lib/format';
-import { inventoryApi } from '@/services/inventoryApi';
 import { purchaseOrdersApi, suppliersApi } from '@/services/purchasingApi';
-
-/** Search box that finds the store's variants by name or SKU and adds the chosen one. */
-function VariantPicker({ excludedIds, onPick }) {
-    const [term, setTerm] = useState('');
-    const search = useDebouncedValue(term, 250);
-    const [results, setResults] = useState(null);
-    const [open, setOpen] = useState(false);
-    const containerRef = useRef(null);
-
-    useClickOutside(containerRef, () => setOpen(false), open);
-
-    useEffect(() => {
-        if (!open) {
-            return;
-        }
-
-        setResults(null);
-        inventoryApi
-            .list({ search, per_page: 20 })
-            .then((response) => setResults(response.data))
-            .catch(() => setResults([]));
-    }, [search, open]);
-
-    const available = (results ?? []).filter((item) => !excludedIds.includes(item.variant_id));
-
-    return (
-        <div ref={containerRef} className="relative">
-            <Input
-                type="search"
-                icon="search"
-                value={term}
-                onFocus={() => setOpen(true)}
-                onChange={(event) => {
-                    setTerm(event.target.value);
-                    setOpen(true);
-                }}
-                placeholder={t('ابحث عن منتج بالاسم أو SKU لإضافته...')}
-                aria-label={t('إضافة منتج لأمر الشراء')}
-            />
-            {open && (
-                <div className="mk-card mk-scroll absolute inset-x-0 top-12 z-20 max-h-80 overflow-y-auto p-1.5 shadow-pop">
-                    {results === null ? (
-                        <div className="grid place-items-center p-6">
-                            <Spinner className="size-5" />
-                        </div>
-                    ) : available.length === 0 ? (
-                        <p className="p-4 text-center text-sm text-muted">{t('لا توجد منتجات مطابقة.')}</p>
-                    ) : (
-                        available.map((item) => (
-                            <button
-                                key={item.variant_id}
-                                type="button"
-                                onClick={() => {
-                                    onPick(item);
-                                    setTerm('');
-                                    setOpen(false);
-                                }}
-                                className="flex w-full items-center gap-3 rounded-lg p-2 text-start transition hover:bg-surface-3"
-                            >
-                                <ProductThumb src={item.image_url} name={item.product_name} className="size-9" />
-                                <span className="min-w-0 flex-1">
-                                    <span className="block truncate text-sm font-medium text-ink">{itemLabel(item)}</span>
-                                    <span className="text-xs text-muted">
-                                        {t('المخزون {count}', { count: formatNumber(item.stock) })}
-                                        {item.cost != null && ` · ${t('التكلفة {value}', { value: formatMoney(item.cost) })}`}
-                                    </span>
-                                </span>
-                                <Icon name="plus" className="size-4 text-primary" />
-                            </button>
-                        ))
-                    )}
-                </div>
-            )}
-        </div>
-    );
-}
 
 /** New or draft purchase order: supplier, expected date, notes and the items with quantities and costs. */
 export function PurchaseOrderFormPage() {
@@ -102,6 +24,8 @@ export function PurchaseOrderFormPage() {
     const isEdit = Boolean(purchaseOrderId);
     const [suppliers, setSuppliers] = useState(null);
     const [supplierId, setSupplierId] = useState(searchParams.get('supplier_id') ?? '');
+    const [warehouseId, setWarehouseId] = useState('');
+    const { warehouses } = useWarehouses();
     const [expectedAt, setExpectedAt] = useState('');
     const [notes, setNotes] = useState('');
     const [items, setItems] = useState([]);
@@ -133,6 +57,7 @@ export function PurchaseOrderFormPage() {
                 }
 
                 setSupplierId(String(order.supplier.supplier_id));
+                setWarehouseId(order.warehouse ? String(order.warehouse.warehouse_id) : '');
                 setExpectedAt(order.expected_at ?? '');
                 setNotes(order.notes ?? '');
                 setItems(order.items.map((item) => ({ variant_id: item.variant_id, label: item.variant_title ? `${item.product_name} — ${item.variant_title}` : item.product_name, sku: item.sku, quantity: String(item.quantity_ordered), unit_cost: String(item.unit_cost) })));
@@ -178,6 +103,7 @@ export function PurchaseOrderFormPage() {
         try {
             const payload = {
                 supplier_id: Number(supplierId),
+                warehouse_id: warehouseId ? Number(warehouseId) : null,
                 expected_at: expectedAt || null,
                 notes: notes.trim() || null,
                 items: items.map((item) => ({ variant_id: item.variant_id, quantity: Number(item.quantity), unit_cost: Number(item.unit_cost) })),
@@ -285,6 +211,18 @@ export function PurchaseOrderFormPage() {
                                     />
                                 )}
                             </Field>
+                            {warehouses?.length > 1 && (
+                                <Field label={t('مخزن الاستلام')} error={errors.warehouse_id} hint={t('البضاعة المستلمة تُضاف لهذا المخزن.')}>
+                                    {(props) => (
+                                        <Select
+                                            {...props}
+                                            value={warehouseId || String(warehouses[0].warehouse_id)}
+                                            onChange={(event) => setWarehouseId(event.target.value)}
+                                            options={warehouses.map((warehouse) => ({ value: String(warehouse.warehouse_id), label: warehouse.name }))}
+                                        />
+                                    )}
+                                </Field>
+                            )}
                             <Field label={t('تاريخ الوصول المتوقع')} optional error={errors.expected_at}>
                                 {(props) => <Input {...props} type="date" value={expectedAt} onChange={(event) => setExpectedAt(event.target.value)} />}
                             </Field>

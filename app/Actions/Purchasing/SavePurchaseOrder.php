@@ -16,7 +16,7 @@ class SavePurchaseOrder
      * received anything yet; its items are replaced with the given variants, whose names
      * are snapshotted.
      *
-     * @param  array{supplier_id: int, expected_at?: string|null, notes?: string|null, items: list<array{variant_id: int, quantity: int, unit_cost: float|string}>}  $data
+     * @param  array{supplier_id: int, warehouse_id?: int|null, expected_at?: string|null, notes?: string|null, items: list<array{variant_id: int, quantity: int, unit_cost: float|string}>}  $data
      *
      * @throws ValidationException
      */
@@ -39,6 +39,7 @@ class SavePurchaseOrder
 
             $purchaseOrder->fill([
                 'supplier_id' => $data['supplier_id'],
+                'warehouse_id' => $data['warehouse_id'] ?? $store->defaultWarehouse()->id,
                 'expected_at' => $data['expected_at'] ?? null,
                 'notes' => $data['notes'] ?? null,
             ])->save();
@@ -65,7 +66,7 @@ class SavePurchaseOrder
                 ]);
             }
 
-            return $purchaseOrder->load(['supplier', 'items']);
+            return $purchaseOrder->load(['supplier', 'warehouse', 'items']);
         });
     }
 }

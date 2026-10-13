@@ -47,6 +47,15 @@ function StockCell({ item }) {
                     {t('الحد {count}', { count: formatNumber(item.effective_threshold) })}
                 </span>
             </span>
+            {item.warehouses?.length > 1 && (
+                <span className="flex flex-col text-[11px] text-muted">
+                    {item.warehouses.map((row) => (
+                        <span key={row.warehouse_id}>
+                            {row.name}: <strong className="font-semibold text-ink-2">{formatNumber(row.stock)}</strong>
+                        </span>
+                    ))}
+                </span>
+            )}
         </span>
     );
 }
@@ -142,6 +151,9 @@ export function InventoryPage() {
                     <>
                         <Button variant="secondary" icon="settings" onClick={() => setSettingsOpen(true)}>
                             {t('إعدادات المخزون')}
+                        </Button>
+                        <Button variant="secondary" icon="building" to="/dashboard/warehouses">
+                            {t('المخازن')}
                         </Button>
                         <Button variant="secondary" icon="file-spreadsheet" onClick={() => setImportOpen(true)}>
                             {t('جرد بملف Excel')}

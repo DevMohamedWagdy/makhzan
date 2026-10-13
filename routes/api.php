@@ -45,8 +45,10 @@ use App\Http\Controllers\Api\V1\Vendor\PurchaseOrderController;
 use App\Http\Controllers\Api\V1\Vendor\ReportController;
 use App\Http\Controllers\Api\V1\Vendor\ShippingSettingsController;
 use App\Http\Controllers\Api\V1\Vendor\StockMovementController;
+use App\Http\Controllers\Api\V1\Vendor\StockTransferController;
 use App\Http\Controllers\Api\V1\Vendor\StoreSlugAvailabilityController;
 use App\Http\Controllers\Api\V1\Vendor\SupplierController;
+use App\Http\Controllers\Api\V1\Vendor\WarehouseController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->name('api.v1.')->group(function () {
@@ -198,6 +200,10 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
             Route::patch('{variant}', [InventoryController::class, 'update'])->name('update');
             Route::post('{variant}/movements', [StockMovementController::class, 'store'])->middleware('throttle:60,1')->name('movements.store');
         });
+
+        Route::put('warehouses/order', [WarehouseController::class, 'reorder'])->name('warehouses.reorder');
+        Route::apiResource('warehouses', WarehouseController::class)->except('show');
+        Route::apiResource('stock-transfers', StockTransferController::class)->only(['index', 'store', 'show'])->parameters(['stock-transfers' => 'transfer']);
 
         Route::apiResource('suppliers', SupplierController::class)->except('show');
 

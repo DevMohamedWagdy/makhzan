@@ -32,6 +32,7 @@ class StoreStockMovementRequest extends FormRequest
         return [
             'type' => ['required', Rule::in(array_map(fn (StockMovementType $type): string => $type->value, StockMovementType::manual()))],
             'quantity' => ['required', 'integer', $isCount ? 'min:0' : 'min:1', 'max:1000000'],
+            'warehouse_id' => ['nullable', 'integer', Rule::exists('warehouses', 'id')->where('store_id', $this->user()->store->id)],
             'unit_cost' => ['nullable', 'numeric', 'min:0', 'max:10000000'],
             'note' => ['nullable', 'string', 'max:200'],
         ];
@@ -47,6 +48,7 @@ class StoreStockMovementRequest extends FormRequest
             'type.in' => __('inventory.type_invalid'),
             'quantity.required' => __('inventory.quantity_required'),
             'quantity.min' => $this->input('type') === StockMovementType::Adjustment->value ? __('inventory.counted_min') : __('inventory.quantity_min'),
+            'warehouse_id.exists' => __('inventory.warehouse_not_found'),
             'unit_cost.numeric' => __('products.cost_numeric'),
             'unit_cost.min' => __('products.cost_min'),
         ];

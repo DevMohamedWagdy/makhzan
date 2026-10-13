@@ -8,7 +8,8 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
  * A variant on the inventory page: its product, stock level, cost and the value on the shelf.
- * Expects product.images and product.store to be loaded.
+ * Expects product.images and product.store to be loaded; with product.store.warehouses and
+ * warehouseStocks also loaded it adds the quantity in each warehouse.
  *
  * @mixin ProductVariant
  */
@@ -40,7 +41,29 @@ class InventoryItemResource extends JsonResource
             'level' => $this->stockLevelIn($store),
             'stock_value' => $this->cost !== null ? round($this->cost * $this->stock, 2) : null,
             'retail_value' => round($this->price * $this->stock, 2),
+            'warehouses' => $this->when(
+                $this->relationLoaded('warehouseStocks') && $store->relationLoaded('warehouses'),
+                fn (): array => $this->warehouseBreakdown(),
+            ),
             'updated_at' => $this->updated_at?->toIso8601String(),
         ];
+    }
+
+    /**
+     * Quantity per warehouse in fulfilment order. Stock not yet assigned to a warehouse
+     * counts toward the default one, as ChangeStock treats it.
+     *
+     * @return list<array{warehouse_id: int, name: string, stock: int}>
+     */
+    private function warehouseBreakdown(): array
+    {
+        $stocks = $this->warehouseStocks->pluck('stock', 'warehouse_id');
+        $unallocated = $this->stock - (int) $stocks->sum();
+
+        return $this->product->store->warehouses->values()->map(fn ($warehouse, int $index): array => [
+            'warehouse_id' => $warehouse->id,
+            'name' => $warehouse->name,
+            'stock' => max(0, (int) ($stocks[$warehouse->id] ?? 0) + ($index === 0 ? $unallocated : 0)),
+        ])->all();
     }
 }

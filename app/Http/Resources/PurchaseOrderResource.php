@@ -9,7 +9,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
  * A purchase order with its supplier, items (ordered / received / remaining) and totals.
- * Expects supplier and items to be loaded.
+ * Expects supplier, warehouse and items to be loaded.
  *
  * @mixin PurchaseOrder
  */
@@ -27,6 +27,7 @@ class PurchaseOrderResource extends JsonResource
             'number' => $this->number,
             'status' => $this->status,
             'supplier' => ['supplier_id' => $this->supplier->id, 'name' => $this->supplier->name, 'phone' => $this->supplier->phone],
+            'warehouse' => $this->warehouse ? ['warehouse_id' => $this->warehouse->id, 'name' => $this->warehouse->name] : null,
             'expected_at' => $this->expected_at?->toDateString(),
             'notes' => $this->notes,
             'items' => $this->items->map(fn (PurchaseOrderItem $item): array => [

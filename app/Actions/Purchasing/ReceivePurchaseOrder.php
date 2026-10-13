@@ -16,7 +16,8 @@ class ReceivePurchaseOrder
 
     /**
      * Records goods that arrived: each quantity restocks its variant at the order's unit
-     * cost (updating the variant's average cost) and is logged against the purchase order.
+     * cost (updating the variant's average cost) into the order's warehouse and is logged
+     * against the purchase order.
      * The order becomes partially or fully received; receiving a draft also marks it ordered.
      *
      * @param  array<int, int>  $quantities  purchase order item id => quantity received now
@@ -63,7 +64,7 @@ class ReceivePurchaseOrder
                 }
 
                 $item = $items[$itemId];
-                $this->changeStock->by($item->variant, $quantity, StockMovementType::Restock, StockMovement::ACTOR_VENDOR, note: $note, unitCost: $item->unit_cost, purchaseOrder: $purchaseOrder);
+                $this->changeStock->by($item->variant, $quantity, StockMovementType::Restock, StockMovement::ACTOR_VENDOR, note: $note, unitCost: $item->unit_cost, purchaseOrder: $purchaseOrder, warehouse: $purchaseOrder->warehouse);
                 $item->increment('quantity_received', $quantity);
             }
 
@@ -75,7 +76,7 @@ class ReceivePurchaseOrder
                 'received_at' => $complete ? now() : null,
             ])->save();
 
-            return $purchaseOrder->load(['supplier', 'items']);
+            return $purchaseOrder->load(['supplier', 'warehouse', 'items']);
         });
     }
 }

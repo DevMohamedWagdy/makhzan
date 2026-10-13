@@ -19,6 +19,16 @@ class Store extends Model
     use HasFactory;
 
     /**
+     * Every store starts with a main warehouse, which holds its stock until others are added.
+     */
+    protected static function booted(): void
+    {
+        static::created(function (Store $store): void {
+            $store->warehouses()->create(['name' => Warehouse::DEFAULT_NAME, 'priority' => 1]);
+        });
+    }
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>
@@ -86,6 +96,32 @@ class Store extends Model
     public function orders(): HasMany
     {
         return $this->hasMany(Order::class);
+    }
+
+    /**
+     * Warehouses in fulfilment order: orders take stock from the first one that has it.
+     *
+     * @return HasMany<Warehouse, $this>
+     */
+    public function warehouses(): HasMany
+    {
+        return $this->hasMany(Warehouse::class)->orderBy('priority')->orderBy('id');
+    }
+
+    /**
+     * Where restocks, new products and purchase orders go unless told otherwise.
+     */
+    public function defaultWarehouse(): Warehouse
+    {
+        return $this->warehouses()->first() ?? $this->warehouses()->create(['name' => Warehouse::DEFAULT_NAME, 'priority' => 1]);
+    }
+
+    /**
+     * @return HasMany<StockTransfer, $this>
+     */
+    public function stockTransfers(): HasMany
+    {
+        return $this->hasMany(StockTransfer::class);
     }
 
     /**

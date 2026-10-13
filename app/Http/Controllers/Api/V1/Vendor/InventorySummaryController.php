@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api\V1\Vendor;
 
 use App\Http\Controllers\Controller;
 use App\Models\ProductVariant;
+use App\Models\Store;
+use App\Models\WarehouseStock;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -41,6 +43,35 @@ class InventorySummaryController extends Controller
             'low' => $variants()->stockLevel('low')->count(),
             'out' => $variants()->stockLevel('out')->count(),
             'low_stock_threshold' => $store->low_stock_threshold,
+            'warehouses' => $this->warehouses($store),
         ]);
+    }
+
+    /**
+     * Units and value at cost per warehouse, in fulfilment order. Stock not yet assigned to a
+     * warehouse counts toward the default one.
+     *
+     * @return list<array{warehouse_id: int, name: string, units: int, cost_value: float}>
+     */
+    private function warehouses(Store $store): array
+    {
+        $totals = WarehouseStock::query()
+            ->join('product_variants', 'product_variants.id', '=', 'warehouse_stocks.product_variant_id')
+            ->whereIn('warehouse_stocks.warehouse_id', $store->warehouses()->select('id'))
+            ->groupBy('warehouse_stocks.warehouse_id')
+            ->selectRaw('warehouse_stocks.warehouse_id, sum(warehouse_stocks.stock) as units, coalesce(sum(warehouse_stocks.stock * product_variants.cost), 0) as cost_value')
+            ->toBase()
+            ->get()
+            ->keyBy('warehouse_id');
+
+        $allocated = (int) $totals->sum('units');
+        $total = (int) ProductVariant::query()->inventoryOf($store)->sum('product_variants.stock');
+
+        return $store->warehouses->values()->map(fn ($warehouse, int $index): array => [
+            'warehouse_id' => $warehouse->id,
+            'name' => $warehouse->name,
+            'units' => (int) ($totals[$warehouse->id]->units ?? 0) + ($index === 0 ? $total - $allocated : 0),
+            'cost_value' => round((float) ($totals[$warehouse->id]->cost_value ?? 0), 2),
+        ])->all();
     }
 }

@@ -48,6 +48,16 @@ class ProductVariant extends Model
     }
 
     /**
+     * The variant's quantity in each warehouse; `stock` is their sum.
+     *
+     * @return HasMany<WarehouseStock, $this>
+     */
+    public function warehouseStocks(): HasMany
+    {
+        return $this->hasMany(WarehouseStock::class);
+    }
+
+    /**
      * @return HasMany<StockMovement, $this>
      */
     public function stockMovements(): HasMany

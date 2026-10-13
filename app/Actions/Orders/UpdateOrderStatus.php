@@ -10,6 +10,7 @@ use App\Models\Affiliate;
 use App\Models\AffiliateReferralCode;
 use App\Models\Order;
 use App\Models\ProductVariant;
+use App\Models\StockMovement;
 use App\Notifications\AffiliateCommissionNotification;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -65,18 +66,41 @@ class UpdateOrderStatus
     }
 
     /**
-     * Puts the order's items back on the shelf, logged as a cancellation or a return.
-     * Variants deleted since the order was placed are skipped.
+     * Puts the order's items back on the shelf, logged as a cancellation or a return, in the
+     * warehouses they were taken from (the default warehouse for anything taken before
+     * warehouses existed, or from a warehouse since deleted). Variants deleted since the
+     * order was placed are skipped.
      */
     private function restock(Order $order, OrderStatus $status, string $actor): void
     {
         $type = $status === OrderStatus::Returned ? StockMovementType::Return : StockMovementType::Cancellation;
+        $taken = StockMovement::query()
+            ->where('order_id', $order->id)
+            ->where('type', StockMovementType::Sale)
+            ->with('warehouse')
+            ->get()
+            ->groupBy('product_variant_id');
 
         foreach ($order->items()->whereNotNull('product_variant_id')->get() as $item) {
             $variant = ProductVariant::query()->find($item->product_variant_id);
 
-            if ($variant) {
-                $this->changeStock->by($variant, $item->quantity, $type, $actor, $order);
+            if (! $variant) {
+                continue;
+            }
+
+            $remaining = $item->quantity;
+
+            foreach ($taken->get($variant->id, collect()) as $sale) {
+                $quantity = min(-$sale->quantity, $remaining);
+
+                if ($quantity > 0 && $sale->warehouse) {
+                    $this->changeStock->by($variant, $quantity, $type, $actor, $order, warehouse: $sale->warehouse);
+                    $remaining -= $quantity;
+                }
+            }
+
+            if ($remaining > 0) {
+                $this->changeStock->by($variant, $remaining, $type, $actor, $order);
             }
         }
     }

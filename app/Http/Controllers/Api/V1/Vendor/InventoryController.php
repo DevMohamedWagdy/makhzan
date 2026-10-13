@@ -21,7 +21,7 @@ class InventoryController extends Controller
 
         $variants = ProductVariant::query()
             ->inventoryOf($request->user()->store)
-            ->with(['product.images', 'product.store'])
+            ->with(['product.images', 'product.store.warehouses', 'warehouseStocks'])
             ->stockLevel($filters['level'] ?? null)
             ->when($search !== '', fn ($query) => $query->where(fn ($query) => $query
                 ->where('products.name', 'like', "%{$search}%")
@@ -48,6 +48,6 @@ class InventoryController extends Controller
     {
         $variant->update($request->validated());
 
-        return new InventoryItemResource($variant->load(['product.images', 'product.store']));
+        return new InventoryItemResource($variant->load(['product.images', 'product.store.warehouses', 'warehouseStocks']));
     }
 }

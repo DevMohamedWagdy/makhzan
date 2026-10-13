@@ -32,6 +32,7 @@ class SavePurchaseOrderRequest extends FormRequest
 
         return [
             'supplier_id' => ['required', 'integer', Rule::exists('suppliers', 'id')->where('store_id', $storeId)],
+            'warehouse_id' => ['nullable', 'integer', Rule::exists('warehouses', 'id')->where('store_id', $storeId)],
             'expected_at' => ['nullable', 'date_format:Y-m-d'],
             'notes' => ['nullable', 'string', 'max:500'],
             'items' => ['required', 'array', 'min:1', 'max:200'],
@@ -52,6 +53,7 @@ class SavePurchaseOrderRequest extends FormRequest
         return [
             'supplier_id.required' => __('purchasing.supplier_required'),
             'supplier_id.exists' => __('purchasing.supplier_not_found'),
+            'warehouse_id.exists' => __('inventory.warehouse_not_found'),
             'items.required' => __('purchasing.items_required'),
             'items.min' => __('purchasing.items_required'),
             'items.*.variant_id.exists' => __('purchasing.variant_invalid'),

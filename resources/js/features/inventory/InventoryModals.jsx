@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/Button';
-import { Field, Input, OptionCards, Textarea } from '@/components/ui/Form';
+import { Field, Input, OptionCards, Select, Textarea } from '@/components/ui/Form';
 import { Modal } from '@/components/ui/Overlay';
 import { useToast } from '@/context/ToastContext';
 import { t } from '@/i18n';
@@ -21,10 +21,14 @@ export function itemLabel(item) {
 
 const numberOrNull = (value) => (value === '' || value == null ? null : Number(value));
 
-/** Restock, stock count or write-off for one variant, with a preview of the resulting stock. */
+/**
+ * Restock, stock count or write-off for one variant in one warehouse, with a preview of the
+ * warehouse's resulting stock. The warehouse choice shows only when the store has several.
+ */
 export function StockMovementModal({ item, initialType = 'restock', onClose, onSaved }) {
     const toast = useToast();
     const [type, setType] = useState(initialType);
+    const [warehouseId, setWarehouseId] = useState('');
     const [quantity, setQuantity] = useState('');
     const [unitCost, setUnitCost] = useState('');
     const [note, setNote] = useState('');
@@ -33,8 +37,11 @@ export function StockMovementModal({ item, initialType = 'restock', onClose, onS
 
     useEffect(() => {
         if (item) {
+            const first = item.warehouses?.[0];
+
             setType(initialType);
-            setQuantity(initialType === 'adjustment' ? String(item.stock) : '');
+            setWarehouseId(first ? String(first.warehouse_id) : '');
+            setQuantity(initialType === 'adjustment' ? String(first?.stock ?? item.stock) : '');
             setUnitCost(item.cost == null ? '' : String(item.cost));
             setNote('');
             setErrors({});
@@ -45,13 +52,23 @@ export function StockMovementModal({ item, initialType = 'restock', onClose, onS
         return null;
     }
 
+    const warehouses = item.warehouses ?? [];
+    const current = warehouses.length ? (warehouses.find((row) => String(row.warehouse_id) === warehouseId)?.stock ?? 0) : item.stock;
     const amount = Number(quantity) || 0;
-    const after = type === 'restock' ? item.stock + amount : type === 'damage' ? item.stock - amount : amount;
+    const after = type === 'restock' ? current + amount : type === 'damage' ? current - amount : amount;
 
     const chooseType = (value) => {
         setType(value);
-        setQuantity(value === 'adjustment' ? String(item.stock) : '');
+        setQuantity(value === 'adjustment' ? String(current) : '');
         setErrors({});
+    };
+
+    const chooseWarehouse = (value) => {
+        setWarehouseId(value);
+
+        if (type === 'adjustment') {
+            setQuantity(String(warehouses.find((row) => String(row.warehouse_id) === value)?.stock ?? 0));
+        }
     };
 
     const submit = async (event) => {
@@ -63,8 +80,8 @@ export function StockMovementModal({ item, initialType = 'restock', onClose, onS
             return;
         }
 
-        if (type === 'damage' && amount > item.stock) {
-            setErrors({ quantity: t('الكمية أكبر من المخزون الحالي ({count})', { count: formatNumber(item.stock) }) });
+        if (type === 'damage' && amount > current) {
+            setErrors({ quantity: t('الكمية أكبر من المخزون الحالي ({count})', { count: formatNumber(current) }) });
 
             return;
         }
@@ -75,6 +92,7 @@ export function StockMovementModal({ item, initialType = 'restock', onClose, onS
             const { movement, item: updated } = await inventoryApi.recordMovement(item.variant_id, {
                 type,
                 quantity: amount,
+                warehouse_id: warehouseId ? Number(warehouseId) : undefined,
                 unit_cost: type === 'restock' ? numberOrNull(unitCost) : null,
                 note: note.trim() || null,
             });
@@ -93,11 +111,24 @@ export function StockMovementModal({ item, initialType = 'restock', onClose, onS
             <form onSubmit={submit} noValidate className="flex flex-col gap-4">
                 <OptionCards options={MOVEMENT_OPTIONS} value={type} onChange={chooseType} name="movement-type" />
 
+                {warehouses.length > 1 && (
+                    <Field label={t('المخزن')} required error={errors.warehouse_id}>
+                        {(props) => (
+                            <Select
+                                {...props}
+                                value={warehouseId}
+                                onChange={(event) => chooseWarehouse(event.target.value)}
+                                options={warehouses.map((row) => ({ value: String(row.warehouse_id), label: t('{name} ({count} قطعة)', { name: row.name, count: formatNumber(row.stock) }) }))}
+                            />
+                        )}
+                    </Field>
+                )}
+
                 <Field
                     label={type === 'adjustment' ? t('الكمية المعدودة فعلياً') : type === 'restock' ? t('الكمية الواردة') : t('الكمية التالفة أو المفقودة')}
                     required
                     error={errors.quantity}
-                    hint={t('المخزون الحالي {current} ← بعد الحركة {after}', { current: formatNumber(item.stock), after: formatNumber(Math.max(after, 0)) })}
+                    hint={t('المخزون الحالي {current} ← بعد الحركة {after}', { current: formatNumber(current), after: formatNumber(Math.max(after, 0)) })}
                 >
                     {(props) => (
                         <Input

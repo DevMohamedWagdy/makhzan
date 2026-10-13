@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * Goods ordered from a supplier. Receiving them (fully or in parts) restocks the variants
  * through App\Actions\Purchasing\ReceivePurchaseOrder.
  */
-#[Fillable(['supplier_id', 'number', 'status', 'expected_at', 'notes', 'ordered_at', 'received_at', 'closed_at', 'cancelled_at'])]
+#[Fillable(['supplier_id', 'warehouse_id', 'number', 'status', 'expected_at', 'notes', 'ordered_at', 'received_at', 'closed_at', 'cancelled_at'])]
 class PurchaseOrder extends Model
 {
     /** @use HasFactory<PurchaseOrderFactory> */
@@ -52,6 +52,16 @@ class PurchaseOrder extends Model
     public function supplier(): BelongsTo
     {
         return $this->belongsTo(Supplier::class);
+    }
+
+    /**
+     * Where received goods are stocked (the store's default warehouse when unset).
+     *
+     * @return BelongsTo<Warehouse, $this>
+     */
+    public function warehouse(): BelongsTo
+    {
+        return $this->belongsTo(Warehouse::class);
     }
 
     /**

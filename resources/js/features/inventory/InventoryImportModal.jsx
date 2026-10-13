@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Alert } from '@/components/ui/Display';
+import { Field, Select } from '@/components/ui/Form';
 import { DropZone } from '@/components/ui/Upload';
 import { Modal } from '@/components/ui/Overlay';
 import { useToast } from '@/context/ToastContext';
@@ -8,13 +9,16 @@ import { t } from '@/i18n';
 import { csvToObjects, downloadCsv } from '@/lib/csv';
 import { formatNumber } from '@/lib/format';
 import { inventoryApi } from '@/services/inventoryApi';
+import { useWarehouses } from './useWarehouses';
+import { stockIn } from './WarehouseModals';
 
 const HEADER = ['variant_id', 'sku', 'product', 'variant', 'stock', 'cost', 'price'];
 const MAX_ROWS = 2000;
 
 /**
- * Stock count by spreadsheet: download the current stock as CSV (opens in Excel), edit the
- * `stock` and `cost` columns, then upload it back. Other columns are for reference only.
+ * Stock count by spreadsheet for one warehouse: download its current stock as CSV (opens in
+ * Excel), edit the `stock` and `cost` columns, then upload it back. Other columns are for
+ * reference only.
  */
 export function InventoryImportModal({ open, onClose, onImported }) {
     const toast = useToast();
@@ -24,6 +28,9 @@ export function InventoryImportModal({ open, onClose, onImported }) {
     const [result, setResult] = useState(null);
     const [exporting, setExporting] = useState(false);
     const [importing, setImporting] = useState(false);
+    const { warehouses } = useWarehouses();
+    const [warehouseId, setWarehouseId] = useState('');
+    const selectedWarehouse = warehouseId || (warehouses?.[0] ? String(warehouses[0].warehouse_id) : '');
 
     const reset = () => {
         setFile(null);
@@ -45,7 +52,7 @@ export function InventoryImportModal({ open, onClose, onImported }) {
 
             downloadCsv(`makhzan-inventory-${new Date().toISOString().slice(0, 10)}.csv`, [
                 HEADER,
-                ...data.map((item) => [item.variant_id, item.sku ?? '', item.product_name, item.variant_title ?? '', item.stock, item.cost ?? '', item.price]),
+                ...data.map((item) => [item.variant_id, item.sku ?? '', item.product_name, item.variant_title ?? '', selectedWarehouse ? stockIn(item, selectedWarehouse) : item.stock, item.cost ?? '', item.price]),
             ]);
         } catch (exportError) {
             toast.error(t('تعذر تصدير المخزون'), exportError.message);
@@ -75,7 +82,7 @@ export function InventoryImportModal({ open, onClose, onImported }) {
         setImporting(true);
 
         try {
-            const response = await inventoryApi.importRows(rows);
+            const response = await inventoryApi.importRows(rows, selectedWarehouse ? Number(selectedWarehouse) : undefined);
 
             setResult(response);
             onImported();
@@ -94,6 +101,12 @@ export function InventoryImportModal({ open, onClose, onImported }) {
                     <li>{t('٢. عدّل عمود stock بالكمية المعدودة، وعمود cost بتكلفة القطعة. اترك الخانة فارغة لإبقاء القيمة كما هي.')}</li>
                     <li>{t('٣. احفظه بصيغة CSV وارفعه هنا. كل فرق في الكمية يُسجل كتسوية جرد.')}</li>
                 </ol>
+
+                {warehouses?.length > 1 && (
+                    <Field label={t('المخزن الذي تجرده')} hint={t('الملف المحمّل يحتوي على كميات هذا المخزن، والكميات المرفوعة تُطبق عليه.')}>
+                        {(props) => <Select {...props} value={selectedWarehouse} onChange={(event) => setWarehouseId(event.target.value)} options={warehouses.map((warehouse) => ({ value: String(warehouse.warehouse_id), label: warehouse.name }))} className="sm:w-72" />}
+                    </Field>
+                )}
 
                 <Button variant="secondary" icon="download" loading={exporting} onClick={exportStock} className="self-start">
                     {t('تحميل ملف المخزون')}

@@ -10,12 +10,14 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * One change to a variant's stock and why it happened. Written only through
- * App\Actions\Inventory\ChangeStock, so the stock column always equals the last stock_after.
+ * One change to a variant's stock in one warehouse and why it happened. stock_before/after
+ * are the variant's total, warehouse_stock_before/after that warehouse's quantity. Written
+ * only through App\Actions\Inventory\ChangeStock.
  */
 #[Fillable([
-    'store_id', 'product_id', 'product_variant_id', 'product_name', 'variant_title', 'type',
-    'quantity', 'stock_before', 'stock_after', 'unit_cost', 'order_id', 'purchase_order_id', 'actor', 'note',
+    'store_id', 'product_id', 'product_variant_id', 'warehouse_id', 'warehouse_name', 'product_name', 'variant_title', 'type',
+    'quantity', 'stock_before', 'stock_after', 'warehouse_stock_before', 'warehouse_stock_after', 'unit_cost',
+    'order_id', 'purchase_order_id', 'stock_transfer_id', 'actor', 'note',
 ])]
 class StockMovement extends Model
 {
@@ -38,6 +40,8 @@ class StockMovement extends Model
             'quantity' => 'integer',
             'stock_before' => 'integer',
             'stock_after' => 'integer',
+            'warehouse_stock_before' => 'integer',
+            'warehouse_stock_after' => 'integer',
             'unit_cost' => 'float',
         ];
     }
@@ -56,6 +60,22 @@ class StockMovement extends Model
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
+    }
+
+    /**
+     * @return BelongsTo<Warehouse, $this>
+     */
+    public function warehouse(): BelongsTo
+    {
+        return $this->belongsTo(Warehouse::class);
+    }
+
+    /**
+     * @return BelongsTo<StockTransfer, $this>
+     */
+    public function transfer(): BelongsTo
+    {
+        return $this->belongsTo(StockTransfer::class, 'stock_transfer_id');
     }
 
     /**

@@ -25,6 +25,9 @@ enum StockMovementType: string
     /** Damaged, lost or otherwise written off. */
     case Damage = 'damage';
 
+    /** Moved between two of the store's warehouses (one movement out, one in). */
+    case Transfer = 'transfer';
+
     /** Quantity changed directly in the product form. */
     case ProductEdit = 'product_edit';
 
