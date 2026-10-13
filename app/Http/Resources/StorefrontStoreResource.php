@@ -2,13 +2,14 @@
 
 namespace App\Http\Resources;
 
+use App\Enums\PaymentMethod;
 use App\Models\Store;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
  * The store as shoppers see it: identity, contact, social links, announcement, whether it's
- * taking orders, and which policy pages exist (their text loads on its own page).
+ * taking orders, how they can pay, and which policy pages exist (their text loads on its own page).
  *
  * @mixin Store
  */
@@ -39,6 +40,7 @@ class StorefrontStoreResource extends JsonResource
             'accepting_orders' => $this->accepting_orders,
             'closed_message' => $this->accepting_orders ? null : ($this->closed_message ?: __('settings.store_closed')),
             'min_order_total' => $this->min_order_total,
+            'payment_methods' => array_map(fn (PaymentMethod $method): string => $method->value, $this->paymentMethods()),
             'policies' => collect(Store::POLICIES)
                 ->filter(fn (string $column): bool => filled($this->{$column}))
                 ->keys()

@@ -6,6 +6,7 @@ const TYPES = {
     payout_requested: { icon: 'send', className: 'bg-warning-soft text-warning' },
     affiliate_registered: { icon: 'user-plus', className: 'bg-primary-soft text-primary' },
     order_placed: { icon: 'shopping-bag', className: 'bg-success-soft text-success' },
+    late_payment: { icon: 'credit-card', className: 'bg-warning-soft text-warning' },
     stock_low: { icon: 'warehouse', className: 'bg-warning-soft text-warning' },
     stock_out: { icon: 'box', className: 'bg-danger-soft text-danger' },
     // Affiliate portal
@@ -28,7 +29,7 @@ export function notificationTarget(notification) {
         return `/dashboard/inventory?level=${notification.type === 'stock_out' ? 'out' : 'low'}&search=${encodeURIComponent(notification.details.product_name)}`;
     }
 
-    return notification.type === 'order_placed' ? `/dashboard/orders?order=${notification.details.order_id}` : `/dashboard/affiliates?affiliate=${notification.details.affiliate_id}`;
+    return ['order_placed', 'late_payment'].includes(notification.type) ? `/dashboard/orders?order=${notification.details.order_id}` : `/dashboard/affiliates?affiliate=${notification.details.affiliate_id}`;
 }
 
 /** Where clicking a notification takes the affiliate: their orders, payouts, account or home. */

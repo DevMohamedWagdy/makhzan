@@ -8,4 +8,10 @@ export const storeSettingsApi = {
     update: (fields) => request('PATCH', BASE, { body: fields }),
     uploadLogo: (file) => request('POST', `${BASE}/logo`, { body: { logo: file } }),
     removeLogo: () => request('DELETE', `${BASE}/logo`),
+
+    /** `{ cod_enabled, methods, paymob: { is_live, public_key, secret_key_hint, hmac_secret_hint, card_integration_id, wallet_integration_id, verified_at } | null, webhook_url }` */
+    payments: () => request('GET', '/api/v1/vendor/payments'),
+    /** @param {{ cod_enabled?: boolean, paymob?: { secret_key?: string, public_key: string, hmac_secret?: string, card_integration_id?: string, wallet_integration_id?: string } }} payload */
+    updatePayments: (payload) => request('PUT', '/api/v1/vendor/payments', { body: payload }),
+    disconnectPaymob: () => request('DELETE', '/api/v1/vendor/payments/paymob'),
 };

@@ -33,9 +33,16 @@ return [
     ],
     'order_placed' => [
         'message' => 'New order #:number from :customer for :total EGP',
+        'message_paid' => 'New order #:number from :customer for :total EGP, paid online',
         'subject' => 'New order #:number',
         'line' => 'You received a new order #:number from :customer for :total EGP.',
+        'line_paid' => 'You received a new order #:number from :customer for :total EGP, paid online.',
         'action' => 'View order',
+    ],
+    'late_payment' => [
+        'message' => 'Payment for order #:number (:total EGP) arrived after it was cancelled, refund the customer',
+        'subject' => 'Payment received for cancelled order #:number',
+        'line' => 'The customer paid :total EGP for order #:number after it was cancelled. Open the order to refund it or contact the customer.',
     ],
     'open_portal' => 'Open the affiliate portal',
     'reason' => 'Reason: :reason',

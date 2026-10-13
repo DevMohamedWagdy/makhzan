@@ -1,7 +1,7 @@
 import { Badge } from '@/components/ui/Display';
 import { Icon } from '@/components/ui/Icon';
 import { t } from '@/i18n';
-import { ORDER_STATUSES } from '@/lib/constants';
+import { ORDER_STATUSES, PAYMENT_METHODS, PAYMENT_STATUSES } from '@/lib/constants';
 import { cn, formatDate } from '@/lib/format';
 
 export function OrderStatusBadge({ status }) {
@@ -10,6 +10,21 @@ export function OrderStatusBadge({ status }) {
     return (
         <Badge tone={config.tone} icon={config.icon}>
             {config.label}
+        </Badge>
+    );
+}
+
+/** How the order is paid, plus where an online payment stands. */
+export function PaymentBadge({ order }) {
+    const status = PAYMENT_STATUSES[order.payment_status];
+
+    if (!status) {
+        return <Badge icon={PAYMENT_METHODS[order.payment_method]?.icon ?? 'wallet'}>{PAYMENT_METHODS[order.payment_method]?.short ?? t('عند الاستلام')}</Badge>;
+    }
+
+    return (
+        <Badge tone={status.tone} icon={status.icon}>
+            {`${PAYMENT_METHODS[order.payment_method]?.short ?? ''} · ${status.label}`}
         </Badge>
     );
 }

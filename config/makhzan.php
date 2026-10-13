@@ -99,4 +99,15 @@ return [
         'max_variants' => 100,
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Online Payments
+    |--------------------------------------------------------------------------
+    */
+
+    'payments' => [
+        // An online order not paid within this many minutes is cancelled and its stock released.
+        'expiry_minutes' => 30,
+    ],
+
 ];

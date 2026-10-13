@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\PaymentMethod;
 use Database\Factories\StoreFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -15,7 +16,7 @@ use Illuminate\Support\Facades\Storage;
 #[Fillable([
     'name', 'slug', 'logo_path', 'governorate_id', 'city_id', 'low_stock_threshold', 'description',
     'contact_phone', 'whatsapp', 'contact_email', 'address', 'facebook_url', 'instagram_url', 'tiktok_url',
-    'announcement', 'accepting_orders', 'closed_message', 'min_order_total', 'return_policy', 'shipping_policy', 'privacy_policy', 'terms',
+    'announcement', 'accepting_orders', 'closed_message', 'min_order_total', 'cod_enabled', 'return_policy', 'shipping_policy', 'privacy_policy', 'terms',
 ])]
 class Store extends Model
 {
@@ -53,6 +54,7 @@ class Store extends Model
             'low_stock_threshold' => 'integer',
             'accepting_orders' => 'boolean',
             'min_order_total' => 'float',
+            'cod_enabled' => 'boolean',
         ];
     }
 
@@ -185,6 +187,32 @@ class Store extends Model
         }
 
         return $this->free_shipping_threshold !== null && $subtotal >= $this->free_shipping_threshold ? 0.0 : (float) $price;
+    }
+
+    /**
+     * The store's Paymob account, when it has connected one.
+     *
+     * @return HasOne<StorePaymentGateway, $this>
+     */
+    public function paymentGateway(): HasOne
+    {
+        return $this->hasOne(StorePaymentGateway::class)->where('gateway', StorePaymentGateway::PAYMOB);
+    }
+
+    /**
+     * Ways customers can pay at checkout: cash on delivery (unless turned off) and whatever
+     * the connected gateway is set up for.
+     *
+     * @return list<PaymentMethod>
+     */
+    public function paymentMethods(): array
+    {
+        $gateway = $this->relationLoaded('paymentGateway') ? $this->paymentGateway : $this->paymentGateway()->first();
+
+        return [
+            ...($this->cod_enabled ? [PaymentMethod::Cod] : []),
+            ...($gateway?->methods() ?? []),
+        ];
     }
 
     /**

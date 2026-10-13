@@ -2,20 +2,31 @@ import { useEffect, useState } from 'react';
 import { Link, Navigate, useParams, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
-import { EmptyState } from '@/components/ui/Display';
+import { Alert, EmptyState } from '@/components/ui/Display';
 import { Field, Textarea } from '@/components/ui/Form';
 import { Icon } from '@/components/ui/Icon';
 import { Skeleton } from '@/components/ui/Spinner';
 import { useToast } from '@/context/ToastContext';
-import { OrderProgress, OrderStatusBadge } from '@/features/orders/OrderBadges';
+import { OrderProgress, OrderStatusBadge, PaymentBadge } from '@/features/orders/OrderBadges';
 import { formatAddress } from '@/features/storefront/AddressFields';
 import { useCustomerAuth } from '@/features/storefront/CustomerAuthContext';
 import { ProductImage } from '@/features/storefront/ProductCard';
 import { useStorefront } from '@/features/storefront/StorefrontLayout';
 import { t } from '@/i18n';
-import { formatDate, formatMoney } from '@/lib/format';
+import { PAYMENT_METHODS } from '@/lib/constants';
+import { formatDate, formatMoney, formatTime } from '@/lib/format';
 
-/** One order: confirmation after checkout (?placed=1), progress, items, address and cancel. */
+/** Banner after coming back from Paymob (?payment=paid|failed|pending). */
+const PAYMENT_RESULTS = {
+    paid: { tone: 'success', icon: 'check-circle', title: t('تم الدفع بنجاح 🎉'), text: t('وصل دفعك وسيجهز المتجر طلبك.') },
+    failed: { tone: 'danger', icon: 'alert-triangle', title: t('لم يكتمل الدفع'), text: t('لم تُخصم أي أموال. يمكنك المحاولة مرة أخرى بنفس الطريقة أو بكارت آخر.') },
+    pending: { tone: 'info', icon: 'clock', title: t('جارٍ تأكيد الدفع'), text: t('ننتظر تأكيد Paymob، سيتحدث الطلب خلال لحظات.') },
+};
+
+/**
+ * One order: confirmation after checkout (?placed=1) or after paying (?payment=…), progress,
+ * payment (with "pay now" while an online order is unpaid), items, address and cancel.
+ */
 export function StoreOrderPage() {
     const { storeSlug, number } = useParams();
     const [searchParams] = useSearchParams();
@@ -27,7 +38,9 @@ export function StoreOrderPage() {
     const [cancelOpen, setCancelOpen] = useState(false);
     const [reason, setReason] = useState('');
     const [cancelling, setCancelling] = useState(false);
+    const [paying, setPaying] = useState(false);
     const justPlaced = searchParams.get('placed') === '1';
+    const paymentResult = PAYMENT_RESULTS[searchParams.get('payment')];
 
     useEffect(() => {
         if (store) {
@@ -51,6 +64,17 @@ export function StoreOrderPage() {
         };
     }, [isAuthenticated, api, number]);
 
+    // Wallet payments can be confirmed a little after the customer is back: check again shortly.
+    useEffect(() => {
+        if (order?.payment?.status !== 'pending' || searchParams.get('payment') !== 'pending') {
+            return undefined;
+        }
+
+        const timer = setTimeout(() => api.order(number).then(setOrder).catch(() => {}), 4000);
+
+        return () => clearTimeout(timer);
+    }, [order, searchParams, api, number]);
+
     if (!isAuthenticated) {
         return <Navigate to={`/${storeSlug}/account/login?next=account/orders/${number}`} replace />;
     }
@@ -68,6 +92,22 @@ export function StoreOrderPage() {
             </div>
         );
     }
+
+    const pay = async () => {
+        setPaying(true);
+
+        try {
+            const url = order.payment.checkout_url ?? (await api.payOrder(order.number)).payment.checkout_url;
+
+            window.location.assign(url);
+        } catch (payError) {
+            toast.error(t('تعذر فتح صفحة الدفع'), payError.errors?.payment_method ?? payError.message);
+            setPaying(false);
+        }
+    };
+
+    const online = order.payment_method !== 'cod';
+    const showResult = paymentResult && online && !(searchParams.get('payment') === 'pending' && order.payment?.status !== 'pending');
 
     const cancel = async () => {
         setCancelling(true);
@@ -95,6 +135,12 @@ export function StoreOrderPage() {
                 </div>
             )}
 
+            {showResult && (
+                <Alert tone={order.payment?.status === 'paid' ? 'success' : paymentResult.tone} icon={paymentResult.icon} title={order.payment?.status === 'paid' ? PAYMENT_RESULTS.paid.title : paymentResult.title}>
+                    {order.payment?.status === 'paid' ? PAYMENT_RESULTS.paid.text : paymentResult.text}
+                </Alert>
+            )}
+
             <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
                     <Link to={`/${storeSlug}/account/orders`} className="text-sm text-muted hover:text-primary">
@@ -105,6 +151,21 @@ export function StoreOrderPage() {
                 </div>
                 <OrderStatusBadge status={order.status} />
             </div>
+
+            {order.payment?.can_pay && (
+                <section className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-warning/40 bg-warning-soft p-5">
+                    <div className="min-w-0">
+                        <p className="font-semibold text-ink">{t('الطلب بانتظار الدفع')}</p>
+                        <p className="mt-1 text-sm text-ink-2">
+                            {t('ادفع {total} قبل {time} وإلا يُلغى الطلب تلقائياً.', { total: formatMoney(order.total), time: formatTime(order.payment.expires_at) })}
+                        </p>
+                        {order.payment.failure_reason && <p className="mt-1 text-xs text-danger">{t('سبب فشل المحاولة السابقة: {reason}', { reason: order.payment.failure_reason })}</p>}
+                    </div>
+                    <Button icon="credit-card" loading={paying} onClick={pay}>
+                        {t('ادفع الآن')}
+                    </Button>
+                </section>
+            )}
 
             <section className="rounded-2xl border border-line bg-surface p-5">
                 <OrderProgress order={order} />
@@ -145,10 +206,20 @@ export function StoreOrderPage() {
                         </div>
                     )}
                     <div className="flex justify-between border-t border-line pt-2 text-base">
-                        <dt className="font-semibold text-ink">{t('الإجمالي (الدفع عند الاستلام)')}</dt>
+                        <dt className="font-semibold text-ink">{online ? t('الإجمالي') : t('الإجمالي (الدفع عند الاستلام)')}</dt>
                         <dd className="font-bold text-ink">{formatMoney(order.total)}</dd>
                     </div>
+                    {order.refunded_amount > 0 && (
+                        <div className="flex justify-between text-info">
+                            <dt>{t('تم استرداده لك')}</dt>
+                            <dd>{formatMoney(order.refunded_amount)}</dd>
+                        </div>
+                    )}
                 </dl>
+                <div className="mt-4 flex flex-wrap items-center justify-between gap-2 rounded-xl bg-surface-2 px-4 py-3 text-sm">
+                    <span className="text-ink-2">{t('طريقة الدفع: {method}', { method: PAYMENT_METHODS[order.payment_method]?.label ?? order.payment_method })}</span>
+                    <PaymentBadge order={order} />
+                </div>
             </section>
 
             <section className="rounded-2xl border border-line bg-surface p-5 text-sm">

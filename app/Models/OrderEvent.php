@@ -22,6 +22,8 @@ class OrderEvent extends Model
 
     public const ACTOR_VENDOR = 'vendor';
 
+    public const ACTOR_SYSTEM = 'system';
+
     /**
      * Get the attributes that should be cast.
      *

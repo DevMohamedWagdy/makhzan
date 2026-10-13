@@ -5,6 +5,8 @@ namespace App\Models;
 use App\Enums\CommissionStatus;
 use App\Enums\CommissionType;
 use App\Enums\OrderStatus;
+use App\Enums\PaymentMethod;
+use App\Enums\PaymentStatus;
 use App\Enums\StockMovementType;
 use Database\Factories\OrderFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -14,13 +16,15 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
- * A cash-on-delivery order. Address, prices and the affiliate commission are snapshots
- * taken when it was placed; status changes go through App\Actions\Orders\UpdateOrderStatus.
+ * An order, paid on delivery or online. Address, prices and the affiliate commission are
+ * snapshots taken when it was placed; status changes go through App\Actions\Orders\UpdateOrderStatus.
+ * Online orders wait for their payment (payment_status) before the store can confirm them.
  */
 #[Fillable([
-    'customer_id', 'number', 'status', 'payment_method', 'subtotal', 'discount', 'shipping_fee', 'shipping_discount', 'total', 'coupon_id', 'coupon_code',
+    'customer_id', 'number', 'status', 'payment_method', 'payment_status', 'payment_expires_at', 'subtotal', 'discount', 'shipping_fee', 'shipping_discount', 'total', 'coupon_id', 'coupon_code',
     'recipient_name', 'phone', 'governorate_id', 'city_id', 'address_line', 'landmark', 'customer_note',
     'affiliate_id', 'referral_code_id', 'referral_code', 'commission_type', 'commission_rate', 'commission_amount', 'commission_status',
 ])]
@@ -39,6 +43,11 @@ class Order extends Model
         return [
             'number' => 'integer',
             'status' => OrderStatus::class,
+            'payment_method' => PaymentMethod::class,
+            'payment_status' => PaymentStatus::class,
+            'paid_at' => 'datetime',
+            'payment_expires_at' => 'datetime',
+            'refunded_amount' => 'float',
             'subtotal' => 'float',
             'discount' => 'float',
             'shipping_fee' => 'float',
@@ -120,6 +129,49 @@ class Order extends Model
     public function events(): HasMany
     {
         return $this->hasMany(OrderEvent::class)->oldest('id');
+    }
+
+    /**
+     * @return HasMany<Payment, $this>
+     */
+    public function payments(): HasMany
+    {
+        return $this->hasMany(Payment::class);
+    }
+
+    /**
+     * The most recent attempt to pay online.
+     *
+     * @return HasOne<Payment, $this>
+     */
+    public function latestPayment(): HasOne
+    {
+        return $this->hasOne(Payment::class)->latestOfMany();
+    }
+
+    /**
+     * @return HasMany<PaymentRefund, $this>
+     */
+    public function refunds(): HasMany
+    {
+        return $this->hasMany(PaymentRefund::class)->oldest('id');
+    }
+
+    /**
+     * An online order whose payment hasn't come through yet: the store can't confirm it, and
+     * it's cancelled once payment_expires_at passes.
+     */
+    public function awaitingPayment(): bool
+    {
+        return $this->payment_method?->isOnline() && ! $this->payment_status?->isPaid();
+    }
+
+    /**
+     * The customer may (re)open the payment page: still pending, unpaid and not expired.
+     */
+    public function canPay(): bool
+    {
+        return $this->status === OrderStatus::Pending && $this->awaitingPayment() && $this->payment_expires_at?->isFuture();
     }
 
     /**

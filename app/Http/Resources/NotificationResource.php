@@ -44,9 +44,13 @@ class NotificationResource extends JsonResource
             'affiliate_registered' => __($details['requires_approval'] ? 'notifications.affiliate_registered.pending' : 'notifications.affiliate_registered.active', [
                 'affiliate' => $details['affiliate_name'],
             ]),
-            'order_placed' => __('notifications.order_placed.message', [
+            'order_placed' => __(($details['paid_online'] ?? false) ? 'notifications.order_placed.message_paid' : 'notifications.order_placed.message', [
                 'number' => $details['number'],
                 'customer' => $details['customer_name'],
+                'total' => number_format((float) $details['total'], 2),
+            ]),
+            'late_payment' => __('notifications.late_payment.message', [
+                'number' => $details['number'],
                 'total' => number_format((float) $details['total'], 2),
             ]),
             'account_approved', 'account_frozen', 'account_reactivated' => __("notifications.{$this->type}.message", ['store' => $details['store_name']]),

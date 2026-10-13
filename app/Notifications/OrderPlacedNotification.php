@@ -52,11 +52,12 @@ class OrderPlacedNotification extends Notification implements ShouldQueue
     public function toMail(Vendor $notifiable): MailMessage
     {
         $params = ['number' => $this->order->number, 'customer' => $this->order->recipient_name, 'total' => number_format($this->order->total, 2)];
+        $paidOnline = (bool) $this->order->payment_method?->isOnline();
 
         return (new MailMessage)
             ->subject(__('notifications.order_placed.subject', $params))
             ->greeting(__('notifications.greeting', ['name' => $notifiable->full_name]))
-            ->line(__('notifications.order_placed.line', $params))
+            ->line(__($paidOnline ? 'notifications.order_placed.line_paid' : 'notifications.order_placed.line', $params))
             ->action(__('notifications.order_placed.action'), url('/dashboard/orders?order='.$this->order->id));
     }
 
@@ -64,7 +65,7 @@ class OrderPlacedNotification extends Notification implements ShouldQueue
      * Payload of the dashboard notification; the message is rendered in the reader's
      * language by NotificationResource.
      *
-     * @return array{order_id: int, number: int, customer_name: string, total: float, affiliate_name: string|null}
+     * @return array{order_id: int, number: int, customer_name: string, total: float, affiliate_name: string|null, paid_online: bool}
      */
     public function toArray(object $notifiable): array
     {
@@ -74,6 +75,7 @@ class OrderPlacedNotification extends Notification implements ShouldQueue
             'customer_name' => $this->order->recipient_name,
             'total' => $this->order->total,
             'affiliate_name' => $this->order->affiliate?->full_name,
+            'paid_online' => (bool) $this->order->payment_method?->isOnline(),
         ];
     }
 }

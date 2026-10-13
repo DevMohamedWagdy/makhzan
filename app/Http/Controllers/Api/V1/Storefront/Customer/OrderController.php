@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Api\V1\Storefront\Customer;
 
 use App\Actions\Orders\PlaceOrder;
 use App\Actions\Orders\UpdateOrderStatus;
+use App\Actions\Payments\StartPayment;
 use App\Enums\OrderStatus;
+use App\Enums\PaymentMethod;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\Storefront\Customer\PlaceOrderRequest;
 use App\Http\Resources\OrderResource;
@@ -29,27 +31,52 @@ class OrderController extends Controller
 
     public function show(Request $request, Store $store, int $number): OrderResource
     {
-        return new OrderResource($this->find($request, $number)->load(['items', 'events']));
+        return new OrderResource($this->find($request, $number)->load(['items', 'events', 'latestPayment']));
     }
 
     /**
-     * Checkout: place a cash-on-delivery order from the cart, delivered to a saved address or
-     * a new one (optionally saved to the address book).
+     * Checkout: place an order from the cart, delivered to a saved address or a new one
+     * (optionally saved to the address book). An online order comes back with
+     * `payment.checkout_url` to send the customer to; if the payment page can't be opened,
+     * the order is dropped so its stock isn't held.
      */
-    public function store(PlaceOrderRequest $request, Store $store, PlaceOrder $placeOrder): JsonResponse
+    public function store(PlaceOrderRequest $request, Store $store, PlaceOrder $placeOrder, StartPayment $startPayment, UpdateOrderStatus $updateStatus): JsonResponse
     {
         $customer = $request->user();
         $address = $request->filled('address_id')
             ? $customer->addresses()->findOrFail($request->validated('address_id'))->toOrderAddress()
             : collect($request->validated('address'))->only(['recipient_name', 'phone', 'governorate_id', 'city_id', 'address_line', 'landmark'])->all();
 
-        $order = $placeOrder->handle($store, $customer, $request->validated('items'), $address, $request->validated('referral_code'), $request->validated('note'), $request->validated('coupon_code'));
+        $paymentMethod = PaymentMethod::tryFrom((string) $request->validated('payment_method')) ?? PaymentMethod::Cod;
+        $order = $placeOrder->handle($store, $customer, $request->validated('items'), $address, $request->validated('referral_code'), $request->validated('note'), $request->validated('coupon_code'), $paymentMethod);
+
+        if ($paymentMethod->isOnline()) {
+            try {
+                $startPayment->handle($order);
+            } catch (ValidationException $exception) {
+                $updateStatus->handle($order, OrderStatus::Cancelled, OrderEvent::ACTOR_SYSTEM, __('payments.start_failed'));
+
+                throw $exception;
+            }
+        }
 
         if (! $request->filled('address_id') && $request->boolean('save_address')) {
             AddressController::save($customer, $address);
         }
 
-        return (new OrderResource($order->load(['items', 'events'])))->response()->setStatusCode(Response::HTTP_CREATED);
+        return (new OrderResource($order->load(['items', 'events', 'latestPayment'])))->response()->setStatusCode(Response::HTTP_CREATED);
+    }
+
+    /**
+     * Opens a new payment page for an unpaid online order (the last attempt failed, or the
+     * customer closed the page), until the order's payment window closes.
+     */
+    public function pay(Request $request, Store $store, int $number, StartPayment $startPayment): OrderResource
+    {
+        $order = $this->find($request, $number);
+        $startPayment->handle($order);
+
+        return new OrderResource($order->load(['items', 'events', 'latestPayment']));
     }
 
     /**
@@ -65,7 +92,7 @@ class OrderController extends Controller
 
         $reason = $request->validate(['reason' => ['nullable', 'string', 'max:200']])['reason'] ?? null;
 
-        return new OrderResource($updateStatus->handle($order, OrderStatus::Cancelled, OrderEvent::ACTOR_CUSTOMER, $reason)->load(['items', 'events']));
+        return new OrderResource($updateStatus->handle($order, OrderStatus::Cancelled, OrderEvent::ACTOR_CUSTOMER, $reason)->load(['items', 'events', 'latestPayment']));
     }
 
     private function find(Request $request, int $number): Order

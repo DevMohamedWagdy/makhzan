@@ -3,7 +3,7 @@ import { Card } from '@/components/ui/Display';
 import { BarList, ColumnChart, SegmentedBar } from '@/components/ui/Charts';
 import { Tabs } from '@/components/ui/Navigation';
 import { intlLocale, t } from '@/i18n';
-import { ORDER_STATUSES } from '@/lib/constants';
+import { ORDER_STATUSES, PAYMENT_METHODS } from '@/lib/constants';
 import { formatMoney, formatNumber } from '@/lib/format';
 import { findGovernorate } from '@/lib/locations';
 
@@ -94,6 +94,25 @@ export function GovernoratesCard({ governorates }) {
                     display: formatMoney(row.sales),
                     detail: t('{count} طلب', { count: formatNumber(row.orders) }),
                 }))}
+            />
+        </Card>
+    );
+}
+
+/** Sales by how customers paid, with the total refunded to online payers. */
+export function PaymentMethodsCard({ methods, refunds }) {
+    return (
+        <Card title={t('المبيعات حسب طريقة الدفع')} description={refunds > 0 ? t('تم استرداد {amount} للعملاء في هذه الفترة', { amount: formatMoney(refunds) }) : undefined}>
+            <BarList
+                items={methods
+                    .filter((row) => row.orders > 0)
+                    .map((row) => ({
+                        key: row.method,
+                        label: PAYMENT_METHODS[row.method]?.label ?? row.method,
+                        value: row.sales,
+                        display: formatMoney(row.sales),
+                        detail: t('{count} طلب', { count: formatNumber(row.orders) }),
+                    }))}
             />
         </Card>
     );

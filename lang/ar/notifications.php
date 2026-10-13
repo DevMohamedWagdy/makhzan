@@ -33,9 +33,16 @@ return [
     ],
     'order_placed' => [
         'message' => 'طلب جديد #:number من :customer بقيمة :total ج.م',
+        'message_paid' => 'طلب جديد مدفوع أونلاين #:number من :customer بقيمة :total ج.م',
         'subject' => 'طلب جديد #:number',
         'line' => 'وصلك طلب جديد #:number من :customer بقيمة :total ج.م.',
+        'line_paid' => 'وصلك طلب جديد #:number من :customer بقيمة :total ج.م، ودفعه العميل أونلاين.',
         'action' => 'عرض الطلب',
+    ],
+    'late_payment' => [
+        'message' => 'وصل دفع الطلب #:number (:total ج.م) بعد إلغائه، رجّع المبلغ للعميل',
+        'subject' => 'دفع وصل لطلب ملغي #:number',
+        'line' => 'دفع العميل :total ج.م للطلب #:number بعد إلغائه. افتح الطلب ورجّع المبلغ أو تواصل مع العميل.',
     ],
     'open_portal' => 'فتح بوابة المسوقين',
     'reason' => 'السبب: :reason',

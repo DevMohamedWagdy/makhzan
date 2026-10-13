@@ -3,21 +3,27 @@ import { useSearchParams } from 'react-router-dom';
 import { PageHeader } from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/Button';
 import { EmptyState, StatCard } from '@/components/ui/Display';
-import { Input } from '@/components/ui/Form';
+import { Input, Select } from '@/components/ui/Form';
 import { Pagination, Tabs } from '@/components/ui/Navigation';
 import { Skeleton } from '@/components/ui/Spinner';
 import { OrderDrawer } from '@/features/orders/OrderDrawer';
-import { OrderStatusBadge } from '@/features/orders/OrderBadges';
+import { OrderStatusBadge, PaymentBadge } from '@/features/orders/OrderBadges';
 import { useDebouncedValue } from '@/hooks/common';
 import { t } from '@/i18n';
-import { ORDER_STATUSES } from '@/lib/constants';
+import { ORDER_STATUSES, PAYMENT_METHODS, PAYMENT_STATUSES } from '@/lib/constants';
 import { cn, formatMoney, formatNumber, formatRelative } from '@/lib/format';
 import { findGovernorate } from '@/lib/locations';
 import { ordersApi } from '@/services/ordersApi';
 
-const COLUMNS = [t('الطلب'), t('العميل'), t('المحافظة'), t('المنتجات'), t('الإجمالي'), t('المسوق'), t('الحالة')];
+const COLUMNS = [t('الطلب'), t('العميل'), t('المحافظة'), t('المنتجات'), t('الإجمالي'), t('المسوق'), t('الدفع'), t('الحالة')];
 
-/** All store orders with status tabs, search, and the order drawer (?order={id}). */
+/** The payment filter (?payment=…): cash on delivery, or an online payment status. */
+const PAYMENT_FILTERS = [
+    { value: 'cod', label: PAYMENT_METHODS.cod.label, query: { payment_method: 'cod' } },
+    ...Object.entries(PAYMENT_STATUSES).map(([value, config]) => ({ value, label: t('أونلاين: {status}', { status: config.label }), query: { payment_status: value } })),
+];
+
+/** All store orders with status tabs, search, payment filter, and the order drawer (?order={id}). */
 export function OrdersPage() {
     const [searchParams, setSearchParams] = useSearchParams();
     const status = searchParams.get('status') ?? '';
@@ -26,6 +32,7 @@ export function OrdersPage() {
     const searchQuery = searchParams.get('search') ?? '';
     const affiliateId = searchParams.get('affiliate_id') ?? '';
     const couponId = searchParams.get('coupon_id') ?? '';
+    const payment = searchParams.get('payment') ?? '';
     const [searchTerm, setSearchTerm] = useState(searchParams.get('search') ?? '');
     const search = useDebouncedValue(searchTerm, 300);
     const [result, setResult] = useState(null);
@@ -60,7 +67,7 @@ export function OrdersPage() {
         setError(null);
 
         try {
-            const [list, counts] = await Promise.all([ordersApi.list({ status, search: searchQuery, affiliate_id: affiliateId, coupon_id: couponId, page }), ordersApi.summary()]);
+            const [list, counts] = await Promise.all([ordersApi.list({ status, search: searchQuery, affiliate_id: affiliateId, coupon_id: couponId, ...PAYMENT_FILTERS.find((filter) => filter.value === payment)?.query, page }), ordersApi.summary()]);
 
             setResult(list);
             setSummary(counts);
@@ -69,7 +76,7 @@ export function OrdersPage() {
         } finally {
             setLoading(false);
         }
-    }, [status, page, searchQuery, affiliateId, couponId]);
+    }, [status, page, searchQuery, affiliateId, couponId, payment]);
 
     useEffect(() => {
         load();
@@ -102,6 +109,7 @@ export function OrdersPage() {
                 <Tabs tabs={tabs} value={status} onChange={(value) => setQuery({ status: value })} className="px-3" />
                 <div className="flex flex-wrap items-center gap-3 p-4">
                     <Input type="search" icon="search" value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder={t('ابحث برقم الطلب أو اسم العميل أو هاتفه...')} aria-label={t('بحث في الطلبات')} className="lg:w-96" />
+                    <Select value={payment} onChange={(event) => setQuery({ payment: event.target.value })} icon="credit-card" aria-label={t('الدفع')} className="sm:w-56" options={[{ value: '', label: t('كل طرق الدفع') }, ...PAYMENT_FILTERS]} />
                     {couponId && (
                         <Button variant="soft" size="sm" iconEnd="x" onClick={() => setQuery({ coupon_id: '' })}>
                             {t('طلبات الكوبون: {code}', { code: items[0]?.coupon_code ?? `#${couponId}` })}
@@ -120,11 +128,11 @@ export function OrdersPage() {
                     </div>
                 ) : !loading && items.length === 0 ? (
                     <div className="p-6">
-                        <EmptyState icon="shopping-bag" title={status || searchTerm ? t('لا توجد طلبات مطابقة') : t('لا توجد طلبات بعد')} description={t('عندما يطلب العملاء من متجرك ستظهر طلباتهم هنا ويصلك إشعار بكل طلب.')} />
+                        <EmptyState icon="shopping-bag" title={status || searchTerm || payment ? t('لا توجد طلبات مطابقة') : t('لا توجد طلبات بعد')} description={t('عندما يطلب العملاء من متجرك ستظهر طلباتهم هنا ويصلك إشعار بكل طلب.')} />
                     </div>
                 ) : (
                     <div className="mk-scroll overflow-x-auto">
-                        <table className="w-full min-w-[820px] text-sm">
+                        <table className="w-full min-w-[940px] text-sm">
                             <thead className="border-y border-line bg-surface-2 text-xs text-muted">
                                 <tr>
                                     {COLUMNS.map((column) => (
@@ -162,6 +170,9 @@ export function OrdersPage() {
                                                   {order.coupon_code && <span className="ltr block text-start font-mono text-[11px] text-success">{order.coupon_code}</span>}
                                               </td>
                                               <td className="px-4 py-3.5 text-ink-2">{order.affiliate?.full_name ?? '—'}</td>
+                                              <td className="px-4 py-3.5">
+                                                  <PaymentBadge order={order} />
+                                              </td>
                                               <td className="px-4 py-3.5">
                                                   <OrderStatusBadge status={order.status} />
                                               </td>

@@ -3,6 +3,8 @@
 namespace App\Http\Requests\Api\V1\Vendor;
 
 use App\Enums\OrderStatus;
+use App\Enums\PaymentMethod;
+use App\Enums\PaymentStatus;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -23,6 +25,8 @@ class ListOrdersRequest extends FormRequest
             'affiliate_id' => ['nullable', 'integer'],
             'customer_id' => ['nullable', 'integer'],
             'coupon_id' => ['nullable', 'integer'],
+            'payment_method' => ['nullable', Rule::enum(PaymentMethod::class)],
+            'payment_status' => ['nullable', Rule::enum(PaymentStatus::class)],
             'page' => ['nullable', 'integer', 'min:1'],
             'per_page' => ['nullable', 'integer', Rule::in([10, 20, 50])],
         ];

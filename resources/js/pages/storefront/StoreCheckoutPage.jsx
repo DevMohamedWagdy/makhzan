@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
 import { Alert, EmptyState } from '@/components/ui/Display';
-import { Checkbox, Field, Textarea } from '@/components/ui/Form';
+import { Checkbox, Field, OptionCards, Textarea } from '@/components/ui/Form';
 import { Icon } from '@/components/ui/Icon';
 import { Skeleton } from '@/components/ui/Spinner';
 import { useToast } from '@/context/ToastContext';
@@ -15,12 +15,16 @@ import { ProductImage } from '@/features/storefront/ProductCard';
 import { getReferralCode } from '@/features/storefront/referral';
 import { useStorefront } from '@/features/storefront/StorefrontLayout';
 import { t } from '@/i18n';
+import { PAYMENT_METHODS } from '@/lib/constants';
 import { cn, formatMoney } from '@/lib/format';
 import { storefrontApi } from '@/services/storefrontApi';
 
 const NEW_ADDRESS = 'new';
 
-/** Checkout: delivery address, shipping by governorate, cash on delivery. Requires an account. */
+/**
+ * Checkout: delivery address, shipping by governorate, and payment on delivery or online
+ * (the customer is sent to Paymob's page and comes back to their order). Requires an account.
+ */
 export function StoreCheckoutPage() {
     const { storeSlug } = useParams();
     const { store } = useStorefront();
@@ -40,6 +44,10 @@ export function StoreCheckoutPage() {
     const [placing, setPlacing] = useState(false);
     const [coupon, setCoupon] = useState(null);
     const [couponError, setCouponError] = useState(null);
+    const paymentMethods = store?.payment_methods?.length ? store.payment_methods : ['cod'];
+    const [chosenMethod, setPaymentMethod] = useState(null);
+    const paymentMethod = paymentMethods.includes(chosenMethod) ? chosenMethod : paymentMethods[0];
+    const online = paymentMethod !== 'cod';
 
     const applyCoupon = async (code) => {
         setCouponError(null);
@@ -154,11 +162,21 @@ export function StoreCheckoutPage() {
                 referral_code: getReferralCode(storeSlug),
                 coupon_code: coupon?.code ?? null,
                 note: note.trim() || null,
+                payment_method: paymentMethod,
             });
+
+            clearSavedCoupon(storeSlug);
+
+            // Online: on to Paymob's page; it sends the customer back to the order.
+            if (order.payment?.checkout_url) {
+                clear();
+                window.location.assign(order.payment.checkout_url);
+
+                return;
+            }
 
             navigate(`/${storeSlug}/account/orders/${order.number}?placed=1`, { replace: true });
             clear();
-            clearSavedCoupon(storeSlug);
         } catch (error) {
             const fieldErrors = Object.fromEntries(Object.entries(error.errors ?? {}).map(([key, message]) => [key.replace(/^address\./, ''), message]));
 
@@ -224,13 +242,15 @@ export function StoreCheckoutPage() {
                             <Icon name="wallet" className="size-5 text-primary" />
                             {t('طريقة الدفع')}
                         </h2>
-                        <div className="flex items-center gap-3 rounded-xl border border-primary bg-primary-soft p-4 text-sm">
-                            <Icon name="check-circle" className="size-5 text-primary" />
-                            <span>
-                                <span className="block font-semibold text-ink">{t('الدفع عند الاستلام')}</span>
-                                <span className="text-ink-2">{t('ادفع نقداً للمندوب عند استلام طلبك.')}</span>
-                            </span>
-                        </div>
+                        <OptionCards
+                            name="payment_method"
+                            columns={paymentMethods.length === 1 ? 1 : paymentMethods.length === 2 ? 2 : 3}
+                            value={paymentMethod}
+                            onChange={setPaymentMethod}
+                            options={paymentMethods.map((method) => ({ value: method, ...PAYMENT_METHODS[method] }))}
+                        />
+                        {errors.payment_method && <p className="mt-2 text-xs font-medium text-danger">{errors.payment_method}</p>}
+                        {online && <p className="mt-3 flex items-center gap-2 text-xs text-muted"><Icon name="lock" className="size-3.5" />{t('ستنتقل لصفحة Paymob الآمنة لإتمام الدفع، ثم تعود لمتابعة طلبك.')}</p>}
                         <Field label={t('ملاحظات للمتجر')} optional className="mt-5">
                             {(props) => <Textarea {...props} value={note} onChange={(event) => setNote(event.target.value)} placeholder={t('مثال: اتصل قبل الوصول بنصف ساعة')} maxLength={500} />}
                         </Field>
@@ -295,10 +315,10 @@ export function StoreCheckoutPage() {
                     {belowMinimum > 0 && (
                         <Alert tone="warning">{t('أقل قيمة للطلب {amount}، أضف منتجات بقيمة {remaining}.', { amount: formatMoney(store.min_order_total), remaining: formatMoney(belowMinimum) })}</Alert>
                     )}
-                    <Button size="lg" icon="check" loading={placing} disabled={unavailable || shippingFee === null || closed || belowMinimum > 0} onClick={placeOrder}>
-                        {t('تأكيد الطلب')}
+                    <Button size="lg" icon={online ? 'credit-card' : 'check'} loading={placing} disabled={unavailable || shippingFee === null || closed || belowMinimum > 0} onClick={placeOrder}>
+                        {online ? t('متابعة للدفع') : t('تأكيد الطلب')}
                     </Button>
-                    <p className="text-center text-xs text-muted">{t('بالضغط على تأكيد الطلب ستصلك تفاصيله في صفحة طلباتي.')}</p>
+                    <p className="text-center text-xs text-muted">{online ? t('ادفع خلال 30 دقيقة وإلا يُلغى الطلب تلقائياً.') : t('بالضغط على تأكيد الطلب ستصلك تفاصيله في صفحة طلباتي.')}</p>
                 </aside>
             </div>
         </div>

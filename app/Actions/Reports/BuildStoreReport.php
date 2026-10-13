@@ -4,6 +4,8 @@ namespace App\Actions\Reports;
 
 use App\Enums\CommissionStatus;
 use App\Enums\OrderStatus;
+use App\Enums\PaymentMethod;
+use App\Enums\PaymentStatus;
 use App\Models\Order;
 use App\Models\Store;
 use Carbon\CarbonImmutable;
@@ -17,7 +19,8 @@ use Illuminate\Support\Facades\DB;
  * order was placed). "Sales" counts every order that wasn't cancelled or returned; revenue
  * counts delivered orders only, since payment is collected on delivery. Gross profit is the
  * delivered products' value minus their cost (snapshotted when ordered) and affiliate
- * commissions; items sold before a cost was set are counted in `uncosted_items`.
+ * commissions; items sold before a cost was set are counted in `uncosted_items`. Online
+ * orders count once they're paid; an unpaid checkout isn't an order yet.
  */
 class BuildStoreReport
 {
@@ -33,6 +36,7 @@ class BuildStoreReport
      *     statuses: array<string, int>,
      *     top_products: list<array{product_id: int|null, name: string, quantity: int, sales: float}>,
      *     governorates: list<array{governorate_id: string, orders: int, sales: float}>,
+     *     payment_methods: list<array{method: string, orders: int, sales: float}>,
      *     affiliates: list<array{affiliate_id: int, full_name: string, orders: int, sales: float, commission: float}>
      * }
      */
@@ -50,6 +54,7 @@ class BuildStoreReport
             'statuses' => $this->statuses($store, $from, $to),
             'top_products' => $this->topProducts($store, $from, $to),
             'governorates' => $this->governorates($store, $from, $to),
+            'payment_methods' => $this->paymentMethods($store, $from, $to),
             'affiliates' => $this->affiliates($store, $from, $to),
         ];
     }
@@ -59,7 +64,9 @@ class BuildStoreReport
      */
     private function orders(Store $store, CarbonImmutable $from, CarbonImmutable $to): HasMany
     {
-        return $store->orders()->whereBetween('orders.created_at', [$from, $to]);
+        return $store->orders()
+            ->whereBetween('orders.created_at', [$from, $to])
+            ->where(fn ($query) => $query->whereNull('orders.payment_status')->orWhereNotIn('orders.payment_status', [PaymentStatus::Pending->value, PaymentStatus::Failed->value]));
     }
 
     /**
@@ -71,7 +78,7 @@ class BuildStoreReport
     }
 
     /**
-     * @return array{orders: int, sales: float, average_order: float, revenue: float, discounts: float, delivered_orders: int, shipping_fees: float, commissions: float, net_revenue: float, cost_of_goods: float, gross_profit: float, profit_margin: float|null, uncosted_items: int, cancelled: int, returned: int, new_customers: int}
+     * @return array{orders: int, sales: float, average_order: float, revenue: float, discounts: float, delivered_orders: int, shipping_fees: float, commissions: float, net_revenue: float, cost_of_goods: float, gross_profit: float, profit_margin: float|null, uncosted_items: int, cancelled: int, returned: int, refunds: float, new_customers: int}
      */
     private function totals(Store $store, CarbonImmutable $from, CarbonImmutable $to): array
     {
@@ -89,6 +96,7 @@ class BuildStoreReport
             ->selectRaw('coalesce(sum(case when commission_status = ? then commission_amount else 0 end), 0) as commissions', [CommissionStatus::Earned->value])
             ->selectRaw('sum(case when status = ? then 1 else 0 end) as cancelled', [$failedA])
             ->selectRaw('sum(case when status = ? then 1 else 0 end) as returned', [$failedB])
+            ->selectRaw('coalesce(sum(refunded_amount), 0) as refunds')
             ->first();
 
         $orders = (int) $row->orders;
@@ -123,6 +131,7 @@ class BuildStoreReport
             'uncosted_items' => (int) $goods->uncosted,
             'cancelled' => (int) $row->cancelled,
             'returned' => (int) $row->returned,
+            'refunds' => round((float) $row->refunds, 2),
             'new_customers' => $store->customers()->whereBetween('created_at', [$from, $to])->count(),
         ];
     }
@@ -192,6 +201,26 @@ class BuildStoreReport
                 'sales' => round((float) $row->sales, 2),
             ])
             ->all();
+    }
+
+    /**
+     * Orders and sales by how they were paid, every method listed.
+     *
+     * @return list<array{method: string, orders: int, sales: float}>
+     */
+    private function paymentMethods(Store $store, CarbonImmutable $from, CarbonImmutable $to): array
+    {
+        $rows = $this->bookedOrders($store, $from, $to)->toBase()
+            ->selectRaw('payment_method, count(*) as orders, sum(total) as sales')
+            ->groupBy('payment_method')
+            ->get()
+            ->keyBy('payment_method');
+
+        return array_map(fn (PaymentMethod $method): array => [
+            'method' => $method->value,
+            'orders' => (int) ($rows[$method->value]->orders ?? 0),
+            'sales' => round((float) ($rows[$method->value]->sales ?? 0), 2),
+        ], PaymentMethod::cases());
     }
 
     /**

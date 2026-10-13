@@ -28,6 +28,22 @@ export const ORDER_STATUSES = {
     returned: { label: t('مرتجع'), tone: 'neutral', icon: 'refresh', action: t('تسجيل كمرتجع') },
 };
 
+/** How a customer pays: on delivery, or online through the store's Paymob account. */
+export const PAYMENT_METHODS = {
+    cod: { label: t('الدفع عند الاستلام'), short: t('عند الاستلام'), icon: 'wallet', description: t('ادفع نقداً للمندوب عند استلام طلبك.') },
+    card: { label: t('بطاقة بنكية'), short: t('بطاقة'), icon: 'credit-card', description: t('فيزا أو ماستركارد أو ميزة، دفع آمن عبر Paymob.') },
+    wallet: { label: t('محفظة إلكترونية'), short: t('محفظة'), icon: 'smartphone', description: t('فودافون كاش أو أي محفظة موبايل، عبر Paymob.') },
+};
+
+/** Online payment status of an order (cash-on-delivery orders have none). */
+export const PAYMENT_STATUSES = {
+    pending: { label: t('بانتظار الدفع'), tone: 'warning', icon: 'clock' },
+    paid: { label: t('مدفوع'), tone: 'success', icon: 'check-circle' },
+    failed: { label: t('فشل الدفع'), tone: 'danger', icon: 'x' },
+    partially_refunded: { label: t('مسترد جزئياً'), tone: 'info', icon: 'refresh' },
+    refunded: { label: t('مسترد'), tone: 'neutral', icon: 'refresh' },
+};
+
 /** @type {Record<'draft' | 'active' | 'archived', { label: string, tone: string, description: string }>} */
 export const PRODUCT_STATUSES = {
     active: { label: t('منشور'), tone: 'success', description: t('ظاهر في المتجر ومتاح للشراء') },

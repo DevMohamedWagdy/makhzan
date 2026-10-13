@@ -9,6 +9,7 @@ import { Tabs } from '@/components/ui/Navigation';
 import { Skeleton } from '@/components/ui/Spinner';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
+import { PaymentSettingsTab } from '@/features/payments/PaymentSettingsTab';
 import { useCopy } from '@/hooks/common';
 import { t } from '@/i18n';
 import { CURRENCY } from '@/lib/constants';
@@ -20,6 +21,7 @@ const TABS = [
     { value: 'store', label: t('بيانات المتجر'), icon: 'store' },
     { value: 'contact', label: t('التواصل'), icon: 'phone' },
     { value: 'orders', label: t('الطلبات'), icon: 'shopping-bag' },
+    { value: 'payments', label: t('الدفع'), icon: 'credit-card' },
     { value: 'policies', label: t('السياسات'), icon: 'shield-check' },
     { value: 'account', label: t('حسابي'), icon: 'user' },
 ];
@@ -355,7 +357,7 @@ const MORE_SETTINGS = [
     { to: '/dashboard/affiliates', icon: 'users', label: t('المسوقين'), description: t('رابط تسجيل المسوقين والموافقة عليهم') },
 ];
 
-/** Store settings in tabs (?tab=store|contact|orders|policies|account), plus links to other settings pages. */
+/** Store settings in tabs (?tab=store|contact|orders|payments|policies|account), plus links to other settings pages. */
 export function SettingsPage() {
     const { updateVendor } = useAuth();
     const [searchParams, setSearchParams] = useSearchParams();
@@ -383,13 +385,15 @@ export function SettingsPage() {
 
     return (
         <>
-            <PageHeader title={t('إعدادات المتجر')} description={t('بيانات متجرك وطريقة تواصل العملاء معك وسياساتك')} breadcrumbs={[t('لوحة التحكم'), t('الإدارة'), t('إعدادات المتجر')]} />
+            <PageHeader title={t('إعدادات المتجر')} description={t('بيانات متجرك وطرق الدفع وطريقة تواصل العملاء معك وسياساتك')} breadcrumbs={[t('لوحة التحكم'), t('الإدارة'), t('إعدادات المتجر')]} />
 
             <section className="mk-card overflow-hidden">
                 <Tabs tabs={TABS} value={tab} onChange={(value) => setSearchParams(value === 'store' ? {} : { tab: value }, { replace: true })} className="px-3" />
                 <div className="p-5 sm:p-6">
                     {tab === 'account' ? (
                         <AccountTab />
+                    ) : tab === 'payments' ? (
+                        <PaymentSettingsTab />
                     ) : error ? (
                         <EmptyState icon="alert-triangle" title={t('تعذر تحميل الإعدادات')} description={error} action={<Button variant="secondary" icon="refresh" onClick={load}>{t('إعادة المحاولة')}</Button>} />
                     ) : !settings ? (
