@@ -115,7 +115,7 @@ export function WarehousesPage() {
             <PageHeader
                 title={t('المخازن')}
                 description={t('أماكن تخزين بضاعتك. الطلب يُخصم أولاً من مخزن في نفس محافظة العميل، ثم بالترتيب.')}
-                breadcrumbs={[t('لوحة التحكم'), t('التجارة'), t('المخازن')]}
+                breadcrumbs={[t('لوحة التحكم'), t('المخزون والمشتريات'), t('المخازن')]}
                 actions={
                     <>
                         <Button variant="secondary" icon="refresh" onClick={() => setTransferOpen(true)} disabled={!warehouses || warehouses.length < 2}>

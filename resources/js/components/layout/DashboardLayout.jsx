@@ -24,17 +24,28 @@ const NAV_SECTIONS = [
         ],
     },
     {
-        title: t('التجارة'),
+        title: t('المبيعات'),
         items: [
-            { label: t('الأقسام'), icon: 'grid', to: '/dashboard/categories' },
+            { label: t('الطلبات'), icon: 'shopping-bag', to: '/dashboard/orders', counter: 'pendingOrdersCount' },
+            { label: t('المدفوعات'), icon: 'credit-card', to: '/dashboard/payments' },
+            { label: t('العملاء'), icon: 'user', to: '/dashboard/customers' },
+            { label: t('الشحن'), icon: 'truck', to: '/dashboard/shipping' },
+        ],
+    },
+    {
+        title: t('الكتالوج'),
+        items: [
             { label: t('المنتجات'), icon: 'box', to: '/dashboard/products' },
+            { label: t('الأقسام'), icon: 'grid', to: '/dashboard/categories' },
+        ],
+    },
+    {
+        title: t('المخزون والمشتريات'),
+        items: [
             { label: t('المخزون'), icon: 'warehouse', to: '/dashboard/inventory' },
             { label: t('المخازن'), icon: 'building', to: '/dashboard/warehouses' },
             { label: t('أوامر الشراء'), icon: 'download', to: '/dashboard/purchase-orders' },
             { label: t('الموردين'), icon: 'users', to: '/dashboard/suppliers' },
-            { label: t('الطلبات'), icon: 'shopping-bag', to: '/dashboard/orders', counter: 'pendingOrdersCount' },
-            { label: t('العملاء'), icon: 'user', to: '/dashboard/customers' },
-            { label: t('الشحن'), icon: 'truck', to: '/dashboard/shipping' },
         ],
     },
     {

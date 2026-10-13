@@ -85,7 +85,7 @@ export function CustomersPage() {
 
     return (
         <>
-            <PageHeader title={t('العملاء')} description={t('عملاء متجرك الذين سجّلوا حساباً، وطلباتهم ومشترياتهم')} breadcrumbs={[t('لوحة التحكم'), t('التجارة'), t('العملاء')]} />
+            <PageHeader title={t('العملاء')} description={t('عملاء متجرك الذين سجّلوا حساباً، وطلباتهم ومشترياتهم')} breadcrumbs={[t('لوحة التحكم'), t('المبيعات'), t('العملاء')]} />
 
             <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                 <StatCard label={t('كل العملاء')} value={summary ? formatNumber(summary.total) : '—'} icon="users" />

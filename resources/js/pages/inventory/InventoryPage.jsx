@@ -146,7 +146,7 @@ export function InventoryPage() {
             <PageHeader
                 title={t('المخزون')}
                 description={t('كميات منتجاتك وتكلفتها، وسجّل التوريد والجرد والتالف')}
-                breadcrumbs={[t('لوحة التحكم'), t('التجارة'), t('المخزون')]}
+                breadcrumbs={[t('لوحة التحكم'), t('المخزون والمشتريات'), t('المخزون')]}
                 actions={
                     <>
                         <Button variant="secondary" icon="settings" onClick={() => setSettingsOpen(true)}>

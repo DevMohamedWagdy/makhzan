@@ -54,7 +54,7 @@ export function SuppliersPage() {
             <PageHeader
                 title={t('الموردين')}
                 description={t('الجهات التي تشتري منها بضاعتك')}
-                breadcrumbs={[t('لوحة التحكم'), t('التجارة'), t('الموردين')]}
+                breadcrumbs={[t('لوحة التحكم'), t('المخزون والمشتريات'), t('الموردين')]}
                 actions={
                     <Button icon="plus" onClick={() => setEditing({})}>
                         {t('مورد جديد')}

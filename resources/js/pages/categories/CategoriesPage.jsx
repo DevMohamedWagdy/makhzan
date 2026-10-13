@@ -58,7 +58,7 @@ export function CategoriesPage() {
             <PageHeader
                 title={t('الأقسام')}
                 description={t('نظّم منتجاتك في أقسام تظهر في متجرك. كل منتج يجب أن يتبع قسماً.')}
-                breadcrumbs={[t('لوحة التحكم'), t('التجارة'), t('الأقسام')]}
+                breadcrumbs={[t('لوحة التحكم'), t('الكتالوج'), t('الأقسام')]}
                 actions={
                     <Button icon="plus" onClick={() => setDialog({ type: 'form' })}>
                         {t('إضافة قسم')}
