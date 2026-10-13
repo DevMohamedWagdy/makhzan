@@ -20,5 +20,6 @@ return [
     'transfer_from_required' => 'اختر المخزن المحوَّل منه',
     'transfer_to_required' => 'اختر المخزن المحوَّل إليه',
     'transfer_same_warehouse' => 'اختر مخزنين مختلفين',
+    'deleted_warehouse' => 'مخزن محذوف',
 
 ];

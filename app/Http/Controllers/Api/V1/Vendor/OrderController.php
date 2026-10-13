@@ -40,7 +40,7 @@ class OrderController extends Controller
     {
         Gate::authorize('view', $order);
 
-        return new OrderResource($order->load(['items', 'events', 'customer', 'affiliate']));
+        return new OrderResource($order->load(['items', 'events', 'customer', 'affiliate', 'saleMovements']));
     }
 
     /**
@@ -50,6 +50,6 @@ class OrderController extends Controller
     {
         $updated = $updateStatus->handle($order, OrderStatus::from($request->validated('status')), OrderEvent::ACTOR_VENDOR, $request->validated('note'));
 
-        return new OrderResource($updated->load(['items', 'events', 'customer', 'affiliate']));
+        return new OrderResource($updated->load(['items', 'events', 'customer', 'affiliate', 'saleMovements']));
     }
 }

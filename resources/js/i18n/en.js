@@ -1474,4 +1474,9 @@ export default {
     'التحويلات بين المخازن': 'Transfers between warehouses',
     'حذف المخزن؟': 'Delete the warehouse?',
     'سيتم حذف {name}. يبقى في سجل الحركات باسمه.': '{name} will be deleted. It stays in the movements log by name.',
+    'التجهيز من المخازن': 'Pick from warehouses',
+    'من أين تُجهَّز منتجات هذا الطلب، حسب ما خُصم من كل مخزن.': 'Where to pick this order\'s products, by what was taken from each warehouse.',
+    'أماكن تخزين بضاعتك. الطلب يُخصم أولاً من مخزن في نفس محافظة العميل، ثم بالترتيب.': 'Where you keep your stock. Orders take from a warehouse in the customer\'s governorate first, then in order.',
+    'للطلبات من محافظات ليس بها مخزن، أو عندما لا يكفي مخزن المحافظة. الأول هو المخزن الافتراضي.': 'For orders from governorates without a warehouse, or when that warehouse runs short. The first is the default.',
+    'طلبات عملاء هذه المحافظة تُخصم من هذا المخزن أولاً.': 'Orders from customers in this governorate take stock from this warehouse first.',
 };

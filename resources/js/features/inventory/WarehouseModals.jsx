@@ -56,7 +56,7 @@ export function WarehouseFormModal({ open, warehouse, onClose, onSaved }) {
                 <Field label={t('اسم المخزن')} required error={errors.name}>
                     {(props) => <Input {...props} data-autofocus value={values.name} onChange={(event) => setValues({ ...values, name: event.target.value })} maxLength={100} placeholder={t('مثال: فرع الإسكندرية')} />}
                 </Field>
-                <Field label={t('المحافظة')} optional error={errors.governorate_id}>
+                <Field label={t('المحافظة')} optional error={errors.governorate_id} hint={t('طلبات عملاء هذه المحافظة تُخصم من هذا المخزن أولاً.')}>
                     {(props) => <Select {...props} value={values.governorate_id} onChange={(event) => setValues({ ...values, governorate_id: event.target.value })} placeholder={t('اختر المحافظة')} options={GOVERNORATES.map((governorate) => ({ value: governorate.id, label: governorate.name }))} />}
                 </Field>
                 <Field label={t('العنوان')} optional error={errors.address}>

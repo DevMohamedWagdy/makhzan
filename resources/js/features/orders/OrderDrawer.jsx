@@ -155,6 +155,31 @@ export function OrderDrawer({ orderId, onClose, onChanged }) {
                         </dl>
                     </section>
 
+                    {order.fulfillment?.length > 0 && (
+                        <section className="p-6">
+                            <h3 className="mb-1 text-sm font-semibold text-ink">{t('التجهيز من المخازن')}</h3>
+                            <p className="mb-3 text-xs text-muted">{t('من أين تُجهَّز منتجات هذا الطلب، حسب ما خُصم من كل مخزن.')}</p>
+                            <ul className="flex flex-col gap-3">
+                                {order.fulfillment.map((warehouse) => (
+                                    <li key={warehouse.warehouse_id ?? 'deleted'} className="rounded-xl border border-line p-3">
+                                        <p className="flex items-center gap-2 text-sm font-semibold text-ink">
+                                            <Icon name="building" className="size-4 text-muted" />
+                                            {warehouse.name}
+                                        </p>
+                                        <ul className="mt-2 flex flex-col gap-1 text-sm">
+                                            {warehouse.items.map((item) => (
+                                                <li key={item.variant_id ?? item.product_name} className="flex justify-between gap-3">
+                                                    <span className="text-ink-2">{item.variant_title ? `${item.product_name} — ${item.variant_title}` : item.product_name}</span>
+                                                    <span className="font-semibold text-ink">× {item.quantity}</span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </li>
+                                ))}
+                            </ul>
+                        </section>
+                    )}
+
                     <section className="p-6">
                         <h3 className="mb-3 text-sm font-semibold text-ink">{t('العميل والتوصيل')}</h3>
                         <dl className="divide-y divide-line">

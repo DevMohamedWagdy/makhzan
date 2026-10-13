@@ -63,10 +63,10 @@ class WarehouseTest extends TestCase
         return [$stock($this->main), $stock($this->branch)];
     }
 
-    private function placeOrder(ProductVariant $variant, int $quantity)
+    private function placeOrder(ProductVariant $variant, int $quantity, string $governorate = 'cairo', string $city = 'maadi')
     {
         return app(PlaceOrder::class)->handle($this->vendor->store, Customer::factory()->for($this->vendor->store)->create(), [['variant_id' => $variant->id, 'quantity' => $quantity]], [
-            'recipient_name' => 'منى', 'phone' => '01012345678', 'governorate_id' => 'cairo', 'city_id' => 'maadi', 'address_line' => '5 شارع 9',
+            'recipient_name' => 'منى', 'phone' => '01012345678', 'governorate_id' => $governorate, 'city_id' => $city, 'address_line' => '5 شارع 9',
         ]);
     }
 
@@ -90,6 +90,38 @@ class WarehouseTest extends TestCase
 
         $this->assertSame([3, 10], $this->stocks($variant));
         $this->assertSame(13, $variant->fresh()->stock);
+    }
+
+    public function test_orders_prefer_a_warehouse_in_the_customers_governorate(): void
+    {
+        $this->branch->update(['governorate_id' => 'alexandria']);
+        $variant = $this->variant(10, 4);
+
+        $this->placeOrder($variant, 3, 'alexandria', 'smouha');
+        $this->assertSame([10, 1], $this->stocks($variant), 'Taken from the Alexandria branch.');
+
+        $this->placeOrder($variant, 3, 'alexandria', 'smouha');
+        $this->assertSame([8, 0], $this->stocks($variant), 'The branch runs out, the rest comes by priority.');
+
+        $this->placeOrder($variant, 2);
+        $this->assertSame([6, 0], $this->stocks($variant), 'Other governorates follow the priority order.');
+    }
+
+    public function test_the_order_shows_what_to_pick_from_each_warehouse(): void
+    {
+        $variant = $this->variant(3, 10, 'فستان سهرة');
+        $order = $this->placeOrder($variant, 5);
+
+        $this->getJson("/api/v1/vendor/orders/{$order->id}")
+            ->assertOk()
+            ->assertJsonPath('data.fulfillment', [
+                ['warehouse_id' => $this->main->id, 'name' => Warehouse::DEFAULT_NAME, 'items' => [['variant_id' => $variant->id, 'product_name' => 'فستان سهرة', 'variant_title' => null, 'quantity' => 3]]],
+                ['warehouse_id' => $this->branch->id, 'name' => 'فرع الإسكندرية', 'items' => [['variant_id' => $variant->id, 'product_name' => 'فستان سهرة', 'variant_title' => null, 'quantity' => 2]]],
+            ]);
+
+        $this->branch->delete();
+
+        $this->getJson("/api/v1/vendor/orders/{$order->id}")->assertJsonPath('data.fulfillment', null);
     }
 
     public function test_reordering_changes_which_warehouse_sells_first(): void

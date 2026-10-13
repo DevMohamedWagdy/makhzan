@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\CommissionStatus;
 use App\Enums\CommissionType;
 use App\Enums\OrderStatus;
+use App\Enums\StockMovementType;
 use Database\Factories\OrderFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -91,6 +92,16 @@ class Order extends Model
     public function items(): HasMany
     {
         return $this->hasMany(OrderItem::class);
+    }
+
+    /**
+     * Stock taken off the shelf for this order, one row per warehouse and variant.
+     *
+     * @return HasMany<StockMovement, $this>
+     */
+    public function saleMovements(): HasMany
+    {
+        return $this->hasMany(StockMovement::class)->where('type', StockMovementType::Sale);
     }
 
     /**

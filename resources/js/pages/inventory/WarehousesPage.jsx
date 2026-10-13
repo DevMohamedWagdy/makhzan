@@ -114,7 +114,7 @@ export function WarehousesPage() {
         <>
             <PageHeader
                 title={t('المخازن')}
-                description={t('أماكن تخزين بضاعتك. الطلبات تُخصم من المخزن الأول، وإن لم يكفِ تُكمل من التالي.')}
+                description={t('أماكن تخزين بضاعتك. الطلب يُخصم أولاً من مخزن في نفس محافظة العميل، ثم بالترتيب.')}
                 breadcrumbs={[t('لوحة التحكم'), t('التجارة'), t('المخازن')]}
                 actions={
                     <>
@@ -134,7 +134,7 @@ export function WarehousesPage() {
                 <Skeleton className="h-48 w-full rounded-xl" />
             ) : (
                 <div className="flex flex-col gap-6">
-                    <Card title={t('ترتيب الخصم')} description={t('رتّب المخازن بالأسهم؛ الأول هو المخزن الافتراضي.')} bodyClassName="p-0">
+                    <Card title={t('ترتيب الخصم')} description={t('للطلبات من محافظات ليس بها مخزن، أو عندما لا يكفي مخزن المحافظة. الأول هو المخزن الافتراضي.')} bodyClassName="p-0">
                         <ul className="divide-y divide-line">
                             {warehouses.map((warehouse, index) => (
                                 <li key={warehouse.warehouse_id} className="flex flex-wrap items-center gap-4 px-5 py-4">

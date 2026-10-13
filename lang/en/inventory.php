@@ -20,5 +20,6 @@ return [
     'transfer_from_required' => 'Choose the warehouse to transfer from',
     'transfer_to_required' => 'Choose the warehouse to transfer to',
     'transfer_same_warehouse' => 'Choose two different warehouses',
+    'deleted_warehouse' => 'Deleted warehouse',
 
 ];

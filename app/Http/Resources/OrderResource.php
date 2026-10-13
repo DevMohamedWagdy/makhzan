@@ -7,6 +7,7 @@ use App\Models\Order;
 use App\Models\Vendor;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Collection;
 
 /**
  * An order for the customer who placed it or the store's vendor. Affiliate attribution and
@@ -57,6 +58,7 @@ class OrderResource extends JsonResource
                 'customer' => $this->customer ? new CustomerResource($this->customer) : null,
                 'affiliate' => $this->affiliate ? ['affiliate_id' => $this->affiliate->id, 'full_name' => $this->affiliate->full_name] : null,
                 'referral_code' => $this->referral_code,
+                'fulfillment' => $this->whenLoaded('saleMovements', fn (): ?array => $this->fulfillment()),
                 'commission' => [
                     'type' => $this->commission_type,
                     'rate' => $this->commission_rate,
@@ -71,5 +73,33 @@ class OrderResource extends JsonResource
             'cancelled_at' => $this->cancelled_at?->toIso8601String(),
             'returned_at' => $this->returned_at?->toIso8601String(),
         ];
+    }
+
+    /**
+     * What to pick from which warehouse, for stores with more than one. Null for a single
+     * warehouse (nothing to choose) and empty for orders placed before stock was tracked.
+     *
+     * @return list<array{warehouse_id: int|null, name: string, items: list<array{variant_id: int|null, product_name: string, variant_title: string|null, quantity: int}>}>|null
+     */
+    private function fulfillment(): ?array
+    {
+        if ($this->store->warehouses()->count() < 2) {
+            return null;
+        }
+
+        return $this->saleMovements
+            ->groupBy('warehouse_id')
+            ->map(fn (Collection $movements): array => [
+                'warehouse_id' => $movements->first()->warehouse_id,
+                'name' => $movements->first()->warehouse_name ?? __('inventory.deleted_warehouse'),
+                'items' => $movements->groupBy('product_variant_id')->map(fn (Collection $rows): array => [
+                    'variant_id' => $rows->first()->product_variant_id,
+                    'product_name' => $rows->first()->product_name,
+                    'variant_title' => $rows->first()->variant_title,
+                    'quantity' => -(int) $rows->sum('quantity'),
+                ])->values()->all(),
+            ])
+            ->values()
+            ->all();
     }
 }

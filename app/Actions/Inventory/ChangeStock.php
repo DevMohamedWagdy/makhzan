@@ -85,8 +85,9 @@ class ChangeStock
     }
 
     /**
-     * Takes units for an order from the store's warehouses in priority order, splitting
-     * across warehouses when the first doesn't hold enough.
+     * Takes units for an order from the store's warehouses, splitting across them when one
+     * doesn't hold enough: warehouses in the customer's governorate first, then the rest, each
+     * group in priority order.
      *
      * @return list<StockMovement>
      *
@@ -104,7 +105,10 @@ class ChangeStock
             $movements = [];
             $remaining = $quantity;
 
-            foreach ($locked->product->store->warehouses as $warehouse) {
+            $warehouses = $locked->product->store->warehouses
+                ->sortBy(fn (Warehouse $warehouse): int => $warehouse->governorate_id !== null && $warehouse->governorate_id === $order->governorate_id ? 0 : 1);
+
+            foreach ($warehouses as $warehouse) {
                 $available = $this->warehouseStock($warehouse, $locked)->stock;
                 $take = min($available, $remaining);
 

@@ -10,8 +10,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
- * A place the store keeps stock. Orders take stock from warehouses in priority order (lowest
- * first); the first one is the default for restocks and new products.
+ * A place the store keeps stock. Orders take stock from warehouses in the customer's
+ * governorate first, then by priority (lowest first); the first one is the default for
+ * restocks and new products.
  */
 #[Fillable(['name', 'address', 'governorate_id', 'priority'])]
 class Warehouse extends Model
