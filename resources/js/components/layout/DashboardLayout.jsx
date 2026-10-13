@@ -54,7 +54,6 @@ const NAV_SECTIONS = [
             { label: t('المسوقين'), icon: 'users', to: '/dashboard/affiliates' },
             { label: t('طلبات التحويل'), icon: 'send', to: '/dashboard/payout-requests', counter: 'payoutRequestsCount' },
             { label: t('الكوبونات'), icon: 'gift', to: '/dashboard/coupons' },
-            { label: t('الحملات'), icon: 'megaphone', soon: true },
         ],
     },
     {
