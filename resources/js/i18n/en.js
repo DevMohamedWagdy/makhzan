@@ -35,7 +35,6 @@ export default {
     'المسوقين': 'Affiliates',
     'طلبات التحويل': 'Payout requests',
     'الكوبونات': 'Coupons',
-    'الحملات': 'Campaigns',
     'الإدارة': 'Management',
     'التقارير': 'Reports',
     'إعدادات المتجر': 'Store settings',
