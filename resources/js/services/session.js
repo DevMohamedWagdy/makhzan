@@ -22,6 +22,18 @@ function createSessionStore(key) {
             localStorage.removeItem(key);
             sessionStorage.removeItem(key);
         },
+        /** Changes the saved session in place, keeping its "remember me" choice. */
+        update(patch) {
+            try {
+                const storage = localStorage.getItem(key) !== null ? localStorage : sessionStorage.getItem(key) !== null ? sessionStorage : null;
+
+                if (storage) {
+                    storage.setItem(key, JSON.stringify({ ...JSON.parse(storage.getItem(key)), ...patch }));
+                }
+            } catch {
+                // Storage unavailable: the in-memory session still updates.
+            }
+        },
     };
 
     return store;

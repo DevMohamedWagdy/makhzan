@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\V1\Storefront\Customer\AddressController as Custome
 use App\Http\Controllers\Api\V1\Storefront\Customer\AuthController as CustomerAuthController;
 use App\Http\Controllers\Api\V1\Storefront\Customer\CouponController as CustomerCouponController;
 use App\Http\Controllers\Api\V1\Storefront\Customer\OrderController as CustomerOrderController;
+use App\Http\Controllers\Api\V1\Storefront\PolicyController;
 use App\Http\Controllers\Api\V1\Storefront\ProductController as StorefrontProductController;
 use App\Http\Controllers\Api\V1\Storefront\ReferralClickController;
 use App\Http\Controllers\Api\V1\Storefront\ShippingController;
@@ -27,6 +28,7 @@ use App\Http\Controllers\Api\V1\Vendor\AffiliateRegistrationLinkController;
 use App\Http\Controllers\Api\V1\Vendor\AffiliateStatusController;
 use App\Http\Controllers\Api\V1\Vendor\AffiliateSummaryController;
 use App\Http\Controllers\Api\V1\Vendor\Auth\PasswordResetController;
+use App\Http\Controllers\Api\V1\Vendor\Auth\VendorAccountController;
 use App\Http\Controllers\Api\V1\Vendor\Auth\VendorAuthController;
 use App\Http\Controllers\Api\V1\Vendor\CouponController;
 use App\Http\Controllers\Api\V1\Vendor\CustomerController;
@@ -48,9 +50,11 @@ use App\Http\Controllers\Api\V1\Vendor\ReportController;
 use App\Http\Controllers\Api\V1\Vendor\ShippingSettingsController;
 use App\Http\Controllers\Api\V1\Vendor\StockMovementController;
 use App\Http\Controllers\Api\V1\Vendor\StockTransferController;
+use App\Http\Controllers\Api\V1\Vendor\StoreSettingsController;
 use App\Http\Controllers\Api\V1\Vendor\StoreSlugAvailabilityController;
 use App\Http\Controllers\Api\V1\Vendor\SupplierController;
 use App\Http\Controllers\Api\V1\Vendor\WarehouseController;
+use App\Models\Store;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->name('api.v1.')->group(function () {
@@ -88,6 +92,7 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
             Route::post('referral-clicks', ReferralClickController::class)->middleware('throttle:30,1')->name('referral-clicks.store');
             Route::post('cart/quote', [CartController::class, 'quote'])->name('cart.quote');
             Route::get('shipping', ShippingController::class)->name('shipping');
+            Route::get('policies/{policy}', PolicyController::class)->whereIn('policy', array_keys(Store::POLICIES))->name('policies.show');
 
             // Shopper accounts (one per store).
             Route::post('customer/register', [CustomerAuthController::class, 'register'])->middleware('throttle:10,1')->name('customer.register');
@@ -149,6 +154,13 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
     Route::middleware(['auth:sanctum', 'vendor'])->prefix('vendor')->name('vendor.')->group(function () {
         Route::get('auth/me', [VendorAuthController::class, 'me'])->name('auth.me');
         Route::post('auth/logout', [VendorAuthController::class, 'logout'])->name('auth.logout');
+        Route::put('auth/profile', [VendorAccountController::class, 'updateProfile'])->name('auth.profile');
+        Route::put('auth/password', [VendorAccountController::class, 'updatePassword'])->middleware('throttle:10,1')->name('auth.password');
+
+        Route::get('store', [StoreSettingsController::class, 'show'])->name('store.show');
+        Route::patch('store', [StoreSettingsController::class, 'update'])->name('store.update');
+        Route::post('store/logo', [StoreSettingsController::class, 'uploadLogo'])->middleware('throttle:20,1')->name('store.logo');
+        Route::delete('store/logo', [StoreSettingsController::class, 'removeLogo'])->name('store.logo.remove');
 
         Route::get('notifications', [NotificationController::class, 'index'])->name('notifications.index');
         Route::post('notifications/read-all', [NotificationController::class, 'readAll'])->name('notifications.read-all');

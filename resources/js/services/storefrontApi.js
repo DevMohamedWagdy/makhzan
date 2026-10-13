@@ -4,6 +4,9 @@ const base = (storeSlug) => `/api/v1/storefront/${encodeURIComponent(storeSlug)}
 
 /** Public shopper endpoints (no auth). */
 export const storefrontApi = {
+    /** One policy page: `{ key, title, body }`. @param {'returns'|'shipping'|'privacy'|'terms'} key */
+    policy: (storeSlug, key) => request('GET', `${base(storeSlug)}/policies/${key}`),
+
     /** `{ store, categories, featured, latest }` */
     home: (storeSlug) => request('GET', base(storeSlug)),
 

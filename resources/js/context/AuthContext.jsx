@@ -67,6 +67,21 @@ export function AuthProvider({ children }) {
         return () => window.removeEventListener('makhzan:unauthorized', onUnauthorized);
     }, [clearSession]);
 
+    /** Refreshes the signed-in vendor (and their store) after profile or store settings change. */
+    const updateVendor = useCallback((patch) => {
+        setSession((current) => {
+            if (!current) {
+                return current;
+            }
+
+            const vendor = { ...current.vendor, ...patch, store: { ...current.vendor.store, ...(patch.store ?? {}) } };
+
+            sessionStore.update({ vendor });
+
+            return { ...current, vendor };
+        });
+    }, []);
+
     /** Starts a time-limited "login as affiliate" session; vendor session stays intact. */
     const impersonate = useCallback(async (affiliateId) => {
         const result = await affiliatesApi.impersonate(affiliateId);
@@ -88,8 +103,9 @@ export function AuthProvider({ children }) {
             logout,
             impersonate,
             stopImpersonating,
+            updateVendor,
         }),
-        [session, impersonation, login, register, logout, impersonate, stopImpersonating],
+        [session, impersonation, login, register, logout, impersonate, stopImpersonating, updateVendor],
     );
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

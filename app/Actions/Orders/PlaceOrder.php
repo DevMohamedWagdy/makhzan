@@ -43,8 +43,12 @@ class PlaceOrder
         $quantities = collect($items)->groupBy('variant_id')->map(fn (Collection $lines): int => $lines->sum('quantity'));
 
         $order = DB::transaction(function () use ($store, $customer, $quantities, $address, $referralCode, $note, $couponCode): Order {
-            // Serializes order numbers within the store.
-            Store::query()->whereKey($store->id)->lockForUpdate()->first();
+            // Serializes order numbers within the store (and reads its current settings).
+            $store = Store::query()->whereKey($store->id)->lockForUpdate()->first();
+
+            if (! $store->accepting_orders) {
+                throw ValidationException::withMessages(['store' => $store->closed_message ?: __('settings.store_closed')]);
+            }
 
             $variants = ProductVariant::query()
                 ->whereIn('id', $quantities->keys())
@@ -57,6 +61,13 @@ class PlaceOrder
             $this->assertAvailable($quantities, $variants);
 
             $subtotal = round($quantities->sum(fn (int $quantity, int $variantId): float => $variants[$variantId]->price * $quantity), 2);
+
+            if ($store->min_order_total !== null && $subtotal < $store->min_order_total) {
+                throw ValidationException::withMessages(['items' => __('settings.min_order_total', [
+                    'amount' => number_format($store->min_order_total, 2),
+                    'remaining' => number_format($store->min_order_total - $subtotal, 2),
+                ])]);
+            }
             $shippingFee = $store->shippingFeeFor($address['governorate_id'], $subtotal)
                 ?? throw ValidationException::withMessages(['address.governorate_id' => __('orders.no_delivery')]);
 

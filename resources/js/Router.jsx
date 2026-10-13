@@ -37,6 +37,7 @@ import { StoreCatalogPage } from '@/pages/storefront/StoreCatalogPage';
 import { StoreHomePage } from '@/pages/storefront/StoreHomePage';
 import { StoreOrderPage } from '@/pages/storefront/StoreOrderPage';
 import { StoreOrdersPage } from '@/pages/storefront/StoreOrdersPage';
+import { StorePolicyPage } from '@/pages/storefront/StorePolicyPage';
 import { StoreProductPage } from '@/pages/storefront/StoreProductPage';
 import { ProductFormPage } from '@/pages/products/ProductFormPage';
 import { ProductsPage } from '@/pages/products/ProductsPage';
@@ -46,6 +47,7 @@ import { PurchaseOrderPage } from '@/pages/purchasing/PurchaseOrderPage';
 import { PurchaseOrdersPage } from '@/pages/purchasing/PurchaseOrdersPage';
 import { SuppliersPage } from '@/pages/purchasing/SuppliersPage';
 import { ReportsPage } from '@/pages/reports/ReportsPage';
+import { SettingsPage } from '@/pages/settings/SettingsPage';
 import { ForgotPasswordPage } from '@/pages/auth/ForgotPasswordPage';
 import { LoginPage } from '@/pages/auth/LoginPage';
 import { RegisterPage } from '@/pages/auth/RegisterPage';
@@ -116,6 +118,7 @@ export function App() {
                                     <Route path="reports" element={<ReportsPage />} />
                                     <Route path="customers" element={<CustomersPage />} />
                                     <Route path="coupons" element={<CouponsPage />} />
+                                    <Route path="settings" element={<SettingsPage />} />
                                     <Route path="inventory" element={<InventoryPage />} />
                                     <Route path="inventory/movements" element={<StockMovementsPage />} />
                                     <Route path="warehouses" element={<WarehousesPage />} />
@@ -164,6 +167,7 @@ export function App() {
                                 <Route path="account/register" element={<StoreAuthPage mode="register" />} />
                                 <Route path="account/orders" element={<StoreOrdersPage />} />
                                 <Route path="account/orders/:number" element={<StoreOrderPage />} />
+                                <Route path="policies/:policy" element={<StorePolicyPage />} />
                             </Route>
                             <Route path="*" element={<Navigate to="/dashboard" replace />} />
                         </Routes>

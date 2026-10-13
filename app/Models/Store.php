@@ -12,11 +12,23 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Facades\Storage;
 
-#[Fillable(['name', 'slug', 'logo_path', 'governorate_id', 'city_id', 'low_stock_threshold'])]
+#[Fillable([
+    'name', 'slug', 'logo_path', 'governorate_id', 'city_id', 'low_stock_threshold', 'description',
+    'contact_phone', 'whatsapp', 'contact_email', 'address', 'facebook_url', 'instagram_url', 'tiktok_url',
+    'announcement', 'accepting_orders', 'closed_message', 'min_order_total', 'return_policy', 'shipping_policy', 'privacy_policy', 'terms',
+])]
 class Store extends Model
 {
     /** @use HasFactory<StoreFactory> */
     use HasFactory;
+
+    /** Storefront policy pages, by URL key => column. */
+    public const POLICIES = [
+        'returns' => 'return_policy',
+        'shipping' => 'shipping_policy',
+        'privacy' => 'privacy_policy',
+        'terms' => 'terms',
+    ];
 
     /**
      * Every store starts with a main warehouse, which holds its stock until others are added.
@@ -39,6 +51,8 @@ class Store extends Model
             'default_shipping_price' => 'float',
             'free_shipping_threshold' => 'float',
             'low_stock_threshold' => 'integer',
+            'accepting_orders' => 'boolean',
+            'min_order_total' => 'float',
         ];
     }
 

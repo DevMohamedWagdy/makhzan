@@ -140,6 +140,8 @@ export function StoreCheckoutPage() {
     }
 
     const unavailable = quote.lines.some((line) => line.status === 'out_of_stock' || line.status === 'unavailable' || line.status === 'insufficient');
+    const closed = store && !store.accepting_orders;
+    const belowMinimum = store?.min_order_total ? store.min_order_total - quote.subtotal : 0;
 
     const placeOrder = async () => {
         setErrors({});
@@ -289,7 +291,11 @@ export function StoreCheckoutPage() {
                         </Alert>
                     )}
                     {unavailable && <Alert tone="warning">{t('بعض المنتجات تغيّر توفرها، راجع السلة قبل إتمام الطلب.')}</Alert>}
-                    <Button size="lg" icon="check" loading={placing} disabled={unavailable || shippingFee === null} onClick={placeOrder}>
+                    {closed && <Alert tone="warning">{store.closed_message}</Alert>}
+                    {belowMinimum > 0 && (
+                        <Alert tone="warning">{t('أقل قيمة للطلب {amount}، أضف منتجات بقيمة {remaining}.', { amount: formatMoney(store.min_order_total), remaining: formatMoney(belowMinimum) })}</Alert>
+                    )}
+                    <Button size="lg" icon="check" loading={placing} disabled={unavailable || shippingFee === null || closed || belowMinimum > 0} onClick={placeOrder}>
                         {t('تأكيد الطلب')}
                     </Button>
                     <p className="text-center text-xs text-muted">{t('بالضغط على تأكيد الطلب ستصلك تفاصيله في صفحة طلباتي.')}</p>

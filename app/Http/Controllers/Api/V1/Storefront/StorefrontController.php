@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Api\V1\Storefront;
 
 use App\Http\Controllers\Controller;
-use App\Http\Resources\PublicStoreResource;
 use App\Http\Resources\StorefrontCategoryResource;
 use App\Http\Resources\StorefrontProductResource;
+use App\Http\Resources\StorefrontStoreResource;
 use App\Models\Store;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
@@ -27,7 +27,7 @@ class StorefrontController extends Controller
             ->values();
 
         return response()->json([
-            'store' => new PublicStoreResource($store),
+            'store' => new StorefrontStoreResource($store),
             'categories' => StorefrontCategoryResource::collection($categories),
             'featured' => StorefrontProductResource::collection($visibleProducts()->where('is_featured', true)->latest()->limit(8)->get()),
             'latest' => StorefrontProductResource::collection($visibleProducts()->latest()->latest('id')->limit(8)->get()),

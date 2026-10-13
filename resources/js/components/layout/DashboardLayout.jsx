@@ -50,7 +50,7 @@ const NAV_SECTIONS = [
         title: t('الإدارة'),
         items: [
             { label: t('التقارير'), icon: 'bar-chart', to: '/dashboard/reports' },
-            { label: t('إعدادات المتجر'), icon: 'settings', soon: true },
+            { label: t('إعدادات المتجر'), icon: 'settings', to: '/dashboard/settings' },
         ],
     },
 ];
@@ -253,8 +253,8 @@ function DashboardShell() {
                                 </button>
                             )}
                             items={[
-                                { label: t('الملف الشخصي'), icon: 'user', disabled: true, hint: t('قريباً') },
-                                { label: t('إعدادات المتجر'), icon: 'store', disabled: true, hint: t('قريباً') },
+                                { label: t('الملف الشخصي'), icon: 'user', onClick: () => navigate('/dashboard/settings?tab=account') },
+                                { label: t('إعدادات المتجر'), icon: 'store', onClick: () => navigate('/dashboard/settings') },
                                 { divider: true },
                                 {
                                     label: t('تسجيل الخروج'),
