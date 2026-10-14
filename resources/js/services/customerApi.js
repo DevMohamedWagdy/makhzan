@@ -10,6 +10,10 @@ export function customerApi(storeSlug) {
         register: (payload) => request('POST', `${base}/customer/register`, { body: payload }),
         /** `{ token, customer }` */
         login: (payload) => request('POST', `${base}/customer/login`, { body: payload }),
+        /** Emails a reset link when the account has an email; always `{ message }`. */
+        forgotPassword: (identifier) => request('POST', `${base}/customer/forgot-password`, { body: { identifier } }),
+        /** @param {{ customer_id: number, token: string, password: string, password_confirmation: string }} payload */
+        resetPassword: (payload) => request('POST', `${base}/customer/reset-password`, { body: payload }),
         me: () => request('GET', `${base}/customer/me`, { auth }),
         logout: () => request('POST', `${base}/customer/logout`, { auth }),
 

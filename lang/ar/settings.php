@@ -13,4 +13,8 @@ return [
         'terms' => 'الشروط والأحكام',
     ],
 
+    'domain_invalid' => 'الدومين غير صحيح. اكتبه بدون https، مثل: shop.example.com',
+    'domain_taken' => 'هذا الدومين مربوط بمتجر آخر.',
+    'domain_missing' => 'أضف الدومين أولاً.',
+    'domain_not_pointing' => 'الدومين لا يشير إلينا بعد. أضف سجل CNAME يشير إلى :target ثم انتظر حتى ينتشر (قد يستغرق ساعة).',
 ];

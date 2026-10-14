@@ -22,7 +22,7 @@ class OrderController extends Controller
 
     /**
      * The store's orders, newest first, filtered by status, search, affiliate attribution, customer, coupon,
-     * payment method or payment status.
+     * payment method, payment status or a list of order ids.
      */
     public function index(ListOrdersRequest $request): AnonymousResourceCollection
     {
@@ -31,6 +31,7 @@ class OrderController extends Controller
         $orders = $request->user()->store->orders()
             ->with(['items', 'customer', 'affiliate'])
             ->search($filters['search'] ?? null)
+            ->when($filters['ids'] ?? null, fn ($query, $ids) => $query->whereIn('id', $ids))
             ->when($filters['status'] ?? null, fn ($query, $status) => $query->where('status', $status))
             ->when($request->boolean('affiliate'), fn ($query) => $query->whereNotNull('affiliate_id'))
             ->when($filters['affiliate_id'] ?? null, fn ($query, $affiliateId) => $query->where('affiliate_id', $affiliateId))

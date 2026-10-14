@@ -15,6 +15,8 @@ export const authApi = {
     checkSlug: (slug) => request('GET', '/api/v1/stores/slug-availability', { query: { slug } }),
 
     logout: () => request('POST', '/api/v1/vendor/auth/logout'),
+    /** The signed-in vendor with their store (billing status, permissions); refreshes the session. */
+    me: () => request('GET', '/api/v1/vendor/auth/me'),
 
     /** @param {{ full_name: string, phone: string, email: string }} payload  Returns the vendor with their store. */
     updateProfile: (payload) => request('PUT', '/api/v1/vendor/auth/profile', { body: payload }),

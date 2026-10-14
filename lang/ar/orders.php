@@ -19,4 +19,16 @@ return [
     'cannot_cancel' => 'لا يمكن إلغاء الطلب بعد تأكيده من المتجر، تواصل مع المتجر',
     'price_invalid' => 'أدخل سعراً صحيحاً',
 
+    'carriers' => [
+        'bosta' => 'بوسطة',
+    ],
+    'shipping' => [
+        'bosta_not_connected' => 'اربط حساب بوسطة أولاً من صفحة الشحن.',
+        'must_be_confirmed' => 'أكّد الطلب أولاً قبل شحنه.',
+        'already_shipped' => 'هذا الطلب له شحنة بالفعل.',
+        'bosta_failed' => 'رفضت بوسطة إنشاء الشحنة: :reason',
+        'bosta_key_invalid' => 'مفتاح API غير صحيح. انسخه من لوحة بوسطة (الإعدادات ← API Integration).',
+        'no_bosta_orders' => 'لا توجد شحنات بوسطة ضمن الطلبات المختارة.',
+        'updated_by_bosta' => 'تحديث تلقائي من بوسطة',
+    ],
 ];

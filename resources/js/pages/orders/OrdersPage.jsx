@@ -6,13 +6,16 @@ import { EmptyState, StatCard } from '@/components/ui/Display';
 import { Input, Select } from '@/components/ui/Form';
 import { Pagination, Tabs } from '@/components/ui/Navigation';
 import { Skeleton } from '@/components/ui/Spinner';
+import { useToast } from '@/context/ToastContext';
 import { OrderDrawer } from '@/features/orders/OrderDrawer';
 import { OrderStatusBadge, PaymentBadge } from '@/features/orders/OrderBadges';
+import { openAirwayBills } from '@/features/orders/ShipmentSection';
 import { useDebouncedValue } from '@/hooks/common';
 import { t } from '@/i18n';
 import { ORDER_STATUSES, PAYMENT_METHODS, PAYMENT_STATUSES } from '@/lib/constants';
 import { cn, formatMoney, formatNumber, formatRelative } from '@/lib/format';
 import { findGovernorate } from '@/lib/locations';
+import { openOrderPrint } from '@/pages/orders/OrderPrintPage';
 import { ordersApi } from '@/services/ordersApi';
 
 const COLUMNS = [t('الطلب'), t('العميل'), t('المحافظة'), t('المنتجات'), t('الإجمالي'), t('المسوق'), t('الدفع'), t('الحالة')];
@@ -23,8 +26,12 @@ const PAYMENT_FILTERS = [
     ...Object.entries(PAYMENT_STATUSES).map(([value, config]) => ({ value, label: t('أونلاين: {status}', { status: config.label }), query: { payment_status: value } })),
 ];
 
-/** All store orders with status tabs, search, payment filter, and the order drawer (?order={id}). */
+/**
+ * All store orders with status tabs, search, payment filter, the order drawer (?order={id}),
+ * and printing invoices or packing slips for the selected orders.
+ */
 export function OrdersPage() {
+    const toast = useToast();
     const [searchParams, setSearchParams] = useSearchParams();
     const status = searchParams.get('status') ?? '';
     const page = Number(searchParams.get('page')) || 1;
@@ -84,6 +91,13 @@ export function OrdersPage() {
 
     const closeOrder = useCallback(() => setQuery({ order: '' }), [setQuery]);
 
+    const [selectedIds, setSelectedIds] = useState([]);
+
+    // Selection belongs to the rows on screen; a new page, tab or search starts over.
+    useEffect(() => setSelectedIds([]), [result]);
+
+    const toggleSelected = (orderId) => setSelectedIds((current) => (current.includes(orderId) ? current.filter((id) => id !== orderId) : [...current, orderId]));
+
     const tabs = useMemo(
         () => [
             { value: '', label: t('كل الطلبات'), count: summary?.total },
@@ -93,6 +107,7 @@ export function OrdersPage() {
     );
 
     const items = result?.data ?? [];
+    const allSelected = items.length > 0 && selectedIds.length === items.length;
 
     return (
         <>
@@ -115,6 +130,22 @@ export function OrdersPage() {
                             {t('طلبات الكوبون: {code}', { code: items[0]?.coupon_code ?? `#${couponId}` })}
                         </Button>
                     )}
+                    {selectedIds.length > 0 && (
+                        <span className="ms-auto flex flex-wrap items-center gap-2">
+                            <span className="text-sm text-muted">{t('تم اختيار {count}', { count: selectedIds.length })}</span>
+                            <Button size="sm" variant="secondary" icon="file-text" onClick={() => openOrderPrint(selectedIds, 'invoice')}>
+                                {t('طباعة الفواتير')}
+                            </Button>
+                            <Button size="sm" variant="secondary" icon="box" onClick={() => openOrderPrint(selectedIds, 'packing')}>
+                                {t('طباعة بوالص التغليف')}
+                            </Button>
+                            {items.some((order) => selectedIds.includes(order.order_id) && order.shipment?.is_bosta) && (
+                                <Button size="sm" variant="secondary" icon="truck" onClick={() => openAirwayBills(selectedIds, toast)}>
+                                    {t('بوالص بوسطة')}
+                                </Button>
+                            )}
+                        </span>
+                    )}
                     {affiliateId && (
                         <Button variant="soft" size="sm" iconEnd="x" onClick={() => setQuery({ affiliate_id: '' })}>
                             {t('طلبات المسوق: {name}', { name: items[0]?.affiliate?.full_name ?? `#${affiliateId}` })}
@@ -135,6 +166,9 @@ export function OrdersPage() {
                         <table className="w-full min-w-[940px] text-sm">
                             <thead className="border-y border-line bg-surface-2 text-xs text-muted">
                                 <tr>
+                                    <th scope="col" className="w-10 ps-4 py-3">
+                                        <input type="checkbox" className="size-4 accent-primary" checked={allSelected} onChange={() => setSelectedIds(allSelected ? [] : items.map((order) => order.order_id))} aria-label={t('اختيار كل الطلبات')} />
+                                    </th>
                                     {COLUMNS.map((column) => (
                                         <th key={column} scope="col" className="px-4 py-3 text-start font-medium whitespace-nowrap">
                                             {column}
@@ -146,6 +180,7 @@ export function OrdersPage() {
                                 {loading && items.length === 0
                                     ? Array.from({ length: 5 }, (_, index) => (
                                           <tr key={index}>
+                                              <td className="ps-4" />
                                               {COLUMNS.map((column) => (
                                                   <td key={column} className="px-4 py-4">
                                                       <Skeleton className="h-4 w-20" />
@@ -155,6 +190,9 @@ export function OrdersPage() {
                                       ))
                                     : items.map((order) => (
                                           <tr key={order.order_id} className="cursor-pointer transition hover:bg-surface-2" onClick={() => setQuery({ order: order.order_id })}>
+                                              <td className="ps-4 py-3.5" onClick={(event) => event.stopPropagation()}>
+                                                  <input type="checkbox" className="size-4 accent-primary" checked={selectedIds.includes(order.order_id)} onChange={() => toggleSelected(order.order_id)} aria-label={t('اختيار الطلب #{number}', { number: order.number })} />
+                                              </td>
                                               <td className="px-4 py-3.5 whitespace-nowrap">
                                                   <span className="block font-semibold text-ink">#{order.number}</span>
                                                   <span className="text-xs text-muted">{formatRelative(order.created_at)}</span>

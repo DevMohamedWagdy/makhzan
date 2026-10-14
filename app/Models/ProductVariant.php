@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\LogsActivity;
 use Database\Factories\ProductVariantFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -19,7 +20,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class ProductVariant extends Model
 {
     /** @use HasFactory<ProductVariantFactory> */
-    use HasFactory;
+    use HasFactory, LogsActivity;
+
+    /** @var list<string> Attributes not worth an activity log entry. */
+    protected array $activityIgnored = ['stock', 'position'];
 
     /**
      * Get the attributes that should be cast.
@@ -124,5 +128,10 @@ class ProductVariant extends Model
     public function title(): string
     {
         return implode(' / ', $this->option_values ?? []);
+    }
+
+    public function activityLabel(): string
+    {
+        return trim(($this->product?->name ?? '').' '.implode(' / ', $this->option_values ?? [])) ?: ($this->sku ?? '#'.$this->id);
     }
 }

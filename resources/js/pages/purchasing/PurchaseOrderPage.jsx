@@ -7,6 +7,7 @@ import { Card, DetailRow, EmptyState } from '@/components/ui/Display';
 import { Field, Input } from '@/components/ui/Form';
 import { Modal } from '@/components/ui/Overlay';
 import { Skeleton } from '@/components/ui/Spinner';
+import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
 import { PurchaseOrderStatusBadge } from '@/features/purchasing/PurchaseOrderBadges';
 import { t } from '@/i18n';
@@ -109,6 +110,7 @@ const CONFIRMS = {
 
 /** One purchase order: items with received/remaining quantities and its lifecycle actions. */
 export function PurchaseOrderPage() {
+    const { can } = useAuth();
     const { purchaseOrderId } = useParams();
     const navigate = useNavigate();
     const toast = useToast();
@@ -171,7 +173,7 @@ export function PurchaseOrderPage() {
                 breadcrumbs={[t('لوحة التحكم'), t('أوامر الشراء'), `#${order.number}`]}
                 actions={
                     <>
-                        {order.status === 'draft' && (
+                        {order.status === 'draft' && can('purchasing.delete') && (
                             <Button variant="danger-soft" icon="trash" onClick={() => setConfirm('remove')}>
                                 {t('حذف')}
                             </Button>

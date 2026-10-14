@@ -10,6 +10,7 @@ import { Skeleton } from '@/components/ui/Spinner';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
 import { PaymentSettingsTab } from '@/features/payments/PaymentSettingsTab';
+import { DomainTab } from '@/features/settings/DomainTab';
 import { useCopy } from '@/hooks/common';
 import { t } from '@/i18n';
 import { CURRENCY } from '@/lib/constants';
@@ -17,12 +18,14 @@ import { GOVERNORATES, findGovernorate } from '@/lib/locations';
 import { authApi } from '@/services/authApi';
 import { storeSettingsApi } from '@/services/storeSettingsApi';
 
+/** Staff see only the tabs their permissions cover; everyone has "my account". */
 const TABS = [
-    { value: 'store', label: t('بيانات المتجر'), icon: 'store' },
-    { value: 'contact', label: t('التواصل'), icon: 'phone' },
-    { value: 'orders', label: t('الطلبات'), icon: 'shopping-bag' },
-    { value: 'payments', label: t('الدفع'), icon: 'credit-card' },
-    { value: 'policies', label: t('السياسات'), icon: 'shield-check' },
+    { value: 'store', label: t('بيانات المتجر'), icon: 'store', permission: 'settings' },
+    { value: 'contact', label: t('التواصل'), icon: 'phone', permission: 'settings' },
+    { value: 'orders', label: t('الطلبات'), icon: 'shopping-bag', permission: 'settings' },
+    { value: 'payments', label: t('الدفع'), icon: 'credit-card', permission: 'payments' },
+    { value: 'policies', label: t('السياسات'), icon: 'shield-check', permission: 'settings' },
+    { value: 'domain', label: t('الدومين'), icon: 'link', permission: 'settings' },
     { value: 'account', label: t('حسابي'), icon: 'user' },
 ];
 
@@ -351,17 +354,18 @@ function AccountTab() {
 }
 
 const MORE_SETTINGS = [
-    { to: '/dashboard/shipping', icon: 'truck', label: t('الشحن'), description: t('أسعار التوصيل لكل محافظة والشحن المجاني') },
-    { to: '/dashboard/warehouses', icon: 'building', label: t('المخازن'), description: t('أماكن التخزين وترتيب خصم الطلبات') },
-    { to: '/dashboard/inventory', icon: 'warehouse', label: t('المخزون'), description: t('حد التنبيه للمخزون المنخفض') },
-    { to: '/dashboard/affiliates', icon: 'users', label: t('المسوقين'), description: t('رابط تسجيل المسوقين والموافقة عليهم') },
+    { to: '/dashboard/shipping', icon: 'truck', label: t('الشحن'), description: t('أسعار التوصيل لكل محافظة والشحن المجاني'), permission: 'settings' },
+    { to: '/dashboard/warehouses', icon: 'building', label: t('المخازن'), description: t('أماكن التخزين وترتيب خصم الطلبات'), permission: 'inventory' },
+    { to: '/dashboard/inventory', icon: 'warehouse', label: t('المخزون'), description: t('حد التنبيه للمخزون المنخفض'), permission: 'inventory' },
+    { to: '/dashboard/affiliates', icon: 'users', label: t('المسوقين'), description: t('رابط تسجيل المسوقين والموافقة عليهم'), permission: 'marketing' },
 ];
 
-/** Store settings in tabs (?tab=store|contact|orders|payments|policies|account), plus links to other settings pages. */
+/** Store settings in tabs (?tab=store|contact|orders|payments|policies|domain|account), plus links to other settings pages. */
 export function SettingsPage() {
-    const { updateVendor } = useAuth();
+    const { updateVendor, can } = useAuth();
     const [searchParams, setSearchParams] = useSearchParams();
-    const tab = TABS.some((item) => item.value === searchParams.get('tab')) ? searchParams.get('tab') : 'store';
+    const tabs = TABS.filter((item) => !item.permission || can(item.permission));
+    const tab = tabs.some((item) => item.value === searchParams.get('tab')) ? searchParams.get('tab') : tabs[0].value;
     const [settings, setSettings] = useState(null);
     const [error, setError] = useState(null);
 
@@ -373,14 +377,21 @@ export function SettingsPage() {
             .catch((loadError) => setError(loadError.message));
     };
 
-    useEffect(load, []);
+    // Staff without the settings permission only reach the account and payments tabs.
+    useEffect(() => {
+        if (can('settings')) {
+            load();
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     // The sidebar shows the store's name and logo from the session.
     const onSaved = (updated) => {
         setSettings(updated);
-        updateVendor({ store: { name: updated.name, logo_url: updated.logo_url, governorate_id: updated.governorate_id, city_id: updated.city_id } });
+        updateVendor({ store: { name: updated.name, logo_url: updated.logo_url, governorate_id: updated.governorate_id, city_id: updated.city_id, contact_phone: updated.contact_phone, address: updated.address } });
     };
 
+    const moreSettings = MORE_SETTINGS.filter((item) => can(item.permission));
     const TabContent = { store: StoreTab, contact: ContactTab, orders: OrdersTab, policies: PoliciesTab }[tab];
 
     return (
@@ -388,10 +399,12 @@ export function SettingsPage() {
             <PageHeader title={t('إعدادات المتجر')} description={t('بيانات متجرك وطرق الدفع وطريقة تواصل العملاء معك وسياساتك')} breadcrumbs={[t('لوحة التحكم'), t('الإدارة'), t('إعدادات المتجر')]} />
 
             <section className="mk-card overflow-hidden">
-                <Tabs tabs={TABS} value={tab} onChange={(value) => setSearchParams(value === 'store' ? {} : { tab: value }, { replace: true })} className="px-3" />
+                <Tabs tabs={tabs} value={tab} onChange={(value) => setSearchParams(value === 'store' ? {} : { tab: value }, { replace: true })} className="px-3" />
                 <div className="p-5 sm:p-6">
                     {tab === 'account' ? (
                         <AccountTab />
+                    ) : tab === 'domain' ? (
+                        <DomainTab />
                     ) : tab === 'payments' ? (
                         <PaymentSettingsTab />
                     ) : error ? (
@@ -407,21 +420,23 @@ export function SettingsPage() {
                 </div>
             </section>
 
-            <Card title={t('إعدادات أخرى')} className="mt-6">
-                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                    {MORE_SETTINGS.map((item) => (
-                        <Link key={item.to} to={item.to} className="group flex items-start gap-3 rounded-xl border border-line p-4 transition hover:border-line-strong">
-                            <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-primary-soft text-primary">
-                                <Icon name={item.icon} className="size-[18px]" />
-                            </span>
-                            <span>
-                                <span className="block text-sm font-semibold text-ink">{item.label}</span>
-                                <span className="text-xs text-muted">{item.description}</span>
-                            </span>
-                        </Link>
-                    ))}
-                </div>
-            </Card>
+            {moreSettings.length > 0 && (
+                <Card title={t('إعدادات أخرى')} className="mt-6">
+                    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                        {moreSettings.map((item) => (
+                            <Link key={item.to} to={item.to} className="group flex items-start gap-3 rounded-xl border border-line p-4 transition hover:border-line-strong">
+                                <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-primary-soft text-primary">
+                                    <Icon name={item.icon} className="size-[18px]" />
+                                </span>
+                                <span>
+                                    <span className="block text-sm font-semibold text-ink">{item.label}</span>
+                                    <span className="text-xs text-muted">{item.description}</span>
+                                </span>
+                            </Link>
+                        ))}
+                    </div>
+                </Card>
+            )}
         </>
     );
 }

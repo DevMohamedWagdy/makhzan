@@ -8,6 +8,8 @@ use App\Enums\OrderStatus;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
 use App\Enums\StockMovementType;
+use App\Models\Concerns\LogsActivity;
+use App\Support\Shipping\BostaClient;
 use Database\Factories\OrderFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -31,7 +33,10 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 class Order extends Model
 {
     /** @use HasFactory<OrderFactory> */
-    use HasFactory;
+    use HasFactory, LogsActivity;
+
+    /** @var list<string> Attributes not worth an activity log entry. */
+    protected array $activityIgnored = ['payment_expires_at'];
 
     /**
      * Get the attributes that should be cast.
@@ -62,6 +67,8 @@ class Order extends Model
             'delivered_at' => 'datetime',
             'cancelled_at' => 'datetime',
             'returned_at' => 'datetime',
+            'carrier_status_code' => 'integer',
+            'carrier_updated_at' => 'datetime',
         ];
     }
 
@@ -193,5 +200,41 @@ class Order extends Model
                 ->orWhere('phone', 'like', "%{$term}%")
                 ->when(ctype_digit($term), fn (Builder $query) => $query->orWhere('number', (int) $term));
         });
+    }
+
+    /**
+     * Who carries the order and how to track it, or null before it has a tracking number.
+     *
+     * @return array{carrier: string, tracking_number: string, tracking_url: string|null, status: string|null, updated_at: string|null, is_bosta: bool}|null
+     */
+    public function shipment(): ?array
+    {
+        if (! $this->tracking_number) {
+            return null;
+        }
+
+        $isBosta = $this->carrier === StoreShippingAccount::BOSTA;
+
+        return [
+            'carrier' => $isBosta ? __('orders.carriers.bosta') : (string) $this->carrier,
+            'tracking_number' => $this->tracking_number,
+            'tracking_url' => $isBosta ? BostaClient::trackingUrl($this->tracking_number) : null,
+            'status' => $this->carrier_status,
+            'updated_at' => $this->carrier_updated_at?->toIso8601String(),
+            'is_bosta' => $isBosta,
+        ];
+    }
+
+    public function activityLabel(): string
+    {
+        return '#'.$this->number;
+    }
+
+    /**
+     * @param  array<string, mixed>  $changed
+     */
+    public function activityEvent(string $default, array $changed): string
+    {
+        return array_key_exists('status', $changed) ? 'status_changed' : (array_key_exists('tracking_number', $changed) ? 'shipped' : $default);
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\PurchaseOrderStatus;
+use App\Models\Concerns\LogsActivity;
 use Database\Factories\PurchaseOrderFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -18,7 +19,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class PurchaseOrder extends Model
 {
     /** @use HasFactory<PurchaseOrderFactory> */
-    use HasFactory;
+    use HasFactory, LogsActivity;
 
     /**
      * Get the attributes that should be cast.
@@ -86,5 +87,10 @@ class PurchaseOrder extends Model
     public function receivedTotal(): float
     {
         return round($this->items->sum(fn (PurchaseOrderItem $item): float => $item->quantity_received * $item->unit_cost), 2);
+    }
+
+    public function activityLabel(): string
+    {
+        return '#'.$this->number;
     }
 }

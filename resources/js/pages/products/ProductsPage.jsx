@@ -9,6 +9,7 @@ import { Input, Select } from '@/components/ui/Form';
 import { Icon } from '@/components/ui/Icon';
 import { Pagination, Tabs } from '@/components/ui/Navigation';
 import { Skeleton } from '@/components/ui/Spinner';
+import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
 import { PriceCell, ProductStatusBadge, ProductThumb, StockBadge } from '@/features/products/ProductBadges';
 import { useCategories } from '@/features/products/useCategories';
@@ -52,6 +53,7 @@ function useProductFilters() {
 }
 
 export function ProductsPage() {
+    const { can } = useAuth();
     const toast = useToast();
     const navigate = useNavigate();
     const { categories } = useCategories();
@@ -129,9 +131,11 @@ export function ProductsPage() {
                         <Button variant="secondary" icon="grid" to="/dashboard/categories">
                             {t('الأقسام')}
                         </Button>
-                        <Button icon="plus" to={hasCategories ? '/dashboard/products/new' : undefined} disabled={!hasCategories}>
-                            {t('إضافة منتج')}
-                        </Button>
+                        {can('products.create') && (
+                            <Button icon="plus" to={hasCategories ? '/dashboard/products/new' : undefined} disabled={!hasCategories}>
+                                {t('إضافة منتج')}
+                            </Button>
+                        )}
                     </>
                 }
             />
@@ -267,11 +271,11 @@ export function ProductsPage() {
                                                       )}
                                                       items={[
                                                           { label: t('تعديل المنتج'), icon: 'edit', onClick: () => navigate(`/dashboard/products/${product.product_id}`) },
-                                                          { label: t('نشر في المتجر'), icon: 'store', tone: 'success', onClick: () => setStatus(product, 'active'), hidden: product.status === 'active' },
-                                                          { label: t('تحويل لمسودة'), icon: 'eye-off', onClick: () => setStatus(product, 'draft'), hidden: product.status === 'draft' },
-                                                          { label: t('أرشفة'), icon: 'box', onClick: () => setStatus(product, 'archived'), hidden: product.status === 'archived' },
+                                                          { label: t('نشر في المتجر'), icon: 'store', tone: 'success', onClick: () => setStatus(product, 'active'), hidden: product.status === 'active' || !can('products.update') },
+                                                          { label: t('تحويل لمسودة'), icon: 'eye-off', onClick: () => setStatus(product, 'draft'), hidden: product.status === 'draft' || !can('products.update') },
+                                                          { label: t('أرشفة'), icon: 'box', onClick: () => setStatus(product, 'archived'), hidden: product.status === 'archived' || !can('products.update') },
                                                           { divider: true },
-                                                          { label: t('حذف المنتج'), icon: 'trash', tone: 'danger', onClick: () => setDeleting(product) },
+                                                          { label: t('حذف المنتج'), icon: 'trash', tone: 'danger', onClick: () => setDeleting(product), hidden: !can('products.delete') },
                                                       ]}
                                                   />
                                               </td>

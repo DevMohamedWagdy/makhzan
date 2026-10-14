@@ -1,9 +1,11 @@
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Logo } from '@/components/brand/Logo';
-import { Avatar } from '@/components/ui/Display';
+import { Button } from '@/components/ui/Button';
+import { Alert, Avatar } from '@/components/ui/Display';
 import { Dropdown } from '@/components/ui/Dropdown';
 import { Icon } from '@/components/ui/Icon';
+import { PageLoader } from '@/components/ui/Spinner';
 import { LanguageToggle } from '@/components/ui/LanguageToggle';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { useAuth } from '@/context/AuthContext';
@@ -12,6 +14,7 @@ import { useToast } from '@/context/ToastContext';
 import { notificationTarget } from '@/features/notifications/NotificationItem';
 import { NotificationsMenu } from '@/features/notifications/NotificationsMenu';
 import { useCopy } from '@/hooks/common';
+import { authApi } from '@/services/authApi';
 import { isRtl, t } from '@/i18n';
 import { cn } from '@/lib/format';
 
@@ -26,40 +29,43 @@ const NAV_SECTIONS = [
     {
         title: t('المبيعات'),
         items: [
-            { label: t('الطلبات'), icon: 'shopping-bag', to: '/dashboard/orders', counter: 'pendingOrdersCount' },
-            { label: t('المدفوعات'), icon: 'credit-card', to: '/dashboard/payments' },
-            { label: t('العملاء'), icon: 'user', to: '/dashboard/customers' },
-            { label: t('الشحن'), icon: 'truck', to: '/dashboard/shipping' },
+            { label: t('الطلبات'), icon: 'shopping-bag', to: '/dashboard/orders', counter: 'pendingOrdersCount', permission: 'orders' },
+            { label: t('المدفوعات'), icon: 'credit-card', to: '/dashboard/payments', permission: 'payments' },
+            { label: t('العملاء'), icon: 'user', to: '/dashboard/customers', permission: 'customers' },
+            { label: t('الشحن'), icon: 'truck', to: '/dashboard/shipping', permission: 'settings' },
         ],
     },
     {
         title: t('الكتالوج'),
         items: [
-            { label: t('المنتجات'), icon: 'box', to: '/dashboard/products' },
-            { label: t('الأقسام'), icon: 'grid', to: '/dashboard/categories' },
+            { label: t('المنتجات'), icon: 'box', to: '/dashboard/products', permission: 'products' },
+            { label: t('الأقسام'), icon: 'grid', to: '/dashboard/categories', permission: 'products' },
         ],
     },
     {
         title: t('المخزون والمشتريات'),
         items: [
-            { label: t('المخزون'), icon: 'warehouse', to: '/dashboard/inventory' },
-            { label: t('المخازن'), icon: 'building', to: '/dashboard/warehouses' },
-            { label: t('أوامر الشراء'), icon: 'download', to: '/dashboard/purchase-orders' },
-            { label: t('الموردين'), icon: 'users', to: '/dashboard/suppliers' },
+            { label: t('المخزون'), icon: 'warehouse', to: '/dashboard/inventory', permission: 'inventory' },
+            { label: t('المخازن'), icon: 'building', to: '/dashboard/warehouses', permission: 'inventory' },
+            { label: t('أوامر الشراء'), icon: 'download', to: '/dashboard/purchase-orders', permission: 'purchasing' },
+            { label: t('الموردين'), icon: 'users', to: '/dashboard/suppliers', permission: 'purchasing' },
         ],
     },
     {
         title: t('التسويق'),
         items: [
-            { label: t('المسوقين'), icon: 'users', to: '/dashboard/affiliates' },
-            { label: t('طلبات التحويل'), icon: 'send', to: '/dashboard/payout-requests', counter: 'payoutRequestsCount' },
-            { label: t('الكوبونات'), icon: 'gift', to: '/dashboard/coupons' },
+            { label: t('المسوقين'), icon: 'users', to: '/dashboard/affiliates', permission: 'marketing' },
+            { label: t('طلبات التحويل'), icon: 'send', to: '/dashboard/payout-requests', counter: 'payoutRequestsCount', permission: 'marketing' },
+            { label: t('الكوبونات'), icon: 'gift', to: '/dashboard/coupons', permission: 'marketing' },
         ],
     },
     {
         title: t('الإدارة'),
         items: [
-            { label: t('التقارير'), icon: 'bar-chart', to: '/dashboard/reports' },
+            { label: t('التقارير'), icon: 'bar-chart', to: '/dashboard/reports', permission: 'reports' },
+            { label: t('فريق العمل'), icon: 'user-plus', to: '/dashboard/staff', permission: 'owner' },
+            { label: t('الاشتراك والباقة'), icon: 'zap', to: '/dashboard/subscription', permission: 'billing' },
+            { label: t('سجل النشاط'), icon: 'clock', to: '/dashboard/activity', permission: 'owner' },
             { label: t('إعدادات المتجر'), icon: 'settings', to: '/dashboard/settings' },
         ],
     },
@@ -74,7 +80,8 @@ function storefrontUrl(store) {
 }
 
 function Sidebar({ open, onClose }) {
-    const { store } = useAuth();
+    const { store, can } = useAuth();
+    const visibleSections = NAV_SECTIONS.map((section) => ({ ...section, items: section.items.filter((item) => !item.permission || can(item.permission)) })).filter((section) => section.items.length > 0);
     const alerts = useDashboardAlerts();
     const toast = useToast();
     const { copy, copiedValue } = useCopy();
@@ -136,7 +143,7 @@ function Sidebar({ open, onClose }) {
                 </div>
 
                 <nav className="mk-scroll flex-1 overflow-y-auto px-3 py-4">
-                    {NAV_SECTIONS.map((section) => (
+                    {visibleSections.map((section) => (
                         <div key={section.title} className="mb-5">
                             <p className="mb-2 px-3 text-[11px] font-semibold tracking-wide text-muted uppercase">{section.title}</p>
                             <ul className="flex flex-col gap-0.5">
@@ -226,12 +233,20 @@ export function DashboardLayout() {
 
 function DashboardShell() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
-    const { vendor, logout } = useAuth();
+    const { vendor, store, logout, isOwner, can, updateVendor } = useAuth();
     const { notifications, unreadCount, markRead, markAllRead } = useDashboardAlerts();
     const navigate = useNavigate();
     const location = useLocation();
 
     useEffect(() => setSidebarOpen(false), [location.pathname]);
+
+    // Permissions and billing change on the server (staff edits, trial ending): refresh on load.
+    useEffect(() => {
+        authApi
+            .me()
+            .then(updateVendor)
+            .catch(() => {});
+    }, [updateVendor]);
 
     return (
         <div className="min-h-dvh">
@@ -257,14 +272,14 @@ function DashboardShell() {
                                     <Avatar name={vendor?.full_name} size="sm" />
                                     <span className="hidden text-start sm:block">
                                         <span className="block text-sm font-semibold text-ink">{vendor?.full_name}</span>
-                                        <span className="block text-xs text-muted">{t('صاحب المتجر')}</span>
+                                        <span className="block text-xs text-muted">{isOwner ? t('صاحب المتجر') : t('عضو فريق العمل')}</span>
                                     </span>
                                     <Icon name="chevron-down" className="hidden size-4 text-muted sm:block" />
                                 </button>
                             )}
                             items={[
                                 { label: t('الملف الشخصي'), icon: 'user', onClick: () => navigate('/dashboard/settings?tab=account') },
-                                { label: t('إعدادات المتجر'), icon: 'store', onClick: () => navigate('/dashboard/settings') },
+                                { label: t('إعدادات المتجر'), icon: 'store', onClick: () => navigate('/dashboard/settings'), hidden: !can('settings') },
                                 { divider: true },
                                 {
                                     label: t('تسجيل الخروج'),
@@ -280,11 +295,54 @@ function DashboardShell() {
                     </div>
                 </header>
                 <main className="px-4 py-6 sm:px-8 sm:py-8">
-                    <Outlet />
+                    <BillingBanner billing={store?.billing} isOwner={isOwner} />
+                    {store?.suspended && (
+                        <Alert tone="danger" title={t('متجرك موقوف من إدارة المنصة')} className="mb-6">
+                            {t('السبب: {reason}. لا يستطيع العملاء الطلب الآن. تواصل مع الدعم، أو جدّد اشتراكك من صفحة الاشتراك إن كان السبب انتهاء الباقة.', { reason: store.suspension_reason ?? '—' })}
+                        </Alert>
+                    )}
+                    <Suspense fallback={<PageLoader />}>
+                        <Outlet />
+                    </Suspense>
                 </main>
             </div>
         </div>
     );
+}
+
+/** Trial days left, or that the trial/subscription ended (the owner gets a link to subscribe). */
+function BillingBanner({ billing, isOwner }) {
+    const location = useLocation();
+
+    if (!billing || location.pathname === '/dashboard/subscription') {
+        return null;
+    }
+
+    const action = isOwner && (
+        <Button to="/dashboard/subscription" size="sm" icon="zap" className="shrink-0">
+            {t('اختر باقة')}
+        </Button>
+    );
+
+    if (billing.status === 'expired') {
+        return (
+            <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-danger/30 bg-danger-soft px-4 py-3 text-sm text-danger">
+                <span>{isOwner ? t('انتهت الفترة التجريبية. اختر باقة لتفتح لوحة التحكم ويستقبل متجرك الطلبات من جديد.') : t('انتهت الفترة التجريبية للمتجر. اطلب من صاحب المتجر اختيار باقة.')}</span>
+                {action}
+            </div>
+        );
+    }
+
+    if (billing.status === 'trial') {
+        return (
+            <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-primary/30 bg-primary-soft px-4 py-3 text-sm text-primary">
+                <span>{t('أنت في الفترة التجريبية المجانية: متبقي {days} يوم لاستخدام كل مميزات المنصة.', { days: billing.days_left })}</span>
+                {action}
+            </div>
+        );
+    }
+
+    return null;
 }
 
 export function PageHeader({ title, description, breadcrumbs = [], actions }) {

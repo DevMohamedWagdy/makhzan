@@ -12,6 +12,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\ValidationException;
 
 class ProductController extends Controller
 {
@@ -41,7 +42,13 @@ class ProductController extends Controller
      */
     public function store(SaveProductRequest $request, SaveProduct $saveProduct): JsonResponse
     {
-        $product = $saveProduct->handle($request->user()->store, $request->validated());
+        $store = $request->user()->store;
+
+        if (! $store->canAddProduct()) {
+            throw ValidationException::withMessages(['plan' => __('billing.product_limit', ['limit' => $store->currentPlan()->max_products])]);
+        }
+
+        $product = $saveProduct->handle($store, $request->validated());
 
         return (new ProductResource($product))
             ->response()

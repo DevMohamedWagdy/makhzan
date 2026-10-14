@@ -23,6 +23,8 @@ class VendorResource extends JsonResource
             'full_name' => $this->full_name,
             'phone' => $this->phone,
             'email' => $this->email,
+            'role' => $this->isOwner() ? 'owner' : 'staff',
+            'permissions' => $this->grantedPermissions(),
             'created_at' => $this->created_at?->toIso8601String(),
             'store' => new StoreResource($this->whenLoaded('store')),
         ];

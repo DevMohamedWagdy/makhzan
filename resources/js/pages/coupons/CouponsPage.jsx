@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/Form';
 import { Icon } from '@/components/ui/Icon';
 import { Pagination, Tabs } from '@/components/ui/Navigation';
 import { Skeleton } from '@/components/ui/Spinner';
+import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
 import { CouponFormDrawer } from '@/features/coupons/CouponFormDrawer';
 import { describeConditions, describeDiscount } from '@/features/coupons/couponText';
@@ -22,6 +23,7 @@ const COLUMNS = [t('الكود'), t('الخصم'), t('الشروط'), t('الا�
 
 /** Discount codes with state tabs, stats and the coupon form (?coupon={id} or ?coupon=new). */
 export function CouponsPage() {
+    const { can } = useAuth();
     const toast = useToast();
     const navigate = useNavigate();
     const { copy, copiedValue } = useCopy();
@@ -113,9 +115,11 @@ export function CouponsPage() {
                 description={t('أكواد خصم يكتبها العميل عند إتمام الطلب')}
                 breadcrumbs={[t('لوحة التحكم'), t('التسويق'), t('الكوبونات')]}
                 actions={
-                    <Button icon="plus" onClick={() => setQuery({ coupon: 'new' })}>
-                        {t('كوبون جديد')}
-                    </Button>
+                    can('marketing.create') && (
+                        <Button icon="plus" onClick={() => setQuery({ coupon: 'new' })}>
+                            {t('كوبون جديد')}
+                        </Button>
+                    )
                 }
             />
 
@@ -141,7 +145,7 @@ export function CouponsPage() {
                             icon="gift"
                             title={state || searchQuery ? t('لا توجد كوبونات مطابقة') : t('لا توجد كوبونات بعد')}
                             description={t('أنشئ كود خصم لعرض أو مناسبة، أو اربطه بمسوق ليشاركه مع متابعيه.')}
-                            action={<Button icon="plus" onClick={() => setQuery({ coupon: 'new' })}>{t('كوبون جديد')}</Button>}
+                            action={can('marketing.create') && <Button icon="plus" onClick={() => setQuery({ coupon: 'new' })}>{t('كوبون جديد')}</Button>}
                         />
                     </div>
                 ) : (
@@ -202,7 +206,7 @@ export function CouponsPage() {
                                                           </button>
                                                       )}
                                                       items={[
-                                                          { label: t('تعديل'), icon: 'edit', onClick: () => setQuery({ coupon: coupon.coupon_id }) },
+                                                          { label: t('تعديل'), icon: 'edit', onClick: () => setQuery({ coupon: coupon.coupon_id }), hidden: !can('marketing.update') },
                                                           {
                                                               label: t('نسخ رابط الكوبون'),
                                                               icon: 'link',
@@ -212,9 +216,9 @@ export function CouponsPage() {
                                                               },
                                                           },
                                                           { label: t('عرض الطلبات'), icon: 'shopping-bag', onClick: () => navigate(`/dashboard/orders?coupon_id=${coupon.coupon_id}`) },
-                                                          { label: coupon.is_active ? t('إيقاف') : t('تفعيل'), icon: coupon.is_active ? 'eye-off' : 'check-circle', onClick: () => toggle(coupon) },
+                                                          { label: coupon.is_active ? t('إيقاف') : t('تفعيل'), icon: coupon.is_active ? 'eye-off' : 'check-circle', onClick: () => toggle(coupon), hidden: !can('marketing.update') },
                                                           { divider: true },
-                                                          { label: t('حذف'), icon: 'trash', tone: 'danger', onClick: () => setDeleting(coupon), disabled: coupon.stats.uses > 0, hint: coupon.stats.uses > 0 ? t('مستخدم في طلبات') : undefined },
+                                                          { label: t('حذف'), icon: 'trash', tone: 'danger', onClick: () => setDeleting(coupon), hidden: !can('marketing.delete'), disabled: coupon.stats.uses > 0, hint: coupon.stats.uses > 0 ? t('مستخدم في طلبات') : undefined },
                                                       ]}
                                                   />
                                               </td>

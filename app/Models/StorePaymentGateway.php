@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\PaymentMethod;
+use App\Models\Concerns\LogsActivity;
 use Database\Factories\StorePaymentGatewayFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -19,7 +20,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class StorePaymentGateway extends Model
 {
     /** @use HasFactory<StorePaymentGatewayFactory> */
-    use HasFactory;
+    use HasFactory, LogsActivity;
 
     public const PAYMOB = 'paymob';
 

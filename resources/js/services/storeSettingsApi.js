@@ -9,6 +9,13 @@ export const storeSettingsApi = {
     uploadLogo: (file) => request('POST', `${BASE}/logo`, { body: { logo: file } }),
     removeLogo: () => request('DELETE', `${BASE}/logo`),
 
+    /** `{ domain, verified_at, cname_target, ip }` */
+    domain: () => request('GET', `${BASE}/domain`),
+    saveDomain: (domain) => request('PUT', `${BASE}/domain`, { body: { domain } }),
+    /** Checks the domain's DNS; 422 on `domain` while it doesn't point to us yet. */
+    verifyDomain: () => request('POST', `${BASE}/domain/verify`),
+    removeDomain: () => request('DELETE', `${BASE}/domain`),
+
     /** `{ cod_enabled, methods, paymob: { is_live, public_key, secret_key_hint, hmac_secret_hint, card_integration_id, wallet_integration_id, verified_at } | null, webhook_url }` */
     payments: () => request('GET', '/api/v1/vendor/payments'),
     /** @param {{ cod_enabled?: boolean, paymob?: { secret_key?: string, public_key: string, hmac_secret?: string, card_integration_id?: string, wallet_integration_id?: string } }} payload */

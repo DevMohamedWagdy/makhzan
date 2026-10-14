@@ -8,6 +8,9 @@
         <title>مخزن | Makhzan</title>
         <link rel="icon" type="image/svg+xml" href="/makhzan-icon.svg">
 
+        @if ($storeDomainSlug ?? null)
+            <script>window.__MAKHZAN_STORE_DOMAIN__ = @js($storeDomainSlug);</script>
+        @endif
         <script>
             (function () {
                 // Applied before first paint (mirrors resources/js/i18n): language and direction, then theme.

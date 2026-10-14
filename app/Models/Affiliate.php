@@ -9,6 +9,7 @@ use App\Enums\CommissionType;
 use App\Enums\PayoutMethod;
 use App\Enums\PayoutStatus;
 use App\Models\Concerns\HasPreferredLocale;
+use App\Models\Concerns\LogsActivity;
 use App\Support\PhoneNumber;
 use Carbon\CarbonInterface;
 use Database\Factories\AffiliateFactory;
@@ -43,7 +44,10 @@ class Affiliate extends Authenticatable implements HasLocalePreference
     public const IMPERSONATION_ABILITY = 'affiliate:impersonated';
 
     /** @use HasFactory<AffiliateFactory> */
-    use HasApiTokens, HasFactory, HasPreferredLocale, Notifiable;
+    use HasApiTokens, HasFactory, HasPreferredLocale, LogsActivity, Notifiable;
+
+    /** @var list<string> Attributes not worth an activity log entry. */
+    protected array $activityIgnored = ['orders_count', 'sales_total', 'earned_commission', 'pending_balance', 'clicks_count', 'preferred_locale', 'last_login_at'];
 
     /**
      * Every vendor and affiliate view shows an open transfer request.

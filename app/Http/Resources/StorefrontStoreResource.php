@@ -37,8 +37,8 @@ class StorefrontStoreResource extends JsonResource
                 'tiktok' => $this->tiktok_url,
             ]),
             'announcement' => $this->announcement,
-            'accepting_orders' => $this->accepting_orders,
-            'closed_message' => $this->accepting_orders ? null : ($this->closed_message ?: __('settings.store_closed')),
+            'accepting_orders' => $this->takesOrders(),
+            'closed_message' => $this->takesOrders() ? null : $this->closedMessage(),
             'min_order_total' => $this->min_order_total,
             'payment_methods' => array_map(fn (PaymentMethod $method): string => $method->value, $this->paymentMethods()),
             'policies' => collect(Store::POLICIES)

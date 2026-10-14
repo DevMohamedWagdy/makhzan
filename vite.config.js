@@ -25,6 +25,16 @@ export default defineConfig({
             '@': '/resources/js',
         },
     },
+    build: {
+        rolldownOptions: {
+            output: {
+                codeSplitting: {
+                    // React and the router change rarely: their own chunk stays cached across deploys.
+                    groups: [{ name: 'react', test: /node_modules[\\/](react|react-dom|react-router|react-router-dom|scheduler)[\\/]/, priority: 10 }],
+                },
+            },
+        },
+    },
     server: {
         watch: {
             ignored: ['**/storage/framework/views/**'],

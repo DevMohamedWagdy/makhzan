@@ -90,7 +90,12 @@ export function StoreAuthPage({ mode }) {
                             <Field label={t('كلمة المرور')} required error={errors.password}>
                                 {(props) => <PasswordInput {...props} value={values.password} onChange={set('password')} autoComplete="current-password" />}
                             </Field>
-                            <Checkbox label={t('تذكرني على هذا الجهاز')} checked={values.remember} onChange={set('remember')} />
+                            <div className="flex items-center justify-between gap-3">
+                                <Checkbox label={t('تذكرني على هذا الجهاز')} checked={values.remember} onChange={set('remember')} />
+                                <Link to={`/${storeSlug}/account/forgot-password`} state={{ identifier: values.identifier }} className="text-sm font-medium text-primary hover:underline">
+                                    {t('نسيت كلمة المرور؟')}
+                                </Link>
+                            </div>
                         </>
                     )}
                     <Button type="submit" size="lg" loading={submitting} className="w-full">

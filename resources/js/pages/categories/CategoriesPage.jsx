@@ -5,16 +5,18 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { Badge, EmptyState } from '@/components/ui/Display';
 import { Icon } from '@/components/ui/Icon';
 import { Skeleton } from '@/components/ui/Spinner';
+import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
 import { CategoryFormModal } from '@/features/products/CategoryFormModal';
 import { ProductThumb } from '@/features/products/ProductBadges';
 import { useCategories } from '@/features/products/useCategories';
 import { t } from '@/i18n';
-import { formatNumber } from '@/lib/format';
+import { cn, formatNumber } from '@/lib/format';
 import { categoriesApi } from '@/services/productsApi';
 
 /** The store's catalog sections: add, edit, reorder, hide and delete (when empty). */
 export function CategoriesPage() {
+    const { can } = useAuth();
     const toast = useToast();
     const { categories, error, reload } = useCategories();
     /** @type {[{ type: 'form' | 'delete', category?: object } | null, Function]} */
@@ -60,9 +62,11 @@ export function CategoriesPage() {
                 description={t('نظّم منتجاتك في أقسام تظهر في متجرك. كل منتج يجب أن يتبع قسماً.')}
                 breadcrumbs={[t('لوحة التحكم'), t('الكتالوج'), t('الأقسام')]}
                 actions={
-                    <Button icon="plus" onClick={() => setDialog({ type: 'form' })}>
-                        {t('إضافة قسم')}
-                    </Button>
+                    can('products.create') && (
+                        <Button icon="plus" onClick={() => setDialog({ type: 'form' })}>
+                            {t('إضافة قسم')}
+                        </Button>
+                    )
                 }
             />
 
@@ -84,7 +88,7 @@ export function CategoriesPage() {
                             title={t('لا توجد أقسام بعد')}
                             description={t('ابدأ بإضافة الأقسام التي تعمل بها، مثل: فساتين، عبايات، إكسسوارات، ثم أضف منتجاتك إليها.')}
                             action={
-                                <Button icon="plus" onClick={() => setDialog({ type: 'form' })}>
+                                can('products.create') && <Button icon="plus" onClick={() => setDialog({ type: 'form' })}>
                                     {t('إضافة أول قسم')}
                                 </Button>
                             }
@@ -113,7 +117,7 @@ export function CategoriesPage() {
                                 <Button variant="ghost" size="sm" to={`/dashboard/products?category_id=${category.category_id}`}>
                                     {t('{value} منتج', { value: formatNumber(category.products_count) })}
                                 </Button>
-                                <div className="flex gap-1">
+                                <div className={cn('flex gap-1', !can('products.update') && 'hidden')}>
                                     <Button variant="secondary" size="sm" icon="edit" onClick={() => setDialog({ type: 'form', category })}>
                                         {t('تعديل')}
                                     </Button>

@@ -8,6 +8,7 @@ import { Pagination, Tabs } from '@/components/ui/Navigation';
 import { Skeleton } from '@/components/ui/Spinner';
 import { PurchaseOrderStatusBadge } from '@/features/purchasing/PurchaseOrderBadges';
 import { useDebouncedValue } from '@/hooks/common';
+import { useAuth } from '@/context/AuthContext';
 import { t } from '@/i18n';
 import { PURCHASE_ORDER_STATUSES } from '@/lib/constants';
 import { cn, formatDate, formatMoney, formatNumber } from '@/lib/format';
@@ -17,6 +18,7 @@ const COLUMNS = [t('الأمر'), t('المورد'), t('القطع'), t('الإ�
 
 /** Purchase orders with status tabs, supplier filter and search by number or supplier. */
 export function PurchaseOrdersPage() {
+    const { can } = useAuth();
     const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
     const status = searchParams.get('status') ?? '';
@@ -94,9 +96,11 @@ export function PurchaseOrdersPage() {
                         <Button variant="secondary" icon="building" to="/dashboard/suppliers">
                             {t('الموردين')}
                         </Button>
-                        <Button icon="plus" to={`/dashboard/purchase-orders/new${supplierId ? `?supplier_id=${supplierId}` : ''}`}>
-                            {t('أمر شراء جديد')}
-                        </Button>
+                        {can('purchasing.create') && (
+                            <Button icon="plus" to={`/dashboard/purchase-orders/new${supplierId ? `?supplier_id=${supplierId}` : ''}`}>
+                                {t('أمر شراء جديد')}
+                            </Button>
+                        )}
                     </>
                 }
             />
@@ -125,7 +129,7 @@ export function PurchaseOrdersPage() {
                             icon="download"
                             title={status || searchQuery || supplierId ? t('لا توجد أوامر مطابقة') : t('لا توجد أوامر شراء بعد')}
                             description={t('سجّل ما تطلبه من موردينك، وعند وصول البضاعة استلمها لتُضاف للمخزون بتكلفتها.')}
-                            action={<Button icon="plus" to="/dashboard/purchase-orders/new">{t('أمر شراء جديد')}</Button>}
+                            action={can('purchasing.create') && <Button icon="plus" to="/dashboard/purchase-orders/new">{t('أمر شراء جديد')}</Button>}
                         />
                     </div>
                 ) : (

@@ -4,15 +4,11 @@ import { AuthHeading, AuthLayout } from '@/components/layout/AuthLayout';
 import { Button } from '@/components/ui/Button';
 import { Alert } from '@/components/ui/Display';
 import { Checkbox, Field, Input, PasswordInput } from '@/components/ui/Form';
-import { Icon } from '@/components/ui/Icon';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
 import { useForm } from '@/hooks/useForm';
 import { t } from '@/i18n';
 import { isEmail, isPhone, rules } from '@/lib/validators';
-import { DEMO_CREDENTIALS } from '@/services/mock/data';
-
-const IS_MOCK = import.meta.env.VITE_USE_MOCK_API !== 'false';
 
 const schema = {
     identifier: [
@@ -29,7 +25,7 @@ export function LoginPage() {
     const location = useLocation();
     const [submitting, setSubmitting] = useState(false);
     const [formError, setFormError] = useState(null);
-    const { values, errors, bind, setValues, setField, validateFields } = useForm({ identifier: location.state?.identifier ?? '', password: '', remember: false }, schema);
+    const { values, errors, bind, setField, validateFields } = useForm({ identifier: location.state?.identifier ?? '', password: '', remember: false }, schema);
 
     const onSubmit = async (event) => {
         event.preventDefault();
@@ -83,16 +79,6 @@ export function LoginPage() {
                     {submitting ? t('جارٍ تسجيل الدخول...') : t('تسجيل الدخول')}
                 </Button>
 
-                {IS_MOCK && (
-                    <button
-                        type="button"
-                        onClick={() => setValues({ ...DEMO_CREDENTIALS, remember: true })}
-                        className="flex items-center justify-center gap-2 rounded-xl border border-dashed border-line-strong px-4 py-3 text-xs text-ink-2 transition hover:border-primary hover:text-primary"
-                    >
-                        <Icon name="zap" className="size-4" />
-                        {t('تعبئة بيانات الحساب التجريبي')}
-                    </button>
-                )}
             </form>
 
             <p className="mt-8 text-center text-sm text-muted">

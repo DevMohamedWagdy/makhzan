@@ -69,6 +69,10 @@ class LoginRequest extends FormRequest
 
         RateLimiter::clear($this->throttleKey());
 
+        if ($vendor->is_active === false) {
+            throw ValidationException::withMessages(['identifier' => __('auth.staff_inactive')]);
+        }
+
         return $vendor;
     }
 

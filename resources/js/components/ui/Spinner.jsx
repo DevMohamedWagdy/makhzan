@@ -12,3 +12,12 @@ export function Spinner({ className }) {
 export function Skeleton({ className }) {
     return <div className={cn('animate-pulse rounded-md bg-surface-3', className)} />;
 }
+
+/** Shown while a page's code loads (see the lazy routes in Router.jsx). */
+export function PageLoader({ fullScreen = false }) {
+    return (
+        <div className={cn('grid place-items-center', fullScreen ? 'min-h-dvh' : 'min-h-[50vh]')} role="status" aria-live="polite">
+            <Spinner className="size-8 text-primary" />
+        </div>
+    );
+}

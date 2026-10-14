@@ -1,12 +1,9 @@
 import { locale } from '@/i18n';
 import { t } from '@/i18n';
-import { ApiError, handleMockRequest } from './mock/server';
+import { ApiError } from './ApiError';
 import { sessionStore, tokenFor } from './session';
 
 export { ApiError, sessionStore };
-
-/** Mock API is on unless VITE_USE_MOCK_API=false is set in .env. */
-const USE_MOCK_API = import.meta.env.VITE_USE_MOCK_API !== 'false';
 
 function containsFile(value) {
     if (value instanceof File || value instanceof Blob) {
@@ -43,13 +40,19 @@ function normalizeErrors(errors = {}) {
 }
 
 /**
- * @param {{ body?: object, query?: object, auth?: 'vendor' | 'affiliate' | string }} options
+ * @param {{ body?: object, query?: object, auth?: 'vendor' | 'affiliate' | string, raw?: boolean }} options
  *   `auth` picks which session's bearer token is sent (vendor by default; `customer:{store-slug}` for shoppers).
  */
-async function httpRequest(method, path, { body, query, auth = 'vendor' } = {}) {
+async function httpRequest(method, path, { body, query, auth = 'vendor', raw = false } = {}) {
     const url = new URL(path, window.location.origin);
 
-    Object.entries(query ?? {}).forEach(([key, value]) => value !== '' && value != null && url.searchParams.set(key, value));
+    Object.entries(query ?? {}).forEach(([key, value]) => {
+        if (Array.isArray(value)) {
+            value.forEach((item) => url.searchParams.append(`${key}[]`, item));
+        } else if (value !== '' && value != null) {
+            url.searchParams.set(key, value);
+        }
+    });
 
     const isMultipart = body && containsFile(body);
     const headers = {
@@ -86,10 +89,32 @@ async function httpRequest(method, path, { body, query, auth = 'vendor' } = {}) 
         throw new ApiError(response.status, data.message ?? t('حدث خطأ غير متوقع'), normalizeErrors(data.errors));
     }
 
-    // Unwrap single API resources ({ data }), but keep paginated collections ({ data, meta }) intact.
-    return data && 'data' in data && !('meta' in data) ? data.data : data;
+    // Unwrap single API resources ({ data }), but keep paginated collections ({ data, meta }) and
+    // `raw` responses (a collection with extra keys, e.g. { data, catalog }) intact.
+    return !raw && data && 'data' in data && !('meta' in data) ? data.data : data;
+}
+
+/**
+ * GETs a file (e.g. a PDF) with the session's token and resolves to a Blob. Errors come back
+ * as JSON and are thrown as ApiError, like request().
+ */
+export async function requestFile(path, { query, auth = 'vendor' } = {}) {
+    const url = new URL(path, window.location.origin);
+
+    Object.entries(query ?? {}).forEach(([key, value]) => (Array.isArray(value) ? value.forEach((item) => url.searchParams.append(`${key}[]`, item)) : url.searchParams.set(key, value)));
+
+    const token = tokenFor(auth);
+    const response = await fetch(url, { headers: { Accept: 'application/pdf, application/json', 'Accept-Language': locale, ...(token && { Authorization: `Bearer ${token}` }) } });
+
+    if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+
+        throw new ApiError(response.status, data.message ?? t('حدث خطأ غير متوقع'), normalizeErrors(data.errors));
+    }
+
+    return response.blob();
 }
 
 export function request(method, path, options = {}) {
-    return USE_MOCK_API ? handleMockRequest(method, path, { ...options, token: tokenFor(options.auth ?? 'vendor') }) : httpRequest(method, path, options);
+    return httpRequest(method, path, options);
 }

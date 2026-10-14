@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\OrderStatus;
 use App\Models\Concerns\HasPreferredLocale;
+use App\Models\Concerns\LogsActivity;
 use App\Support\PhoneNumber;
 use Database\Factories\CustomerFactory;
 use Illuminate\Contracts\Translation\HasLocalePreference;
@@ -29,7 +30,10 @@ class Customer extends Authenticatable implements HasLocalePreference
     public const TOKEN_ABILITY = 'customer';
 
     /** @use HasFactory<CustomerFactory> */
-    use HasApiTokens, HasFactory, HasPreferredLocale, Notifiable;
+    use HasApiTokens, HasFactory, HasPreferredLocale, LogsActivity, Notifiable;
+
+    /** @var list<string> Attributes not worth an activity log entry. */
+    protected array $activityIgnored = ['last_order_at', 'preferred_locale'];
 
     /**
      * Get the attributes that should be cast.

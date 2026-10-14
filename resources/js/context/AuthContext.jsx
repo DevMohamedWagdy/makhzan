@@ -94,6 +94,7 @@ export function AuthProvider({ children }) {
 
     const value = useMemo(
         () => ({
+            ...permissionsFor(session?.vendor),
             vendor: session?.vendor ?? null,
             store: session?.vendor?.store ?? null,
             isAuthenticated: Boolean(session?.token),
@@ -109,6 +110,37 @@ export function AuthProvider({ children }) {
     );
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+}
+
+/**
+ * Owners hold every permission; staff only those the owner gave them. Sessions saved before
+ * staff accounts existed have no role and belong to owners.
+ */
+function permissionsFor(vendor) {
+    const isOwner = vendor?.role !== 'staff';
+    const granted = new Set(vendor?.permissions ?? []);
+    const billingStatus = vendor?.store?.billing?.status ?? 'active';
+
+    return {
+        isOwner,
+        /** Trial or subscription ended: only the subscription page works until a plan is chosen. */
+        billingExpired: billingStatus === 'expired',
+        /**
+         * A "section.action" permission (orders.update), or a bare section meaning it can be
+         * viewed (orders = orders.view); "owner"/"billing" are owner-only, "any" always passes.
+         */
+        can: (permission) => {
+            if (permission === 'any' || isOwner) {
+                return true;
+            }
+
+            if (['owner', 'billing'].includes(permission)) {
+                return false;
+            }
+
+            return granted.has(permission.includes('.') ? permission : `${permission}.view`);
+        },
+    };
 }
 
 export function useAuth() {

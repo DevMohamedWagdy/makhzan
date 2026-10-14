@@ -10,7 +10,7 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Arr;
 
 /**
- * Categories and products for the demo store (noor-fashion). Local use only.
+ * Categories and products for the demo stores. Local use only.
  */
 class DemoCatalogSeeder extends Seeder
 {
@@ -40,11 +40,15 @@ class DemoCatalogSeeder extends Seeder
 
     public function run(): void
     {
-        $store = Store::query()->firstWhere('slug', 'noor-fashion');
+        Store::query()->whereIn('slug', DemoVendorSeeder::STORE_SLUGS)->get()->each(function (Store $store): void {
+            if (! $store->productCategories()->exists()) {
+                $this->seedCatalog($store);
+            }
+        });
+    }
 
-        if (! $store || $store->productCategories()->exists()) {
-            return;
-        }
+    private function seedCatalog(Store $store): void
+    {
 
         $position = 0;
 
@@ -70,7 +74,7 @@ class DemoCatalogSeeder extends Seeder
             'category_id' => $categoryId,
             'name' => $name,
             'slug' => Product::uniqueSlug($store->id, $name),
-            'description' => "{$name} من تشكيلة نور للأزياء الجديدة، خامة ممتازة وتقفيل متقن.",
+            'description' => "{$name} من تشكيلة {$store->name} الجديدة، خامة ممتازة وتقفيل متقن.",
             'status' => ProductStatus::Active,
             'is_featured' => fake()->boolean(30),
             'options' => collect($options)->map(fn (array $values, string $optionName): array => ['name' => $optionName, 'values' => $values])->values()->all(),
