@@ -28,6 +28,7 @@ class StoreCustomerResource extends JsonResource
             'full_name' => $this->full_name,
             'phone' => $this->phone,
             'email' => $this->email,
+            'points_balance' => $this->points_balance,
             'stats' => [
                 'orders_count' => (int) $this->orders_count,
                 'delivered_orders' => (int) $this->delivered_orders_count,

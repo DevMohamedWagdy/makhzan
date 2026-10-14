@@ -26,8 +26,10 @@ use App\Http\Controllers\Api\V1\Storefront\CartController;
 use App\Http\Controllers\Api\V1\Storefront\Customer\AddressController as CustomerAddressController;
 use App\Http\Controllers\Api\V1\Storefront\Customer\AuthController as CustomerAuthController;
 use App\Http\Controllers\Api\V1\Storefront\Customer\CouponController as CustomerCouponController;
+use App\Http\Controllers\Api\V1\Storefront\Customer\LoyaltyController as CustomerLoyaltyController;
 use App\Http\Controllers\Api\V1\Storefront\Customer\OrderController as CustomerOrderController;
 use App\Http\Controllers\Api\V1\Storefront\Customer\PasswordResetController as CustomerPasswordResetController;
+use App\Http\Controllers\Api\V1\Storefront\Customer\WishlistController as CustomerWishlistController;
 use App\Http\Controllers\Api\V1\Storefront\PolicyController;
 use App\Http\Controllers\Api\V1\Storefront\ProductController as StorefrontProductController;
 use App\Http\Controllers\Api\V1\Storefront\ReferralClickController;
@@ -48,11 +50,13 @@ use App\Http\Controllers\Api\V1\Vendor\Auth\VendorAccountController;
 use App\Http\Controllers\Api\V1\Vendor\Auth\VendorAuthController;
 use App\Http\Controllers\Api\V1\Vendor\CouponController;
 use App\Http\Controllers\Api\V1\Vendor\CustomerController;
+use App\Http\Controllers\Api\V1\Vendor\CustomerPointsController;
 use App\Http\Controllers\Api\V1\Vendor\CustomerSummaryController;
 use App\Http\Controllers\Api\V1\Vendor\InventoryController;
 use App\Http\Controllers\Api\V1\Vendor\InventoryImportController;
 use App\Http\Controllers\Api\V1\Vendor\InventorySettingsController;
 use App\Http\Controllers\Api\V1\Vendor\InventorySummaryController;
+use App\Http\Controllers\Api\V1\Vendor\LoyaltySettingsController;
 use App\Http\Controllers\Api\V1\Vendor\NotificationController;
 use App\Http\Controllers\Api\V1\Vendor\OrderController as VendorOrderController;
 use App\Http\Controllers\Api\V1\Vendor\OrderShipmentController;
@@ -134,6 +138,10 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
                 Route::get('orders/{number}', [CustomerOrderController::class, 'show'])->whereNumber('number')->name('orders.show');
                 Route::post('orders/{number}/cancel', [CustomerOrderController::class, 'cancel'])->whereNumber('number')->name('orders.cancel');
                 Route::post('orders/{number}/pay', [CustomerOrderController::class, 'pay'])->whereNumber('number')->middleware('throttle:10,1')->name('orders.pay');
+                Route::get('points', CustomerLoyaltyController::class)->name('points');
+                Route::get('wishlist', [CustomerWishlistController::class, 'index'])->name('wishlist.index');
+                Route::post('wishlist', [CustomerWishlistController::class, 'store'])->middleware('throttle:60,1')->name('wishlist.store');
+                Route::delete('wishlist/{productId}', [CustomerWishlistController::class, 'destroy'])->whereNumber('productId')->name('wishlist.destroy');
             });
         });
 
@@ -312,6 +320,9 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         });
 
         Route::middleware('permission:marketing')->group(function () {
+            Route::get('loyalty', [LoyaltySettingsController::class, 'show'])->name('loyalty.show');
+            Route::put('loyalty', [LoyaltySettingsController::class, 'update'])->name('loyalty.update');
+            Route::post('customers/{customer}/points', [CustomerPointsController::class, 'store'])->middleware('throttle:30,1')->name('customers.points.store')->defaults('_permission', 'marketing.update');
             Route::patch('coupons/{coupon}/status', [CouponController::class, 'updateStatus'])->name('coupons.status');
             Route::apiResource('coupons', CouponController::class);
 
@@ -342,6 +353,7 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
             Route::get('customers/summary', CustomerSummaryController::class)->name('customers.summary');
             Route::get('customers', [CustomerController::class, 'index'])->name('customers.index');
             Route::get('customers/{customer}', [CustomerController::class, 'show'])->name('customers.show');
+            Route::get('customers/{customer}/points', [CustomerPointsController::class, 'index'])->name('customers.points.index');
         });
 
         Route::middleware('permission:orders')->group(function () {

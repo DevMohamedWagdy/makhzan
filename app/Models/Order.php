@@ -27,6 +27,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  */
 #[Fillable([
     'customer_id', 'number', 'status', 'payment_method', 'payment_status', 'payment_expires_at', 'subtotal', 'discount', 'shipping_fee', 'shipping_discount', 'total', 'coupon_id', 'coupon_code',
+    'points_redeemed', 'points_discount',
     'recipient_name', 'phone', 'governorate_id', 'city_id', 'address_line', 'landmark', 'customer_note',
     'affiliate_id', 'referral_code_id', 'referral_code', 'commission_type', 'commission_rate', 'commission_amount', 'commission_status',
 ])]
@@ -69,6 +70,9 @@ class Order extends Model
             'returned_at' => 'datetime',
             'carrier_status_code' => 'integer',
             'carrier_updated_at' => 'datetime',
+            'points_redeemed' => 'integer',
+            'points_discount' => 'float',
+            'points_earned' => 'integer',
         ];
     }
 

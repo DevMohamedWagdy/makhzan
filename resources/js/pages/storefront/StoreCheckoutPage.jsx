@@ -16,7 +16,7 @@ import { getReferralCode } from '@/features/storefront/referral';
 import { useStorefront } from '@/features/storefront/StorefrontLayout';
 import { t } from '@/i18n';
 import { PAYMENT_METHODS } from '@/lib/constants';
-import { cn, formatMoney } from '@/lib/format';
+import { cn, formatMoney, formatNumber } from '@/lib/format';
 import { storefrontApi } from '@/services/storefrontApi';
 
 const NEW_ADDRESS = 'new';
@@ -33,6 +33,8 @@ export function StoreCheckoutPage() {
     const navigate = useNavigate();
     const toast = useToast();
     const [quote, setQuote] = useState(null);
+    const [pointsBalance, setPointsBalance] = useState(0);
+    const [usePoints, setUsePoints] = useState(false);
     const [addresses, setAddresses] = useState(null);
     const [shipping, setShipping] = useState(null);
     const [loadError, setLoadError] = useState(null);
@@ -93,13 +95,14 @@ export function StoreCheckoutPage() {
 
         let cancelled = false;
 
-        Promise.all([storefrontApi.quoteCart(storeSlug, items), api.addresses(), api.shipping()])
-            .then(([cartQuote, savedAddresses, shippingRates]) => {
+        Promise.all([storefrontApi.quoteCart(storeSlug, items), api.addresses(), api.shipping(), store?.loyalty ? api.points().catch(() => null) : null])
+            .then(([cartQuote, savedAddresses, shippingRates, points]) => {
                 if (cancelled) {
                     return;
                 }
 
                 setQuote(cartQuote);
+                setPointsBalance(points?.summary.balance ?? 0);
                 setAddresses(savedAddresses);
                 setShipping(shippingRates);
                 setChoice((current) => current ?? (savedAddresses.find((saved) => saved.is_default)?.address_id ?? NEW_ADDRESS));
@@ -151,6 +154,13 @@ export function StoreCheckoutPage() {
     const closed = store && !store.accepting_orders;
     const belowMinimum = store?.min_order_total ? store.min_order_total - quote.subtotal : 0;
 
+    // Points cover the products after the coupon, never the shipping.
+    const loyalty = store?.loyalty;
+    const productsAfterCoupon = Math.max(0, quote.subtotal - (coupon?.discount ?? 0));
+    const usablePoints = loyalty ? Math.min(pointsBalance, Math.floor(productsAfterCoupon / loyalty.point_value)) : 0;
+    const canUsePoints = Boolean(loyalty) && usablePoints >= loyalty.min_redeem;
+    const pointsDiscount = canUsePoints && usePoints ? Math.round(usablePoints * loyalty.point_value * 100) / 100 : 0;
+
     const placeOrder = async () => {
         setErrors({});
         setPlacing(true);
@@ -163,6 +173,7 @@ export function StoreCheckoutPage() {
                 coupon_code: coupon?.code ?? null,
                 note: note.trim() || null,
                 payment_method: paymentMethod,
+                redeem_points: pointsDiscount > 0 ? usablePoints : 0,
             });
 
             clearSavedCoupon(storeSlug);
@@ -290,11 +301,32 @@ export function StoreCheckoutPage() {
                                 <dd className="ltr">-{formatMoney(coupon.free_shipping ? shippingFee : coupon.discount)}</dd>
                             </div>
                         )}
+                        {pointsDiscount > 0 && (
+                            <div className="flex justify-between text-success">
+                                <dt>{t('خصم النقاط ({count} نقطة)', { count: formatNumber(usablePoints) })}</dt>
+                                <dd className="ltr">-{formatMoney(pointsDiscount)}</dd>
+                            </div>
+                        )}
                         <div className="flex justify-between border-t border-line pt-3 text-base">
                             <dt className="font-semibold text-ink">{t('الإجمالي')}</dt>
-                            <dd className="font-bold text-ink">{formatMoney(Math.max(0, quote.subtotal - (coupon?.discount ?? 0)) + (coupon?.free_shipping ? 0 : (shippingFee ?? 0)))}</dd>
+                            <dd className="font-bold text-ink">{formatMoney(productsAfterCoupon - pointsDiscount + (coupon?.free_shipping ? 0 : (shippingFee ?? 0)))}</dd>
                         </div>
                     </dl>
+                    {loyalty && pointsBalance > 0 && (
+                        <div className="rounded-xl bg-warning-soft p-3 text-sm">
+                            {canUsePoints ? (
+                                <Checkbox
+                                    checked={usePoints}
+                                    onChange={(event) => setUsePoints(event.target.checked)}
+                                    label={t('استخدم {count} نقطة واحصل على خصم {amount}', { count: formatNumber(usablePoints), amount: formatMoney(Math.round(usablePoints * loyalty.point_value * 100) / 100) })}
+                                    description={t('رصيدك {balance} نقطة', { balance: formatNumber(pointsBalance) })}
+                                />
+                            ) : (
+                                <p className="text-ink-2">{t('رصيدك {balance} نقطة. تحتاج {min} نقطة على الأقل لاستخدامها.', { balance: formatNumber(pointsBalance), min: formatNumber(loyalty.min_redeem) })}</p>
+                            )}
+                            {errors.redeem_points && <p className="mt-1 text-xs font-medium text-danger">{errors.redeem_points}</p>}
+                        </div>
+                    )}
                     <CouponBox
                         coupon={coupon}
                         error={couponError}

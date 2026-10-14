@@ -66,6 +66,10 @@ class Store extends Model
             'accepting_orders' => 'boolean',
             'min_order_total' => 'float',
             'cod_enabled' => 'boolean',
+            'loyalty_enabled' => 'boolean',
+            'loyalty_earn_rate' => 'integer',
+            'loyalty_point_value' => 'float',
+            'loyalty_min_redeem' => 'integer',
             'plan_expires_at' => 'datetime',
             'trial_ends_at' => 'datetime',
             'suspended_at' => 'datetime',
@@ -203,6 +207,23 @@ class Store extends Model
     }
 
     /**
+     * Whether customers earn and spend points: switched on by the vendor, on a plan that has it.
+     */
+    public function loyaltyActive(): bool
+    {
+        return $this->loyalty_enabled && $this->hasFeature(PlanFeature::Loyalty);
+    }
+
+    /**
+     * Points a delivered order earns: the earn rate per 100 EGP of products actually paid for
+     * (after coupon and points discounts), rounded down.
+     */
+    public function pointsFor(float $amount): int
+    {
+        return max(0, (int) floor($amount * $this->loyalty_earn_rate / 100));
+    }
+
+    /**
      * Whether the plan leaves room for one more product (soft-deleted ones don't count).
      */
     public function canAddProduct(): bool
@@ -296,6 +317,14 @@ class Store extends Model
     public function customers(): HasMany
     {
         return $this->hasMany(Customer::class);
+    }
+
+    /**
+     * @return HasMany<LoyaltyTransaction, $this>
+     */
+    public function loyaltyTransactions(): HasMany
+    {
+        return $this->hasMany(LoyaltyTransaction::class);
     }
 
     /**

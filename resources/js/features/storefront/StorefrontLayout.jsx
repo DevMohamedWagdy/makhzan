@@ -56,6 +56,7 @@ function CartButton({ storeSlug }) {
 
 function AccountButton({ storeSlug }) {
     const { customer, isAuthenticated, logout } = useCustomerAuth();
+    const { store } = useStorefront();
     const navigate = useNavigate();
     const buttonClass = 'grid size-10 place-items-center rounded-xl border border-line bg-surface text-ink-2 transition hover:border-line-strong hover:text-ink';
 
@@ -77,6 +78,8 @@ function AccountButton({ storeSlug }) {
             )}
             items={[
                 { label: t('طلباتي'), icon: 'shopping-bag', onClick: () => navigate(`/${storeSlug}/account/orders`) },
+                { label: t('المفضلة'), icon: 'heart', onClick: () => navigate(`/${storeSlug}/account/wishlist`) },
+                { label: t('نقاطي'), icon: 'star', onClick: () => navigate(`/${storeSlug}/account/points`), hidden: !store?.loyalty },
                 { divider: true },
                 {
                     label: t('تسجيل الخروج'),

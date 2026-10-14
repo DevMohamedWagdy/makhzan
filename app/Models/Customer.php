@@ -35,6 +35,9 @@ class Customer extends Authenticatable implements HasLocalePreference
     /** @var list<string> Attributes not worth an activity log entry. */
     protected array $activityIgnored = ['last_order_at', 'preferred_locale'];
 
+    /** @var array<string, mixed> */
+    protected $attributes = ['points_balance' => 0];
+
     /**
      * Get the attributes that should be cast.
      *
@@ -45,6 +48,7 @@ class Customer extends Authenticatable implements HasLocalePreference
         return [
             'password' => 'hashed',
             'last_order_at' => 'datetime',
+            'points_balance' => 'integer',
         ];
     }
 
@@ -62,6 +66,22 @@ class Customer extends Authenticatable implements HasLocalePreference
     public function addresses(): HasMany
     {
         return $this->hasMany(CustomerAddress::class)->orderByDesc('is_default')->latest('id');
+    }
+
+    /**
+     * @return HasMany<LoyaltyTransaction, $this>
+     */
+    public function loyaltyTransactions(): HasMany
+    {
+        return $this->hasMany(LoyaltyTransaction::class);
+    }
+
+    /**
+     * @return HasMany<WishlistItem, $this>
+     */
+    public function wishlistItems(): HasMany
+    {
+        return $this->hasMany(WishlistItem::class);
     }
 
     /**

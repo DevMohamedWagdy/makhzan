@@ -6,6 +6,7 @@ export const PLAN_FEATURES = {
     affiliates: { label: t('نظام المسوقين بالعمولة'), icon: 'users' },
     online_payments: { label: t('الدفع أونلاين بالبطاقة والمحفظة'), icon: 'credit-card' },
     custom_domain: { label: t('دومين خاص لمتجرك'), icon: 'link' },
+    loyalty: { label: t('برنامج نقاط الولاء للعملاء'), icon: 'star' },
 };
 
 /** How vendors pay the platform, mirroring App\Enums\BillingMethod. */

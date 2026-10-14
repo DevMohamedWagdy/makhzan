@@ -4,9 +4,11 @@ namespace App\Actions\Orders;
 
 use App\Actions\Coupons\ApplyCoupon;
 use App\Actions\Inventory\ChangeStock;
+use App\Actions\Loyalty\ChangePoints;
 use App\Enums\AffiliateStatus;
 use App\Enums\CommissionStatus;
 use App\Enums\CommissionType;
+use App\Enums\LoyaltyTransactionType;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
@@ -27,7 +29,7 @@ use Illuminate\Validation\ValidationException;
 
 class PlaceOrder
 {
-    public function __construct(private ChangeStock $changeStock, private ApplyCoupon $applyCoupon) {}
+    public function __construct(private ChangeStock $changeStock, private ApplyCoupon $applyCoupon, private ChangePoints $changePoints) {}
 
     /**
      * Places an order, paid on delivery or online. Variant rows are locked while stock is checked and
@@ -35,6 +37,9 @@ class PlaceOrder
      * row locked, so its usage limit holds) and taken off the products or the shipping. The
      * order is attributed to the coupon's affiliate if it has one, otherwise to the referral
      * code's, with the commission in effect right now on the products after the discount.
+     *
+     * Loyalty points ($redeemPoints) come off the products after the coupon, capped so the
+     * products never go below zero, and are deducted from the customer's balance.
      *
      * An online order holds its stock while it waits for payment (see StartPayment); the
      * store and affiliate hear about it once it's paid (RecordPaymentResult), and it's
@@ -45,11 +50,11 @@ class PlaceOrder
      *
      * @throws ValidationException
      */
-    public function handle(Store $store, Customer $customer, array $items, array $address, ?string $referralCode = null, ?string $note = null, ?string $couponCode = null, PaymentMethod $paymentMethod = PaymentMethod::Cod): Order
+    public function handle(Store $store, Customer $customer, array $items, array $address, ?string $referralCode = null, ?string $note = null, ?string $couponCode = null, PaymentMethod $paymentMethod = PaymentMethod::Cod, int $redeemPoints = 0): Order
     {
         $quantities = collect($items)->groupBy('variant_id')->map(fn (Collection $lines): int => $lines->sum('quantity'));
 
-        $order = DB::transaction(function () use ($store, $customer, $quantities, $address, $referralCode, $note, $couponCode, $paymentMethod): Order {
+        $order = DB::transaction(function () use ($store, $customer, $quantities, $address, $referralCode, $note, $couponCode, $paymentMethod, $redeemPoints): Order {
             // Serializes order numbers within the store (and reads its current settings).
             $store = Store::query()->whereKey($store->id)->lockForUpdate()->first();
 
@@ -87,10 +92,11 @@ class PlaceOrder
                 : null;
             $discount = $coupon['discount'] ?? 0.0;
             $shippingDiscount = ($coupon['free_shipping'] ?? false) ? $shippingFee : 0.0;
+            [$pointsRedeemed, $pointsDiscount] = $redeemPoints > 0 ? $this->redeemable($store, $customer, $redeemPoints, $subtotal - $discount) : [0, 0.0];
 
             $order = $store->orders()->create([
                 ...$address,
-                ...$this->attribution($store, $customer, $referralCode, $subtotal - $discount, $coupon['coupon'] ?? null),
+                ...$this->attribution($store, $customer, $referralCode, $subtotal - $discount - $pointsDiscount, $coupon['coupon'] ?? null),
                 'customer_id' => $customer->id,
                 'number' => ((int) $store->orders()->max('number') ?: 1000) + 1,
                 'status' => OrderStatus::Pending,
@@ -103,7 +109,9 @@ class PlaceOrder
                 'shipping_discount' => $shippingDiscount,
                 'coupon_id' => $coupon['coupon']->id ?? null,
                 'coupon_code' => $coupon['coupon']->code ?? null,
-                'total' => round($subtotal - $discount + $shippingFee - $shippingDiscount, 2),
+                'points_redeemed' => $pointsRedeemed,
+                'points_discount' => $pointsDiscount,
+                'total' => round($subtotal - $discount - $pointsDiscount + $shippingFee - $shippingDiscount, 2),
                 'customer_note' => $note,
             ]);
 
@@ -127,6 +135,7 @@ class PlaceOrder
             }
 
             $order->events()->create(['status' => OrderStatus::Pending, 'actor' => OrderEvent::ACTOR_CUSTOMER]);
+            $this->changePoints->handle($customer, -$pointsRedeemed, LoyaltyTransactionType::Redeemed, OrderEvent::ACTOR_CUSTOMER, $order);
             $customer->forceFill(['last_order_at' => now()])->save();
 
             return $order;
@@ -139,6 +148,36 @@ class PlaceOrder
         }
 
         return $order;
+    }
+
+    /**
+     * The points to spend and the discount they give: the store must run the program, the
+     * customer must have them and use at least the minimum; any beyond what the products
+     * cost aren't used.
+     *
+     * @return array{0: int, 1: float}
+     *
+     * @throws ValidationException
+     */
+    private function redeemable(Store $store, Customer $customer, int $points, float $productsTotal): array
+    {
+        if (! $store->loyaltyActive()) {
+            throw ValidationException::withMessages(['redeem_points' => __('loyalty.unavailable')]);
+        }
+
+        if ($points < $store->loyalty_min_redeem) {
+            throw ValidationException::withMessages(['redeem_points' => __('loyalty.min_redeem', ['min' => $store->loyalty_min_redeem])]);
+        }
+
+        $balance = Customer::query()->whereKey($customer->id)->value('points_balance');
+
+        if ($points > $balance) {
+            throw ValidationException::withMessages(['redeem_points' => __('loyalty.insufficient', ['balance' => $balance])]);
+        }
+
+        $points = min($points, (int) floor(max(0, $productsTotal) / $store->loyalty_point_value));
+
+        return [$points, round($points * $store->loyalty_point_value, 2)];
     }
 
     /**

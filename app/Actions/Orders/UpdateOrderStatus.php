@@ -3,7 +3,9 @@
 namespace App\Actions\Orders;
 
 use App\Actions\Inventory\ChangeStock;
+use App\Actions\Loyalty\ChangePoints;
 use App\Enums\CommissionStatus;
+use App\Enums\LoyaltyTransactionType;
 use App\Enums\OrderStatus;
 use App\Enums\StockMovementType;
 use App\Models\Affiliate;
@@ -19,7 +21,7 @@ use Illuminate\Validation\ValidationException;
 
 class UpdateOrderStatus
 {
-    public function __construct(private ChangeStock $changeStock) {}
+    public function __construct(private ChangeStock $changeStock, private ChangePoints $changePoints) {}
 
     /**
      * Moves an order along its lifecycle (see OrderStatus::next()) and applies the side
@@ -28,7 +30,9 @@ class UpdateOrderStatus
      * whenever their commission changes. An online order can't be confirmed before it's paid,
      * and an affiliate never told about an unpaid order isn't told when it's dropped. The
      * customer is emailed about every change they didn't make themselves, except the
-     * dropping of an online order they never paid for.
+     * dropping of an online order they never paid for. Loyalty points spent on an order come
+     * back if it's cancelled or returned; points are earned on delivery and taken back if the
+     * delivered order is returned.
      *
      * With $onlyIfUnpaid, an order whose payment has come through is returned unchanged.
      *
@@ -68,6 +72,7 @@ class UpdateOrderStatus
             }
 
             $commissionEvent = $this->settleCommission($order, $previous, $status);
+            $this->settlePoints($order, $previous, $status, $actor);
 
             if ($unpaid) {
                 $commissionEvent = null;
@@ -89,6 +94,32 @@ class UpdateOrderStatus
         }
 
         return $order;
+    }
+
+    /**
+     * Refunds points spent on a cancelled or returned order, credits points for a delivered
+     * one (when the store runs the program) and takes them back if it's returned.
+     */
+    private function settlePoints(Order $order, OrderStatus $previous, OrderStatus $status, string $actor): void
+    {
+        $customer = $order->customer;
+
+        if (! $customer) {
+            return;
+        }
+
+        if ($status->restocks() && $order->points_redeemed > 0) {
+            $this->changePoints->handle($customer, $order->points_redeemed, LoyaltyTransactionType::Refunded, $actor, $order);
+        }
+
+        if ($status === OrderStatus::Delivered && $order->store->loyaltyActive()) {
+            $order->points_earned = $order->store->pointsFor($order->subtotal - $order->discount - $order->points_discount);
+            $this->changePoints->handle($customer, $order->points_earned, LoyaltyTransactionType::Earned, $actor, $order);
+        }
+
+        if ($status === OrderStatus::Returned && $previous === OrderStatus::Delivered && $order->points_earned > 0) {
+            $this->changePoints->handle($customer, -$order->points_earned, LoyaltyTransactionType::Reversed, $actor, $order);
+        }
     }
 
     /**

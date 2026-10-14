@@ -8,6 +8,7 @@ import { useToast } from '@/context/ToastContext';
 import { useCart } from '@/features/storefront/CartContext';
 import { PriceTag, ProductGrid, ProductImage } from '@/features/storefront/ProductCard';
 import { useStorefront } from '@/features/storefront/StorefrontLayout';
+import { WishlistButton } from '@/features/storefront/WishlistButton';
 import { t } from '@/i18n';
 import { cn } from '@/lib/format';
 import { storefrontApi } from '@/services/storefrontApi';
@@ -229,12 +230,20 @@ export function StoreProductPage() {
                         <Button size="lg" icon="shopping-bag" className="flex-1" disabled={!variant?.available} onClick={addToCart}>
                             {t('أضف إلى السلة')}
                         </Button>
+                        <WishlistButton storeSlug={storeSlug} productId={product.product_id} />
                     </div>
                     {justAdded && (
                         <Link to={`/${storeSlug}/cart`} className="animate-pop -mt-2 flex items-center justify-center gap-2 rounded-xl bg-success-soft px-4 py-3 text-sm font-semibold text-success">
                             <Icon name="check-circle" className="size-4" />
                             {t('تمت الإضافة — عرض السلة وإتمام الطلب')}
                         </Link>
+                    )}
+
+                    {store?.loyalty && price > 0 && (
+                        <p className="flex items-center gap-2 rounded-xl bg-warning-soft px-4 py-3 text-sm text-ink-2">
+                            <Icon name="star" className="size-4 shrink-0 fill-amber-400 text-amber-400" />
+                            {t('اكسب {points} نقطة مع هذا المنتج بعد استلامه', { points: Math.floor((price * quantity * store.loyalty.earn_rate) / 100) })}
+                        </p>
                     )}
 
                     <ul className="grid gap-3 rounded-2xl border border-line bg-surface p-4 text-sm text-ink-2 sm:grid-cols-2">

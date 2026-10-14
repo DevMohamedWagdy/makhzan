@@ -40,6 +40,11 @@ class StorefrontStoreResource extends JsonResource
             'accepting_orders' => $this->takesOrders(),
             'closed_message' => $this->takesOrders() ? null : $this->closedMessage(),
             'min_order_total' => $this->min_order_total,
+            'loyalty' => $this->loyaltyActive() ? [
+                'earn_rate' => $this->loyalty_earn_rate,
+                'point_value' => $this->loyalty_point_value,
+                'min_redeem' => $this->loyalty_min_redeem,
+            ] : null,
             'payment_methods' => array_map(fn (PaymentMethod $method): string => $method->value, $this->paymentMethods()),
             'policies' => collect(Store::POLICIES)
                 ->filter(fn (string $column): bool => filled($this->{$column}))

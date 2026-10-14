@@ -42,6 +42,7 @@ class PlaceOrderRequest extends FormRequest
             'coupon_code' => ['nullable', 'string', 'max:32'],
             'note' => ['nullable', 'string', 'max:500'],
             'payment_method' => ['nullable', Rule::enum(PaymentMethod::class)],
+            'redeem_points' => ['nullable', 'integer', 'min:0', 'max:10000000'],
         ];
     }
 
