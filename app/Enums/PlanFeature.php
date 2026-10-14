@@ -18,4 +18,6 @@ enum PlanFeature: string
 
     /** Sending orders to Meta, TikTok and Google from the server (Conversions API and alike). */
     case ConversionsApi = 'conversions_api';
+    /** Loyalty points customers earn on delivered orders and spend at checkout. */
+    case Loyalty = 'loyalty';
 }

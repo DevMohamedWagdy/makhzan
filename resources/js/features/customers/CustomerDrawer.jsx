@@ -6,6 +6,7 @@ import { Pagination } from '@/components/ui/Navigation';
 import { Icon } from '@/components/ui/Icon';
 import { Drawer } from '@/components/ui/Overlay';
 import { Skeleton } from '@/components/ui/Spinner';
+import { CustomerPoints } from '@/features/customers/CustomerPoints';
 import { OrderStatusBadge } from '@/features/orders/OrderBadges';
 import { t } from '@/i18n';
 import { formatDate, formatMoney, formatNumber } from '@/lib/format';
@@ -134,6 +135,8 @@ export function CustomerDrawer({ customerId, onClose }) {
                         <Stat label={t('متوسط الطلب')} value={formatMoney(customer.stats.average_order)} />
                         <Stat label={t('آخر طلب')} value={customer.last_order_at ? formatDate(customer.last_order_at) : '—'} />
                     </div>
+
+                    <CustomerPoints customerId={customer.customer_id} />
 
                     <section>
                         <h3 className="mb-3 text-sm font-semibold text-ink">{t('العناوين')}</h3>

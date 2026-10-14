@@ -7,6 +7,7 @@ export const PLAN_FEATURES = {
     online_payments: { label: t('الدفع أونلاين بالبطاقة والمحفظة'), icon: 'credit-card' },
     custom_domain: { label: t('دومين خاص لمتجرك'), icon: 'link' },
     conversions_api: { label: t('تتبع الطلبات من السيرفر لإعلانات فيسبوك وتيك توك وجوجل'), icon: 'zap' },
+    loyalty: { label: t('برنامج نقاط الولاء للعملاء'), icon: 'star' },
 };
 
 /** How vendors pay the platform, mirroring App\Enums\BillingMethod. */

@@ -44,6 +44,7 @@ class PlaceOrderRequest extends FormRequest
             'payment_method' => ['nullable', Rule::enum(PaymentMethod::class)],
             'tracking' => ['nullable', 'array:fbp,fbc,ttp,ttclid,ga_client_id,page_url'],
             'tracking.*' => ['nullable', 'string', 'max:500'],
+            'redeem_points' => ['nullable', 'integer', 'min:0', 'max:10000000'],
         ];
     }
 

@@ -227,6 +227,12 @@ export function StoreOrderPage() {
                             <dd className="ltr">-{formatMoney(order.discount + order.shipping_discount)}</dd>
                         </div>
                     )}
+                    {order.points_discount > 0 && (
+                        <div className="flex justify-between text-success">
+                            <dt>{t('خصم النقاط ({count} نقطة)', { count: order.points_redeemed })}</dt>
+                            <dd className="ltr">-{formatMoney(order.points_discount)}</dd>
+                        </div>
+                    )}
                     <div className="flex justify-between border-t border-line pt-2 text-base">
                         <dt className="font-semibold text-ink">{online ? t('الإجمالي') : t('الإجمالي (الدفع عند الاستلام)')}</dt>
                         <dd className="font-bold text-ink">{formatMoney(order.total)}</dd>

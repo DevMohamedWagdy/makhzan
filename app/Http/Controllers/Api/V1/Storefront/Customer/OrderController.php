@@ -50,7 +50,7 @@ class OrderController extends Controller
             : collect($request->validated('address'))->only(['recipient_name', 'phone', 'governorate_id', 'city_id', 'address_line', 'landmark'])->all();
 
         $paymentMethod = PaymentMethod::tryFrom((string) $request->validated('payment_method')) ?? PaymentMethod::Cod;
-        $order = $placeOrder->handle($store, $customer, $request->validated('items'), $address, $request->validated('referral_code'), $request->validated('note'), $request->validated('coupon_code'), $paymentMethod);
+        $order = $placeOrder->handle($store, $customer, $request->validated('items'), $address, $request->validated('referral_code'), $request->validated('note'), $request->validated('coupon_code'), $paymentMethod, (int) $request->validated('redeem_points'));
         $order->forceFill(['tracking' => $request->trackingContext()])->saveQuietly();
 
         if ($paymentMethod->isOnline()) {

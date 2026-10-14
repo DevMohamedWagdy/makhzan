@@ -58,6 +58,7 @@ const NAV_SECTIONS = [
             { label: t('المسوقين'), icon: 'users', to: '/dashboard/affiliates', permission: 'marketing' },
             { label: t('طلبات التحويل'), icon: 'send', to: '/dashboard/payout-requests', counter: 'payoutRequestsCount', permission: 'marketing' },
             { label: t('الكوبونات'), icon: 'gift', to: '/dashboard/coupons', permission: 'marketing' },
+            { label: t('برنامج النقاط'), icon: 'star', to: '/dashboard/loyalty', permission: 'marketing' },
         ],
     },
     {

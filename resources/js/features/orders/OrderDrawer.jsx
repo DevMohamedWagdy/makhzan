@@ -205,6 +205,12 @@ export function OrderDrawer({ orderId, onClose, onChanged }) {
                                     <dd className="ltr">-{formatMoney(order.discount + order.shipping_discount)}</dd>
                                 </div>
                             )}
+                            {order.points_discount > 0 && (
+                                <div className="flex justify-between text-success">
+                                    <dt>{t('خصم النقاط ({count} نقطة)', { count: order.points_redeemed })}</dt>
+                                    <dd className="ltr">-{formatMoney(order.points_discount)}</dd>
+                                </div>
+                            )}
                             <div className="flex justify-between font-semibold text-ink">
                                 <dt>{order.payment_method === 'cod' ? t('المطلوب تحصيله عند الاستلام') : t('الإجمالي')}</dt>
                                 <dd>{formatMoney(order.total)}</dd>
