@@ -12,11 +12,11 @@ use Illuminate\Http\Response;
 class NotificationController extends Controller
 {
     /**
-     * The vendor's notifications, newest first, with the unread count for the bell.
+     * The store's notifications (staff share the owner's), newest first, with the unread count for the bell.
      */
     public function index(ListNotificationsRequest $request): AnonymousResourceCollection
     {
-        $vendor = $request->user();
+        $vendor = $request->user()->notificationInbox();
 
         $notifications = $vendor->notifications()
             ->when($request->boolean('unread'), fn ($query) => $query->whereNull('read_at'))
@@ -32,7 +32,7 @@ class NotificationController extends Controller
      */
     public function read(Request $request, string $notification): NotificationResource
     {
-        $notification = $request->user()->notifications()->findOrFail($notification);
+        $notification = $request->user()->notificationInbox()->notifications()->findOrFail($notification);
         $notification->markAsRead();
 
         return new NotificationResource($notification);
@@ -43,7 +43,7 @@ class NotificationController extends Controller
      */
     public function readAll(Request $request): Response
     {
-        $request->user()->unreadNotifications()->update(['read_at' => now()]);
+        $request->user()->notificationInbox()->unreadNotifications()->update(['read_at' => now()]);
 
         return response()->noContent();
     }

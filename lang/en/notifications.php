@@ -19,6 +19,68 @@ return [
         'review' => 'Review application',
         'view' => 'View affiliate',
     ],
+    'admin' => [
+        'store_registered' => 'New store :store registered (:owner)',
+        'subscription_requested' => 'New subscription request from :store for :plan (:amount EGP)',
+        'trial_ended' => 'The trial of :store ended without a subscription',
+    ],
+    'subscription_activated' => [
+        'subject' => 'Your :plan plan is active',
+        'message' => 'The :plan plan is now active for your store until :date. Thank you for choosing Makhzan!',
+    ],
+    'subscription_rejected' => [
+        'subject' => 'We could not activate the :plan plan',
+        'message' => 'We could not confirm the payment for your :plan plan request. Check the transfer details and send the request again.',
+    ],
+    'subscription_expiring' => [
+        'subject' => 'Your :plan plan ends soon',
+        'message' => 'Your store\'s :plan plan ends on :date. Renew so its features keep working.',
+    ],
+    'trial_ending' => [
+        'subject' => 'Your trial ends soon',
+        'message' => 'Your store\'s trial ends on :date. Choose a plan now so your store keeps taking orders.',
+    ],
+    'subscription_note' => 'Note: :note',
+    'subscription_action' => 'Manage subscription',
+    'customer_order' => [
+        'pending' => [
+            'subject' => 'We received your order #:number - :store',
+            'line' => 'Thanks for ordering from :store! We received your order #:number and will review and confirm it shortly.',
+        ],
+        'confirmed' => [
+            'subject' => 'Your order #:number is confirmed - :store',
+            'line' => 'Your order #:number is confirmed and is being prepared for shipping.',
+        ],
+        'shipped' => [
+            'subject' => 'Your order #:number is on its way - :store',
+            'line' => 'Your order #:number has shipped and will reach you soon.',
+        ],
+        'delivered' => [
+            'subject' => 'Your order #:number was delivered - :store',
+            'line' => 'Your order #:number was delivered. We hope you love it, and thank you for shopping at :store.',
+        ],
+        'cancelled' => [
+            'subject' => 'Your order #:number was cancelled - :store',
+            'line' => 'We are sorry to let you know that your order #:number was cancelled.',
+        ],
+        'returned' => [
+            'subject' => 'Your order #:number was returned - :store',
+            'line' => 'The return of your order #:number has been recorded. Contact :store if you have any questions.',
+        ],
+        'tracking' => 'Tracking number with :carrier: :number',
+        'tracking_link' => 'Track your shipment: :url',
+        'reason' => 'Reason: :reason',
+        'item' => ':name × :quantity — :total EGP',
+        'total' => 'Total: :total EGP',
+        'cod_reminder' => 'Please have :total EGP ready to pay on delivery.',
+        'action' => 'Track your order',
+    ],
+    'customer_reset_password' => [
+        'subject' => 'Reset your password - :store',
+        'intro' => 'We received a request to reset the password of your account at :store.',
+        'action' => 'Set a new password',
+        'expiry' => 'This link expires in :minutes minutes and can be used only once.',
+    ],
     'affiliate_reset_password' => [
         'subject' => 'Reset your password - :store',
         'intro' => 'We received a request to reset the password of your affiliate account at :store.',

@@ -8,6 +8,7 @@ use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
 use App\Models\Affiliate;
 use App\Models\Order;
+use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\Vendor;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -117,6 +118,23 @@ class OrderControllerTest extends TestCase
             ->assertOk()
             ->assertJsonPath('data.customer.customer_id', $order->customer_id)
             ->assertJsonPath('data.commission.status', 'none');
+    }
+
+    public function test_fetches_specific_orders_for_printing_without_leaking_other_stores(): void
+    {
+        $first = $this->order();
+        $second = $this->order();
+        OrderItem::factory()->for($second)->create();
+        $this->order();
+        $foreign = Order::factory()->create();
+
+        $query = http_build_query(['ids' => [$first->id, $second->id, $foreign->id], 'per_page' => 100]);
+
+        $this->getJson("/api/v1/vendor/orders?{$query}")
+            ->assertOk()
+            ->assertJsonPath('data.*.order_id', [$second->id, $first->id])
+            ->assertJsonCount(1, 'data.0.items');
+        $this->getJson('/api/v1/vendor/orders?'.http_build_query(['ids' => range(1, 101)]))->assertJsonValidationErrors('ids');
     }
 
     public function test_returns_404_for_another_stores_order(): void

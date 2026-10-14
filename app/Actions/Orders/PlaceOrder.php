@@ -19,6 +19,7 @@ use App\Models\OrderEvent;
 use App\Models\ProductVariant;
 use App\Models\Store;
 use App\Notifications\AffiliateCommissionNotification;
+use App\Notifications\CustomerOrderUpdateNotification;
 use App\Notifications\OrderPlacedNotification;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -52,8 +53,8 @@ class PlaceOrder
             // Serializes order numbers within the store (and reads its current settings).
             $store = Store::query()->whereKey($store->id)->lockForUpdate()->first();
 
-            if (! $store->accepting_orders) {
-                throw ValidationException::withMessages(['store' => $store->closed_message ?: __('settings.store_closed')]);
+            if (! $store->takesOrders()) {
+                throw ValidationException::withMessages(['store' => $store->closedMessage()]);
             }
 
             if (! in_array($paymentMethod, $store->paymentMethods(), true)) {
@@ -134,6 +135,7 @@ class PlaceOrder
         if (! $paymentMethod->isOnline()) {
             $store->vendor->notify(new OrderPlacedNotification($order));
             $order->affiliate?->notify(new AffiliateCommissionNotification($order, AffiliateCommissionNotification::ORDER_PLACED));
+            $customer->notify(new CustomerOrderUpdateNotification($order, OrderStatus::Pending));
         }
 
         return $order;

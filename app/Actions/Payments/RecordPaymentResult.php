@@ -8,6 +8,7 @@ use App\Models\Order;
 use App\Models\Payment;
 use App\Models\Store;
 use App\Notifications\AffiliateCommissionNotification;
+use App\Notifications\CustomerOrderUpdateNotification;
 use App\Notifications\LatePaymentNotification;
 use App\Notifications\OrderPlacedNotification;
 use App\Support\Payments\GatewayTransaction;
@@ -94,7 +95,7 @@ class RecordPaymentResult
 
     private function announce(Order $order): void
     {
-        $order->load(['store.vendor', 'affiliate']);
+        $order->load(['store.vendor', 'affiliate', 'customer']);
 
         if ($order->status === OrderStatus::Cancelled) {
             $order->store->vendor->notify(new LatePaymentNotification($order));
@@ -104,5 +105,6 @@ class RecordPaymentResult
 
         $order->store->vendor->notify(new OrderPlacedNotification($order));
         $order->affiliate?->notify(new AffiliateCommissionNotification($order, AffiliateCommissionNotification::ORDER_PLACED));
+        $order->customer?->notify(new CustomerOrderUpdateNotification($order, OrderStatus::Pending));
     }
 }

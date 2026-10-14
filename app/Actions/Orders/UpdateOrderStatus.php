@@ -9,9 +9,11 @@ use App\Enums\StockMovementType;
 use App\Models\Affiliate;
 use App\Models\AffiliateReferralCode;
 use App\Models\Order;
+use App\Models\OrderEvent;
 use App\Models\ProductVariant;
 use App\Models\StockMovement;
 use App\Notifications\AffiliateCommissionNotification;
+use App\Notifications\CustomerOrderUpdateNotification;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -24,7 +26,9 @@ class UpdateOrderStatus
      * effects: cancelled and returned orders go back to stock; the affiliate is credited when
      * the order is delivered and debited if a delivered order is returned, and is notified
      * whenever their commission changes. An online order can't be confirmed before it's paid,
-     * and an affiliate never told about an unpaid order isn't told when it's dropped.
+     * and an affiliate never told about an unpaid order isn't told when it's dropped. The
+     * customer is emailed about every change they didn't make themselves, except the
+     * dropping of an online order they never paid for.
      *
      * With $onlyIfUnpaid, an order whose payment has come through is returned unchanged.
      *
@@ -33,8 +37,9 @@ class UpdateOrderStatus
     public function handle(Order $order, OrderStatus $status, string $actor, ?string $note = null, bool $onlyIfUnpaid = false): Order
     {
         $commissionEvent = null;
+        $notifyCustomer = false;
 
-        $order = DB::transaction(function () use ($order, $status, $actor, $note, $onlyIfUnpaid, &$commissionEvent): Order {
+        $order = DB::transaction(function () use ($order, $status, $actor, $note, $onlyIfUnpaid, &$commissionEvent, &$notifyCustomer): Order {
             $order = Order::query()->whereKey($order->id)->lockForUpdate()->firstOrFail();
             $previous = $order->status;
             $unpaid = $order->awaitingPayment();
@@ -70,12 +75,17 @@ class UpdateOrderStatus
 
             $order->save();
             $order->events()->create(['status' => $status, 'actor' => $actor, 'note' => $note]);
+            $notifyCustomer = ! $unpaid && $actor !== OrderEvent::ACTOR_CUSTOMER;
 
             return $order;
         });
 
         if ($commissionEvent) {
             $order->affiliate?->notify(new AffiliateCommissionNotification($order, $commissionEvent));
+        }
+
+        if ($notifyCustomer) {
+            $order->customer?->notify(new CustomerOrderUpdateNotification($order, $status));
         }
 
         return $order;

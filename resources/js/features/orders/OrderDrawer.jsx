@@ -7,6 +7,7 @@ import { Field, Input, Textarea } from '@/components/ui/Form';
 import { Icon } from '@/components/ui/Icon';
 import { Drawer, Modal } from '@/components/ui/Overlay';
 import { Skeleton } from '@/components/ui/Spinner';
+import { useAuth } from '@/context/AuthContext';
 import { refreshDashboardAlerts } from '@/context/DashboardAlertsContext';
 import { useToast } from '@/context/ToastContext';
 import { formatAddress } from '@/features/storefront/AddressFields';
@@ -14,8 +15,10 @@ import { ProductImage } from '@/features/storefront/ProductCard';
 import { t } from '@/i18n';
 import { CURRENCY, ORDER_STATUSES, PAYMENT_METHODS } from '@/lib/constants';
 import { formatDate, formatMoney, formatRelative } from '@/lib/format';
+import { openOrderPrint } from '@/pages/orders/OrderPrintPage';
 import { ordersApi } from '@/services/ordersApi';
 import { OrderProgress, OrderStatusBadge, PaymentBadge } from './OrderBadges';
+import { ShipmentSection } from './ShipmentSection';
 
 const COMMISSION_STATUSES = {
     pending: { label: t('تُستحق عند التوصيل'), tone: 'warning' },
@@ -35,6 +38,7 @@ const NEEDS_NOTE = ['cancelled', 'returned'];
  */
 export function OrderDrawer({ orderId, onClose, onChanged }) {
     const toast = useToast();
+    const { can } = useAuth();
     const [order, setOrder] = useState(null);
     const [pending, setPending] = useState(null);
     const [confirm, setConfirm] = useState(null);
@@ -129,6 +133,14 @@ export function OrderDrawer({ orderId, onClose, onChanged }) {
                             <span className="text-xl font-bold text-ink">{formatMoney(order.total)}</span>
                         </div>
                         <OrderProgress order={order} />
+                        <div className="flex flex-wrap gap-2">
+                            <Button size="sm" variant="secondary" icon="file-text" onClick={() => openOrderPrint([order.order_id], 'invoice')}>
+                                {t('طباعة الفاتورة')}
+                            </Button>
+                            <Button size="sm" variant="secondary" icon="box" onClick={() => openOrderPrint([order.order_id], 'packing')}>
+                                {t('بوليصة التغليف')}
+                            </Button>
+                        </div>
                         {order.payment?.status === 'pending' && order.status === 'pending' && (
                             <p className="rounded-xl bg-warning-soft px-4 py-3 text-sm text-ink-2">{t('العميل لم يدفع بعد. يمكنك تأكيد الطلب بعد وصول الدفع، وإلا يُلغى تلقائياً.')}</p>
                         )}
@@ -136,7 +148,7 @@ export function OrderDrawer({ orderId, onClose, onChanged }) {
                             <p className="rounded-xl bg-danger-soft px-4 py-3 text-sm text-danger">{t('فشلت محاولة الدفع الأخيرة، ويمكن للعميل المحاولة مرة أخرى حتى انتهاء المهلة.')}</p>
                         )}
                         {order.status === 'cancelled' && order.payment?.refundable > 0 && <Alert tone="warning">{t('الطلب ملغي لكن العميل دفع {amount}. رجّع المبلغ له من قسم الدفع بالأسفل.', { amount: formatMoney(order.payment.refundable) })}</Alert>}
-                        {order.next_statuses.length > 0 && (
+                        {order.next_statuses.length > 0 && can('orders.update') && (
                             <div className="flex flex-wrap gap-2">
                                 {order.next_statuses.map((status) => (
                                     <Button
@@ -200,11 +212,20 @@ export function OrderDrawer({ orderId, onClose, onChanged }) {
                         </dl>
                     </section>
 
+                    <ShipmentSection
+                        order={order}
+                        onUpdated={(updated) => {
+                            setOrder(updated);
+                            refreshDashboardAlerts();
+                            onChanged?.(updated);
+                        }}
+                    />
+
                     {order.payment && (
                         <section className="p-6">
                             <div className="mb-3 flex items-center justify-between gap-3">
                                 <h3 className="text-sm font-semibold text-ink">{t('الدفع')}</h3>
-                                {order.payment.refundable > 0 && (
+                                {order.payment.refundable > 0 && can('payments.refund') && (
                                     <Button size="sm" variant="secondary" icon="refresh" onClick={openRefund}>
                                         {t('استرداد مبلغ')}
                                     </Button>

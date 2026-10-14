@@ -1,0 +1,62 @@
+import { request } from './client';
+
+const BASE = '/api/v1/admin';
+const auth = 'admin';
+
+/** Platform admin panel endpoints (admin session). */
+export const adminApi = {
+    /** `{ token, admin }` */
+    login: (payload) => request('POST', `${BASE}/auth/login`, { body: payload, auth }),
+    logout: () => request('POST', `${BASE}/auth/logout`, { auth }),
+    me: () => request('GET', `${BASE}/auth/me`, { auth }),
+
+    notifications: (query = {}) => request('GET', `${BASE}/notifications`, { query, auth }),
+    markNotificationRead: (id) => request('POST', `${BASE}/notifications/${id}/read`, { auth }),
+    markAllNotificationsRead: () => request('POST', `${BASE}/notifications/read-all`, { auth }),
+
+    overview: () => request('GET', `${BASE}/overview`, { auth }),
+
+    /** @param {{ search?: string, status?: 'active'|'suspended'|'paying'|'trial'|'expired', plan_id?: number, page?: number }} filters */
+    stores: (filters) => request('GET', `${BASE}/stores`, { query: filters, auth }),
+    store: (storeId) => request('GET', `${BASE}/stores/${storeId}`, { auth }),
+    updateStore: (storeId, payload) => request('PATCH', `${BASE}/stores/${storeId}`, { body: payload, auth }),
+    storeProducts: (storeId, query = {}) => request('GET', `${BASE}/stores/${storeId}/products`, { query, auth }),
+    storeCustomers: (storeId, query = {}) => request('GET', `${BASE}/stores/${storeId}/customers`, { query, auth }),
+    suspend: (storeId, reason) => request('POST', `${BASE}/stores/${storeId}/suspend`, { body: { reason }, auth }),
+    unsuspend: (storeId) => request('POST', `${BASE}/stores/${storeId}/unsuspend`, { auth }),
+    extendTrial: (storeId, days) => request('POST', `${BASE}/stores/${storeId}/trial`, { body: { days }, auth }),
+    /** `{ token, vendor }` — a one-hour dashboard session as the store's owner. */
+    impersonate: (storeId) => request('POST', `${BASE}/stores/${storeId}/impersonate`, { auth }),
+    /** @param {{ plan_id: number, months: number, amount: number, method: string, reference?: string, notes?: string }} payload */
+    activate: (storeId, payload) => request('POST', `${BASE}/stores/${storeId}/subscription`, { body: payload, auth }),
+
+    /** @param {{ store_id?: number, status?: string, search?: string, from?: string, to?: string, page?: number }} filters */
+    orders: (filters) => request('GET', `${BASE}/orders`, { query: filters, auth }),
+    order: (orderId) => request('GET', `${BASE}/orders/${orderId}`, { auth }),
+
+    /** @param {{ search?: string, type?: 'owner'|'staff', store_id?: number, page?: number }} filters */
+    vendors: (filters) => request('GET', `${BASE}/vendors`, { query: filters, auth }),
+    updateVendor: (vendorId, payload) => request('PATCH', `${BASE}/vendors/${vendorId}`, { body: payload, auth }),
+
+    plans: () => request('GET', `${BASE}/plans`, { auth }),
+    savePlan: (payload, planId = null) => request(planId ? 'PUT' : 'POST', `${BASE}/plans${planId ? `/${planId}` : ''}`, { body: payload, auth }),
+    removePlan: (planId) => request('DELETE', `${BASE}/plans/${planId}`, { auth }),
+
+    /** @param {{ status?: 'pending'|'approved'|'rejected', page?: number }} filters */
+    requests: (filters) => request('GET', `${BASE}/subscription-requests`, { query: filters, auth }),
+    approve: (requestId, amount = null) => request('POST', `${BASE}/subscription-requests/${requestId}/approve`, { body: { amount }, auth }),
+    reject: (requestId, note) => request('POST', `${BASE}/subscription-requests/${requestId}/reject`, { body: { note }, auth }),
+
+    payments: (page = 1) => request('GET', `${BASE}/subscription-payments`, { query: { page }, auth }),
+
+    /** @param {{ store_id?: number, actor_type?: string, actor_id?: number, subject_type?: string, subject_id?: number, event?: string, search?: string, from?: string, to?: string, page?: number }} filters */
+    logs: (filters) => request('GET', `${BASE}/logs`, { query: filters, auth }),
+
+    team: () => request('GET', `${BASE}/team`, { auth }),
+    saveTeamMember: (payload, adminId = null) => request(adminId ? 'PUT' : 'POST', `${BASE}/team${adminId ? `/${adminId}` : ''}`, { body: payload, auth }),
+    removeTeamMember: (adminId) => request('DELETE', `${BASE}/team/${adminId}`, { auth }),
+    /** `{ data: roles, catalog }` */
+    roles: () => request('GET', `${BASE}/roles`, { auth, raw: true }),
+    saveRole: (payload, roleId = null) => request(roleId ? 'PUT' : 'POST', `${BASE}/roles${roleId ? `/${roleId}` : ''}`, { body: payload, auth }),
+    removeRole: (roleId) => request('DELETE', `${BASE}/roles/${roleId}`, { auth }),
+};

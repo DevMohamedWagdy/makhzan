@@ -9,3 +9,4 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::command('makhzan:expire-unpaid-orders')->everyMinute()->withoutOverlapping();
+Schedule::command('makhzan:remind-expiring-subscriptions')->dailyAt('10:00')->withoutOverlapping();

@@ -4,6 +4,7 @@ namespace App\Http\Resources;
 
 use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
+use App\Models\Admin;
 use App\Models\Order;
 use App\Models\Vendor;
 use Illuminate\Http\Request;
@@ -25,7 +26,8 @@ class OrderResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        $forVendor = $request->user() instanceof Vendor;
+        // Platform admins see what the store's vendor sees.
+        $forVendor = $request->user() instanceof Vendor || $request->user() instanceof Admin;
 
         return [
             'order_id' => $this->id,
@@ -53,6 +55,7 @@ class OrderResource extends JsonResource
                 'address_line' => $this->address_line,
                 'landmark' => $this->landmark,
             ],
+            'shipment' => $this->shipment(),
             'customer_note' => $this->customer_note,
             'cancel_reason' => $this->cancel_reason,
             'events' => $this->whenLoaded('events', fn () => $this->events->map(fn ($event): array => [

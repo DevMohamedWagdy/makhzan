@@ -18,7 +18,7 @@ class VendorAccountController extends Controller
         $vendor = $request->user();
         $vendor->update($request->validated());
 
-        return new VendorResource($vendor->load('store'));
+        return new VendorResource($vendor->withStore());
     }
 
     /**

@@ -39,6 +39,10 @@ class AppServiceProvider extends ServiceProvider
             Limit::perMinute(3)->by('affiliate-identifier:'.mb_strtolower($request->input('store_slug').'|'.$request->input('identifier', $request->input('affiliate_id')))),
             Limit::perMinute(10)->by('affiliate-ip:'.$request->ip()),
         ]);
+        RateLimiter::for('customer-password', fn (Request $request) => [
+            Limit::perMinute(3)->by('customer-identifier:'.mb_strtolower($request->route()?->originalParameter('store').'|'.$request->input('identifier', $request->input('customer_id')))),
+            Limit::perMinute(10)->by('customer-ip:'.$request->ip()),
+        ]);
         RateLimiter::for('affiliate-registration', fn (Request $request) => Limit::perHour(10)->by($request->ip()));
 
         // Per identifier and per IP, so one address can't spray reset emails across accounts.

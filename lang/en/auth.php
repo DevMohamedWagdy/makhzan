@@ -20,5 +20,11 @@ return [
     'reset_link_invalid' => 'This reset link is invalid or has expired',
     'vendor_password_reset' => 'Your password was changed. You can sign in now.',
     'affiliate_password_reset' => 'Your new password is set. You can sign in now.',
+    'admins_only' => 'This page is for platform administrators only.',
+    'admin_keep_access' => 'You cannot deactivate or delete yourself, or the last super admin.',
+    'staff_forbidden' => 'You don\'t have access to this section. Contact the store owner.',
+    'staff_inactive' => 'Your account has been disabled. Contact the store owner to re-enable it.',
+    'customer_reset_link_sent' => 'If your account has an email address, you will receive a link to set a new password within minutes.',
+    'customer_password_reset' => 'Your new password is set. You can sign in now.',
 
 ];

@@ -5,6 +5,7 @@ import { Alert, Card, EmptyState } from '@/components/ui/Display';
 import { Field, Input, Switch } from '@/components/ui/Form';
 import { Skeleton } from '@/components/ui/Spinner';
 import { useToast } from '@/context/ToastContext';
+import { BostaConnectionCard } from '@/features/shipping/BostaConnectionCard';
 import { t } from '@/i18n';
 import { CURRENCY } from '@/lib/constants';
 import { cn } from '@/lib/format';
@@ -95,6 +96,9 @@ export function ShippingPage() {
     return (
         <>
             {header}
+            <div className="mb-6">
+                <BostaConnectionCard />
+            </div>
             <div className="grid items-start gap-6 xl:grid-cols-[1fr_360px]">
                 <Card title={t('المحافظات')} description={t('{count} من {total} محافظة متاح لها التوصيل', { count: servedCount, total: settings.rates.length })} bodyClassName="p-0">
                     <ul className="divide-y divide-line">

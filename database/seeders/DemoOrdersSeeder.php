@@ -39,16 +39,26 @@ class DemoOrdersSeeder extends Seeder
         'returned' => ['confirmed', 'shipped', 'delivered', 'returned'],
     ];
 
-    public function run(PlaceOrder $placeOrder, UpdateOrderStatus $updateStatus, SyncAffiliateStats $syncStats): void
+    public function __construct(
+        private PlaceOrder $placeOrder,
+        private UpdateOrderStatus $updateStatus,
+        private SyncAffiliateStats $syncStats,
+    ) {}
+
+    public function run(): void
     {
-        $store = Store::query()->firstWhere('slug', 'noor-fashion');
-
-        if (! $store || $store->orders()->exists() || ! $store->products()->exists()) {
-            return;
-        }
-
         // Demo orders shouldn't fill the vendor's bell or the mail queue.
         Notification::fake();
+
+        Store::query()->whereIn('slug', DemoVendorSeeder::STORE_SLUGS)->get()->each(function (Store $store): void {
+            if (! $store->orders()->exists() && $store->products()->exists()) {
+                $this->seedOrders($store);
+            }
+        });
+    }
+
+    private function seedOrders(Store $store): void
+    {
 
         $store->forceFill(['default_shipping_price' => 60, 'free_shipping_threshold' => 2500])->save();
         $store->shippingRates()->updateOrCreate(['governorate_id' => 'cairo'], ['price' => 45, 'is_enabled' => true]);
@@ -77,7 +87,7 @@ class DemoOrdersSeeder extends Seeder
             }
 
             try {
-                $order = $placeOrder->handle(
+                $order = $this->placeOrder->handle(
                     $store,
                     $customer,
                     $variants->map(fn (ProductVariant $variant): array => ['variant_id' => $variant->id, 'quantity' => fake()->numberBetween(1, 2)])->all(),
@@ -97,7 +107,7 @@ class DemoOrdersSeeder extends Seeder
             $outcome = $affiliate?->is($demoAffiliate) ? fake()->randomElement(['delivered', 'delivered', 'delivered', 'shipped', 'pending']) : fake()->randomElement(self::OUTCOMES);
 
             foreach (self::PATHS[$outcome] as $status) {
-                $updateStatus->handle($order, OrderStatus::from($status), OrderEvent::ACTOR_VENDOR);
+                $this->updateStatus->handle($order, OrderStatus::from($status), OrderEvent::ACTOR_VENDOR);
             }
 
             $placedAt = now()->subDays(self::ORDERS - $index)->subHours(fake()->numberBetween(0, 12));
@@ -109,7 +119,7 @@ class DemoOrdersSeeder extends Seeder
             $this->payPartOfTheBalance($demoAffiliate->fresh());
         }
 
-        $affiliates->each(fn (Affiliate $affiliate) => $syncStats->handle($affiliate));
+        $affiliates->each(fn (Affiliate $affiliate) => $this->syncStats->handle($affiliate));
     }
 
     /**

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { NavLink, Outlet, useNavigate, useOutletContext } from 'react-router-dom';
 import { Logo } from '@/components/brand/Logo';
 import { ImpersonationBanner } from '@/components/layout/DashboardLayout';
@@ -7,7 +7,7 @@ import { Alert, Avatar, EmptyState } from '@/components/ui/Display';
 import { Dropdown } from '@/components/ui/Dropdown';
 import { Icon } from '@/components/ui/Icon';
 import { LanguageToggle } from '@/components/ui/LanguageToggle';
-import { Skeleton } from '@/components/ui/Spinner';
+import { Skeleton, PageLoader } from '@/components/ui/Spinner';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { useAffiliateAuth } from '@/context/AffiliateAuthContext';
 import { affiliateNotificationTarget } from '@/features/notifications/NotificationItem';
@@ -176,7 +176,9 @@ export function AffiliatePortalLayout() {
                                 {t('روابط الإحالة معطلة حالياً. تعرض هذه الصفحة البيانات كما يراها المسوق.')}
                             </Alert>
                         )}
-                        <Outlet context={context} />
+                        <Suspense fallback={<PageLoader />}>
+                            <Outlet context={context} />
+                        </Suspense>
                     </div>
                 )}
             </main>

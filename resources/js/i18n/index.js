@@ -1,12 +1,10 @@
-import en from './en';
-
 /**
  * Lightweight i18n, gettext style: the Arabic source text is the translation key, so
  * `t('حفظ المنتج')` reads naturally and falls back to Arabic when a translation is missing.
  * Placeholders use braces: t('ملف المسوق {name}', { name }).
  *
  * The language is fixed for the lifetime of the page; switching reloads it, so module-level
- * labels (constants, mock data) are translated too. The backend gets the same language
+ * labels (constants) are translated too. The backend gets the same language
  * through the Accept-Language header (see services/client.js).
  */
 
@@ -18,7 +16,10 @@ export const LOCALES = {
 export const DEFAULT_LOCALE = 'ar';
 export const LOCALE_STORAGE_KEY = 'makhzan.locale';
 
-const DICTIONARIES = { en };
+/** Translations of the Arabic source text, loaded on demand (Arabic users never download them). */
+const DICTIONARIES = { en: () => import('./en') };
+
+let dictionary = null;
 
 function detectLocale() {
     try {
@@ -45,11 +46,21 @@ if (typeof document !== 'undefined') {
 }
 
 /**
+ * Loads the current language's dictionary. app.jsx awaits it before importing the rest of the
+ * app, so labels translated when their module loads (constants) are translated too.
+ */
+export async function loadDictionary() {
+    if (DICTIONARIES[locale]) {
+        dictionary = (await DICTIONARIES[locale]()).default;
+    }
+}
+
+/**
  * @param {string} text  Arabic source text (the key)
  * @param {Record<string, string | number>} [params]
  */
 export function t(text, params) {
-    const translated = DICTIONARIES[locale]?.[text] ?? text;
+    const translated = dictionary?.[text] ?? text;
 
     return params ? translated.replace(/\{(\w+)\}/g, (match, name) => (name in params ? String(params[name]) : match)) : translated;
 }

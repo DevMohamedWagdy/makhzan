@@ -6,6 +6,7 @@ use App\Notifications\AffiliateCouponNotification;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Notifications\DatabaseNotification;
+use Illuminate\Support\Carbon;
 
 /**
  * @mixin DatabaseNotification
@@ -67,6 +68,13 @@ class NotificationResource extends JsonResource
                 'stock' => $details['stock'],
             ]),
             'coupon_assigned' => AffiliateCouponNotification::message($details['code'], $details['type'], $details['value']),
+            'subscription_activated', 'subscription_rejected', 'subscription_expiring', 'trial_ending' => __("notifications.{$this->type}.message", [
+                'plan' => $details['plan_name'],
+                'date' => $details['ends_at'] ? Carbon::parse($details['ends_at'])->translatedFormat('j F Y') : '',
+            ]),
+            'store_registered' => __('notifications.admin.store_registered', ['store' => $details['store_name'], 'owner' => $details['owner_name'] ?? '']),
+            'subscription_requested' => __('notifications.admin.subscription_requested', ['store' => $details['store_name'], 'plan' => $details['plan_name'], 'amount' => number_format((float) $details['amount'], 2)]),
+            'trial_ended' => __('notifications.admin.trial_ended', ['store' => $details['store_name']]),
             default => $details['message'] ?? '',
         };
     }

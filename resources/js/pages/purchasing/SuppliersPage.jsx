@@ -6,15 +6,17 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { Avatar, EmptyState } from '@/components/ui/Display';
 import { Input } from '@/components/ui/Form';
 import { Skeleton } from '@/components/ui/Spinner';
+import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
 import { SupplierFormModal } from '@/features/purchasing/SupplierFormModal';
 import { useDebouncedValue } from '@/hooks/common';
 import { t } from '@/i18n';
-import { formatNumber } from '@/lib/format';
+import { cn, formatNumber } from '@/lib/format';
 import { suppliersApi } from '@/services/purchasingApi';
 
 /** The store's suppliers with their purchase orders; add, edit or delete (when unused). */
 export function SuppliersPage() {
+    const { can } = useAuth();
     const toast = useToast();
     const [searchTerm, setSearchTerm] = useState('');
     const search = useDebouncedValue(searchTerm, 300);
@@ -56,9 +58,11 @@ export function SuppliersPage() {
                 description={t('الجهات التي تشتري منها بضاعتك')}
                 breadcrumbs={[t('لوحة التحكم'), t('المخزون والمشتريات'), t('الموردين')]}
                 actions={
-                    <Button icon="plus" onClick={() => setEditing({})}>
-                        {t('مورد جديد')}
-                    </Button>
+                    can('purchasing.create') && (
+                        <Button icon="plus" onClick={() => setEditing({})}>
+                            {t('مورد جديد')}
+                        </Button>
+                    )
                 }
             />
 
@@ -83,7 +87,7 @@ export function SuppliersPage() {
                             icon="building"
                             title={search ? t('لا يوجد موردين مطابقين') : t('لا يوجد موردين بعد')}
                             description={t('أضف موردينك لتسجّل أوامر الشراء منهم وتتابع استلام البضاعة.')}
-                            action={!search && <Button icon="plus" onClick={() => setEditing({})}>{t('مورد جديد')}</Button>}
+                            action={!search && can('purchasing.create') && <Button icon="plus" onClick={() => setEditing({})}>{t('مورد جديد')}</Button>}
                         />
                     </div>
                 ) : (
@@ -103,7 +107,7 @@ export function SuppliersPage() {
                                     {t('{count} أمر شراء', { count: formatNumber(supplier.purchase_orders_count) })}
                                     {supplier.open_purchase_orders_count > 0 && <span className="ms-1 text-xs text-info">{t('({count} مفتوح)', { count: formatNumber(supplier.open_purchase_orders_count) })}</span>}
                                 </Link>
-                                <div className="flex gap-1">
+                                <div className={cn('flex gap-1', !can('purchasing.update') && 'hidden')}>
                                     <Button size="sm" variant="soft" icon="plus" to={`/dashboard/purchase-orders/new?supplier_id=${supplier.supplier_id}`}>
                                         {t('أمر شراء')}
                                     </Button>

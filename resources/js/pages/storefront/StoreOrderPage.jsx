@@ -169,6 +169,20 @@ export function StoreOrderPage() {
 
             <section className="rounded-2xl border border-line bg-surface p-5">
                 <OrderProgress order={order} />
+                {order.shipment && (
+                    <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl bg-surface-2 p-4 text-sm">
+                        <span>
+                            <span className="block text-muted">{t('مع {carrier} · رقم التتبع', { carrier: order.shipment.carrier })}</span>
+                            <span className="ltr block font-mono text-base font-semibold text-ink">{order.shipment.tracking_number}</span>
+                            {order.shipment.status && <span className="text-xs text-muted">{order.shipment.status}</span>}
+                        </span>
+                        {order.shipment.tracking_url && (
+                            <a href={order.shipment.tracking_url} target="_blank" rel="noreferrer" className="font-semibold text-primary hover:underline">
+                                {t('تتبع شحنتك')}
+                            </a>
+                        )}
+                    </div>
+                )}
             </section>
 
             <section className="rounded-2xl border border-line bg-surface p-5">

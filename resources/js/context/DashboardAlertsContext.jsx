@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { useAuth } from '@/context/AuthContext';
 import { affiliatesApi } from '@/services/affiliatesApi';
 import { notificationsApi } from '@/services/notificationsApi';
 import { ordersApi } from '@/services/ordersApi';
@@ -16,6 +17,7 @@ export const refreshDashboardAlerts = () => window.dispatchEvent(new Event(REFRE
  * transfer requests shown in the sidebar. Polled every minute and on window focus.
  */
 export function DashboardAlertsProvider({ children }) {
+    const { can } = useAuth();
     const [notifications, setNotifications] = useState([]);
     const [unreadCount, setUnreadCount] = useState(0);
     const [payoutRequestsCount, setPayoutRequestsCount] = useState(0);
@@ -23,16 +25,21 @@ export function DashboardAlertsProvider({ children }) {
 
     const refresh = useCallback(async () => {
         try {
-            const [list, summary, orders] = await Promise.all([notificationsApi.list({ per_page: 8 }), affiliatesApi.summary(), ordersApi.summary()]);
+            // Staff only poll the sections they can open.
+            const [list, summary, orders] = await Promise.all([
+                notificationsApi.list({ per_page: 8 }),
+                can('marketing') ? affiliatesApi.summary() : null,
+                can('orders') ? ordersApi.summary() : null,
+            ]);
 
             setNotifications(list.data);
             setUnreadCount(list.summary.unread_count);
-            setPayoutRequestsCount(summary.payout_requests);
-            setPendingOrdersCount(orders.pending);
+            setPayoutRequestsCount(summary?.payout_requests ?? 0);
+            setPendingOrdersCount(orders?.pending ?? 0);
         } catch {
             // Counters are best-effort; the next poll retries.
         }
-    }, []);
+    }, [can]);
 
     useEffect(() => {
         refresh();

@@ -1,11 +1,11 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { Suspense, createContext, useContext, useEffect, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { LogoMark } from '@/components/brand/Logo';
 import { Avatar } from '@/components/ui/Display';
 import { Dropdown } from '@/components/ui/Dropdown';
 import { Icon } from '@/components/ui/Icon';
 import { LanguageToggle } from '@/components/ui/LanguageToggle';
-import { Skeleton } from '@/components/ui/Spinner';
+import { Skeleton, PageLoader } from '@/components/ui/Spinner';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { t } from '@/i18n';
 import { cn } from '@/lib/format';
@@ -277,7 +277,9 @@ export function StorefrontLayout() {
                     </header>
 
                     <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6 sm:py-8">
-                        <Outlet />
+                        <Suspense fallback={<PageLoader />}>
+                            <Outlet />
+                        </Suspense>
                     </main>
 
                     <footer className="border-t border-line bg-surface">

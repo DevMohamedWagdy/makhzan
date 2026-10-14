@@ -27,8 +27,11 @@ class ListOrdersRequest extends FormRequest
             'coupon_id' => ['nullable', 'integer'],
             'payment_method' => ['nullable', Rule::enum(PaymentMethod::class)],
             'payment_status' => ['nullable', Rule::enum(PaymentStatus::class)],
+            // Specific orders, e.g. for printing several invoices at once.
+            'ids' => ['nullable', 'array', 'max:100'],
+            'ids.*' => ['integer'],
             'page' => ['nullable', 'integer', 'min:1'],
-            'per_page' => ['nullable', 'integer', Rule::in([10, 20, 50])],
+            'per_page' => ['nullable', 'integer', Rule::in([10, 20, 50, 100])],
         ];
     }
 }

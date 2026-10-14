@@ -1,0 +1,185 @@
+<?php
+
+namespace App\Http\Controllers\Api\V1\Admin;
+
+use App\Actions\Subscriptions\ActivateSubscription;
+use App\Enums\BillingMethod;
+use App\Enums\OrderStatus;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\V1\Admin\ActivateSubscriptionRequest;
+use App\Http\Resources\AdminStoreResource;
+use App\Http\Resources\ProductResource;
+use App\Http\Resources\StoreCustomerResource;
+use App\Http\Resources\VendorResource;
+use App\Models\Plan;
+use App\Models\Store;
+use App\Models\Vendor;
+use App\Support\ActivityLogger;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Validation\Rule;
+
+/**
+ * Every store on the platform: search, inspect, suspend and activate subscriptions.
+ */
+class StoreController extends Controller
+{
+    /**
+     * Stores, newest first, searched by store name/slug or owner name/email/phone and
+     * filtered by status (active, suspended, paying, expired) or plan.
+     */
+    public function index(Request $request): AnonymousResourceCollection
+    {
+        $filters = $request->validate([
+            'search' => ['nullable', 'string', 'max:100'],
+            'status' => ['nullable', Rule::in(['active', 'suspended', 'paying', 'trial', 'expired'])],
+            'plan_id' => ['nullable', 'integer'],
+            'page' => ['nullable', 'integer', 'min:1'],
+        ]);
+
+        $stores = $this->withActivity(Store::query())
+            ->when($filters['search'] ?? null, function (Builder $query, string $term): void {
+                $query->where(fn (Builder $query) => $query
+                    ->where('name', 'like', "%{$term}%")
+                    ->orWhere('slug', 'like', "%{$term}%")
+                    ->orWhereHas('vendor', fn (Builder $query) => $query->where('full_name', 'like', "%{$term}%")->orWhere('email', 'like', "%{$term}%")->orWhere('phone', 'like', "%{$term}%")));
+            })
+            ->when($filters['status'] ?? null, fn (Builder $query, string $status) => match ($status) {
+                'active' => $query->whereNull('suspended_at'),
+                'suspended' => $query->whereNotNull('suspended_at'),
+                'paying' => $query->whereNotNull('plan_id')->where('plan_expires_at', '>', now()),
+                'trial' => $query->withoutActiveSubscription()->where('trial_ends_at', '>', now()),
+                'expired' => $query->withoutActiveSubscription()->where(fn (Builder $query) => $query->whereNull('trial_ends_at')->orWhere('trial_ends_at', '<=', now())),
+            })
+            ->when($filters['plan_id'] ?? null, fn (Builder $query, int $planId) => $query->where('plan_id', $planId)->where('plan_expires_at', '>', now()))
+            ->latest('id')
+            ->paginate(20)
+            ->withQueryString();
+
+        return AdminStoreResource::collection($stores);
+    }
+
+    public function show(Store $store): AdminStoreResource
+    {
+        $store = $this->withActivity(Store::query())
+            ->with(['subscriptionPayments' => fn ($query) => $query->with('recorder')->latest('id')])
+            ->findOrFail($store->id);
+
+        return new AdminStoreResource($store);
+    }
+
+    /**
+     * Edits what the platform may change on a store: its name and whether it takes orders.
+     */
+    public function update(Request $request, Store $store): AdminStoreResource
+    {
+        $store->update($request->validate([
+            'name' => ['sometimes', 'string', 'min:2', 'max:255'],
+            'accepting_orders' => ['sometimes', 'boolean'],
+            'closed_message' => ['sometimes', 'nullable', 'string', 'max:200'],
+        ]));
+
+        return $this->show($store);
+    }
+
+    /**
+     * A one-hour dashboard session as the store's owner, for support. Logged.
+     */
+    public function impersonate(Request $request, Store $store): JsonResponse
+    {
+        $owner = $store->vendor;
+        $token = $owner->createToken('admin-impersonation:'.$request->user()->id, [Vendor::TOKEN_ABILITY], now()->addHour())->plainTextToken;
+
+        ActivityLogger::log('store.impersonated', $store, storeId: $store->id);
+
+        return response()->json(['token' => $token, 'vendor' => new VendorResource($owner->withStore())]);
+    }
+
+    /**
+     * The store's products, newest first.
+     */
+    public function products(Request $request, Store $store): AnonymousResourceCollection
+    {
+        $search = $request->validate(['search' => ['nullable', 'string', 'max:100']])['search'] ?? null;
+
+        return ProductResource::collection($store->products()->with(['category', 'variants', 'images'])->when($search, fn ($query) => $query->where('name', 'like', "%{$search}%"))->latest('id')->paginate(20)->withQueryString());
+    }
+
+    /**
+     * The store's customers with their order stats.
+     */
+    public function customers(Request $request, Store $store): AnonymousResourceCollection
+    {
+        $search = $request->validate(['search' => ['nullable', 'string', 'max:100']])['search'] ?? null;
+
+        return StoreCustomerResource::collection($store->customers()->withOrderStats()->search($search)->latest('id')->paginate(20)->withQueryString());
+    }
+
+    /**
+     * Closes the storefront and the dashboard until unsuspended. Owners can still renew.
+     */
+    public function suspend(Request $request, Store $store): AdminStoreResource
+    {
+        $reason = $request->validate(['reason' => ['required', 'string', 'max:255']])['reason'];
+
+        $store->forceFill(['suspended_at' => now(), 'suspension_reason' => $reason])->save();
+        $store->vendor->tokens()->delete();
+        $store->staff()->each(fn ($staffMember) => $staffMember->tokens()->delete());
+
+        return $this->show($store);
+    }
+
+    public function unsuspend(Store $store): AdminStoreResource
+    {
+        $store->forceFill(['suspended_at' => null, 'suspension_reason' => null])->save();
+
+        return $this->show($store);
+    }
+
+    /**
+     * Gives the store more trial days, counted from today or from the current trial's end.
+     */
+    public function extendTrial(Request $request, Store $store): AdminStoreResource
+    {
+        $days = (int) $request->validate(['days' => ['required', 'integer', 'min:1', 'max:365']])['days'];
+        $from = $store->trial_ends_at?->isFuture() ? $store->trial_ends_at : now();
+
+        $store->forceFill(['trial_ends_at' => $from->copy()->addDays($days)])->save();
+
+        return $this->show($store);
+    }
+
+    /**
+     * Records a payment taken outside a request (e.g. cash) and activates the plan.
+     */
+    public function activateSubscription(ActivateSubscriptionRequest $request, Store $store, ActivateSubscription $activate): AdminStoreResource
+    {
+        $activate->handle(
+            $store,
+            Plan::query()->findOrFail($request->integer('plan_id')),
+            $request->integer('months'),
+            (float) $request->validated('amount'),
+            BillingMethod::from($request->validated('method')),
+            $request->validated('reference'),
+            $request->validated('notes'),
+            $request->user(),
+        );
+
+        return $this->show($store);
+    }
+
+    /**
+     * @param  Builder<Store>  $query
+     * @return Builder<Store>
+     */
+    private function withActivity(Builder $query): Builder
+    {
+        return $query
+            ->with(['vendor', 'plan'])
+            ->withCount(['products', 'orders', 'staff'])
+            ->withSum(['orders as delivered_sales' => fn (Builder $query) => $query->where('status', OrderStatus::Delivered)], 'total')
+            ->withMax('orders', 'created_at');
+    }
+}

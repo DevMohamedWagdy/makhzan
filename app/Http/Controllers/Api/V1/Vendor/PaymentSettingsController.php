@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1\Vendor;
 
+use App\Enums\PlanFeature;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\Vendor\UpdatePaymentSettingsRequest;
 use App\Http\Resources\PaymentSettingsResource;
@@ -29,6 +30,10 @@ class PaymentSettingsController extends Controller
         $account = null;
 
         if ($request->has('paymob')) {
+            if (! $store->hasFeature(PlanFeature::OnlinePayments)) {
+                throw ValidationException::withMessages(['paymob' => __('billing.feature_unavailable')]);
+            }
+
             $paymob = $request->validated('paymob');
             $account = $store->paymentGateway ?? new StorePaymentGateway(['gateway' => StorePaymentGateway::PAYMOB]);
             $secretKey = $paymob['secret_key'] ?? $account->credential('secret_key');

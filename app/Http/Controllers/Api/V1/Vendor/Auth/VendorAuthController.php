@@ -6,7 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\Vendor\Auth\LoginRequest;
 use App\Http\Requests\Api\V1\Vendor\Auth\RegisterVendorRequest;
 use App\Http\Resources\VendorResource;
+use App\Models\Admin;
 use App\Models\Vendor;
+use App\Notifications\AdminAlertNotification;
+use App\Support\ActivityLogger;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -21,6 +24,8 @@ class VendorAuthController extends Controller
     {
         $vendor = $request->authenticate();
         $vendor->rememberLocale();
+        $vendor->forceFill(['last_login_at' => now()])->saveQuietly();
+        ActivityLogger::log('vendor.login', $vendor, actor: $vendor);
 
         return $this->tokenResponse($vendor, $vendor->issueToken($request->boolean('remember')));
     }
@@ -44,6 +49,8 @@ class VendorAuthController extends Controller
         });
 
         $vendor->rememberLocale();
+        $store = $vendor->store()->first();
+        Admin::notifyTeam(new AdminAlertNotification(AdminAlertNotification::STORE_REGISTERED, ['store_id' => $store->id, 'store_name' => $store->name, 'owner_name' => $vendor->full_name]));
 
         return $this->tokenResponse($vendor, $vendor->issueToken(remember: true), Response::HTTP_CREATED);
     }
@@ -53,7 +60,7 @@ class VendorAuthController extends Controller
      */
     public function me(Request $request): VendorResource
     {
-        return new VendorResource($request->user()->load('store'));
+        return new VendorResource($request->user()->withStore());
     }
 
     /**
@@ -70,7 +77,7 @@ class VendorAuthController extends Controller
     {
         return response()->json([
             'token' => $token,
-            'vendor' => new VendorResource($vendor->load('store')),
+            'vendor' => new VendorResource($vendor->withStore()),
         ], $status);
     }
 }

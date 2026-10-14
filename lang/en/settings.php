@@ -13,4 +13,8 @@ return [
         'terms' => 'Terms & conditions',
     ],
 
+    'domain_invalid' => 'This domain is not valid. Type it without https, e.g. shop.example.com',
+    'domain_taken' => 'This domain is connected to another store.',
+    'domain_missing' => 'Add the domain first.',
+    'domain_not_pointing' => 'The domain does not point to us yet. Add a CNAME record pointing to :target, then wait for it to propagate (it can take an hour).',
 ];

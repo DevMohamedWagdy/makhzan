@@ -35,4 +35,8 @@ return [
     'city_required' => 'Choose a city',
     'city_mismatch' => 'The city is not in the selected governorate',
 
+    'role_required' => 'Choose the team member\'s role',
+    'role_name_required' => 'Enter a role name',
+    'role_name_taken' => 'A role with this name already exists',
+    'role_in_use' => 'A role with team members cannot be deleted. Move them to another role first.',
 ];

@@ -6,6 +6,14 @@ const TYPES = {
     payout_requested: { icon: 'send', className: 'bg-warning-soft text-warning' },
     affiliate_registered: { icon: 'user-plus', className: 'bg-primary-soft text-primary' },
     order_placed: { icon: 'shopping-bag', className: 'bg-success-soft text-success' },
+    subscription_activated: { icon: 'zap', className: 'bg-success-soft text-success' },
+    subscription_rejected: { icon: 'alert-circle', className: 'bg-danger-soft text-danger' },
+    subscription_expiring: { icon: 'clock', className: 'bg-warning-soft text-warning' },
+    trial_ending: { icon: 'clock', className: 'bg-warning-soft text-warning' },
+    // Admin panel
+    store_registered: { icon: 'store', className: 'bg-success-soft text-success' },
+    subscription_requested: { icon: 'send', className: 'bg-primary-soft text-primary' },
+    trial_ended: { icon: 'clock', className: 'bg-danger-soft text-danger' },
     late_payment: { icon: 'credit-card', className: 'bg-warning-soft text-warning' },
     stock_low: { icon: 'warehouse', className: 'bg-warning-soft text-warning' },
     stock_out: { icon: 'box', className: 'bg-danger-soft text-danger' },
@@ -25,11 +33,20 @@ const TYPES = {
 
 /** Where clicking a notification takes the vendor: the order, the inventory, or the affiliate's profile. */
 export function notificationTarget(notification) {
+    if (notification.type.startsWith('subscription_') || notification.type === 'trial_ending') {
+        return '/dashboard/subscription';
+    }
+
     if (notification.type === 'stock_low' || notification.type === 'stock_out') {
         return `/dashboard/inventory?level=${notification.type === 'stock_out' ? 'out' : 'low'}&search=${encodeURIComponent(notification.details.product_name)}`;
     }
 
     return ['order_placed', 'late_payment'].includes(notification.type) ? `/dashboard/orders?order=${notification.details.order_id}` : `/dashboard/affiliates?affiliate=${notification.details.affiliate_id}`;
+}
+
+/** Where clicking a notification takes a platform admin. */
+export function adminNotificationTarget(notification) {
+    return notification.type === 'subscription_requested' ? '/admin/requests' : `/admin/stores/${notification.details.store_id}`;
 }
 
 /** Where clicking a notification takes the affiliate: their orders, payouts, account or home. */

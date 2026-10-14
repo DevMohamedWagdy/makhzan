@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1\Public;
 use App\Actions\Affiliates\CreateAffiliate;
 use App\Enums\AffiliateSource;
 use App\Enums\AffiliateStatus;
+use App\Enums\PlanFeature;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\Public\RegisterAffiliateRequest;
 use App\Http\Resources\AffiliateRegistrationLinkPublicResource;
@@ -34,6 +35,8 @@ class AffiliateRegistrationController extends Controller
      */
     public function store(RegisterAffiliateRequest $request, AffiliateRegistrationLink $registrationLink, CreateAffiliate $createAffiliate): JsonResponse
     {
+        abort_unless($registrationLink->store->hasFeature(PlanFeature::Affiliates), Response::HTTP_FORBIDDEN, __('billing.affiliate_signup_closed'));
+
         $status = $registrationLink->auto_approve ? AffiliateStatus::Active : AffiliateStatus::Pending;
 
         try {

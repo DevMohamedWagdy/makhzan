@@ -84,9 +84,59 @@ function RecentOrders({ orders }) {
     );
 }
 
-/** The vendor's home: what needs attention, the last 30 days at a glance and the latest orders. */
+/** Sections the overview reads from; staff missing any of them get shortcuts instead. */
+const OVERVIEW_PERMISSIONS = ['reports', 'orders', 'products', 'marketing'];
+
+const SHORTCUTS = [
+    { permission: 'orders', to: '/dashboard/orders', icon: 'shopping-bag', label: t('الطلبات'), description: t('تابع الطلبات الجديدة وغيّر حالتها') },
+    { permission: 'products', to: '/dashboard/products', icon: 'box', label: t('المنتجات'), description: t('أضف المنتجات وعدّل أسعارها وصورها') },
+    { permission: 'inventory', to: '/dashboard/inventory', icon: 'warehouse', label: t('المخزون'), description: t('الكميات والحركات والمخازن') },
+    { permission: 'purchasing', to: '/dashboard/purchase-orders', icon: 'download', label: t('أوامر الشراء'), description: t('الموردين واستلام البضاعة') },
+    { permission: 'customers', to: '/dashboard/customers', icon: 'user', label: t('العملاء'), description: t('بيانات العملاء وطلباتهم') },
+    { permission: 'marketing', to: '/dashboard/affiliates', icon: 'users', label: t('المسوقين'), description: t('المسوقين والكوبونات والتحويلات') },
+    { permission: 'payments', to: '/dashboard/payments', icon: 'credit-card', label: t('المدفوعات'), description: t('المعاملات واسترداد المبالغ') },
+    { permission: 'reports', to: '/dashboard/reports', icon: 'bar-chart', label: t('التقارير'), description: t('المبيعات والأرباح') },
+    { permission: 'settings', to: '/dashboard/settings', icon: 'settings', label: t('إعدادات المتجر'), description: t('بيانات المتجر والشحن والسياسات') },
+];
+
+/** The vendor's home: the full overview, or section shortcuts for staff with limited access. */
 export function DashboardHomePage() {
-    const { vendor } = useAuth();
+    const { can } = useAuth();
+
+    return OVERVIEW_PERMISSIONS.every(can) ? <OverviewHome /> : <TeamMemberHome />;
+}
+
+function TeamMemberHome() {
+    const { vendor, can } = useAuth();
+    const shortcuts = SHORTCUTS.filter((shortcut) => can(shortcut.permission));
+
+    return (
+        <>
+            <PageHeader title={t('أهلاً {name} 👋', { name: vendor?.full_name?.split(' ')[0] ?? '' })} description={t('الأقسام المتاحة لك في لوحة التحكم')} />
+
+            {shortcuts.length === 0 ? (
+                <EmptyState icon="lock" title={t('لم تُمنح أي صلاحيات بعد')} description={t('اطلب من صاحب المتجر تحديد الأقسام التي يمكنك العمل عليها.')} />
+            ) : (
+                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                    {shortcuts.map((shortcut) => (
+                        <Link key={shortcut.to} to={shortcut.to} className="mk-card group flex items-start gap-4 p-5 transition hover:border-line-strong">
+                            <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-primary-soft text-primary">
+                                <Icon name={shortcut.icon} className="size-5" />
+                            </span>
+                            <span>
+                                <span className="block font-semibold text-ink group-hover:text-primary">{shortcut.label}</span>
+                                <span className="text-sm text-muted">{shortcut.description}</span>
+                            </span>
+                        </Link>
+                    ))}
+                </div>
+            )}
+        </>
+    );
+}
+
+function OverviewHome() {
+    const { vendor, can } = useAuth();
     const [data, setData] = useState(null);
     const [error, setError] = useState(null);
 
@@ -118,9 +168,11 @@ export function DashboardHomePage() {
                         <Button variant="secondary" icon="bar-chart" to="/dashboard/reports">
                             {t('التقارير التفصيلية')}
                         </Button>
-                        <Button icon="plus" to="/dashboard/products/new">
-                            {t('إضافة منتج')}
-                        </Button>
+                        {can('products.create') && (
+                            <Button icon="plus" to="/dashboard/products/new">
+                                {t('إضافة منتج')}
+                            </Button>
+                        )}
                     </>
                 }
             />

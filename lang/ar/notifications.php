@@ -19,6 +19,68 @@ return [
         'review' => 'مراجعة الطلب',
         'view' => 'عرض المسوق',
     ],
+    'admin' => [
+        'store_registered' => 'تاجر جديد سجّل متجر :store (:owner)',
+        'subscription_requested' => 'طلب اشتراك جديد من :store في باقة :plan بقيمة :amount ج.م',
+        'trial_ended' => 'انتهت الفترة التجريبية لمتجر :store دون اشتراك',
+    ],
+    'subscription_activated' => [
+        'subject' => 'تم تفعيل باقة :plan',
+        'message' => 'تم تفعيل باقة :plan لمتجرك حتى :date. شكراً لثقتك في مخزن!',
+    ],
+    'subscription_rejected' => [
+        'subject' => 'لم نتمكن من تفعيل باقة :plan',
+        'message' => 'لم نتمكن من تأكيد الدفع لطلب تفعيل باقة :plan. راجع بيانات التحويل وأرسل الطلب مرة أخرى.',
+    ],
+    'subscription_expiring' => [
+        'subject' => 'باقة :plan تنتهي قريباً',
+        'message' => 'تنتهي باقة :plan لمتجرك في :date. جدّد اشتراكك حتى لا تتوقف مميزات الباقة.',
+    ],
+    'trial_ending' => [
+        'subject' => 'الفترة التجريبية تنتهي قريباً',
+        'message' => 'تنتهي الفترة التجريبية لمتجرك في :date. اختر باقة الآن حتى يستمر متجرك في استقبال الطلبات.',
+    ],
+    'subscription_note' => 'ملاحظة: :note',
+    'subscription_action' => 'إدارة الاشتراك',
+    'customer_order' => [
+        'pending' => [
+            'subject' => 'استلمنا طلبك #:number - :store',
+            'line' => 'شكراً لطلبك من :store! استلمنا طلبك رقم #:number وسنراجعه ونؤكده قريباً.',
+        ],
+        'confirmed' => [
+            'subject' => 'تم تأكيد طلبك #:number - :store',
+            'line' => 'تم تأكيد طلبك رقم #:number وجارٍ تجهيزه للشحن.',
+        ],
+        'shipped' => [
+            'subject' => 'طلبك #:number في الطريق إليك - :store',
+            'line' => 'تم شحن طلبك رقم #:number وسيصلك قريباً.',
+        ],
+        'delivered' => [
+            'subject' => 'تم توصيل طلبك #:number - :store',
+            'line' => 'تم توصيل طلبك رقم #:number. نتمنى أن ينال إعجابك، وشكراً لثقتك في :store.',
+        ],
+        'cancelled' => [
+            'subject' => 'تم إلغاء طلبك #:number - :store',
+            'line' => 'نأسف لإبلاغك بأنه تم إلغاء طلبك رقم #:number.',
+        ],
+        'returned' => [
+            'subject' => 'تم تسجيل إرجاع طلبك #:number - :store',
+            'line' => 'تم تسجيل إرجاع طلبك رقم #:number. تواصل مع :store إذا كان لديك أي استفسار.',
+        ],
+        'tracking' => 'رقم التتبع لدى :carrier: :number',
+        'tracking_link' => 'تابع شحنتك مباشرة: :url',
+        'reason' => 'السبب: :reason',
+        'item' => ':name × :quantity — :total ج.م',
+        'total' => 'الإجمالي: :total ج.م',
+        'cod_reminder' => 'برجاء تجهيز مبلغ :total ج.م للدفع عند الاستلام.',
+        'action' => 'متابعة الطلب',
+    ],
+    'customer_reset_password' => [
+        'subject' => 'إعادة تعيين كلمة المرور - :store',
+        'intro' => 'وصلنا طلب لإعادة تعيين كلمة مرور حسابك في :store.',
+        'action' => 'تعيين كلمة مرور جديدة',
+        'expiry' => 'ينتهي هذا الرابط خلال :minutes دقيقة ويمكن استخدامه مرة واحدة فقط.',
+    ],
     'affiliate_reset_password' => [
         'subject' => 'إعادة تعيين كلمة المرور - :store',
         'intro' => 'وصلنا طلب لإعادة تعيين كلمة مرور حسابك كمسوق في :store.',

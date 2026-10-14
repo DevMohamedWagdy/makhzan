@@ -28,6 +28,9 @@ class EnsureVendorToken
             __('auth.vendors_only'),
         );
 
+        // Deactivated staff lose their tokens, but a request already in flight is refused too.
+        abort_if($user->is_active === false, Response::HTTP_UNAUTHORIZED, __('auth.staff_inactive'));
+
         $user->rememberLocale();
 
         return $next($request);
