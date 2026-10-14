@@ -4,6 +4,7 @@ namespace App\Http\Resources;
 
 use App\Enums\PaymentMethod;
 use App\Models\Store;
+use App\Models\StoreTrackingPixel;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -40,6 +41,8 @@ class StorefrontStoreResource extends JsonResource
             'accepting_orders' => $this->takesOrders(),
             'closed_message' => $this->takesOrders() ? null : $this->closedMessage(),
             'min_order_total' => $this->min_order_total,
+            'tracking_pixels' => $this->trackingPixels()->where('is_active', true)->get()
+                ->mapWithKeys(fn (StoreTrackingPixel $pixel): array => [$pixel->provider->value => $pixel->pixel_id]),
             'payment_methods' => array_map(fn (PaymentMethod $method): string => $method->value, $this->paymentMethods()),
             'policies' => collect(Store::POLICIES)
                 ->filter(fn (string $column): bool => filled($this->{$column}))

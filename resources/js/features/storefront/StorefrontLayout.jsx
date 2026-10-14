@@ -15,6 +15,7 @@ import { CustomerAuthProvider, useCustomerAuth } from './CustomerAuthContext';
 import { useToast } from '@/context/ToastContext';
 import { captureCoupon } from './couponLink';
 import { captureReferral } from './referral';
+import { captureClickIds, initTracking, trackPageView } from './tracking';
 
 const StorefrontContext = createContext(null);
 
@@ -219,6 +220,19 @@ export function StorefrontLayout() {
     useEffect(() => {
         window.scrollTo(0, 0);
     }, [location.pathname]);
+
+    useEffect(() => {
+        captureClickIds(searchParams);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    // Pixels load once the store is known, then every page counts as a view.
+    useEffect(() => {
+        if (home?.store) {
+            initTracking(storeSlug, home.store.tracking_pixels);
+            trackPageView();
+        }
+    }, [home, storeSlug, location.pathname]);
 
     if (missing) {
         return <StoreNotFound />;

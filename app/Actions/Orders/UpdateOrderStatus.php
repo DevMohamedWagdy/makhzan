@@ -3,6 +3,7 @@
 namespace App\Actions\Orders;
 
 use App\Actions\Inventory\ChangeStock;
+use App\Actions\Tracking\TrackOrderConversion;
 use App\Enums\CommissionStatus;
 use App\Enums\OrderStatus;
 use App\Enums\StockMovementType;
@@ -14,12 +15,13 @@ use App\Models\ProductVariant;
 use App\Models\StockMovement;
 use App\Notifications\AffiliateCommissionNotification;
 use App\Notifications\CustomerOrderUpdateNotification;
+use App\Support\Tracking\ConversionEvent;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class UpdateOrderStatus
 {
-    public function __construct(private ChangeStock $changeStock) {}
+    public function __construct(private ChangeStock $changeStock, private TrackOrderConversion $trackConversion) {}
 
     /**
      * Moves an order along its lifecycle (see OrderStatus::next()) and applies the side
@@ -38,8 +40,9 @@ class UpdateOrderStatus
     {
         $commissionEvent = null;
         $notifyCustomer = false;
+        $delivered = false;
 
-        $order = DB::transaction(function () use ($order, $status, $actor, $note, $onlyIfUnpaid, &$commissionEvent, &$notifyCustomer): Order {
+        $order = DB::transaction(function () use ($order, $status, $actor, $note, $onlyIfUnpaid, &$commissionEvent, &$notifyCustomer, &$delivered): Order {
             $order = Order::query()->whereKey($order->id)->lockForUpdate()->firstOrFail();
             $previous = $order->status;
             $unpaid = $order->awaitingPayment();
@@ -76,6 +79,7 @@ class UpdateOrderStatus
             $order->save();
             $order->events()->create(['status' => $status, 'actor' => $actor, 'note' => $note]);
             $notifyCustomer = ! $unpaid && $actor !== OrderEvent::ACTOR_CUSTOMER;
+            $delivered = $status === OrderStatus::Delivered;
 
             return $order;
         });
@@ -86,6 +90,10 @@ class UpdateOrderStatus
 
         if ($notifyCustomer) {
             $order->customer?->notify(new CustomerOrderUpdateNotification($order, $status));
+        }
+
+        if ($delivered) {
+            $this->trackConversion->handle($order, ConversionEvent::DELIVERED);
         }
 
         return $order;

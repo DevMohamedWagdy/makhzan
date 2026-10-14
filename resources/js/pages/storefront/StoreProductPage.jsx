@@ -8,6 +8,7 @@ import { useToast } from '@/context/ToastContext';
 import { useCart } from '@/features/storefront/CartContext';
 import { PriceTag, ProductGrid, ProductImage } from '@/features/storefront/ProductCard';
 import { useStorefront } from '@/features/storefront/StorefrontLayout';
+import { trackEvent } from '@/features/storefront/tracking';
 import { t } from '@/i18n';
 import { cn } from '@/lib/format';
 import { storefrontApi } from '@/services/storefrontApi';
@@ -107,6 +108,12 @@ export function StoreProductPage() {
         }
     }, [product, store]);
 
+    useEffect(() => {
+        if (product) {
+            trackEvent('view_item', { value: product.price, items: [{ id: product.product_id, name: product.name, price: product.price, quantity: 1 }] });
+        }
+    }, [product]);
+
     const variant = useMemo(() => product?.variants.find((candidate) => sameValues(candidate.option_values, selected)) ?? null, [product, selected]);
 
     /** A value is available when some in-stock variant has it together with the other current choices. */
@@ -118,6 +125,7 @@ export function StoreProductPage() {
     const addToCart = () => {
         add(variant.variant_id, quantity);
         setJustAdded(true);
+        trackEvent('add_to_cart', { value: variant.price * quantity, items: [{ id: product.product_id, name: product.name, price: variant.price, quantity }] });
         toast.success(t('تمت الإضافة إلى السلة'), selected.length ? `${product.name} — ${selected.join(' / ')}` : product.name);
     };
 

@@ -299,6 +299,14 @@ class Store extends Model
     }
 
     /**
+     * @return HasMany<StoreTrackingPixel, $this>
+     */
+    public function trackingPixels(): HasMany
+    {
+        return $this->hasMany(StoreTrackingPixel::class);
+    }
+
+    /**
      * @return HasMany<Order, $this>
      */
     public function orders(): HasMany

@@ -42,6 +42,8 @@ class PlaceOrderRequest extends FormRequest
             'coupon_code' => ['nullable', 'string', 'max:32'],
             'note' => ['nullable', 'string', 'max:500'],
             'payment_method' => ['nullable', Rule::enum(PaymentMethod::class)],
+            'tracking' => ['nullable', 'array:fbp,fbc,ttp,ttclid,ga_client_id,page_url'],
+            'tracking.*' => ['nullable', 'string', 'max:500'],
         ];
     }
 
@@ -57,5 +59,20 @@ class PlaceOrderRequest extends FormRequest
             'payment_method.enum' => __('payments.method_unavailable'),
             ...SaveAddressRequest::addressMessages('address.'),
         ];
+    }
+
+    /**
+     * Browser identifiers the ad platforms use to match the order to an ad click, plus the
+     * shopper's IP and browser; empty values dropped.
+     *
+     * @return array<string, string>
+     */
+    public function trackingContext(): array
+    {
+        return array_filter([
+            ...(array) $this->validated('tracking', []),
+            'ip' => $this->ip(),
+            'user_agent' => mb_substr((string) $this->userAgent(), 0, 500),
+        ], fn (mixed $value): bool => is_string($value) && $value !== '');
     }
 }
