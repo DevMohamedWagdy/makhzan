@@ -186,11 +186,6 @@ function Sidebar({ open, onClose }) {
                         </div>
                     ))}
                 </nav>
-
-                <div className="m-4 rounded-xl bg-gradient-to-br from-indigo-600 to-sky-500 p-4 text-white">
-                    <p className="text-sm font-semibold">{t('تحتاج مساعدة؟')}</p>
-                    <p className="mt-1 text-xs leading-relaxed text-indigo-100">{t('فريق دعم مخزن متاح يومياً من ٩ صباحاً حتى ١٢ منتصف الليل.')}</p>
-                </div>
             </aside>
         </>
     );
