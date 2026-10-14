@@ -139,7 +139,7 @@ export function ReportsPage() {
                             value={totals.profit_margin == null ? '—' : t('{value}%', { value: formatNumber(totals.profit_margin) })}
                             icon="percent"
                             tone="info"
-                            hint={totals.uncosted_items ? t('{count} قطعة مباعة بدون تكلفة مسجلة', { count: formatNumber(totals.uncosted_items) }) : t('بعد التكلفة وعمولات المسوقين')}
+                            hint={totals.uncosted_items ? t('{count} قطعة مباعة بدون تكلفة مسجلة', { count: formatNumber(totals.uncosted_items) }) : t('بعد الخصومات والتكلفة وعمولات المسوقين')}
                         />
                     </div>
 

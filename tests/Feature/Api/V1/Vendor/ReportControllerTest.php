@@ -205,4 +205,17 @@ class ReportControllerTest extends TestCase
 
         $this->getJson('/api/v1/vendor/reports')->assertOk()->assertJsonCount(0, 'stock_forecast');
     }
+
+    public function test_gross_profit_takes_off_coupon_and_points_discounts(): void
+    {
+        $order = $this->order('2026-10-12 10:00:00', OrderStatus::Delivered, 1000, ['discount' => 100, 'points_discount' => 50, 'total' => 900]);
+        OrderItem::factory()->for($order)->create(['quantity' => 2, 'line_total' => 1000, 'unit_cost' => 300]);
+
+        $this->getJson('/api/v1/vendor/reports?from=2026-10-12&to=2026-10-12')
+            ->assertOk()
+            ->assertJsonPath('totals.discounts', 150)
+            ->assertJsonPath('totals.cost_of_goods', 600)
+            ->assertJsonPath('totals.gross_profit', 250)
+            ->assertJsonPath('totals.profit_margin', 29.4);
+    }
 }

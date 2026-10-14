@@ -144,6 +144,7 @@ return [
     ],
     'stock_out' => ':product is out of stock',
     'stock_low' => ':product is low on stock: only :stock left',
+    'review_submitted' => 'New :rating/5 review from :customer on :product is waiting for your approval',
     'coupon_assigned' => [
         'percentage' => 'You have a new discount code :code: :value% off for your customers',
         'fixed' => 'You have a new discount code :code: :value EGP off for your customers',

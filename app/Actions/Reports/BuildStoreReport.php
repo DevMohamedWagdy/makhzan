@@ -19,8 +19,8 @@ use Illuminate\Support\Facades\DB;
  * Sales report for the orders a store received between two dates (inclusive, by the day the
  * order was placed). "Sales" counts every order that wasn't cancelled or returned; revenue
  * counts delivered orders only, since payment is collected on delivery. Gross profit is the
- * delivered products' value minus their cost (snapshotted when ordered) and affiliate
- * commissions; items sold before a cost was set are counted in `uncosted_items`. Online
+ * delivered products' value after coupon and loyalty points discounts, minus their cost
+ * (snapshotted when ordered) and affiliate commissions; items sold before a cost was set are counted in `uncosted_items`. Online
  * orders count once they're paid; an unpaid checkout isn't an order yet.
  */
 class BuildStoreReport
@@ -102,10 +102,11 @@ class BuildStoreReport
             ->selectRaw('count(*) as placed')
             ->selectRaw('sum(case when status not in (?, ?) then 1 else 0 end) as orders', [$failedA, $failedB])
             ->selectRaw('coalesce(sum(case when status not in (?, ?) then total else 0 end), 0) as sales', [$failedA, $failedB])
-            ->selectRaw('coalesce(sum(case when status not in (?, ?) then discount + shipping_discount else 0 end), 0) as discounts', [$failedA, $failedB])
+            ->selectRaw('coalesce(sum(case when status not in (?, ?) then discount + shipping_discount + points_discount else 0 end), 0) as discounts', [$failedA, $failedB])
             ->selectRaw('sum(case when status = ? then 1 else 0 end) as delivered_orders', [$delivered])
             ->selectRaw('coalesce(sum(case when status = ? then total else 0 end), 0) as revenue', [$delivered])
             ->selectRaw('coalesce(sum(case when status = ? then shipping_fee else 0 end), 0) as shipping_fees', [$delivered])
+            ->selectRaw('coalesce(sum(case when status = ? then discount + points_discount else 0 end), 0) as product_discounts', [$delivered])
             ->selectRaw('coalesce(sum(case when commission_status = ? then commission_amount else 0 end), 0) as commissions', [CommissionStatus::Earned->value])
             ->selectRaw('sum(case when status = ? then 1 else 0 end) as cancelled', [$failedA])
             ->selectRaw('sum(case when status = ? then 1 else 0 end) as returned', [$failedB])
@@ -124,7 +125,7 @@ class BuildStoreReport
             ->selectRaw('coalesce(sum(case when order_items.unit_cost is null then order_items.quantity else 0 end), 0) as uncosted')
             ->first();
 
-        $products = round((float) $goods->products, 2);
+        $products = round((float) $goods->products - (float) $row->product_discounts, 2);
         $costOfGoods = round((float) $goods->cost, 2);
         $grossProfit = round($products - $costOfGoods - $commissions, 2);
 
@@ -279,6 +280,8 @@ class BuildStoreReport
     /**
      * Products ranked by the profit their delivered sales made: what they sold for minus their
      * cost. Lines sold before a cost was set are left out, since their profit is unknown.
+     * Order-wide discounts (coupons, points) aren't spread over products here; the totals'
+     * gross profit takes them off.
      *
      * @return list<array{product_id: int|null, name: string, quantity: int, sales: float, cost: float, profit: float, margin: float|null}>
      */

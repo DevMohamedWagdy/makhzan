@@ -1296,6 +1296,7 @@ export default {
     'إجمالي الربح': 'Gross profit',
     '{count} قطعة مباعة بدون تكلفة مسجلة': '{count} units sold without a recorded cost',
     'بعد التكلفة وعمولات المسوقين': 'After cost and affiliate commissions',
+    'بعد الخصومات والتكلفة وعمولات المسوقين': 'After discounts, cost and affiliate commissions',
     'أدخل اسم المورد': 'Enter the supplier\'s name',
     'تم حفظ المورد': 'Supplier saved',
     'تمت إضافة المورد': 'Supplier added',

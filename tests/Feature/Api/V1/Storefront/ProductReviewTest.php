@@ -11,8 +11,10 @@ use App\Models\Product;
 use App\Models\ProductReview;
 use App\Models\Store;
 use App\Models\Vendor;
+use App\Notifications\ReviewSubmittedNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
@@ -51,6 +53,7 @@ class ProductReviewTest extends TestCase
 
     public function test_a_customer_reviews_a_product_they_received_and_it_waits_for_approval(): void
     {
+        Notification::fake();
         Storage::fake('public');
         $order = $this->receive($this->product);
         Sanctum::actingAs($this->customer, [Customer::TOKEN_ABILITY]);
@@ -68,6 +71,8 @@ class ProductReviewTest extends TestCase
             ->assertJsonCount(1, 'data.image_urls');
 
         $review = ProductReview::query()->sole();
+        Notification::assertSentTo($this->store->vendor, ReviewSubmittedNotification::class, fn (ReviewSubmittedNotification $notification): bool => $notification->review->is($review)
+            && $notification->toArray($this->store->vendor)['product_name'] === $this->product->name);
         $this->assertSame($order->id, $review->order_id);
         $this->assertSame($this->store->id, $review->store_id);
         Storage::disk('public')->assertExists($review->images[0]);

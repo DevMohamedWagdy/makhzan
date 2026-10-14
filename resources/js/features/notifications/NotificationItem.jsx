@@ -17,6 +17,7 @@ const TYPES = {
     late_payment: { icon: 'credit-card', className: 'bg-warning-soft text-warning' },
     stock_low: { icon: 'warehouse', className: 'bg-warning-soft text-warning' },
     stock_out: { icon: 'box', className: 'bg-danger-soft text-danger' },
+    review_submitted: { icon: 'star', className: 'bg-warning-soft text-warning' },
     // Affiliate portal
     account_approved: { icon: 'check-circle', className: 'bg-success-soft text-success' },
     account_reactivated: { icon: 'check-circle', className: 'bg-success-soft text-success' },
@@ -35,6 +36,10 @@ const TYPES = {
 export function notificationTarget(notification) {
     if (notification.type.startsWith('subscription_') || notification.type === 'trial_ending') {
         return '/dashboard/subscription';
+    }
+
+    if (notification.type === 'review_submitted') {
+        return '/dashboard/reviews';
     }
 
     if (notification.type === 'stock_low' || notification.type === 'stock_out') {

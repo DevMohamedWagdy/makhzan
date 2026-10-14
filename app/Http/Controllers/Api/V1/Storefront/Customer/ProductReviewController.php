@@ -9,6 +9,7 @@ use App\Http\Requests\Api\V1\Storefront\Customer\StoreProductReviewRequest;
 use App\Http\Resources\StorefrontReviewResource;
 use App\Models\Product;
 use App\Models\Store;
+use App\Notifications\ReviewSubmittedNotification;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -57,6 +58,7 @@ class ProductReviewController extends Controller
         ]);
         $review->store()->associate($store);
         $review->save();
+        $store->vendor->notify(new ReviewSubmittedNotification($review->setRelation('product', $product)));
 
         return (new StorefrontReviewResource($review))->response()->setStatusCode(Response::HTTP_CREATED);
     }

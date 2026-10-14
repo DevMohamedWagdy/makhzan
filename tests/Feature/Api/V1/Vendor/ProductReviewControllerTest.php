@@ -7,6 +7,7 @@ use App\Models\Product;
 use App\Models\ProductReview;
 use App\Models\StoreRole;
 use App\Models\Vendor;
+use App\Notifications\ReviewSubmittedNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
 use Laravel\Sanctum\Sanctum;
@@ -117,5 +118,17 @@ class ProductReviewControllerTest extends TestCase
 
         $this->getJson('/api/v1/vendor/reviews')->assertOk();
         $this->patchJson("/api/v1/vendor/reviews/{$review->id}", ['status' => 'approved'])->assertForbidden();
+    }
+
+    public function test_the_bell_announces_a_new_review(): void
+    {
+        $review = ProductReview::factory()->for($this->product)->create(['rating' => 4, 'customer_name' => 'منى أحمد']);
+        $this->vendor->notify(new ReviewSubmittedNotification($review));
+
+        $this->getJson('/api/v1/vendor/notifications')
+            ->assertOk()
+            ->assertJsonPath('data.0.type', 'review_submitted')
+            ->assertJsonPath('data.0.message', 'تقييم جديد 4/5 من منى أحمد على تيشيرت قطن بانتظار موافقتك')
+            ->assertJsonPath('data.0.details.review_id', $review->id);
     }
 }
