@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
 import { Alert, EmptyState } from '@/components/ui/Display';
@@ -14,6 +14,7 @@ import { useCustomerAuth } from '@/features/storefront/CustomerAuthContext';
 import { ProductImage } from '@/features/storefront/ProductCard';
 import { getReferralCode } from '@/features/storefront/referral';
 import { useStorefront } from '@/features/storefront/StorefrontLayout';
+import { trackEvent, trackingContext } from '@/features/storefront/tracking';
 import { t } from '@/i18n';
 import { PAYMENT_METHODS } from '@/lib/constants';
 import { cn, formatMoney } from '@/lib/format';
@@ -33,6 +34,7 @@ export function StoreCheckoutPage() {
     const navigate = useNavigate();
     const toast = useToast();
     const [quote, setQuote] = useState(null);
+    const checkoutTracked = useRef(false);
     const [addresses, setAddresses] = useState(null);
     const [shipping, setShipping] = useState(null);
     const [loadError, setLoadError] = useState(null);
@@ -100,6 +102,15 @@ export function StoreCheckoutPage() {
                 }
 
                 setQuote(cartQuote);
+
+                if (!checkoutTracked.current) {
+                    checkoutTracked.current = true;
+                    trackEvent('begin_checkout', {
+                        value: cartQuote.subtotal,
+                        items: cartQuote.lines.filter((line) => line.product_id).map((line) => ({ id: line.product_id, name: line.name, price: line.unit_price, quantity: line.quantity })),
+                    });
+                }
+
                 setAddresses(savedAddresses);
                 setShipping(shippingRates);
                 setChoice((current) => current ?? (savedAddresses.find((saved) => saved.is_default)?.address_id ?? NEW_ADDRESS));
@@ -163,6 +174,7 @@ export function StoreCheckoutPage() {
                 coupon_code: coupon?.code ?? null,
                 note: note.trim() || null,
                 payment_method: paymentMethod,
+                tracking: trackingContext(),
             });
 
             clearSavedCoupon(storeSlug);

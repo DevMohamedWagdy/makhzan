@@ -69,6 +69,7 @@ class Order extends Model
             'returned_at' => 'datetime',
             'carrier_status_code' => 'integer',
             'carrier_updated_at' => 'datetime',
+            'tracking' => 'array',
         ];
     }
 

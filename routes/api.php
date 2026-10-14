@@ -80,6 +80,7 @@ use App\Http\Controllers\Api\V1\Vendor\StoreSettingsController;
 use App\Http\Controllers\Api\V1\Vendor\StoreSlugAvailabilityController;
 use App\Http\Controllers\Api\V1\Vendor\SubscriptionController;
 use App\Http\Controllers\Api\V1\Vendor\SupplierController;
+use App\Http\Controllers\Api\V1\Vendor\TrackingPixelController;
 use App\Http\Controllers\Api\V1\Vendor\WarehouseController;
 use App\Models\Store;
 use Illuminate\Support\Facades\Route;
@@ -282,6 +283,8 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         });
 
         Route::middleware('permission:settings')->group(function () {
+            Route::get('tracking-pixels', [TrackingPixelController::class, 'show'])->name('tracking-pixels.show');
+            Route::put('tracking-pixels', [TrackingPixelController::class, 'update'])->middleware('throttle:20,1')->name('tracking-pixels.update');
             Route::get('store', [StoreSettingsController::class, 'show'])->name('store.show');
             Route::patch('store', [StoreSettingsController::class, 'update'])->name('store.update');
             Route::post('store/logo', [StoreSettingsController::class, 'uploadLogo'])->middleware('throttle:20,1')->name('store.logo')->defaults('_permission', 'settings.update');

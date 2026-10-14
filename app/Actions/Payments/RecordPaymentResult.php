@@ -2,6 +2,7 @@
 
 namespace App\Actions\Payments;
 
+use App\Actions\Tracking\TrackOrderConversion;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
 use App\Models\Order;
@@ -12,11 +13,14 @@ use App\Notifications\CustomerOrderUpdateNotification;
 use App\Notifications\LatePaymentNotification;
 use App\Notifications\OrderPlacedNotification;
 use App\Support\Payments\GatewayTransaction;
+use App\Support\Tracking\ConversionEvent;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class RecordPaymentResult
 {
+    public function __construct(private TrackOrderConversion $trackConversion) {}
+
     /**
      * Applies a gateway's report on a payment. Callbacks may repeat (the webhook and the
      * customer's redirect report the same transaction, and gateways retry), so a payment
@@ -106,5 +110,6 @@ class RecordPaymentResult
         $order->store->vendor->notify(new OrderPlacedNotification($order));
         $order->affiliate?->notify(new AffiliateCommissionNotification($order, AffiliateCommissionNotification::ORDER_PLACED));
         $order->customer?->notify(new CustomerOrderUpdateNotification($order, OrderStatus::Pending));
+        $this->trackConversion->handle($order, ConversionEvent::PURCHASE);
     }
 }

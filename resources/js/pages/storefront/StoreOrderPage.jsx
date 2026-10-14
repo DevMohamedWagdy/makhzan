@@ -12,6 +12,7 @@ import { formatAddress } from '@/features/storefront/AddressFields';
 import { useCustomerAuth } from '@/features/storefront/CustomerAuthContext';
 import { ProductImage } from '@/features/storefront/ProductCard';
 import { useStorefront } from '@/features/storefront/StorefrontLayout';
+import { trackPurchase } from '@/features/storefront/tracking';
 import { t } from '@/i18n';
 import { PAYMENT_METHODS } from '@/lib/constants';
 import { formatDate, formatMoney, formatTime } from '@/lib/format';
@@ -63,6 +64,13 @@ export function StoreOrderPage() {
             cancelled = true;
         };
     }, [isAuthenticated, api, number]);
+
+    // The purchase counts for the ad platforms once it's real: placed (cash) or paid (online).
+    useEffect(() => {
+        if (order && (order.payment_method === 'cod' ? justPlaced : order.payment_status === 'paid')) {
+            trackPurchase(order);
+        }
+    }, [order, justPlaced]);
 
     // Wallet payments can be confirmed a little after the customer is back: check again shortly.
     useEffect(() => {
