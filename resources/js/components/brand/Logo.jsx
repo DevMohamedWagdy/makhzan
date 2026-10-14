@@ -25,7 +25,7 @@ export function Logo({ className, showTagline = true }) {
             <defs>
                 <linearGradient id={`${id}-word`} x1="0" y1="0" x2="110" y2="0" gradientUnits="userSpaceOnUse">
                     <stop stopColor="#0EA5E9" />
-                    <stop offset="1" stopColor="#4F46E5" />
+                    <stop offset="1" stopColor="#2C2C54" />
                 </linearGradient>
             </defs>
             <g transform="translate(120 0)">
@@ -50,8 +50,8 @@ function LogoMarkPaths({ id }) {
         <>
             <defs>
                 <linearGradient id={`${id}-bg`} x1="4" y1="2" x2="44" y2="46" gradientUnits="userSpaceOnUse">
-                    <stop stopColor="#6366F1" />
-                    <stop offset="0.55" stopColor="#4F46E5" />
+                    <stop stopColor="#40407A" />
+                    <stop offset="0.55" stopColor="#2C2C54" />
                     <stop offset="1" stopColor="#0EA5E9" />
                 </linearGradient>
                 <linearGradient id={`${id}-shine`} x1="24" y1="0" x2="24" y2="30" gradientUnits="userSpaceOnUse">

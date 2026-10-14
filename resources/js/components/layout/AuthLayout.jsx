@@ -39,7 +39,7 @@ export function AuthLayout({ children, wide = false }) {
                 </footer>
             </main>
 
-            <aside className="relative hidden w-[44%] max-w-[640px] overflow-hidden bg-gradient-to-br from-indigo-600 via-indigo-700 to-sky-600 lg:flex lg:flex-col lg:justify-between lg:p-12 dark:from-indigo-950 dark:via-slate-900 dark:to-sky-950">
+            <aside className="relative hidden w-[44%] max-w-[640px] overflow-hidden bg-gradient-to-br from-brand via-brand to-sky-600 lg:flex lg:flex-col lg:justify-between lg:p-12 dark:from-indigo-950 dark:via-slate-900 dark:to-sky-950">
                 <svg className="pointer-events-none absolute inset-0 size-full opacity-[0.12]" aria-hidden="true">
                     <defs>
                         <pattern id="auth-grid" width="36" height="36" patternUnits="userSpaceOnUse">
@@ -67,7 +67,7 @@ export function AuthLayout({ children, wide = false }) {
                 <ul className="relative flex flex-col gap-3">
                     {HIGHLIGHTS.map((item) => (
                         <li key={item.title} className="flex items-start gap-4 rounded-2xl border border-white/15 bg-white/10 p-4 backdrop-blur-md">
-                            <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-white text-indigo-600">
+                            <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-white text-brand">
                                 <Icon name={item.icon} />
                             </span>
                             <span>

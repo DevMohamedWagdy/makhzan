@@ -244,7 +244,7 @@ export function AffiliateJoinPage() {
                         )}
                     </div>
 
-                    <div className="rounded-2xl bg-gradient-to-br from-indigo-600 to-sky-500 p-6 text-white shadow-lg shadow-primary/20">
+                    <div className="rounded-2xl bg-gradient-to-br from-brand to-sky-500 p-6 text-white shadow-lg shadow-primary/20">
                         <p className="text-sm text-indigo-100">{t('عمولتك على كل طلب')}</p>
                         <p className="mt-1 text-4xl font-bold">{link ? `${link.commission_percentage}%` : '—'}</p>
                         <p className="mt-2 text-xs text-indigo-100">{tier ? t('تبدأ كـ «{label}» ويمكن ترقيتك حسب أدائك', { label: tier.label }) : ' '}</p>

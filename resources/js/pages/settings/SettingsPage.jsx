@@ -1,10 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { PageHeader } from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/Button';
-import { Alert, Avatar, Card, EmptyState } from '@/components/ui/Display';
+import { Alert, Avatar, EmptyState } from '@/components/ui/Display';
 import { Field, Input, PasswordInput, Select, Switch, Textarea } from '@/components/ui/Form';
-import { Icon } from '@/components/ui/Icon';
 import { Tabs } from '@/components/ui/Navigation';
 import { Skeleton } from '@/components/ui/Spinner';
 import { useAuth } from '@/context/AuthContext';
@@ -355,14 +354,7 @@ function AccountTab() {
     );
 }
 
-const MORE_SETTINGS = [
-    { to: '/dashboard/shipping', icon: 'truck', label: t('الشحن'), description: t('أسعار التوصيل لكل محافظة والشحن المجاني'), permission: 'settings' },
-    { to: '/dashboard/warehouses', icon: 'building', label: t('المخازن'), description: t('أماكن التخزين وترتيب خصم الطلبات'), permission: 'inventory' },
-    { to: '/dashboard/inventory', icon: 'warehouse', label: t('المخزون'), description: t('حد التنبيه للمخزون المنخفض'), permission: 'inventory' },
-    { to: '/dashboard/affiliates', icon: 'users', label: t('المسوقين'), description: t('رابط تسجيل المسوقين والموافقة عليهم'), permission: 'marketing' },
-];
-
-/** Store settings in tabs (?tab=store|contact|orders|payments|policies|domain|tracking|account), plus links to other settings pages. */
+/** Store settings in tabs (?tab=store|contact|orders|payments|policies|domain|tracking|account) */
 export function SettingsPage() {
     const { updateVendor, can } = useAuth();
     const [searchParams, setSearchParams] = useSearchParams();
@@ -393,7 +385,6 @@ export function SettingsPage() {
         updateVendor({ store: { name: updated.name, logo_url: updated.logo_url, governorate_id: updated.governorate_id, city_id: updated.city_id, contact_phone: updated.contact_phone, address: updated.address } });
     };
 
-    const moreSettings = MORE_SETTINGS.filter((item) => can(item.permission));
     const TabContent = { store: StoreTab, contact: ContactTab, orders: OrdersTab, policies: PoliciesTab }[tab];
 
     return (
@@ -424,23 +415,6 @@ export function SettingsPage() {
                 </div>
             </section>
 
-            {moreSettings.length > 0 && (
-                <Card title={t('إعدادات أخرى')} className="mt-6">
-                    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                        {moreSettings.map((item) => (
-                            <Link key={item.to} to={item.to} className="group flex items-start gap-3 rounded-xl border border-line p-4 transition hover:border-line-strong">
-                                <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-primary-soft text-primary">
-                                    <Icon name={item.icon} className="size-[18px]" />
-                                </span>
-                                <span>
-                                    <span className="block text-sm font-semibold text-ink">{item.label}</span>
-                                    <span className="text-xs text-muted">{item.description}</span>
-                                </span>
-                            </Link>
-                        ))}
-                    </div>
-                </Card>
-            )}
         </>
     );
 }

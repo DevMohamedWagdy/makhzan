@@ -10,7 +10,7 @@
 
         @unless ($storeDomainSlug ?? null)
             <meta name="description" content="مخزن منصة متكاملة لإدارة تجارتك: المخزون، الطلبات، الشحن، المسوقين والتقارير، مع متجر إلكتروني جاهز متصل بمخزونك.">
-            <meta name="theme-color" content="#4f46e5">
+            <meta name="theme-color" content="#2c2c54">
             <link rel="canonical" href="{{ url()->current() }}">
             <meta property="og:type" content="website">
             <meta property="og:site_name" content="مخزن | Makhzan">
