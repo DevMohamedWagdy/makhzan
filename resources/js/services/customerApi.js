@@ -36,6 +36,10 @@ export function customerApi(storeSlug) {
         placeOrder: (payload) => request('POST', `${base}/customer/orders`, { body: payload, auth }),
         /** Opens a new payment page for an unpaid online order: the order with `payment.checkout_url`. */
         payOrder: (number) => request('POST', `${base}/customer/orders/${number}/pay`, { auth }),
+        /** `{ can_review, review }` for the signed-in customer and this product. */
+        reviewStatus: (productSlug) => request('GET', `${base}/customer/products/${encodeURIComponent(productSlug)}/review`, { auth }),
+        /** @param {{ rating: number, body?: string|null, images?: File[] }} payload  The new (pending) review. */
+        submitReview: (productSlug, payload) => request('POST', `${base}/customer/products/${encodeURIComponent(productSlug)}/review`, { body: payload, auth }),
         cancelOrder: (number, reason = null) => request('POST', `${base}/customer/orders/${number}/cancel`, { body: { reason }, auth }),
     };
 }

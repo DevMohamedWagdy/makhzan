@@ -28,8 +28,10 @@ use App\Http\Controllers\Api\V1\Storefront\Customer\AuthController as CustomerAu
 use App\Http\Controllers\Api\V1\Storefront\Customer\CouponController as CustomerCouponController;
 use App\Http\Controllers\Api\V1\Storefront\Customer\OrderController as CustomerOrderController;
 use App\Http\Controllers\Api\V1\Storefront\Customer\PasswordResetController as CustomerPasswordResetController;
+use App\Http\Controllers\Api\V1\Storefront\Customer\ProductReviewController as CustomerProductReviewController;
 use App\Http\Controllers\Api\V1\Storefront\PolicyController;
 use App\Http\Controllers\Api\V1\Storefront\ProductController as StorefrontProductController;
+use App\Http\Controllers\Api\V1\Storefront\ProductReviewController as StorefrontProductReviewController;
 use App\Http\Controllers\Api\V1\Storefront\ReferralClickController;
 use App\Http\Controllers\Api\V1\Storefront\ShippingController;
 use App\Http\Controllers\Api\V1\Storefront\StorefrontController;
@@ -63,6 +65,7 @@ use App\Http\Controllers\Api\V1\Vendor\PayoutController as VendorPayoutControlle
 use App\Http\Controllers\Api\V1\Vendor\ProductCategoryController;
 use App\Http\Controllers\Api\V1\Vendor\ProductController;
 use App\Http\Controllers\Api\V1\Vendor\ProductImageController;
+use App\Http\Controllers\Api\V1\Vendor\ProductReviewController;
 use App\Http\Controllers\Api\V1\Vendor\ProductSummaryController;
 use App\Http\Controllers\Api\V1\Vendor\PurchaseOrderController;
 use App\Http\Controllers\Api\V1\Vendor\ReportController;
@@ -113,6 +116,7 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
             Route::get('/', [StorefrontController::class, 'show'])->name('show');
             Route::get('products', [StorefrontProductController::class, 'index'])->name('products.index');
             Route::get('products/{productSlug}', [StorefrontProductController::class, 'show'])->name('products.show');
+            Route::get('products/{productSlug}/reviews', [StorefrontProductReviewController::class, 'index'])->name('products.reviews.index');
             Route::post('referral-clicks', ReferralClickController::class)->middleware('throttle:30,1')->name('referral-clicks.store');
             Route::post('cart/quote', [CartController::class, 'quote'])->name('cart.quote');
             Route::get('shipping', ShippingController::class)->name('shipping');
@@ -134,6 +138,8 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
                 Route::get('orders/{number}', [CustomerOrderController::class, 'show'])->whereNumber('number')->name('orders.show');
                 Route::post('orders/{number}/cancel', [CustomerOrderController::class, 'cancel'])->whereNumber('number')->name('orders.cancel');
                 Route::post('orders/{number}/pay', [CustomerOrderController::class, 'pay'])->whereNumber('number')->middleware('throttle:10,1')->name('orders.pay');
+                Route::get('products/{productSlug}/review', [CustomerProductReviewController::class, 'show'])->name('products.review.show');
+                Route::post('products/{productSlug}/review', [CustomerProductReviewController::class, 'store'])->middleware('throttle:10,1')->name('products.review.store');
             });
         });
 
@@ -336,6 +342,12 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
             Route::apiResource('affiliates', AffiliateController::class)->except('store');
 
             Route::get('payouts', [VendorPayoutController::class, 'index'])->name('payouts.index');
+        });
+
+        Route::middleware('permission:reviews')->group(function () {
+            Route::get('reviews', [ProductReviewController::class, 'index'])->name('reviews.index');
+            Route::patch('reviews/{review}', [ProductReviewController::class, 'update'])->name('reviews.update');
+            Route::delete('reviews/{review}', [ProductReviewController::class, 'destroy'])->name('reviews.destroy');
         });
 
         Route::middleware('permission:customers')->group(function () {
