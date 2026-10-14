@@ -74,7 +74,7 @@ export function AffiliateDashboardPage() {
                         <span className="text-xs text-muted">{t('مسوق منذ {value}', { value: formatDate(affiliate.joined_at) })}</span>
                     </div>
                 </div>
-                <div className="flex items-center gap-4 rounded-2xl bg-gradient-to-br from-indigo-600 to-sky-500 px-5 py-4 text-white shadow-lg shadow-primary/20">
+                <div className="flex items-center gap-4 rounded-2xl bg-gradient-to-br from-brand to-sky-500 px-5 py-4 text-white shadow-lg shadow-primary/20">
                     <Icon name="percent" className="size-8 opacity-80" />
                     <div>
                         <p className="text-xs text-indigo-100">{t('عمولتك على كل طلب')}</p>

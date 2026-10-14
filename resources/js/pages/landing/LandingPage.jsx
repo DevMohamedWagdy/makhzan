@@ -222,7 +222,7 @@ export function LandingPage() {
                 </section>
 
                 <section className="px-4 pb-20 sm:px-6 sm:pb-24">
-                    <div className="relative mx-auto max-w-6xl overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-600 via-indigo-700 to-sky-600 px-6 py-14 text-center sm:px-12 dark:from-indigo-900 dark:via-slate-900 dark:to-sky-900">
+                    <div className="relative mx-auto max-w-6xl overflow-hidden rounded-3xl bg-gradient-to-br from-brand via-brand to-sky-600 px-6 py-14 text-center sm:px-12 dark:from-indigo-900 dark:via-slate-900 dark:to-sky-900">
                         <div className="pointer-events-none absolute -end-16 -top-16 size-64 rounded-full bg-sky-400/30 blur-3xl" aria-hidden="true" />
                         <div className="pointer-events-none absolute -start-16 -bottom-16 size-64 rounded-full bg-indigo-300/20 blur-3xl" aria-hidden="true" />
                         <h2 className="relative text-3xl font-bold text-white">{t('جاهز تنظّم تجارتك؟')}</h2>
@@ -230,7 +230,7 @@ export function LandingPage() {
                         <div className="relative mt-8 flex flex-wrap justify-center gap-3">
                             <Link
                                 to={isAuthenticated ? '/dashboard' : '/register'}
-                                className="inline-flex h-12 items-center gap-2 rounded-xl bg-white px-6 text-sm font-semibold text-indigo-700 shadow-lg transition hover:bg-indigo-50"
+                                className="inline-flex h-12 items-center gap-2 rounded-xl bg-white px-6 text-sm font-semibold text-brand shadow-lg transition hover:bg-indigo-50"
                             >
                                 {isAuthenticated ? t('الذهاب إلى لوحة التحكم') : t('أنشئ متجرك مجاناً')}
                                 <Icon name={arrow} className="size-4" />

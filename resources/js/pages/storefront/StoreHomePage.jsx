@@ -33,7 +33,7 @@ export function StoreHomePage() {
 
     return (
         <div className="flex flex-col gap-12">
-            <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-600 via-indigo-500 to-sky-500 px-6 py-12 text-white sm:px-12 sm:py-16">
+            <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-brand via-brand-light to-sky-500 px-6 py-12 text-white sm:px-12 sm:py-16">
                 <div className="absolute -top-16 -end-16 size-64 rounded-full bg-white/10 blur-2xl" aria-hidden="true" />
                 <div className="absolute -bottom-20 start-1/3 size-72 rounded-full bg-sky-300/20 blur-3xl" aria-hidden="true" />
                 <div className="relative max-w-xl">
@@ -44,7 +44,7 @@ export function StoreHomePage() {
                             <p className="text-sm font-medium text-indigo-100">{t('أهلاً بك في')}</p>
                             <h1 className="mt-2 text-3xl leading-tight font-extrabold sm:text-5xl">{store.name}</h1>
                             <p className="mt-4 text-base leading-relaxed text-indigo-50">{t('تسوّق أحدث التشكيلات بأفضل الأسعار، والدفع عند الاستلام.')}</p>
-                            <Link to={`/${storeSlug}/products`} className="mt-6 inline-flex h-12 items-center gap-2 rounded-xl bg-white px-6 text-sm font-semibold text-indigo-700 shadow-lg transition hover:bg-indigo-50">
+                            <Link to={`/${storeSlug}/products`} className="mt-6 inline-flex h-12 items-center gap-2 rounded-xl bg-white px-6 text-sm font-semibold text-brand shadow-lg transition hover:bg-indigo-50">
                                 {t('تسوّق الآن')}
                                 <Icon name="arrow-left" className="size-4" />
                             </Link>
