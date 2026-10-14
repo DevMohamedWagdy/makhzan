@@ -3,7 +3,10 @@
 namespace App\Actions\Orders;
 
 use App\Actions\Inventory\ChangeStock;
+use App\Actions\Loyalty\ChangePoints;
+use App\Actions\Tracking\TrackOrderConversion;
 use App\Enums\CommissionStatus;
+use App\Enums\LoyaltyTransactionType;
 use App\Enums\OrderStatus;
 use App\Enums\StockMovementType;
 use App\Models\Affiliate;
@@ -14,12 +17,13 @@ use App\Models\ProductVariant;
 use App\Models\StockMovement;
 use App\Notifications\AffiliateCommissionNotification;
 use App\Notifications\CustomerOrderUpdateNotification;
+use App\Support\Tracking\ConversionEvent;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class UpdateOrderStatus
 {
-    public function __construct(private ChangeStock $changeStock) {}
+    public function __construct(private ChangeStock $changeStock, private ChangePoints $changePoints, private TrackOrderConversion $trackConversion) {}
 
     /**
      * Moves an order along its lifecycle (see OrderStatus::next()) and applies the side
@@ -28,7 +32,9 @@ class UpdateOrderStatus
      * whenever their commission changes. An online order can't be confirmed before it's paid,
      * and an affiliate never told about an unpaid order isn't told when it's dropped. The
      * customer is emailed about every change they didn't make themselves, except the
-     * dropping of an online order they never paid for.
+     * dropping of an online order they never paid for. Loyalty points spent on an order come
+     * back if it's cancelled or returned; points are earned on delivery and taken back if the
+     * delivered order is returned.
      *
      * With $onlyIfUnpaid, an order whose payment has come through is returned unchanged.
      *
@@ -38,8 +44,9 @@ class UpdateOrderStatus
     {
         $commissionEvent = null;
         $notifyCustomer = false;
+        $delivered = false;
 
-        $order = DB::transaction(function () use ($order, $status, $actor, $note, $onlyIfUnpaid, &$commissionEvent, &$notifyCustomer): Order {
+        $order = DB::transaction(function () use ($order, $status, $actor, $note, $onlyIfUnpaid, &$commissionEvent, &$notifyCustomer, &$delivered): Order {
             $order = Order::query()->whereKey($order->id)->lockForUpdate()->firstOrFail();
             $previous = $order->status;
             $unpaid = $order->awaitingPayment();
@@ -68,6 +75,7 @@ class UpdateOrderStatus
             }
 
             $commissionEvent = $this->settleCommission($order, $previous, $status);
+            $this->settlePoints($order, $previous, $status, $actor);
 
             if ($unpaid) {
                 $commissionEvent = null;
@@ -76,6 +84,7 @@ class UpdateOrderStatus
             $order->save();
             $order->events()->create(['status' => $status, 'actor' => $actor, 'note' => $note]);
             $notifyCustomer = ! $unpaid && $actor !== OrderEvent::ACTOR_CUSTOMER;
+            $delivered = $status === OrderStatus::Delivered;
 
             return $order;
         });
@@ -88,7 +97,41 @@ class UpdateOrderStatus
             $order->customer?->notify(new CustomerOrderUpdateNotification($order, $status));
         }
 
+        if ($delivered) {
+            $this->trackConversion->handle($order, ConversionEvent::DELIVERED);
+        }
+
         return $order;
+    }
+
+    /**
+     * Refunds points spent on a cancelled or returned order, credits points for a delivered
+     * one (when the store runs the program) and takes them back if it's returned. A delivered
+     * order earns at the tier the customer had reached before it (the order isn't saved as
+     * delivered yet, so it doesn't count toward its own tier).
+     */
+    private function settlePoints(Order $order, OrderStatus $previous, OrderStatus $status, string $actor): void
+    {
+        $customer = $order->customer;
+
+        if (! $customer) {
+            return;
+        }
+
+        if ($status->restocks() && $order->points_redeemed > 0) {
+            $this->changePoints->handle($customer, $order->points_redeemed, LoyaltyTransactionType::Refunded, $actor, $order);
+        }
+
+        if ($status === OrderStatus::Delivered && $order->store->loyaltyActive()) {
+            $tier = $order->store->tierFor($customer->deliveredSpend());
+            $multiplier = $tier['multiplier'] ?? 1;
+            $order->points_earned = $order->store->pointsFor($order->subtotal - $order->discount - $order->points_discount, $multiplier);
+            $this->changePoints->handle($customer, $order->points_earned, LoyaltyTransactionType::Earned, $actor, $order, $multiplier > 1 ? "{$tier['name']} \u{2066}×{$multiplier}\u{2069}" : null);
+        }
+
+        if ($status === OrderStatus::Returned && $previous === OrderStatus::Delivered && $order->points_earned > 0) {
+            $this->changePoints->handle($customer, -$order->points_earned, LoyaltyTransactionType::Reversed, $actor, $order);
+        }
     }
 
     /**

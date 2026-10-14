@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Card } from '@/components/ui/Display';
+import { Badge, Card } from '@/components/ui/Display';
 import { BarList, ColumnChart, SegmentedBar } from '@/components/ui/Charts';
 import { Tabs } from '@/components/ui/Navigation';
 import { intlLocale, t } from '@/i18n';
@@ -159,6 +159,87 @@ export function AffiliatesCard({ affiliates }) {
                     detail: t('{count} طلب · عمولة {amount}', { count: formatNumber(row.orders), amount: formatMoney(row.commission) }),
                 }))}
             />
+        </Card>
+    );
+}
+
+/** Products ranked by the profit of their delivered sales (lines without a recorded cost left out). */
+export function ProfitableProductsCard({ products }) {
+    return (
+        <Card title={t('الأكثر ربحية')} description={t('صافي الربح بعد التكلفة، من الطلبات المسلّمة')}>
+            <BarList
+                emptyText={t('لا توجد مبيعات مسلّمة بتكلفة مسجلة في هذه الفترة.')}
+                items={products.map((product) => ({
+                    key: product.product_id ?? product.name,
+                    label: product.name,
+                    value: Math.max(product.profit, 0),
+                    display: formatMoney(product.profit),
+                    detail: t('{count} قطعة · مبيعات {sales} · هامش {margin}%', {
+                        count: formatNumber(product.quantity),
+                        sales: formatMoney(product.sales),
+                        margin: formatNumber(product.margin ?? 0),
+                    }),
+                }))}
+            />
+        </Card>
+    );
+}
+
+/** Return rate per governorate: returned out of orders that reached the customer. */
+export function GovernorateReturnsCard({ governorates }) {
+    const rateTone = (rate) => (rate == null ? 'neutral' : rate >= 20 ? 'danger' : rate >= 10 ? 'warning' : 'success');
+
+    return (
+        <Card title={t('المرتجعات حسب المحافظة')} description={t('نسبة المرتجع من الطلبات التي وصلت للعميل')}>
+            {governorates.length === 0 ? (
+                <p className="rounded-xl border border-dashed border-line-strong p-5 text-center text-sm text-muted">{t('لا توجد طلبات في هذه الفترة.')}</p>
+            ) : (
+                <ul className="flex flex-col divide-y divide-line">
+                    {governorates.map((row) => (
+                        <li key={row.governorate_id} className="flex items-center justify-between gap-3 py-2.5 text-sm first:pt-0 last:pb-0">
+                            <span className="min-w-0">
+                                <span className="block truncate font-medium text-ink">{findGovernorate(row.governorate_id)?.name ?? row.governorate_id}</span>
+                                <span className="text-xs text-muted">
+                                    {t('{orders} طلب · {delivered} مسلّم · {returned} مرتجع · {cancelled} ملغي', {
+                                        orders: formatNumber(row.orders),
+                                        delivered: formatNumber(row.delivered),
+                                        returned: formatNumber(row.returned),
+                                        cancelled: formatNumber(row.cancelled),
+                                    })}
+                                </span>
+                            </span>
+                            <Badge tone={rateTone(row.return_rate)}>{row.return_rate == null ? '—' : t('{value}%', { value: formatNumber(row.return_rate) })}</Badge>
+                        </li>
+                    ))}
+                </ul>
+            )}
+        </Card>
+    );
+}
+
+/** Variants that will sell out soon at their last-30-days pace, soonest first. */
+export function StockForecastCard({ forecast }) {
+    return (
+        <Card title={t('توقع نفاد المخزون')} description={t('حسب معدل البيع في آخر ٣٠ يوماً، المنتجات التي ستنفد خلال شهر')}>
+            {forecast.length === 0 ? (
+                <p className="rounded-xl border border-dashed border-line-strong p-5 text-center text-sm text-muted">{t('مخزونك يكفي أكثر من شهر بمعدل البيع الحالي.')}</p>
+            ) : (
+                <ul className="flex flex-col divide-y divide-line">
+                    {forecast.map((row) => (
+                        <li key={row.variant_id} className="flex items-center justify-between gap-3 py-2.5 text-sm first:pt-0 last:pb-0">
+                            <span className="min-w-0">
+                                <span className="block truncate font-medium text-ink">{[row.name, row.variant_title].filter(Boolean).join(' · ')}</span>
+                                <span className="text-xs text-muted">
+                                    {t('متبقي {stock} · يباع {rate} يومياً', { stock: formatNumber(row.stock), rate: formatNumber(row.daily_rate) })}
+                                </span>
+                            </span>
+                            <Badge tone={row.days_left === 0 ? 'danger' : row.days_left <= 7 ? 'warning' : 'info'}>
+                                {row.days_left === 0 ? t('نفد') : t('خلال {count} يوم', { count: formatNumber(row.days_left) })}
+                            </Badge>
+                        </li>
+                    ))}
+                </ul>
+            )}
         </Card>
     );
 }

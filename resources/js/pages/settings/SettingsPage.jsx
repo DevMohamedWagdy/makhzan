@@ -11,6 +11,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
 import { PaymentSettingsTab } from '@/features/payments/PaymentSettingsTab';
 import { DomainTab } from '@/features/settings/DomainTab';
+import { TrackingTab } from '@/features/settings/TrackingTab';
 import { useCopy } from '@/hooks/common';
 import { t } from '@/i18n';
 import { CURRENCY } from '@/lib/constants';
@@ -26,6 +27,7 @@ const TABS = [
     { value: 'payments', label: t('الدفع'), icon: 'credit-card', permission: 'payments' },
     { value: 'policies', label: t('السياسات'), icon: 'shield-check', permission: 'settings' },
     { value: 'domain', label: t('الدومين'), icon: 'link', permission: 'settings' },
+    { value: 'tracking', label: t('التتبع والإعلانات'), icon: 'bar-chart', permission: 'settings' },
     { value: 'account', label: t('حسابي'), icon: 'user' },
 ];
 
@@ -360,7 +362,7 @@ const MORE_SETTINGS = [
     { to: '/dashboard/affiliates', icon: 'users', label: t('المسوقين'), description: t('رابط تسجيل المسوقين والموافقة عليهم'), permission: 'marketing' },
 ];
 
-/** Store settings in tabs (?tab=store|contact|orders|payments|policies|domain|account), plus links to other settings pages. */
+/** Store settings in tabs (?tab=store|contact|orders|payments|policies|domain|tracking|account), plus links to other settings pages. */
 export function SettingsPage() {
     const { updateVendor, can } = useAuth();
     const [searchParams, setSearchParams] = useSearchParams();
@@ -405,6 +407,8 @@ export function SettingsPage() {
                         <AccountTab />
                     ) : tab === 'domain' ? (
                         <DomainTab />
+                    ) : tab === 'tracking' ? (
+                        <TrackingTab />
                     ) : tab === 'payments' ? (
                         <PaymentSettingsTab />
                     ) : error ? (

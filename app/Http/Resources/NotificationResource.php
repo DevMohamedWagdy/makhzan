@@ -67,6 +67,11 @@ class NotificationResource extends JsonResource
                 'product' => trim($details['product_name'].($details['variant_title'] ? " ({$details['variant_title']})" : '')),
                 'stock' => $details['stock'],
             ]),
+            'review_submitted' => __('notifications.review_submitted', [
+                'rating' => $details['rating'],
+                'customer' => $details['customer_name'],
+                'product' => $details['product_name'],
+            ]),
             'coupon_assigned' => AffiliateCouponNotification::message($details['code'], $details['type'], $details['value']),
             'subscription_activated', 'subscription_rejected', 'subscription_expiring', 'trial_ending' => __("notifications.{$this->type}.message", [
                 'plan' => $details['plan_name'],

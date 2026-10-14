@@ -15,6 +15,7 @@ import { CustomerAuthProvider, useCustomerAuth } from './CustomerAuthContext';
 import { useToast } from '@/context/ToastContext';
 import { captureCoupon } from './couponLink';
 import { captureReferral } from './referral';
+import { captureClickIds, initTracking, trackPageView } from './tracking';
 
 const StorefrontContext = createContext(null);
 
@@ -56,6 +57,7 @@ function CartButton({ storeSlug }) {
 
 function AccountButton({ storeSlug }) {
     const { customer, isAuthenticated, logout } = useCustomerAuth();
+    const { store } = useStorefront();
     const navigate = useNavigate();
     const buttonClass = 'grid size-10 place-items-center rounded-xl border border-line bg-surface text-ink-2 transition hover:border-line-strong hover:text-ink';
 
@@ -77,6 +79,8 @@ function AccountButton({ storeSlug }) {
             )}
             items={[
                 { label: t('طلباتي'), icon: 'shopping-bag', onClick: () => navigate(`/${storeSlug}/account/orders`) },
+                { label: t('المفضلة'), icon: 'heart', onClick: () => navigate(`/${storeSlug}/account/wishlist`) },
+                { label: t('نقاطي'), icon: 'star', onClick: () => navigate(`/${storeSlug}/account/points`), hidden: !store?.loyalty },
                 { divider: true },
                 {
                     label: t('تسجيل الخروج'),
@@ -219,6 +223,19 @@ export function StorefrontLayout() {
     useEffect(() => {
         window.scrollTo(0, 0);
     }, [location.pathname]);
+
+    useEffect(() => {
+        captureClickIds(searchParams);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    // Pixels load once the store is known, then every page counts as a view.
+    useEffect(() => {
+        if (home?.store) {
+            initTracking(storeSlug, home.store.tracking_pixels);
+            trackPageView();
+        }
+    }, [home, storeSlug, location.pathname]);
 
     if (missing) {
         return <StoreNotFound />;

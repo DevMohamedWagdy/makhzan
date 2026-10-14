@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1\Storefront\Customer;
 use App\Actions\Orders\PlaceOrder;
 use App\Actions\Orders\UpdateOrderStatus;
 use App\Actions\Payments\StartPayment;
+use App\Actions\Tracking\TrackOrderConversion;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentMethod;
 use App\Http\Controllers\Controller;
@@ -13,6 +14,7 @@ use App\Http\Resources\OrderResource;
 use App\Models\Order;
 use App\Models\OrderEvent;
 use App\Models\Store;
+use App\Support\Tracking\ConversionEvent;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -40,7 +42,7 @@ class OrderController extends Controller
      * `payment.checkout_url` to send the customer to; if the payment page can't be opened,
      * the order is dropped so its stock isn't held.
      */
-    public function store(PlaceOrderRequest $request, Store $store, PlaceOrder $placeOrder, StartPayment $startPayment, UpdateOrderStatus $updateStatus): JsonResponse
+    public function store(PlaceOrderRequest $request, Store $store, PlaceOrder $placeOrder, StartPayment $startPayment, UpdateOrderStatus $updateStatus, TrackOrderConversion $trackConversion): JsonResponse
     {
         $customer = $request->user();
         $address = $request->filled('address_id')
@@ -48,7 +50,8 @@ class OrderController extends Controller
             : collect($request->validated('address'))->only(['recipient_name', 'phone', 'governorate_id', 'city_id', 'address_line', 'landmark'])->all();
 
         $paymentMethod = PaymentMethod::tryFrom((string) $request->validated('payment_method')) ?? PaymentMethod::Cod;
-        $order = $placeOrder->handle($store, $customer, $request->validated('items'), $address, $request->validated('referral_code'), $request->validated('note'), $request->validated('coupon_code'), $paymentMethod);
+        $order = $placeOrder->handle($store, $customer, $request->validated('items'), $address, $request->validated('referral_code'), $request->validated('note'), $request->validated('coupon_code'), $paymentMethod, (int) $request->validated('redeem_points'));
+        $order->forceFill(['tracking' => $request->trackingContext()])->saveQuietly();
 
         if ($paymentMethod->isOnline()) {
             try {
@@ -58,6 +61,8 @@ class OrderController extends Controller
 
                 throw $exception;
             }
+        } else {
+            $trackConversion->handle($order, ConversionEvent::PURCHASE);
         }
 
         if (! $request->filled('address_id') && $request->boolean('save_address')) {

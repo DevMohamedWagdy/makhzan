@@ -144,6 +144,7 @@ return [
     ],
     'stock_out' => 'نفد مخزون :product',
     'stock_low' => 'مخزون :product منخفض: متبقي :stock فقط',
+    'review_submitted' => 'تقييم جديد :rating/5 من :customer على :product بانتظار موافقتك',
     'coupon_assigned' => [
         'percentage' => 'أصبح لديك كود خصم :code بخصم :value% لعملائك',
         'fixed' => 'أصبح لديك كود خصم :code بخصم :value ج.م لعملائك',

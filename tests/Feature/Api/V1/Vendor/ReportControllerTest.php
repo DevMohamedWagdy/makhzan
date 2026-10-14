@@ -10,6 +10,8 @@ use App\Models\Affiliate;
 use App\Models\Customer;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\Product;
+use App\Models\ProductVariant;
 use App\Models\Vendor;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -123,5 +125,97 @@ class ReportControllerTest extends TestCase
                 ['method' => 'card', 'orders' => 1, 'sales' => 1000],
                 ['method' => 'wallet', 'orders' => 0, 'sales' => 0],
             ]);
+    }
+
+    public function test_ranks_products_by_the_profit_of_their_delivered_sales(): void
+    {
+        $delivered = $this->order('2026-10-12 10:00:00', OrderStatus::Delivered, 1000);
+        $pending = $this->order('2026-10-12 11:00:00', OrderStatus::Pending, 5000);
+
+        [$tshirt, $jacket, $bag, $watch] = Product::factory()->for($this->vendor->store)->count(4)->create();
+
+        OrderItem::factory()->for($delivered)->create(['product_id' => $tshirt->id, 'product_name' => 'تيشيرت', 'quantity' => 4, 'line_total' => 400, 'unit_cost' => 50]);
+        OrderItem::factory()->for($delivered)->create(['product_id' => $jacket->id, 'product_name' => 'جاكيت', 'quantity' => 1, 'line_total' => 600, 'unit_cost' => 500]);
+        OrderItem::factory()->for($delivered)->create(['product_id' => $bag->id, 'product_name' => 'شنطة', 'quantity' => 1, 'line_total' => 900, 'unit_cost' => null]);
+        OrderItem::factory()->for($pending)->create(['product_id' => $watch->id, 'product_name' => 'ساعة', 'quantity' => 1, 'line_total' => 5000, 'unit_cost' => 10]);
+
+        $this->getJson('/api/v1/vendor/reports?from=2026-10-12&to=2026-10-12')
+            ->assertOk()
+            ->assertJsonCount(2, 'profitable_products')
+            ->assertJsonPath('profitable_products.0', ['product_id' => $tshirt->id, 'name' => 'تيشيرت', 'quantity' => 4, 'sales' => 400, 'cost' => 200, 'profit' => 200, 'margin' => 50])
+            ->assertJsonPath('profitable_products.1.name', 'جاكيت')
+            ->assertJsonPath('profitable_products.1.profit', 100);
+    }
+
+    public function test_reports_the_return_rate_of_each_governorate(): void
+    {
+        $this->order('2026-10-12 10:00:00', OrderStatus::Delivered, 100, ['governorate_id' => 'giza']);
+        $this->order('2026-10-12 10:00:00', OrderStatus::Delivered, 100, ['governorate_id' => 'giza']);
+        $this->order('2026-10-12 10:00:00', OrderStatus::Delivered, 100, ['governorate_id' => 'giza']);
+        $this->order('2026-10-12 10:00:00', OrderStatus::Returned, 100, ['governorate_id' => 'giza']);
+        $this->order('2026-10-12 10:00:00', OrderStatus::Cancelled, 100, ['governorate_id' => 'giza']);
+        $this->order('2026-10-12 10:00:00', OrderStatus::Shipped, 100, ['governorate_id' => 'aswan']);
+
+        $this->getJson('/api/v1/vendor/reports?from=2026-10-12&to=2026-10-12')
+            ->assertOk()
+            ->assertJsonPath('governorate_returns.0', ['governorate_id' => 'giza', 'orders' => 5, 'delivered' => 3, 'returned' => 1, 'cancelled' => 1, 'return_rate' => 25])
+            ->assertJsonPath('governorate_returns.1', ['governorate_id' => 'aswan', 'orders' => 1, 'delivered' => 0, 'returned' => 0, 'cancelled' => 0, 'return_rate' => null]);
+    }
+
+    public function test_forecasts_which_variants_will_sell_out_at_their_recent_pace(): void
+    {
+        $product = Product::factory()->for($this->vendor->store)->create(['name' => 'تيشيرت']);
+        $fastSeller = ProductVariant::factory()->for($product)->create(['option_values' => ['أحمر', 'L'], 'stock' => 10]);
+        $slowSeller = ProductVariant::factory()->for($product)->create(['stock' => 100]);
+        $soldOut = ProductVariant::factory()->for($product)->create(['stock' => 0]);
+        $cancelledOnly = ProductVariant::factory()->for($product)->create(['stock' => 1]);
+
+        $recent = $this->order('2026-10-01 10:00:00', OrderStatus::Delivered, 100);
+        $old = $this->order('2026-08-01 10:00:00', OrderStatus::Delivered, 100);
+        $cancelled = $this->order('2026-10-01 10:00:00', OrderStatus::Cancelled, 100);
+
+        OrderItem::factory()->for($recent)->create(['product_variant_id' => $fastSeller->id, 'quantity' => 30]);
+        OrderItem::factory()->for($recent)->create(['product_variant_id' => $slowSeller->id, 'quantity' => 3]);
+        OrderItem::factory()->for($recent)->create(['product_variant_id' => $soldOut->id, 'quantity' => 6]);
+        OrderItem::factory()->for($old)->create(['product_variant_id' => $slowSeller->id, 'quantity' => 500]);
+        OrderItem::factory()->for($cancelled)->create(['product_variant_id' => $cancelledOnly->id, 'quantity' => 50]);
+
+        $this->getJson('/api/v1/vendor/reports?from=2026-01-01&to=2026-01-31')
+            ->assertOk()
+            ->assertJsonCount(2, 'stock_forecast')
+            ->assertJsonPath('stock_forecast.0.variant_id', $soldOut->id)
+            ->assertJsonPath('stock_forecast.0.days_left', 0)
+            ->assertJsonPath('stock_forecast.1', [
+                'variant_id' => $fastSeller->id,
+                'product_id' => $product->id,
+                'name' => 'تيشيرت',
+                'variant_title' => 'أحمر / L',
+                'stock' => 10,
+                'sold' => 30,
+                'daily_rate' => 1,
+                'days_left' => 10,
+            ]);
+    }
+
+    public function test_reports_include_only_the_vendors_own_stock_forecast(): void
+    {
+        $otherVariant = ProductVariant::factory()->create(['stock' => 1]);
+        $order = $this->order('2026-10-12 10:00:00', OrderStatus::Delivered, 100);
+        OrderItem::factory()->for($order)->create(['product_variant_id' => $otherVariant->id, 'quantity' => 30]);
+
+        $this->getJson('/api/v1/vendor/reports')->assertOk()->assertJsonCount(0, 'stock_forecast');
+    }
+
+    public function test_gross_profit_takes_off_coupon_and_points_discounts(): void
+    {
+        $order = $this->order('2026-10-12 10:00:00', OrderStatus::Delivered, 1000, ['discount' => 100, 'points_discount' => 50, 'total' => 900]);
+        OrderItem::factory()->for($order)->create(['quantity' => 2, 'line_total' => 1000, 'unit_cost' => 300]);
+
+        $this->getJson('/api/v1/vendor/reports?from=2026-10-12&to=2026-10-12')
+            ->assertOk()
+            ->assertJsonPath('totals.discounts', 150)
+            ->assertJsonPath('totals.cost_of_goods', 600)
+            ->assertJsonPath('totals.gross_profit', 250)
+            ->assertJsonPath('totals.profit_margin', 29.4);
     }
 }

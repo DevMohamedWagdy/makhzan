@@ -26,10 +26,14 @@ use App\Http\Controllers\Api\V1\Storefront\CartController;
 use App\Http\Controllers\Api\V1\Storefront\Customer\AddressController as CustomerAddressController;
 use App\Http\Controllers\Api\V1\Storefront\Customer\AuthController as CustomerAuthController;
 use App\Http\Controllers\Api\V1\Storefront\Customer\CouponController as CustomerCouponController;
+use App\Http\Controllers\Api\V1\Storefront\Customer\LoyaltyController as CustomerLoyaltyController;
 use App\Http\Controllers\Api\V1\Storefront\Customer\OrderController as CustomerOrderController;
 use App\Http\Controllers\Api\V1\Storefront\Customer\PasswordResetController as CustomerPasswordResetController;
+use App\Http\Controllers\Api\V1\Storefront\Customer\ProductReviewController as CustomerProductReviewController;
+use App\Http\Controllers\Api\V1\Storefront\Customer\WishlistController as CustomerWishlistController;
 use App\Http\Controllers\Api\V1\Storefront\PolicyController;
 use App\Http\Controllers\Api\V1\Storefront\ProductController as StorefrontProductController;
+use App\Http\Controllers\Api\V1\Storefront\ProductReviewController as StorefrontProductReviewController;
 use App\Http\Controllers\Api\V1\Storefront\ReferralClickController;
 use App\Http\Controllers\Api\V1\Storefront\ShippingController;
 use App\Http\Controllers\Api\V1\Storefront\StorefrontController;
@@ -48,11 +52,13 @@ use App\Http\Controllers\Api\V1\Vendor\Auth\VendorAccountController;
 use App\Http\Controllers\Api\V1\Vendor\Auth\VendorAuthController;
 use App\Http\Controllers\Api\V1\Vendor\CouponController;
 use App\Http\Controllers\Api\V1\Vendor\CustomerController;
+use App\Http\Controllers\Api\V1\Vendor\CustomerPointsController;
 use App\Http\Controllers\Api\V1\Vendor\CustomerSummaryController;
 use App\Http\Controllers\Api\V1\Vendor\InventoryController;
 use App\Http\Controllers\Api\V1\Vendor\InventoryImportController;
 use App\Http\Controllers\Api\V1\Vendor\InventorySettingsController;
 use App\Http\Controllers\Api\V1\Vendor\InventorySummaryController;
+use App\Http\Controllers\Api\V1\Vendor\LoyaltySettingsController;
 use App\Http\Controllers\Api\V1\Vendor\NotificationController;
 use App\Http\Controllers\Api\V1\Vendor\OrderController as VendorOrderController;
 use App\Http\Controllers\Api\V1\Vendor\OrderShipmentController;
@@ -63,6 +69,7 @@ use App\Http\Controllers\Api\V1\Vendor\PayoutController as VendorPayoutControlle
 use App\Http\Controllers\Api\V1\Vendor\ProductCategoryController;
 use App\Http\Controllers\Api\V1\Vendor\ProductController;
 use App\Http\Controllers\Api\V1\Vendor\ProductImageController;
+use App\Http\Controllers\Api\V1\Vendor\ProductReviewController;
 use App\Http\Controllers\Api\V1\Vendor\ProductSummaryController;
 use App\Http\Controllers\Api\V1\Vendor\PurchaseOrderController;
 use App\Http\Controllers\Api\V1\Vendor\ReportController;
@@ -77,6 +84,7 @@ use App\Http\Controllers\Api\V1\Vendor\StoreSettingsController;
 use App\Http\Controllers\Api\V1\Vendor\StoreSlugAvailabilityController;
 use App\Http\Controllers\Api\V1\Vendor\SubscriptionController;
 use App\Http\Controllers\Api\V1\Vendor\SupplierController;
+use App\Http\Controllers\Api\V1\Vendor\TrackingPixelController;
 use App\Http\Controllers\Api\V1\Vendor\WarehouseController;
 use App\Models\Store;
 use Illuminate\Support\Facades\Route;
@@ -113,6 +121,7 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
             Route::get('/', [StorefrontController::class, 'show'])->name('show');
             Route::get('products', [StorefrontProductController::class, 'index'])->name('products.index');
             Route::get('products/{productSlug}', [StorefrontProductController::class, 'show'])->name('products.show');
+            Route::get('products/{productSlug}/reviews', [StorefrontProductReviewController::class, 'index'])->name('products.reviews.index');
             Route::post('referral-clicks', ReferralClickController::class)->middleware('throttle:30,1')->name('referral-clicks.store');
             Route::post('cart/quote', [CartController::class, 'quote'])->name('cart.quote');
             Route::get('shipping', ShippingController::class)->name('shipping');
@@ -134,6 +143,12 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
                 Route::get('orders/{number}', [CustomerOrderController::class, 'show'])->whereNumber('number')->name('orders.show');
                 Route::post('orders/{number}/cancel', [CustomerOrderController::class, 'cancel'])->whereNumber('number')->name('orders.cancel');
                 Route::post('orders/{number}/pay', [CustomerOrderController::class, 'pay'])->whereNumber('number')->middleware('throttle:10,1')->name('orders.pay');
+                Route::get('products/{productSlug}/review', [CustomerProductReviewController::class, 'show'])->name('products.review.show');
+                Route::post('products/{productSlug}/review', [CustomerProductReviewController::class, 'store'])->middleware('throttle:10,1')->name('products.review.store');
+                Route::get('points', CustomerLoyaltyController::class)->name('points');
+                Route::get('wishlist', [CustomerWishlistController::class, 'index'])->name('wishlist.index');
+                Route::post('wishlist', [CustomerWishlistController::class, 'store'])->middleware('throttle:60,1')->name('wishlist.store');
+                Route::delete('wishlist/{productId}', [CustomerWishlistController::class, 'destroy'])->whereNumber('productId')->name('wishlist.destroy');
             });
         });
 
@@ -276,6 +291,8 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         });
 
         Route::middleware('permission:settings')->group(function () {
+            Route::get('tracking-pixels', [TrackingPixelController::class, 'show'])->name('tracking-pixels.show');
+            Route::put('tracking-pixels', [TrackingPixelController::class, 'update'])->middleware('throttle:20,1')->name('tracking-pixels.update');
             Route::get('store', [StoreSettingsController::class, 'show'])->name('store.show');
             Route::patch('store', [StoreSettingsController::class, 'update'])->name('store.update');
             Route::post('store/logo', [StoreSettingsController::class, 'uploadLogo'])->middleware('throttle:20,1')->name('store.logo')->defaults('_permission', 'settings.update');
@@ -312,6 +329,9 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         });
 
         Route::middleware('permission:marketing')->group(function () {
+            Route::get('loyalty', [LoyaltySettingsController::class, 'show'])->name('loyalty.show');
+            Route::put('loyalty', [LoyaltySettingsController::class, 'update'])->name('loyalty.update');
+            Route::post('customers/{customer}/points', [CustomerPointsController::class, 'store'])->middleware('throttle:30,1')->name('customers.points.store')->defaults('_permission', 'marketing.update');
             Route::patch('coupons/{coupon}/status', [CouponController::class, 'updateStatus'])->name('coupons.status');
             Route::apiResource('coupons', CouponController::class);
 
@@ -338,10 +358,17 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
             Route::get('payouts', [VendorPayoutController::class, 'index'])->name('payouts.index');
         });
 
+        Route::middleware('permission:reviews')->group(function () {
+            Route::get('reviews', [ProductReviewController::class, 'index'])->name('reviews.index');
+            Route::patch('reviews/{review}', [ProductReviewController::class, 'update'])->name('reviews.update');
+            Route::delete('reviews/{review}', [ProductReviewController::class, 'destroy'])->name('reviews.destroy');
+        });
+
         Route::middleware('permission:customers')->group(function () {
             Route::get('customers/summary', CustomerSummaryController::class)->name('customers.summary');
             Route::get('customers', [CustomerController::class, 'index'])->name('customers.index');
             Route::get('customers/{customer}', [CustomerController::class, 'show'])->name('customers.show');
+            Route::get('customers/{customer}/points', [CustomerPointsController::class, 'index'])->name('customers.points.index');
         });
 
         Route::middleware('permission:orders')->group(function () {

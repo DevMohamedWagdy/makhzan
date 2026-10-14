@@ -16,6 +16,9 @@ export const storefrontApi = {
     /** `{ product, related }` */
     product: (storeSlug, productSlug) => request('GET', `${base(storeSlug)}/products/${encodeURIComponent(productSlug)}`),
 
+    /** A product's approved reviews: `{ data, meta, summary: { average, count, stars } }` */
+    reviews: (storeSlug, productSlug, page = 1) => request('GET', `${base(storeSlug)}/products/${encodeURIComponent(productSlug)}/reviews`, { query: { page } }),
+
     recordReferralClick: (storeSlug, code) => request('POST', `${base(storeSlug)}/referral-clicks`, { body: { code } }),
 
     /** @param {Array<{ variant_id: number, quantity: number }>} items  `{ lines, subtotal, items_count }` */

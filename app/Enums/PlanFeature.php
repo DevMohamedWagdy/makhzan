@@ -15,4 +15,9 @@ enum PlanFeature: string
 
     /** Serving the storefront on the vendor's own domain. */
     case CustomDomain = 'custom_domain';
+
+    /** Sending orders to Meta, TikTok and Google from the server (Conversions API and alike). */
+    case ConversionsApi = 'conversions_api';
+    /** Loyalty points customers earn on delivered orders and spend at checkout. */
+    case Loyalty = 'loyalty';
 }

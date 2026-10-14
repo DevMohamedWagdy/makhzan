@@ -7,6 +7,7 @@ export const PERMISSION_SECTIONS = {
     inventory: { label: t('المخزون'), icon: 'warehouse' },
     purchasing: { label: t('المشتريات'), icon: 'download' },
     customers: { label: t('العملاء'), icon: 'user' },
+    reviews: { label: t('تقييمات المنتجات'), icon: 'star' },
     marketing: { label: t('التسويق'), icon: 'megaphone' },
     payments: { label: t('المدفوعات'), icon: 'credit-card' },
     reports: { label: t('التقارير'), icon: 'bar-chart' },
@@ -29,7 +30,7 @@ export const PERMISSION_ACTIONS = {
 
 /** Ready-made roles to start from. */
 export const ROLE_TEMPLATES = [
-    { name: t('خدمة العملاء'), description: t('يتابع الطلبات ويغيّر حالتها ويرى العملاء'), permissions: ['orders.view', 'orders.update', 'customers.view'] },
+    { name: t('خدمة العملاء'), description: t('يتابع الطلبات ويغيّر حالتها ويرى العملاء'), permissions: ['orders.view', 'orders.update', 'customers.view', 'reviews.view', 'reviews.update'] },
     { name: t('موظف مخزن'), description: t('يجهّز ويشحن الطلبات ويعدّل الكميات'), permissions: ['orders.view', 'orders.update', 'orders.ship', 'inventory.view', 'inventory.update', 'inventory.transfer'] },
     { name: t('مدير منتجات'), description: t('يضيف ويعدّل المنتجات والأقسام والمخزون'), permissions: ['products.view', 'products.create', 'products.update', 'products.delete', 'inventory.view', 'inventory.update'] },
     { name: t('مسوّق'), description: t('يدير الكوبونات والمسوقين ويرى التقارير'), permissions: ['marketing.view', 'marketing.create', 'marketing.update', 'reports.view'] },

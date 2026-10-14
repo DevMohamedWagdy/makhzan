@@ -6,10 +6,14 @@ import { Icon } from '@/components/ui/Icon';
 import { Skeleton } from '@/components/ui/Spinner';
 import { useToast } from '@/context/ToastContext';
 import { useCart } from '@/features/storefront/CartContext';
+import { Stars } from '@/features/reviews/Stars';
+import { ProductReviews } from '@/features/reviews/ProductReviews';
 import { PriceTag, ProductGrid, ProductImage } from '@/features/storefront/ProductCard';
 import { useStorefront } from '@/features/storefront/StorefrontLayout';
+import { trackEvent } from '@/features/storefront/tracking';
+import { WishlistButton } from '@/features/storefront/WishlistButton';
 import { t } from '@/i18n';
-import { cn } from '@/lib/format';
+import { cn, formatNumber } from '@/lib/format';
 import { storefrontApi } from '@/services/storefrontApi';
 
 const MAX_PER_ORDER = 10;
@@ -107,6 +111,12 @@ export function StoreProductPage() {
         }
     }, [product, store]);
 
+    useEffect(() => {
+        if (product) {
+            trackEvent('view_item', { value: product.price, items: [{ id: product.product_id, name: product.name, price: product.price, quantity: 1 }] });
+        }
+    }, [product]);
+
     const variant = useMemo(() => product?.variants.find((candidate) => sameValues(candidate.option_values, selected)) ?? null, [product, selected]);
 
     /** A value is available when some in-stock variant has it together with the other current choices. */
@@ -118,6 +128,7 @@ export function StoreProductPage() {
     const addToCart = () => {
         add(variant.variant_id, quantity);
         setJustAdded(true);
+        trackEvent('add_to_cart', { value: variant.price * quantity, items: [{ id: product.product_id, name: product.name, price: variant.price, quantity }] });
         toast.success(t('تمت الإضافة إلى السلة'), selected.length ? `${product.name} — ${selected.join(' / ')}` : product.name);
     };
 
@@ -170,6 +181,12 @@ export function StoreProductPage() {
                             </Link>
                         </nav>
                         <h1 className="mt-3 text-2xl leading-snug font-bold text-ink sm:text-3xl">{product.name}</h1>
+                        {product.reviews_count > 0 && (
+                            <a href="#reviews" className="mt-2 inline-flex items-center gap-2 text-sm text-muted hover:text-primary">
+                                <Stars rating={product.rating_average} />
+                                {t('{rating} ({count} تقييم)', { rating: formatNumber(product.rating_average), count: formatNumber(product.reviews_count) })}
+                            </a>
+                        )}
                         <div className="mt-4 flex items-center gap-3">
                             <PriceTag price={price} compareAtPrice={compareAtPrice} size="lg" />
                             {compareAtPrice > price && <span className="rounded-full bg-danger-soft px-2.5 py-1 text-xs font-bold text-danger">{t('وفّر {amount}%', { amount: Math.round((1 - price / compareAtPrice) * 100) })}</span>}
@@ -229,12 +246,20 @@ export function StoreProductPage() {
                         <Button size="lg" icon="shopping-bag" className="flex-1" disabled={!variant?.available} onClick={addToCart}>
                             {t('أضف إلى السلة')}
                         </Button>
+                        <WishlistButton storeSlug={storeSlug} productId={product.product_id} />
                     </div>
                     {justAdded && (
                         <Link to={`/${storeSlug}/cart`} className="animate-pop -mt-2 flex items-center justify-center gap-2 rounded-xl bg-success-soft px-4 py-3 text-sm font-semibold text-success">
                             <Icon name="check-circle" className="size-4" />
                             {t('تمت الإضافة — عرض السلة وإتمام الطلب')}
                         </Link>
+                    )}
+
+                    {store?.loyalty && price > 0 && (
+                        <p className="flex items-center gap-2 rounded-xl bg-warning-soft px-4 py-3 text-sm text-ink-2">
+                            <Icon name="star" className="size-4 shrink-0 fill-amber-400 text-amber-400" />
+                            {t('اكسب {points} نقطة مع هذا المنتج بعد استلامه', { points: Math.floor((price * quantity * store.loyalty.earn_rate) / 100) })}
+                        </p>
                     )}
 
                     <ul className="grid gap-3 rounded-2xl border border-line bg-surface p-4 text-sm text-ink-2 sm:grid-cols-2">
@@ -256,6 +281,8 @@ export function StoreProductPage() {
                     )}
                 </div>
             </div>
+
+            <ProductReviews storeSlug={storeSlug} productSlug={product.slug} storeName={store?.name} />
 
             {data.related.length > 0 && (
                 <section>

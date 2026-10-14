@@ -7,6 +7,7 @@ use App\Enums\OrderStatus;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
 use App\Models\Order;
+use App\Models\ProductVariant;
 use App\Models\Store;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonPeriod;
@@ -18,14 +19,20 @@ use Illuminate\Support\Facades\DB;
  * Sales report for the orders a store received between two dates (inclusive, by the day the
  * order was placed). "Sales" counts every order that wasn't cancelled or returned; revenue
  * counts delivered orders only, since payment is collected on delivery. Gross profit is the
- * delivered products' value minus their cost (snapshotted when ordered) and affiliate
- * commissions; items sold before a cost was set are counted in `uncosted_items`. Online
+ * delivered products' value after coupon and loyalty points discounts, minus their cost
+ * (snapshotted when ordered) and affiliate commissions; items sold before a cost was set are counted in `uncosted_items`. Online
  * orders count once they're paid; an unpaid checkout isn't an order yet.
  */
 class BuildStoreReport
 {
     /** Rows in each ranked list (products, governorates, affiliates). */
     private const TOP = 10;
+
+    /** Days of recent sales the stock forecast averages over. */
+    private const FORECAST_WINDOW_DAYS = 30;
+
+    /** Variants expected to sell out within this many days are flagged by the forecast. */
+    private const FORECAST_HORIZON_DAYS = 30;
 
     /**
      * @return array{
@@ -35,7 +42,10 @@ class BuildStoreReport
      *     daily: list<array{date: string, orders: int, sales: float, revenue: float}>,
      *     statuses: array<string, int>,
      *     top_products: list<array{product_id: int|null, name: string, quantity: int, sales: float}>,
+     *     profitable_products: list<array{product_id: int|null, name: string, quantity: int, sales: float, cost: float, profit: float, margin: float|null}>,
      *     governorates: list<array{governorate_id: string, orders: int, sales: float}>,
+     *     governorate_returns: list<array{governorate_id: string, orders: int, delivered: int, returned: int, cancelled: int, return_rate: float|null}>,
+     *     stock_forecast: list<array{variant_id: int, product_id: int, name: string, variant_title: string, stock: int, sold: int, daily_rate: float, days_left: int}>,
      *     payment_methods: list<array{method: string, orders: int, sales: float}>,
      *     affiliates: list<array{affiliate_id: int, full_name: string, orders: int, sales: float, commission: float}>
      * }
@@ -53,7 +63,10 @@ class BuildStoreReport
             'daily' => $this->daily($store, $from, $to),
             'statuses' => $this->statuses($store, $from, $to),
             'top_products' => $this->topProducts($store, $from, $to),
+            'profitable_products' => $this->profitableProducts($store, $from, $to),
             'governorates' => $this->governorates($store, $from, $to),
+            'governorate_returns' => $this->governorateReturns($store, $from, $to),
+            'stock_forecast' => $this->stockForecast($store),
             'payment_methods' => $this->paymentMethods($store, $from, $to),
             'affiliates' => $this->affiliates($store, $from, $to),
         ];
@@ -89,10 +102,11 @@ class BuildStoreReport
             ->selectRaw('count(*) as placed')
             ->selectRaw('sum(case when status not in (?, ?) then 1 else 0 end) as orders', [$failedA, $failedB])
             ->selectRaw('coalesce(sum(case when status not in (?, ?) then total else 0 end), 0) as sales', [$failedA, $failedB])
-            ->selectRaw('coalesce(sum(case when status not in (?, ?) then discount + shipping_discount else 0 end), 0) as discounts', [$failedA, $failedB])
+            ->selectRaw('coalesce(sum(case when status not in (?, ?) then discount + shipping_discount + points_discount else 0 end), 0) as discounts', [$failedA, $failedB])
             ->selectRaw('sum(case when status = ? then 1 else 0 end) as delivered_orders', [$delivered])
             ->selectRaw('coalesce(sum(case when status = ? then total else 0 end), 0) as revenue', [$delivered])
             ->selectRaw('coalesce(sum(case when status = ? then shipping_fee else 0 end), 0) as shipping_fees', [$delivered])
+            ->selectRaw('coalesce(sum(case when status = ? then discount + points_discount else 0 end), 0) as product_discounts', [$delivered])
             ->selectRaw('coalesce(sum(case when commission_status = ? then commission_amount else 0 end), 0) as commissions', [CommissionStatus::Earned->value])
             ->selectRaw('sum(case when status = ? then 1 else 0 end) as cancelled', [$failedA])
             ->selectRaw('sum(case when status = ? then 1 else 0 end) as returned', [$failedB])
@@ -111,7 +125,7 @@ class BuildStoreReport
             ->selectRaw('coalesce(sum(case when order_items.unit_cost is null then order_items.quantity else 0 end), 0) as uncosted')
             ->first();
 
-        $products = round((float) $goods->products, 2);
+        $products = round((float) $goods->products - (float) $row->product_discounts, 2);
         $costOfGoods = round((float) $goods->cost, 2);
         $grossProfit = round($products - $costOfGoods - $commissions, 2);
 
@@ -260,6 +274,128 @@ class BuildStoreReport
                 'sales' => round((float) $row->sales, 2),
                 'commission' => round((float) $row->commission, 2),
             ])
+            ->all();
+    }
+
+    /**
+     * Products ranked by the profit their delivered sales made: what they sold for minus their
+     * cost. Lines sold before a cost was set are left out, since their profit is unknown.
+     * Order-wide discounts (coupons, points) aren't spread over products here; the totals'
+     * gross profit takes them off.
+     *
+     * @return list<array{product_id: int|null, name: string, quantity: int, sales: float, cost: float, profit: float, margin: float|null}>
+     */
+    private function profitableProducts(Store $store, CarbonImmutable $from, CarbonImmutable $to): array
+    {
+        return DB::table('order_items')
+            ->joinSub($this->orders($store, $from, $to)->getQuery()->where('orders.status', OrderStatus::Delivered->value)->select('id'), 'delivered', 'delivered.id', '=', 'order_items.order_id')
+            ->whereNotNull('order_items.unit_cost')
+            ->selectRaw('order_items.product_id, max(order_items.product_name) as name, sum(order_items.quantity) as quantity')
+            ->selectRaw('sum(order_items.line_total) as sales, sum(order_items.unit_cost * order_items.quantity) as cost')
+            ->selectRaw('sum(order_items.line_total - order_items.unit_cost * order_items.quantity) as profit')
+            ->groupBy('order_items.product_id')
+            ->orderByDesc('profit')
+            ->limit(self::TOP)
+            ->get()
+            ->map(function (object $row): array {
+                $sales = round((float) $row->sales, 2);
+                $profit = round((float) $row->profit, 2);
+
+                return [
+                    'product_id' => $row->product_id ? (int) $row->product_id : null,
+                    'name' => $row->name,
+                    'quantity' => (int) $row->quantity,
+                    'sales' => $sales,
+                    'cost' => round((float) $row->cost, 2),
+                    'profit' => $profit,
+                    'margin' => $sales > 0 ? round($profit / $sales * 100, 1) : null,
+                ];
+            })
+            ->all();
+    }
+
+    /**
+     * How often orders to each governorate come back. The return rate is returned orders out of
+     * those that reached the customer's door (delivered or returned); orders still on the way
+     * don't count yet. Governorates with the most orders come first.
+     *
+     * @return list<array{governorate_id: string, orders: int, delivered: int, returned: int, cancelled: int, return_rate: float|null}>
+     */
+    private function governorateReturns(Store $store, CarbonImmutable $from, CarbonImmutable $to): array
+    {
+        return $this->orders($store, $from, $to)->toBase()
+            ->selectRaw('governorate_id, count(*) as orders')
+            ->selectRaw('sum(case when status = ? then 1 else 0 end) as delivered', [OrderStatus::Delivered->value])
+            ->selectRaw('sum(case when status = ? then 1 else 0 end) as returned', [OrderStatus::Returned->value])
+            ->selectRaw('sum(case when status = ? then 1 else 0 end) as cancelled', [OrderStatus::Cancelled->value])
+            ->groupBy('governorate_id')
+            ->orderByDesc('orders')
+            ->limit(self::TOP)
+            ->get()
+            ->map(function (object $row): array {
+                $delivered = (int) $row->delivered;
+                $returned = (int) $row->returned;
+
+                return [
+                    'governorate_id' => $row->governorate_id,
+                    'orders' => (int) $row->orders,
+                    'delivered' => $delivered,
+                    'returned' => $returned,
+                    'cancelled' => (int) $row->cancelled,
+                    'return_rate' => $delivered + $returned > 0 ? round($returned / ($delivered + $returned) * 100, 1) : null,
+                ];
+            })
+            ->all();
+    }
+
+    /**
+     * Variants that will sell out soon at their recent pace: units sold in the last
+     * FORECAST_WINDOW_DAYS (orders not cancelled or returned) averaged per day, against what's
+     * on the shelf now. Independent of the report period; soonest to run out first, with
+     * variants already sold out (days_left 0) at the top.
+     *
+     * @return list<array{variant_id: int, product_id: int, name: string, variant_title: string, stock: int, sold: int, daily_rate: float, days_left: int}>
+     */
+    private function stockForecast(Store $store): array
+    {
+        $to = CarbonImmutable::now();
+        $from = $to->subDays(self::FORECAST_WINDOW_DAYS);
+
+        $sold = DB::table('order_items')
+            ->joinSub($this->orders($store, $from, $to)->getQuery()->whereNotIn('orders.status', $this->failedStatuses())->select('id'), 'booked', 'booked.id', '=', 'order_items.order_id')
+            ->whereNotNull('order_items.product_variant_id')
+            ->selectRaw('order_items.product_variant_id, sum(order_items.quantity) as sold')
+            ->groupBy('order_items.product_variant_id')
+            ->pluck('sold', 'product_variant_id');
+
+        if ($sold->isEmpty()) {
+            return [];
+        }
+
+        return ProductVariant::query()
+            ->inventoryOf($store)
+            ->whereIn('product_variants.id', $sold->keys())
+            ->addSelect('products.name as product_name')
+            ->get()
+            ->map(function (ProductVariant $variant) use ($sold): array {
+                $unitsSold = (int) $sold[$variant->id];
+                $dailyRate = $unitsSold / self::FORECAST_WINDOW_DAYS;
+
+                return [
+                    'variant_id' => $variant->id,
+                    'product_id' => $variant->product_id,
+                    'name' => $variant->product_name,
+                    'variant_title' => $variant->title(),
+                    'stock' => $variant->stock,
+                    'sold' => $unitsSold,
+                    'daily_rate' => round($dailyRate, 2),
+                    'days_left' => (int) floor($variant->stock / $dailyRate),
+                ];
+            })
+            ->filter(fn (array $row): bool => $row['days_left'] <= self::FORECAST_HORIZON_DAYS)
+            ->sortBy([['days_left', 'asc'], ['daily_rate', 'desc']])
+            ->take(self::TOP)
+            ->values()
             ->all();
     }
 

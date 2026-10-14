@@ -6,7 +6,21 @@ import { TrendBadge } from '@/components/ui/Charts';
 import { EmptyState, StatCard } from '@/components/ui/Display';
 import { Input, Select } from '@/components/ui/Form';
 import { Skeleton } from '@/components/ui/Spinner';
-import { AffiliatesCard, DailyChartCard, GovernoratesCard, PaymentMethodsCard, REPORT_PRESETS, StatusBreakdownCard, TopProductsCard, parseDate, presetRange, toDateString } from '@/features/reports/ReportWidgets';
+import {
+    AffiliatesCard,
+    DailyChartCard,
+    GovernorateReturnsCard,
+    GovernoratesCard,
+    PaymentMethodsCard,
+    ProfitableProductsCard,
+    REPORT_PRESETS,
+    StatusBreakdownCard,
+    StockForecastCard,
+    TopProductsCard,
+    parseDate,
+    presetRange,
+    toDateString,
+} from '@/features/reports/ReportWidgets';
 import { t } from '@/i18n';
 import { formatDate, formatMoney, formatNumber } from '@/lib/format';
 import { reportsApi } from '@/services/reportsApi';
@@ -125,7 +139,7 @@ export function ReportsPage() {
                             value={totals.profit_margin == null ? '—' : t('{value}%', { value: formatNumber(totals.profit_margin) })}
                             icon="percent"
                             tone="info"
-                            hint={totals.uncosted_items ? t('{count} قطعة مباعة بدون تكلفة مسجلة', { count: formatNumber(totals.uncosted_items) }) : t('بعد التكلفة وعمولات المسوقين')}
+                            hint={totals.uncosted_items ? t('{count} قطعة مباعة بدون تكلفة مسجلة', { count: formatNumber(totals.uncosted_items) }) : t('بعد الخصومات والتكلفة وعمولات المسوقين')}
                         />
                     </div>
 
@@ -136,6 +150,9 @@ export function ReportsPage() {
                         <GovernoratesCard governorates={report.governorates} />
                         <PaymentMethodsCard methods={report.payment_methods ?? []} refunds={totals.refunds ?? 0} />
                         <TopProductsCard products={report.top_products} />
+                        <ProfitableProductsCard products={report.profitable_products ?? []} />
+                        <GovernorateReturnsCard governorates={report.governorate_returns ?? []} />
+                        <StockForecastCard forecast={report.stock_forecast ?? []} />
                         <AffiliatesCard affiliates={report.affiliates} />
                     </div>
                 </div>

@@ -36,6 +36,16 @@ export function customerApi(storeSlug) {
         placeOrder: (payload) => request('POST', `${base}/customer/orders`, { body: payload, auth }),
         /** Opens a new payment page for an unpaid online order: the order with `payment.checkout_url`. */
         payOrder: (number) => request('POST', `${base}/customer/orders/${number}/pay`, { auth }),
+        /** `{ can_review, review }` for the signed-in customer and this product. */
+        reviewStatus: (productSlug) => request('GET', `${base}/customer/products/${encodeURIComponent(productSlug)}/review`, { auth }),
+        /** @param {{ rating: number, body?: string|null, images?: File[] }} payload  The new (pending) review. */
+        submitReview: (productSlug, payload) => request('POST', `${base}/customer/products/${encodeURIComponent(productSlug)}/review`, { body: payload, auth }),
+        /** Points history `{ data, meta, summary: { enabled, balance, balance_value, earn_rate, point_value, min_redeem, tier } }` */
+        points: (page = 1) => request('GET', `${base}/customer/points`, { query: { page }, auth, raw: true }),
+        /** Saved products (storefront product cards). */
+        wishlist: () => request('GET', `${base}/customer/wishlist`, { auth }),
+        addToWishlist: (productId) => request('POST', `${base}/customer/wishlist`, { body: { product_id: productId }, auth }),
+        removeFromWishlist: (productId) => request('DELETE', `${base}/customer/wishlist/${productId}`, { auth }),
         cancelOrder: (number, reason = null) => request('POST', `${base}/customer/orders/${number}/cancel`, { body: { reason }, auth }),
     };
 }

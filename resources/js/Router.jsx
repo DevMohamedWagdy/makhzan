@@ -44,7 +44,9 @@ const AffiliateLoginPage = lazy(() => import('@/pages/affiliate/AffiliateLoginPa
 const AffiliateResetPasswordPage = lazy(() => import('@/pages/affiliate/AffiliateResetPasswordPage').then((module) => ({ default: module.AffiliateResetPasswordPage })));
 const AffiliatesPage = lazy(() => import('@/pages/affiliates/AffiliatesPage').then((module) => ({ default: module.AffiliatesPage })));
 const CategoriesPage = lazy(() => import('@/pages/categories/CategoriesPage').then((module) => ({ default: module.CategoriesPage })));
+const LoyaltyPage = lazy(() => import('@/pages/loyalty/LoyaltyPage').then((module) => ({ default: module.LoyaltyPage })));
 const CouponsPage = lazy(() => import('@/pages/coupons/CouponsPage').then((module) => ({ default: module.CouponsPage })));
+const ReviewsPage = lazy(() => import('@/pages/reviews/ReviewsPage').then((module) => ({ default: module.ReviewsPage })));
 const CustomersPage = lazy(() => import('@/pages/customers/CustomersPage').then((module) => ({ default: module.CustomersPage })));
 const DashboardHomePage = lazy(() => import('@/pages/dashboard/DashboardHomePage').then((module) => ({ default: module.DashboardHomePage })));
 const InventoryPage = lazy(() => import('@/pages/inventory/InventoryPage').then((module) => ({ default: module.InventoryPage })));
@@ -59,6 +61,8 @@ const StoreCartPage = lazy(() => import('@/pages/storefront/StoreCartPage').then
 const StoreCheckoutPage = lazy(() => import('@/pages/storefront/StoreCheckoutPage').then((module) => ({ default: module.StoreCheckoutPage })));
 const StoreCatalogPage = lazy(() => import('@/pages/storefront/StoreCatalogPage').then((module) => ({ default: module.StoreCatalogPage })));
 const StoreHomePage = lazy(() => import('@/pages/storefront/StoreHomePage').then((module) => ({ default: module.StoreHomePage })));
+const StoreWishlistPage = lazy(() => import('@/pages/storefront/StoreWishlistPage').then((module) => ({ default: module.StoreWishlistPage })));
+const StorePointsPage = lazy(() => import('@/pages/storefront/StorePointsPage').then((module) => ({ default: module.StorePointsPage })));
 const StoreOrderPage = lazy(() => import('@/pages/storefront/StoreOrderPage').then((module) => ({ default: module.StoreOrderPage })));
 const StoreOrdersPage = lazy(() => import('@/pages/storefront/StoreOrdersPage').then((module) => ({ default: module.StoreOrdersPage })));
 const StoreForgotPasswordPage = lazy(() => import('@/pages/storefront/StorePasswordPages').then((module) => ({ default: module.StoreForgotPasswordPage })));
@@ -224,8 +228,12 @@ export function App() {
                                     <Route element={<RequirePermission permission="customers" />}>
                                         <Route path="customers" element={<CustomersPage />} />
                                     </Route>
+                                    <Route element={<RequirePermission permission="reviews" />}>
+                                        <Route path="reviews" element={<ReviewsPage />} />
+                                    </Route>
                                     <Route element={<RequirePermission permission="marketing" />}>
                                         <Route path="coupons" element={<CouponsPage />} />
+                                        <Route path="loyalty" element={<LoyaltyPage />} />
                                         <Route path="affiliates" element={<AffiliatesPage />} />
                                         <Route path="payout-requests" element={<PayoutRequestsPage />} />
                                     </Route>
@@ -324,6 +332,8 @@ export function App() {
                                 <Route path="account/reset-password" element={<StoreResetPasswordPage />} />
                                 <Route path="account/orders" element={<StoreOrdersPage />} />
                                 <Route path="account/orders/:number" element={<StoreOrderPage />} />
+                                <Route path="account/wishlist" element={<StoreWishlistPage />} />
+                                <Route path="account/points" element={<StorePointsPage />} />
                                 <Route path="policies/:policy" element={<StorePolicyPage />} />
                             </Route>
                             <Route path="*" element={<Navigate to="/dashboard" replace />} />
