@@ -11,7 +11,8 @@ use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 class LoyaltyController extends Controller
 {
     /**
-     * The customer's points history, newest first, with their balance and what a point is worth.
+     * The customer's points history, newest first, with their balance, what a point is worth
+     * and where they stand among the store's tiers.
      */
     public function __invoke(Request $request, Store $store): AnonymousResourceCollection
     {
@@ -24,6 +25,7 @@ class LoyaltyController extends Controller
             'earn_rate' => $store->loyalty_earn_rate,
             'point_value' => $store->loyalty_point_value,
             'min_redeem' => $store->loyalty_min_redeem,
+            'tier' => $store->tierProgress($customer->deliveredSpend()),
         ]]);
     }
 }

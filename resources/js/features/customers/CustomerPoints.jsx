@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/Button';
 import { Field, Input } from '@/components/ui/Form';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
+import { TierProgress } from '@/features/loyalty/TierProgress';
 import { t } from '@/i18n';
 import { formatDate, formatNumber } from '@/lib/format';
 import { loyaltyApi } from '@/services/loyaltyApi';
@@ -15,7 +16,7 @@ const REASONS = {
     adjusted: t('تعديل يدوي'),
 };
 
-/** A customer's points balance and history in their drawer, with a manual give/take form. */
+/** A customer's points balance, tier and history in their drawer, with a manual give/take form. */
 export function CustomerPoints({ customerId }) {
     const { can } = useAuth();
     const toast = useToast();
@@ -60,6 +61,7 @@ export function CustomerPoints({ customerId }) {
                 {t('نقاط الولاء')}
                 <span className="rounded-lg bg-warning-soft px-2.5 py-1 text-xs text-warning">{t('{count} نقطة', { count: formatNumber(result.balance) })}</span>
             </h3>
+            <TierProgress tier={result.tier} className="mb-3 rounded-xl border border-line p-3 text-ink" />
             {result.data.length > 0 && (
                 <ul className="mb-3 flex flex-col divide-y divide-line rounded-xl border border-line text-sm">
                     {result.data.slice(0, 5).map((row) => (

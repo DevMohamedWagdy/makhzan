@@ -10,7 +10,18 @@ import { t } from '@/i18n';
 import { formatMoney, formatNumber } from '@/lib/format';
 import { loyaltyApi } from '@/services/loyaltyApi';
 
-/** Loyalty points: customers earn on delivered orders and spend points as a checkout discount. */
+const MAX_TIERS = 5;
+
+const SUGGESTED_TIERS = [
+    { name: t('برونزي'), min_spend: 0, multiplier: 1 },
+    { name: t('فضي'), min_spend: 5000, multiplier: 1.25 },
+    { name: t('ذهبي'), min_spend: 15000, multiplier: 1.5 },
+];
+
+/**
+ * Loyalty points: customers earn on delivered orders and spend points as a checkout discount.
+ * Optional tiers by delivered spend earn points faster.
+ */
 export function LoyaltyPage() {
     const { can } = useAuth();
     const toast = useToast();
@@ -41,7 +52,15 @@ export function LoyaltyPage() {
         setSaving(true);
 
         try {
-            apply(await loyaltyApi.update({ ...form, loyalty_earn_rate: Number(form.loyalty_earn_rate), loyalty_point_value: Number(form.loyalty_point_value), loyalty_min_redeem: Number(form.loyalty_min_redeem) }));
+            apply(
+                await loyaltyApi.update({
+                    ...form,
+                    loyalty_earn_rate: Number(form.loyalty_earn_rate),
+                    loyalty_point_value: Number(form.loyalty_point_value),
+                    loyalty_min_redeem: Number(form.loyalty_min_redeem),
+                    loyalty_tiers: form.loyalty_tiers.map((tier) => ({ name: tier.name, min_spend: Number(tier.min_spend), multiplier: Number(tier.multiplier) })),
+                }),
+            );
             toast.success(t('تم حفظ برنامج النقاط'));
         } catch (saveError) {
             setErrors(saveError.errors ?? {});
@@ -52,6 +71,11 @@ export function LoyaltyPage() {
     };
 
     const set = (key) => (event) => setForm((current) => ({ ...current, [key]: event.target.value }));
+    const setTiers = (update) => setForm((current) => ({ ...current, loyalty_tiers: update(current.loyalty_tiers) }));
+    const setTier = (index, key) => (event) => setTiers((tiers) => tiers.map((tier, position) => (position === index ? { ...tier, [key]: event.target.value } : tier)));
+    const addTier = () => setTiers((tiers) => [...tiers, { name: '', min_spend: '', multiplier: '' }]);
+    const removeTier = (index) => setTiers((tiers) => tiers.filter((_, position) => position !== index));
+    const canEdit = can('marketing.update');
 
     // Points per 100 EGP × EGP per point = EGP back per 100 EGP, i.e. the cashback percentage.
     const cashbackPercent = form ? Number(form.loyalty_earn_rate) * Number(form.loyalty_point_value) : 0;
@@ -116,7 +140,55 @@ export function LoyaltyPage() {
                             })}
                         </Alert>
 
-                        {can('marketing.update') && (
+                        <div className="flex flex-col gap-3 border-t border-line pt-5">
+                            <div className="flex flex-wrap items-start justify-between gap-2">
+                                <div>
+                                    <h3 className="font-semibold text-ink">{t('مستويات العملاء')}</h3>
+                                    <p className="mt-0.5 text-sm text-ink-2">{t('كلما زادت مشتريات العميل المسلّمة ارتفع مستواه وكسب نقاطاً أكثر على طلباته التالية.')}</p>
+                                </div>
+                                {canEdit && form.loyalty_tiers.length === 0 && (
+                                    <Button size="sm" variant="soft" icon="sparkles" onClick={() => setTiers(() => SUGGESTED_TIERS.map((tier) => ({ ...tier })))}>
+                                        {t('استخدم المستويات المقترحة')}
+                                    </Button>
+                                )}
+                            </div>
+                            {errors.loyalty_tiers && <p className="text-xs font-medium text-danger">{errors.loyalty_tiers}</p>}
+
+                            {form.loyalty_tiers.length === 0 ? (
+                                <p className="rounded-xl border border-dashed border-line p-4 text-center text-sm text-muted">{t('لا توجد مستويات. كل العملاء يكسبون بنفس المعدل.')}</p>
+                            ) : (
+                                <ul className="flex flex-col gap-3">
+                                    {form.loyalty_tiers.map((tier, index) => (
+                                        <li key={index} className="grid gap-3 rounded-xl border border-line p-3 sm:grid-cols-[1fr_1fr_1fr_auto] sm:items-start">
+                                            <Field label={t('اسم المستوى')} error={errors[`loyalty_tiers.${index}.name`]}>
+                                                {(props) => <Input {...props} value={tier.name} maxLength={30} onChange={setTier(index, 'name')} disabled={!canEdit} placeholder={t('مثال: ذهبي')} />}
+                                            </Field>
+                                            <Field label={t('من مشتريات (جنيه)')} error={errors[`loyalty_tiers.${index}.min_spend`]}>
+                                                {(props) => <Input {...props} type="number" min="0" value={tier.min_spend} onChange={setTier(index, 'min_spend')} disabled={!canEdit} dir="ltr" />}
+                                            </Field>
+                                            <Field
+                                                label={t('مضاعف النقاط')}
+                                                error={errors[`loyalty_tiers.${index}.multiplier`]}
+                                                hint={Number(tier.multiplier) >= 1 ? t('{points} نقطة لكل ١٠٠ جنيه', { points: formatNumber(Math.floor(Number(form.loyalty_earn_rate) * Number(tier.multiplier) * 100) / 100) }) : undefined}
+                                            >
+                                                {(props) => <Input {...props} type="number" min="1" max="10" step="0.05" value={tier.multiplier} onChange={setTier(index, 'multiplier')} disabled={!canEdit} dir="ltr" />}
+                                            </Field>
+                                            {canEdit && (
+                                                <Button size="icon" variant="ghost" icon="trash" onClick={() => removeTier(index)} aria-label={t('حذف المستوى')} className="sm:mt-6" />
+                                            )}
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+
+                            {canEdit && form.loyalty_tiers.length > 0 && form.loyalty_tiers.length < MAX_TIERS && (
+                                <Button size="sm" variant="secondary" icon="plus" onClick={addTier} className="self-start">
+                                    {t('إضافة مستوى')}
+                                </Button>
+                            )}
+                        </div>
+
+                        {canEdit && (
                             <Button type="submit" icon="check" loading={saving} className="self-start">
                                 {t('حفظ')}
                             </Button>

@@ -69,6 +69,14 @@ class Customer extends Authenticatable implements HasLocalePreference
     }
 
     /**
+     * What the customer has spent on delivered orders, which decides their loyalty tier.
+     */
+    public function deliveredSpend(): float
+    {
+        return (float) $this->orders()->where('status', OrderStatus::Delivered)->sum('total');
+    }
+
+    /**
      * @return HasMany<LoyaltyTransaction, $this>
      */
     public function loyaltyTransactions(): HasMany

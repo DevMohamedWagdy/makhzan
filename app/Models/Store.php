@@ -70,6 +70,7 @@ class Store extends Model
             'loyalty_earn_rate' => 'integer',
             'loyalty_point_value' => 'float',
             'loyalty_min_redeem' => 'integer',
+            'loyalty_tiers' => 'array',
             'plan_expires_at' => 'datetime',
             'trial_ends_at' => 'datetime',
             'suspended_at' => 'datetime',
@@ -216,11 +217,63 @@ class Store extends Model
 
     /**
      * Points a delivered order earns: the earn rate per 100 EGP of products actually paid for
-     * (after coupon and points discounts), rounded down.
+     * (after coupon and points discounts), times the customer's tier multiplier, rounded down.
      */
-    public function pointsFor(float $amount): int
+    public function pointsFor(float $amount, float $multiplier = 1): int
     {
-        return max(0, (int) floor($amount * $this->loyalty_earn_rate / 100));
+        return max(0, (int) floor(round($amount * $this->loyalty_earn_rate * $multiplier / 100, 6)));
+    }
+
+    /**
+     * The customer tiers the vendor set up, lowest spend first.
+     *
+     * @return list<array{name: string, min_spend: float, multiplier: float}>
+     */
+    public function loyaltyTiers(): array
+    {
+        return collect($this->loyalty_tiers ?? [])
+            ->map(fn (array $tier): array => ['name' => (string) $tier['name'], 'min_spend' => (float) $tier['min_spend'], 'multiplier' => (float) $tier['multiplier']])
+            ->sortBy('min_spend')
+            ->values()
+            ->all();
+    }
+
+    /**
+     * The highest tier a customer who has spent $spent on delivered orders has reached, if any.
+     *
+     * @return array{name: string, min_spend: float, multiplier: float}|null
+     */
+    public function tierFor(float $spent): ?array
+    {
+        return collect($this->loyaltyTiers())->last(fn (array $tier): bool => $spent >= $tier['min_spend']);
+    }
+
+    /**
+     * Where a customer stands among the tiers: their tier, the next one, how much more they
+     * need to spend to reach it and how far along they are (0–100). Null without tiers.
+     *
+     * @return array{spent: float, current: array{name: string, min_spend: float, multiplier: float}|null, next: array{name: string, min_spend: float, multiplier: float}|null, remaining: float|null, progress: int, tiers: list<array{name: string, min_spend: float, multiplier: float}>}|null
+     */
+    public function tierProgress(float $spent): ?array
+    {
+        $tiers = $this->loyaltyTiers();
+
+        if ($tiers === []) {
+            return null;
+        }
+
+        $current = $this->tierFor($spent);
+        $next = collect($tiers)->first(fn (array $tier): bool => $spent < $tier['min_spend']);
+        $floor = $current['min_spend'] ?? 0;
+
+        return [
+            'spent' => round($spent, 2),
+            'current' => $current,
+            'next' => $next,
+            'remaining' => $next ? round($next['min_spend'] - $spent, 2) : null,
+            'progress' => $next ? (int) floor(($spent - $floor) / max(0.01, $next['min_spend'] - $floor) * 100) : 100,
+            'tiers' => $tiers,
+        ];
     }
 
     /**

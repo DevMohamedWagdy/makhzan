@@ -17,14 +17,17 @@ use Illuminate\Support\Facades\Gate;
 class CustomerPointsController extends Controller
 {
     /**
-     * A customer's points history, newest first.
+     * A customer's points history, newest first, with their tier and progress to the next one.
      */
     public function index(Customer $customer): AnonymousResourceCollection
     {
         Gate::authorize('view', $customer);
 
         return LoyaltyTransactionResource::collection($customer->loyaltyTransactions()->with('order')->latest('id')->paginate(20))
-            ->additional(['balance' => $customer->points_balance]);
+            ->additional([
+                'balance' => $customer->points_balance,
+                'tier' => $customer->store->tierProgress($customer->deliveredSpend()),
+            ]);
     }
 
     /**

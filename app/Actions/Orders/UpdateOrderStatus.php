@@ -106,7 +106,9 @@ class UpdateOrderStatus
 
     /**
      * Refunds points spent on a cancelled or returned order, credits points for a delivered
-     * one (when the store runs the program) and takes them back if it's returned.
+     * one (when the store runs the program) and takes them back if it's returned. A delivered
+     * order earns at the tier the customer had reached before it (the order isn't saved as
+     * delivered yet, so it doesn't count toward its own tier).
      */
     private function settlePoints(Order $order, OrderStatus $previous, OrderStatus $status, string $actor): void
     {
@@ -121,8 +123,10 @@ class UpdateOrderStatus
         }
 
         if ($status === OrderStatus::Delivered && $order->store->loyaltyActive()) {
-            $order->points_earned = $order->store->pointsFor($order->subtotal - $order->discount - $order->points_discount);
-            $this->changePoints->handle($customer, $order->points_earned, LoyaltyTransactionType::Earned, $actor, $order);
+            $tier = $order->store->tierFor($customer->deliveredSpend());
+            $multiplier = $tier['multiplier'] ?? 1;
+            $order->points_earned = $order->store->pointsFor($order->subtotal - $order->discount - $order->points_discount, $multiplier);
+            $this->changePoints->handle($customer, $order->points_earned, LoyaltyTransactionType::Earned, $actor, $order, $multiplier > 1 ? "{$tier['name']} \u{2066}×{$multiplier}\u{2069}" : null);
         }
 
         if ($status === OrderStatus::Returned && $previous === OrderStatus::Delivered && $order->points_earned > 0) {

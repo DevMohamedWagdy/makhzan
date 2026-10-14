@@ -75,6 +75,7 @@ class LoyaltyTest extends TestCase
             ->assertJsonPath('summary.enabled', true)
             ->assertJsonPath('summary.balance', 100)
             ->assertJsonPath('summary.balance_value', 25)
+            ->assertJsonPath('summary.tier', null)
             ->assertJsonPath('data.0.type', 'earned')
             ->assertJsonPath('data.0.points', 100)
             ->assertJsonPath('data.0.order_number', $order->number);
@@ -159,6 +160,57 @@ class LoyaltyTest extends TestCase
 
         $this->assertSame(0, $this->customer->fresh()->points_balance);
         $this->getJson(self::BASE)->assertJsonPath('store.loyalty', null);
+    }
+
+    private function setUpTiers(): void
+    {
+        $this->store->forceFill(['loyalty_tiers' => [
+            ['name' => 'ذهبي', 'min_spend' => 5000, 'multiplier' => 2],
+            ['name' => 'برونزي', 'min_spend' => 0, 'multiplier' => 1],
+            ['name' => 'فضي', 'min_spend' => 2000, 'multiplier' => 1.5],
+        ]])->save();
+    }
+
+    public function test_a_higher_tier_earns_points_at_its_multiplier(): void
+    {
+        $this->setUpTiers();
+        Order::factory()->for($this->store)->for($this->customer)->status(OrderStatus::Delivered)->create(['number' => 50000, 'subtotal' => 2950, 'total' => 3000]);
+        Order::factory()->for($this->store)->for($this->customer)->status(OrderStatus::Cancelled)->create(['number' => 50001, 'subtotal' => 9950, 'total' => 10000]);
+        $order = $this->placeOrder();
+
+        $this->moveTo($order, OrderStatus::Confirmed, OrderStatus::Shipped, OrderStatus::Delivered);
+
+        $this->assertSame(150, $order->fresh()->points_earned);
+        $this->getJson(self::BASE.'/customer/points')
+            ->assertOk()
+            ->assertJsonPath('data.0.points', 150)
+            ->assertJsonPath('data.0.note', "فضي \u{2066}×1.5\u{2069}")
+            ->assertJsonPath('summary.tier.spent', 4060)
+            ->assertJsonPath('summary.tier.current.name', 'فضي')
+            ->assertJsonPath('summary.tier.next.name', 'ذهبي')
+            ->assertJsonPath('summary.tier.remaining', 940)
+            ->assertJsonPath('summary.tier.progress', 68)
+            ->assertJsonCount(3, 'summary.tier.tiers')
+            ->assertJsonPath('summary.tier.tiers.0.name', 'برونزي');
+    }
+
+    public function test_an_order_earns_at_the_tier_reached_before_it_and_the_top_tier_is_complete(): void
+    {
+        $this->setUpTiers();
+        $order = $this->placeOrder();
+
+        $this->moveTo($order, OrderStatus::Confirmed, OrderStatus::Shipped, OrderStatus::Delivered);
+
+        $this->assertSame(100, $order->fresh()->points_earned);
+        $this->assertNull($this->customer->loyaltyTransactions()->sole()->note);
+
+        Order::factory()->for($this->store)->for($this->customer)->status(OrderStatus::Delivered)->create(['number' => 50000, 'total' => 8000]);
+
+        $this->getJson(self::BASE.'/customer/points')
+            ->assertJsonPath('summary.tier.current.name', 'ذهبي')
+            ->assertJsonPath('summary.tier.next', null)
+            ->assertJsonPath('summary.tier.remaining', null)
+            ->assertJsonPath('summary.tier.progress', 100);
     }
 
     public function test_the_storefront_describes_the_program(): void

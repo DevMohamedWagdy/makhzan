@@ -6,6 +6,7 @@ const PATHS = {
     'alert-triangle': <><path d="M10.3 3.9 2.4 17.6A2 2 0 0 0 4.1 20.6h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z" /><path d="M12 9v4M12 17h.01" /></>,
     'arrow-left': <path d="M19 12H5m6-6-6 6 6 6" />,
     'arrow-right': <path d="M5 12h14m-6-6 6 6-6 6" />,
+    'award': <><circle cx="12" cy="9" r="6" /><path d="m8.5 14.2-1.5 7.3 5-3 5 3-1.5-7.3" /></>,
     'bar-chart': <path d="M4 20V10m6 10V4m6 16v-7m4 7H3" />,
     'bell': <><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9" /><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0" /></>,
     'box': <><path d="M21 8 12 3 3 8v8l9 5 9-5V8Z" /><path d="m3 8 9 5 9-5M12 13v8" /></>,

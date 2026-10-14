@@ -5,9 +5,10 @@ import { EmptyState } from '@/components/ui/Display';
 import { Icon } from '@/components/ui/Icon';
 import { Skeleton } from '@/components/ui/Spinner';
 import { useCustomerAuth } from '@/features/storefront/CustomerAuthContext';
+import { formatMultiplier, TierProgress } from '@/features/loyalty/TierProgress';
 import { useStorefront } from '@/features/storefront/StorefrontLayout';
 import { t } from '@/i18n';
-import { formatDate, formatMoney, formatNumber } from '@/lib/format';
+import { cn, formatDate, formatMoney, formatNumber } from '@/lib/format';
 
 export const POINT_REASONS = {
     earned: t('نقاط طلب تم توصيله'),
@@ -17,7 +18,7 @@ export const POINT_REASONS = {
     adjusted: t('من المتجر'),
 };
 
-/** The shopper's points balance, how the program works and their points history. */
+/** The shopper's points balance, their tier, how the program works and their points history. */
 export function StorePointsPage() {
     const { storeSlug } = useParams();
     const { store } = useStorefront();
@@ -80,6 +81,32 @@ export function StorePointsPage() {
                 </div>
                 <Icon name="star" className="size-16 fill-white/20 text-white/60" />
             </section>
+
+            {summary.enabled && summary.tier && (
+                <section className="flex flex-col gap-4 rounded-2xl border border-line bg-surface p-5">
+                    <h2 className="font-semibold text-ink">{t('مستواك')}</h2>
+                    <TierProgress tier={summary.tier} className="text-ink" />
+                    <ul className="grid gap-2 text-sm sm:grid-cols-3">
+                        {summary.tier.tiers.map((tier) => {
+                            const isCurrent = summary.tier.current?.name === tier.name;
+
+                            return (
+                                <li key={tier.name} className={cn('rounded-xl border p-3', isCurrent ? 'border-warning bg-warning-soft' : 'border-line')}>
+                                    <p className="flex items-center gap-1.5 font-semibold text-ink">
+                                        <Icon name="award" className={cn('size-4', isCurrent ? 'text-warning' : 'text-muted')} />
+                                        {tier.name}
+                                    </p>
+                                    <p className="mt-1 text-xs text-ink-2">
+                                        {tier.min_spend > 0 ? t('من {amount} مشتريات', { amount: formatMoney(tier.min_spend) }) : t('من أول طلب')}
+                                        {' · '}
+                                        {t('نقاط {multiplier}', { multiplier: formatMultiplier(tier.multiplier) })}
+                                    </p>
+                                </li>
+                            );
+                        })}
+                    </ul>
+                </section>
+            )}
 
             {summary.enabled && (
                 <ul className="grid gap-3 text-sm sm:grid-cols-3">

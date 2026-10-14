@@ -40,7 +40,7 @@ export function customerApi(storeSlug) {
         reviewStatus: (productSlug) => request('GET', `${base}/customer/products/${encodeURIComponent(productSlug)}/review`, { auth }),
         /** @param {{ rating: number, body?: string|null, images?: File[] }} payload  The new (pending) review. */
         submitReview: (productSlug, payload) => request('POST', `${base}/customer/products/${encodeURIComponent(productSlug)}/review`, { body: payload, auth }),
-        /** Points history `{ data, meta, summary: { enabled, balance, balance_value, earn_rate, point_value, min_redeem } }` */
+        /** Points history `{ data, meta, summary: { enabled, balance, balance_value, earn_rate, point_value, min_redeem, tier } }` */
         points: (page = 1) => request('GET', `${base}/customer/points`, { query: { page }, auth, raw: true }),
         /** Saved products (storefront product cards). */
         wishlist: () => request('GET', `${base}/customer/wishlist`, { auth }),
