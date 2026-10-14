@@ -6,10 +6,12 @@ import { Icon } from '@/components/ui/Icon';
 import { Skeleton } from '@/components/ui/Spinner';
 import { useToast } from '@/context/ToastContext';
 import { useCart } from '@/features/storefront/CartContext';
+import { Stars } from '@/features/reviews/Stars';
+import { ProductReviews } from '@/features/reviews/ProductReviews';
 import { PriceTag, ProductGrid, ProductImage } from '@/features/storefront/ProductCard';
 import { useStorefront } from '@/features/storefront/StorefrontLayout';
 import { t } from '@/i18n';
-import { cn } from '@/lib/format';
+import { cn, formatNumber } from '@/lib/format';
 import { storefrontApi } from '@/services/storefrontApi';
 
 const MAX_PER_ORDER = 10;
@@ -170,6 +172,12 @@ export function StoreProductPage() {
                             </Link>
                         </nav>
                         <h1 className="mt-3 text-2xl leading-snug font-bold text-ink sm:text-3xl">{product.name}</h1>
+                        {product.reviews_count > 0 && (
+                            <a href="#reviews" className="mt-2 inline-flex items-center gap-2 text-sm text-muted hover:text-primary">
+                                <Stars rating={product.rating_average} />
+                                {t('{rating} ({count} تقييم)', { rating: formatNumber(product.rating_average), count: formatNumber(product.reviews_count) })}
+                            </a>
+                        )}
                         <div className="mt-4 flex items-center gap-3">
                             <PriceTag price={price} compareAtPrice={compareAtPrice} size="lg" />
                             {compareAtPrice > price && <span className="rounded-full bg-danger-soft px-2.5 py-1 text-xs font-bold text-danger">{t('وفّر {amount}%', { amount: Math.round((1 - price / compareAtPrice) * 100) })}</span>}
@@ -256,6 +264,8 @@ export function StoreProductPage() {
                     )}
                 </div>
             </div>
+
+            <ProductReviews storeSlug={storeSlug} productSlug={product.slug} storeName={store?.name} />
 
             {data.related.length > 0 && (
                 <section>

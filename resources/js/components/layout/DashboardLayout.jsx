@@ -32,6 +32,7 @@ const NAV_SECTIONS = [
             { label: t('الطلبات'), icon: 'shopping-bag', to: '/dashboard/orders', counter: 'pendingOrdersCount', permission: 'orders' },
             { label: t('المدفوعات'), icon: 'credit-card', to: '/dashboard/payments', permission: 'payments' },
             { label: t('العملاء'), icon: 'user', to: '/dashboard/customers', permission: 'customers' },
+            { label: t('التقييمات'), icon: 'star', to: '/dashboard/reviews', permission: 'reviews' },
             { label: t('الشحن'), icon: 'truck', to: '/dashboard/shipping', permission: 'settings' },
         ],
     },

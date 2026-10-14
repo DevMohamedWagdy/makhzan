@@ -1,7 +1,8 @@
 import { Link } from 'react-router-dom';
+import { Icon } from '@/components/ui/Icon';
 import { Skeleton } from '@/components/ui/Spinner';
 import { t } from '@/i18n';
-import { formatMoney } from '@/lib/format';
+import { formatMoney, formatNumber } from '@/lib/format';
 
 export function ProductImage({ src, alt, className = '' }) {
     return src ? (
@@ -43,6 +44,12 @@ export function ProductCard({ storeSlug, product }) {
             <div className="flex flex-1 flex-col gap-1.5 p-3.5">
                 <span className="text-xs text-muted">{product.category.name}</span>
                 <span className="line-clamp-2 text-sm font-semibold text-ink group-hover:text-primary">{product.name}</span>
+                {product.reviews_count > 0 && (
+                    <span className="flex items-center gap-1 text-xs text-muted">
+                        <Icon name="star" className="size-3.5 fill-amber-400 text-amber-400" />
+                        {t('{rating} ({count})', { rating: formatNumber(product.rating_average), count: formatNumber(product.reviews_count) })}
+                    </span>
+                )}
                 <span className="mt-auto pt-1">
                     <PriceTag price={product.price} priceMax={product.price_max} compareAtPrice={product.compare_at_price} />
                 </span>

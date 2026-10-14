@@ -68,6 +68,13 @@ export const STOCK_MOVEMENT_TYPES = {
 };
 
 /** @type {Record<'draft'|'ordered'|'partial'|'received'|'closed'|'cancelled', { label: string, tone: string, icon: string }>} */
+/** Moderation states of a product review. */
+export const REVIEW_STATUSES = {
+    pending: { label: t('بانتظار المراجعة'), tone: 'warning' },
+    approved: { label: t('منشور'), tone: 'success' },
+    rejected: { label: t('مرفوض'), tone: 'neutral' },
+};
+
 export const PURCHASE_ORDER_STATUSES = {
     draft: { label: t('مسودة'), tone: 'neutral', icon: 'edit' },
     ordered: { label: t('بانتظار الاستلام'), tone: 'info', icon: 'send' },

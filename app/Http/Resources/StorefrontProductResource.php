@@ -51,6 +51,8 @@ class StorefrontProductResource extends JsonResource
             'discount_percent' => $cheapest?->compare_at_price ? (int) round((1 - $cheapest->price / $cheapest->compare_at_price) * 100) : null,
             'in_stock' => $variants->contains(fn (ProductVariant $variant): bool => $variant->stock > 0),
             'is_featured' => $this->is_featured,
+            'rating_average' => $this->rating_average,
+            'reviews_count' => $this->reviews_count,
             $this->mergeWhen($this->detailed, fn (): array => [
                 'description' => $this->description,
                 'options' => $this->options ?? [],

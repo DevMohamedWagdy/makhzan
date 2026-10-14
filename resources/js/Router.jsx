@@ -45,6 +45,7 @@ const AffiliateResetPasswordPage = lazy(() => import('@/pages/affiliate/Affiliat
 const AffiliatesPage = lazy(() => import('@/pages/affiliates/AffiliatesPage').then((module) => ({ default: module.AffiliatesPage })));
 const CategoriesPage = lazy(() => import('@/pages/categories/CategoriesPage').then((module) => ({ default: module.CategoriesPage })));
 const CouponsPage = lazy(() => import('@/pages/coupons/CouponsPage').then((module) => ({ default: module.CouponsPage })));
+const ReviewsPage = lazy(() => import('@/pages/reviews/ReviewsPage').then((module) => ({ default: module.ReviewsPage })));
 const CustomersPage = lazy(() => import('@/pages/customers/CustomersPage').then((module) => ({ default: module.CustomersPage })));
 const DashboardHomePage = lazy(() => import('@/pages/dashboard/DashboardHomePage').then((module) => ({ default: module.DashboardHomePage })));
 const InventoryPage = lazy(() => import('@/pages/inventory/InventoryPage').then((module) => ({ default: module.InventoryPage })));
@@ -223,6 +224,9 @@ export function App() {
                                     </Route>
                                     <Route element={<RequirePermission permission="customers" />}>
                                         <Route path="customers" element={<CustomersPage />} />
+                                    </Route>
+                                    <Route element={<RequirePermission permission="reviews" />}>
+                                        <Route path="reviews" element={<ReviewsPage />} />
                                     </Route>
                                     <Route element={<RequirePermission permission="marketing" />}>
                                         <Route path="coupons" element={<CouponsPage />} />

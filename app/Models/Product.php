@@ -36,6 +36,8 @@ class Product extends Model
             'status' => ProductStatus::class,
             'is_featured' => 'boolean',
             'options' => 'array',
+            'rating_average' => 'float',
+            'reviews_count' => 'integer',
         ];
     }
 
@@ -61,6 +63,14 @@ class Product extends Model
     public function variants(): HasMany
     {
         return $this->hasMany(ProductVariant::class)->orderBy('position')->orderBy('id');
+    }
+
+    /**
+     * @return HasMany<ProductReview, $this>
+     */
+    public function reviews(): HasMany
+    {
+        return $this->hasMany(ProductReview::class);
     }
 
     /**

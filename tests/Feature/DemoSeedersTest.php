@@ -6,6 +6,7 @@ use App\Actions\Affiliates\SyncAffiliateStats;
 use App\Enums\CommissionStatus;
 use App\Models\Affiliate;
 use App\Models\Order;
+use App\Models\ProductReview;
 use Database\Seeders\DemoVendorSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -19,6 +20,7 @@ class DemoSeedersTest extends TestCase
         $this->seed();
 
         $this->assertGreaterThan(20, Order::count());
+        $this->assertGreaterThan(0, ProductReview::query()->where('status', 'approved')->count());
 
         $demoAffiliate = Affiliate::query()->firstWhere('phone', DemoVendorSeeder::AFFILIATE_PHONE);
         $this->assertGreaterThan(0, $demoAffiliate->orders()->where('commission_status', CommissionStatus::Earned)->count());

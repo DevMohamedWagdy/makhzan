@@ -17,6 +17,7 @@ class StorePermissions
         'inventory' => ['view', 'update', 'transfer', 'warehouses'],
         'purchasing' => ['view', 'create', 'update', 'delete'],
         'customers' => ['view'],
+        'reviews' => ['view', 'update', 'delete'],
         'marketing' => ['view', 'create', 'update', 'delete', 'payouts', 'impersonate'],
         'payments' => ['view', 'refund', 'settings'],
         'reports' => ['view'],
