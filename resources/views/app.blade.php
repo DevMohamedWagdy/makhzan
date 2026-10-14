@@ -8,6 +8,20 @@
         <title>مخزن | Makhzan</title>
         <link rel="icon" type="image/svg+xml" href="/makhzan-icon.svg">
 
+        @unless ($storeDomainSlug ?? null)
+            <meta name="description" content="مخزن منصة متكاملة لإدارة تجارتك: المخزون، الطلبات، الشحن، المسوقين والتقارير، مع متجر إلكتروني جاهز متصل بمخزونك.">
+            <meta name="theme-color" content="#4f46e5">
+            <link rel="canonical" href="{{ url()->current() }}">
+            <meta property="og:type" content="website">
+            <meta property="og:site_name" content="مخزن | Makhzan">
+            <meta property="og:title" content="مخزن | كل ما يحتاجه متجرك في مخزن واحد">
+            <meta property="og:description" content="المخزون، الطلبات، المسوقين والتقارير — نظام متكامل مصمم للتاجر العربي.">
+            <meta property="og:url" content="{{ url()->current() }}">
+            <meta property="og:image" content="{{ asset('makhzan-icon.svg') }}">
+            <meta property="og:locale" content="ar_EG">
+            <meta name="twitter:card" content="summary">
+        @endunless
+
         @if ($storeDomainSlug ?? null)
             <script>window.__MAKHZAN_STORE_DOMAIN__ = @js($storeDomainSlug);</script>
         @endif

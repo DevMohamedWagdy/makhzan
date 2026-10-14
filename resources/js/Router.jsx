@@ -82,6 +82,7 @@ const SettingsPage = lazy(() => import('@/pages/settings/SettingsPage').then((mo
 const StaffPage = lazy(() => import('@/pages/staff/StaffPage').then((module) => ({ default: module.StaffPage })));
 const SubscriptionPage = lazy(() => import('@/pages/subscription/SubscriptionPage').then((module) => ({ default: module.SubscriptionPage })));
 const ForgotPasswordPage = lazy(() => import('@/pages/auth/ForgotPasswordPage').then((module) => ({ default: module.ForgotPasswordPage })));
+const LandingPage = lazy(() => import('@/pages/landing/LandingPage').then((module) => ({ default: module.LandingPage })));
 const LoginPage = lazy(() => import('@/pages/auth/LoginPage').then((module) => ({ default: module.LoginPage })));
 const RegisterPage = lazy(() => import('@/pages/auth/RegisterPage').then((module) => ({ default: module.RegisterPage })));
 const ResetPasswordPage = lazy(() => import('@/pages/auth/ResetPasswordPage').then((module) => ({ default: module.ResetPasswordPage })));
@@ -199,6 +200,7 @@ export function App() {
                     <AppRouter>
                         <Suspense fallback={<PageLoader fullScreen />}>
                         <Routes>
+                            <Route path="/" element={<LandingPage />} />
                             <Route element={<GuestOnly />}>
                                 <Route path="/login" element={<LoginPage />} />
                                 <Route path="/register" element={<RegisterPage />} />
