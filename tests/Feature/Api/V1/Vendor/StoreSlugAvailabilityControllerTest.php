@@ -13,6 +13,8 @@ class StoreSlugAvailabilityControllerTest extends TestCase
 
     #[TestWith(['noor-fashion', false])]
     #[TestWith(['admin', false])]
+    #[TestWith(['terms', false])]
+    #[TestWith(['privacy', false])]
     #[TestWith(['fresh-store', true])]
     public function test_reports_slug_availability(string $slug, bool $available): void
     {

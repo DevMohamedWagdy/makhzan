@@ -8,6 +8,7 @@ import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { useAuth } from '@/context/AuthContext';
 import { isRtl, t } from '@/i18n';
 import { cn } from '@/lib/format';
+import { SiteFooter } from '@/pages/landing/SiteFooter';
 
 const NAV_LINKS = [
     { href: '#features', label: t('المميزات') },
@@ -245,23 +246,7 @@ export function LandingPage() {
                 </section>
             </main>
 
-            <footer className="border-t border-line bg-surface">
-                <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-4 py-8 sm:flex-row sm:px-6">
-                    <Logo className="h-8" />
-                    <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs text-muted">
-                        <span>{t('© {value} مخزن. جميع الحقوق محفوظة.', { value: new Date().getFullYear() })}</span>
-                        <a href="#" className="hover:text-primary">
-                            {t('الشروط والأحكام')}
-                        </a>
-                        <a href="#" className="hover:text-primary">
-                            {t('سياسة الخصوصية')}
-                        </a>
-                        <a href="#" className="hover:text-primary">
-                            {t('مركز المساعدة')}
-                        </a>
-                    </div>
-                </div>
-            </footer>
+            <SiteFooter />
         </div>
     );
 }

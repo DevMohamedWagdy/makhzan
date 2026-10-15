@@ -27,12 +27,12 @@ export function AuthLayout({ children, wide = false }) {
                 </div>
                 <footer className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs text-muted">
                     <span>{t('© {value} مخزن. جميع الحقوق محفوظة.', { value: new Date().getFullYear() })}</span>
-                    <a href="#" className="hover:text-primary">
+                    <Link to="/terms" className="hover:text-primary">
                         {t('الشروط والأحكام')}
-                    </a>
-                    <a href="#" className="hover:text-primary">
+                    </Link>
+                    <Link to="/privacy" className="hover:text-primary">
                         {t('سياسة الخصوصية')}
-                    </a>
+                    </Link>
                     <a href="#" className="hover:text-primary">
                         {t('مركز المساعدة')}
                     </a>

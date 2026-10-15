@@ -1,8 +1,21 @@
 import { Badge } from '@/components/ui/Display';
 import { Icon } from '@/components/ui/Icon';
 import { t } from '@/i18n';
-import { ORDER_STATUSES, PAYMENT_METHODS, PAYMENT_STATUSES } from '@/lib/constants';
+import { ORDER_SOURCES, ORDER_STATUSES, PAYMENT_METHODS, PAYMENT_STATUSES } from '@/lib/constants';
 import { cn, formatDate } from '@/lib/format';
+
+/** The channel of an order recorded by hand (nothing for storefront orders). */
+export function OrderSourceBadge({ source }) {
+    if (!source || source === 'store' || !ORDER_SOURCES[source]) {
+        return null;
+    }
+
+    return (
+        <Badge tone="neutral" icon={ORDER_SOURCES[source].icon}>
+            {ORDER_SOURCES[source].label}
+        </Badge>
+    );
+}
 
 export function OrderStatusBadge({ status }) {
     const config = ORDER_STATUSES[status];

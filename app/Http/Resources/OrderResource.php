@@ -32,6 +32,7 @@ class OrderResource extends JsonResource
         return [
             'order_id' => $this->id,
             'number' => $this->number,
+            'source' => $this->source,
             'status' => $this->status,
             'next_statuses' => $forVendor ? $this->nextStatuses() : [],
             'can_cancel' => $this->status === OrderStatus::Pending,

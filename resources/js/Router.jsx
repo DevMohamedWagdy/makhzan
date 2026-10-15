@@ -54,6 +54,7 @@ const StockMovementsPage = lazy(() => import('@/pages/inventory/StockMovementsPa
 const WarehousesPage = lazy(() => import('@/pages/inventory/WarehousesPage').then((module) => ({ default: module.WarehousesPage })));
 const NotificationsPage = lazy(() => import('@/pages/notifications/NotificationsPage').then((module) => ({ default: module.NotificationsPage })));
 const OrderPrintPage = lazy(() => import('@/pages/orders/OrderPrintPage').then((module) => ({ default: module.OrderPrintPage })));
+const ManualOrderPage = lazy(() => import('@/pages/orders/ManualOrderPage').then((module) => ({ default: module.ManualOrderPage })));
 const OrdersPage = lazy(() => import('@/pages/orders/OrdersPage').then((module) => ({ default: module.OrdersPage })));
 const ShippingPage = lazy(() => import('@/pages/shipping/ShippingPage').then((module) => ({ default: module.ShippingPage })));
 const StoreAuthPage = lazy(() => import('@/pages/storefront/StoreAuthPage').then((module) => ({ default: module.StoreAuthPage })));
@@ -83,6 +84,7 @@ const StaffPage = lazy(() => import('@/pages/staff/StaffPage').then((module) => 
 const SubscriptionPage = lazy(() => import('@/pages/subscription/SubscriptionPage').then((module) => ({ default: module.SubscriptionPage })));
 const ForgotPasswordPage = lazy(() => import('@/pages/auth/ForgotPasswordPage').then((module) => ({ default: module.ForgotPasswordPage })));
 const LandingPage = lazy(() => import('@/pages/landing/LandingPage').then((module) => ({ default: module.LandingPage })));
+const LegalPage = lazy(() => import('@/pages/legal/LegalPage').then((module) => ({ default: module.LegalPage })));
 const LoginPage = lazy(() => import('@/pages/auth/LoginPage').then((module) => ({ default: module.LoginPage })));
 const RegisterPage = lazy(() => import('@/pages/auth/RegisterPage').then((module) => ({ default: module.RegisterPage })));
 const ResetPasswordPage = lazy(() => import('@/pages/auth/ResetPasswordPage').then((module) => ({ default: module.ResetPasswordPage })));
@@ -201,6 +203,8 @@ export function App() {
                         <Suspense fallback={<PageLoader fullScreen />}>
                         <Routes>
                             <Route path="/" element={<LandingPage />} />
+                            <Route path="/terms" element={<LegalPage document="terms" />} />
+                            <Route path="/privacy" element={<LegalPage document="privacy" />} />
                             <Route element={<GuestOnly />}>
                                 <Route path="/login" element={<LoginPage />} />
                                 <Route path="/register" element={<RegisterPage />} />
@@ -253,6 +257,9 @@ export function App() {
                                     </Route>
                                     <Route element={<RequirePermission permission="orders" />}>
                                         <Route path="orders" element={<OrdersPage />} />
+                                    </Route>
+                                    <Route element={<RequirePermission permission="orders.create" />}>
+                                        <Route path="orders/new" element={<ManualOrderPage />} />
                                     </Route>
                                     <Route element={<RequirePermission permission="payments" />}>
                                         <Route path="payments" element={<PaymentsPage />} />

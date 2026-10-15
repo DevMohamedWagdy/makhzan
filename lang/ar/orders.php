@@ -19,6 +19,22 @@ return [
     'cannot_cancel' => 'لا يمكن إلغاء الطلب بعد تأكيده من المتجر، تواصل مع المتجر',
     'price_invalid' => 'أدخل سعراً صحيحاً',
 
+    'sources' => [
+        'store' => 'المتجر الإلكتروني',
+        'whatsapp' => 'واتساب',
+        'messenger' => 'ماسنجر',
+        'instagram' => 'إنستجرام',
+        'phone' => 'مكالمة هاتفية',
+        'walkin' => 'من المحل',
+        'other' => 'أخرى',
+    ],
+    'manual' => [
+        'recorded_from' => 'سُجل يدوياً · :source',
+        'source_required' => 'اختر مصدر الطلب',
+        'items_required' => 'أضف منتجاً واحداً على الأقل',
+        'discount_too_high' => 'الخصم أكبر من إجمالي المنتجات',
+    ],
+
     'carriers' => [
         'bosta' => 'بوسطة',
     ],

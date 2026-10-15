@@ -80,7 +80,7 @@ class StaffTest extends TestCase
             ->assertJsonPath('data.permissions', ['orders.view', 'orders.update', 'customers.view'])
             ->json('data.role_id');
 
-        $this->getJson('/api/v1/vendor/roles')->assertOk()->assertJsonPath('data.0.role_id', $roleId)->assertJsonPath('catalog.orders', ['view', 'update', 'ship']);
+        $this->getJson('/api/v1/vendor/roles')->assertOk()->assertJsonPath('data.0.role_id', $roleId)->assertJsonPath('catalog.orders', ['view', 'create', 'update', 'ship']);
         $this->postJson('/api/v1/vendor/roles', ['name' => 'خدمة العملاء', 'permissions' => []])->assertJsonValidationErrors('name');
         $this->postJson('/api/v1/vendor/roles', ['name' => 'مدير', 'permissions' => ['orders.fly']])->assertJsonValidationErrors('permissions.0');
 

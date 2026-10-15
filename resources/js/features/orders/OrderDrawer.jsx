@@ -17,7 +17,7 @@ import { CURRENCY, ORDER_STATUSES, PAYMENT_METHODS } from '@/lib/constants';
 import { formatDate, formatMoney, formatRelative } from '@/lib/format';
 import { openOrderPrint } from '@/pages/orders/OrderPrintPage';
 import { ordersApi } from '@/services/ordersApi';
-import { OrderProgress, OrderStatusBadge, PaymentBadge } from './OrderBadges';
+import { OrderProgress, OrderSourceBadge, OrderStatusBadge, PaymentBadge } from './OrderBadges';
 import { ShipmentSection } from './ShipmentSection';
 
 const COMMISSION_STATUSES = {
@@ -129,6 +129,7 @@ export function OrderDrawer({ orderId, onClose, onChanged }) {
                             <span className="flex flex-wrap items-center gap-2">
                                 <OrderStatusBadge status={order.status} />
                                 <PaymentBadge order={order} />
+                                <OrderSourceBadge source={order.source} />
                             </span>
                             <span className="text-xl font-bold text-ink">{formatMoney(order.total)}</span>
                         </div>
@@ -307,7 +308,7 @@ export function OrderDrawer({ orderId, onClose, onChanged }) {
                             {order.address.landmark && <DetailRow label={t('علامة مميزة')}>{order.address.landmark}</DetailRow>}
                             {order.customer && <DetailRow label={t('حساب العميل')}>{`${order.customer.full_name} · ${order.customer.phone}`}</DetailRow>}
                         </dl>
-                        {order.customer_note && <p className="mt-3 rounded-xl bg-warning-soft p-3 text-sm text-ink-2">{t('ملاحظة العميل: {note}', { note: order.customer_note })}</p>}
+                        {order.customer_note && <p className="mt-3 rounded-xl bg-warning-soft p-3 text-sm text-ink-2">{(order.source === 'store' ? t('ملاحظة العميل: {note}', { note: order.customer_note }) : t('ملاحظات: {note}', { note: order.customer_note }))}</p>}
                     </section>
 
                     {order.affiliate && (

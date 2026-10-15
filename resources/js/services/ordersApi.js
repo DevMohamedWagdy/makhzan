@@ -4,11 +4,16 @@ const BASE = '/api/v1/vendor/orders';
 
 /** Vendor order management and shipping settings. */
 export const ordersApi = {
-    /** @param {{ ids?: number[], status?: string, search?: string, affiliate?: 1, affiliate_id?: number, customer_id?: number, payment_method?: string, payment_status?: string, page?: number, per_page?: number }} filters */
+    /** @param {{ ids?: number[], status?: string, source?: string, search?: string, affiliate?: 1, affiliate_id?: number, customer_id?: number, payment_method?: string, payment_status?: string, page?: number, per_page?: number }} filters */
     list: (filters) => request('GET', BASE, { query: filters }),
     /** Counts per status plus `total`, `today` and `delivered_revenue`. */
     summary: () => request('GET', `${BASE}/summary`),
     get: (orderId) => request('GET', `${BASE}/${orderId}`),
+    /**
+     * Records an order taken on WhatsApp, Messenger, a call or in person (cash on delivery).
+     * @param {{ source: string, items: Array<{ variant_id: number, quantity: number }>, address: object, shipping_fee?: number|null, discount?: number|null, note?: string|null, confirm?: boolean }} payload
+     */
+    create: (payload) => request('POST', BASE, { body: payload }),
     /** @param {'confirmed'|'shipped'|'delivered'|'cancelled'|'returned'} status */
     updateStatus: (orderId, status, note = null) => request('PATCH', `${BASE}/${orderId}/status`, { body: { status, note } }),
     /** Sends part or all of an online payment back to the customer through Paymob. */

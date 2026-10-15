@@ -6,13 +6,14 @@ import { EmptyState, StatCard } from '@/components/ui/Display';
 import { Input, Select } from '@/components/ui/Form';
 import { Pagination, Tabs } from '@/components/ui/Navigation';
 import { Skeleton } from '@/components/ui/Spinner';
+import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
 import { OrderDrawer } from '@/features/orders/OrderDrawer';
-import { OrderStatusBadge, PaymentBadge } from '@/features/orders/OrderBadges';
+import { OrderSourceBadge, OrderStatusBadge, PaymentBadge } from '@/features/orders/OrderBadges';
 import { openAirwayBills } from '@/features/orders/ShipmentSection';
 import { useDebouncedValue } from '@/hooks/common';
 import { t } from '@/i18n';
-import { ORDER_STATUSES, PAYMENT_METHODS, PAYMENT_STATUSES } from '@/lib/constants';
+import { ORDER_SOURCES, ORDER_STATUSES, PAYMENT_METHODS, PAYMENT_STATUSES } from '@/lib/constants';
 import { cn, formatMoney, formatNumber, formatRelative } from '@/lib/format';
 import { findGovernorate } from '@/lib/locations';
 import { openOrderPrint } from '@/pages/orders/OrderPrintPage';
@@ -32,6 +33,7 @@ const PAYMENT_FILTERS = [
  */
 export function OrdersPage() {
     const toast = useToast();
+    const { can } = useAuth();
     const [searchParams, setSearchParams] = useSearchParams();
     const status = searchParams.get('status') ?? '';
     const page = Number(searchParams.get('page')) || 1;
@@ -40,6 +42,7 @@ export function OrdersPage() {
     const affiliateId = searchParams.get('affiliate_id') ?? '';
     const couponId = searchParams.get('coupon_id') ?? '';
     const payment = searchParams.get('payment') ?? '';
+    const source = searchParams.get('source') ?? '';
     const [searchTerm, setSearchTerm] = useState(searchParams.get('search') ?? '');
     const search = useDebouncedValue(searchTerm, 300);
     const [result, setResult] = useState(null);
@@ -74,7 +77,7 @@ export function OrdersPage() {
         setError(null);
 
         try {
-            const [list, counts] = await Promise.all([ordersApi.list({ status, search: searchQuery, affiliate_id: affiliateId, coupon_id: couponId, ...PAYMENT_FILTERS.find((filter) => filter.value === payment)?.query, page }), ordersApi.summary()]);
+            const [list, counts] = await Promise.all([ordersApi.list({ status, source, search: searchQuery, affiliate_id: affiliateId, coupon_id: couponId, ...PAYMENT_FILTERS.find((filter) => filter.value === payment)?.query, page }), ordersApi.summary()]);
 
             setResult(list);
             setSummary(counts);
@@ -83,7 +86,7 @@ export function OrdersPage() {
         } finally {
             setLoading(false);
         }
-    }, [status, page, searchQuery, affiliateId, couponId, payment]);
+    }, [status, source, page, searchQuery, affiliateId, couponId, payment]);
 
     useEffect(() => {
         load();
@@ -111,7 +114,15 @@ export function OrdersPage() {
 
     return (
         <>
-            <PageHeader title={t('الطلبات')} description={t('تابع طلبات متجرك وغيّر حالتها حتى التوصيل')} breadcrumbs={[t('لوحة التحكم'), t('المبيعات'), t('الطلبات')]} />
+            <PageHeader title={t('الطلبات')} description={t('تابع طلبات متجرك وغيّر حالتها حتى التوصيل')} breadcrumbs={[t('لوحة التحكم'), t('المبيعات'), t('الطلبات')]}
+                actions={
+                    can('orders.create') && (
+                        <Button to="/dashboard/orders/new" icon="plus">
+                            {t('طلب يدوي')}
+                        </Button>
+                    )
+                }
+            />
 
             <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                 <StatCard label={t('بانتظار التأكيد')} value={summary ? formatNumber(summary.pending) : '—'} icon="refresh" tone="warning" />
@@ -125,6 +136,7 @@ export function OrdersPage() {
                 <div className="flex flex-wrap items-center gap-3 p-4">
                     <Input type="search" icon="search" value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder={t('ابحث برقم الطلب أو اسم العميل أو هاتفه...')} aria-label={t('بحث في الطلبات')} className="lg:w-96" />
                     <Select value={payment} onChange={(event) => setQuery({ payment: event.target.value })} icon="credit-card" aria-label={t('الدفع')} className="sm:w-56" options={[{ value: '', label: t('كل طرق الدفع') }, ...PAYMENT_FILTERS]} />
+                    <Select value={source} onChange={(event) => setQuery({ source: event.target.value })} icon="filter" aria-label={t('مصدر الطلب')} className="sm:w-48" options={[{ value: '', label: t('كل المصادر') }, ...Object.entries(ORDER_SOURCES).map(([value, config]) => ({ value, label: config.label }))]} />
                     {couponId && (
                         <Button variant="soft" size="sm" iconEnd="x" onClick={() => setQuery({ coupon_id: '' })}>
                             {t('طلبات الكوبون: {code}', { code: items[0]?.coupon_code ?? `#${couponId}` })}
@@ -159,7 +171,15 @@ export function OrdersPage() {
                     </div>
                 ) : !loading && items.length === 0 ? (
                     <div className="p-6">
-                        <EmptyState icon="shopping-bag" title={status || searchTerm || payment ? t('لا توجد طلبات مطابقة') : t('لا توجد طلبات بعد')} description={t('عندما يطلب العملاء من متجرك ستظهر طلباتهم هنا ويصلك إشعار بكل طلب.')} />
+                        <EmptyState icon="shopping-bag" title={status || searchTerm || payment || source ? t('لا توجد طلبات مطابقة') : t('لا توجد طلبات بعد')} description={t('عندما يطلب العملاء من متجرك ستظهر طلباتهم هنا ويصلك إشعار بكل طلب.')}
+                            action={
+                                can('orders.create') && (
+                                    <Button variant="secondary" icon="plus" to="/dashboard/orders/new">
+                                        {t('سجّل طلباً وصلك على واتساب')}
+                                    </Button>
+                                )
+                            }
+                        />
                     </div>
                 ) : (
                     <div className="mk-scroll overflow-x-auto">
@@ -196,6 +216,11 @@ export function OrdersPage() {
                                               <td className="px-4 py-3.5 whitespace-nowrap">
                                                   <span className="block font-semibold text-ink">#{order.number}</span>
                                                   <span className="text-xs text-muted">{formatRelative(order.created_at)}</span>
+                                                  {order.source !== 'store' && (
+                                                      <span className="mt-1 block">
+                                                          <OrderSourceBadge source={order.source} />
+                                                      </span>
+                                                  )}
                                               </td>
                                               <td className="px-4 py-3.5">
                                                   <span className="block font-medium text-ink">{order.address.recipient_name}</span>
