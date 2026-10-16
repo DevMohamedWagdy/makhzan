@@ -277,11 +277,11 @@ export function RegisterPage() {
                                     label={
                                         <>
                                             {t('أوافق على ')}
-                                            <a href="#" className="font-medium text-primary hover:underline">
+                                            <a href="/terms" target="_blank" rel="noopener noreferrer" className="font-medium text-primary hover:underline">
                                                 {t('الشروط والأحكام')}
                                             </a>{' '}
                                             {t('و ')}
-                                            <a href="#" className="font-medium text-primary hover:underline">
+                                            <a href="/privacy" target="_blank" rel="noopener noreferrer" className="font-medium text-primary hover:underline">
                                                 {t('سياسة الخصوصية')}
                                             </a>{' '}
                                             {t('الخاصة بمنصة مخزن')}

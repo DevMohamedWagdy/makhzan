@@ -12,7 +12,7 @@ class StorePermissions
 {
     /** @var array<string, list<string>> */
     public const CATALOG = [
-        'orders' => ['view', 'update', 'ship'],
+        'orders' => ['view', 'create', 'update', 'ship'],
         'products' => ['view', 'create', 'update', 'delete'],
         'inventory' => ['view', 'update', 'transfer', 'warehouses'],
         'purchasing' => ['view', 'create', 'update', 'delete'],

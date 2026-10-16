@@ -98,7 +98,7 @@ class PlaceOrder
                 ...$address,
                 ...$this->attribution($store, $customer, $referralCode, $subtotal - $discount - $pointsDiscount, $coupon['coupon'] ?? null),
                 'customer_id' => $customer->id,
-                'number' => ((int) $store->orders()->max('number') ?: 1000) + 1,
+                'number' => $this->nextNumber($store),
                 'status' => OrderStatus::Pending,
                 'payment_method' => $paymentMethod,
                 'payment_status' => $paymentMethod->isOnline() ? PaymentStatus::Pending : null,
@@ -115,24 +115,7 @@ class PlaceOrder
                 'customer_note' => $note,
             ]);
 
-            foreach ($quantities as $variantId => $quantity) {
-                $variant = $variants[$variantId];
-
-                $order->items()->create([
-                    'product_id' => $variant->product_id,
-                    'product_variant_id' => $variant->id,
-                    'product_name' => $variant->product->name,
-                    'variant_title' => $variant->title() ?: null,
-                    'sku' => $variant->sku,
-                    'image_path' => $variant->product->images->first()?->path,
-                    'unit_price' => $variant->price,
-                    'unit_cost' => $variant->cost,
-                    'quantity' => $quantity,
-                    'line_total' => round($variant->price * $quantity, 2),
-                ]);
-
-                $this->changeStock->sell($variant, $quantity, $order);
-            }
+            $this->addItems($order, $quantities, $variants);
 
             $order->events()->create(['status' => OrderStatus::Pending, 'actor' => OrderEvent::ACTOR_CUSTOMER]);
             $this->changePoints->handle($customer, -$pointsRedeemed, LoyaltyTransactionType::Redeemed, OrderEvent::ACTOR_CUSTOMER, $order);
@@ -181,12 +164,50 @@ class PlaceOrder
     }
 
     /**
+     * The store's next order number (starting at 1001). Call it inside the transaction that
+     * holds the store row locked, so two orders can't take the same number.
+     */
+    public function nextNumber(Store $store): int
+    {
+        return ((int) $store->orders()->max('number') ?: 1000) + 1;
+    }
+
+    /**
+     * Adds the order's lines, snapshotting each variant's name, price and cost, and takes them
+     * out of stock. The variants must be locked for update by the caller.
+     *
+     * @param  Collection<int, int>  $quantities  variant id => quantity
+     * @param  Collection<int, ProductVariant>  $variants
+     */
+    public function addItems(Order $order, Collection $quantities, Collection $variants): void
+    {
+        foreach ($quantities as $variantId => $quantity) {
+            $variant = $variants[$variantId];
+
+            $order->items()->create([
+                'product_id' => $variant->product_id,
+                'product_variant_id' => $variant->id,
+                'product_name' => $variant->product->name,
+                'variant_title' => $variant->title() ?: null,
+                'sku' => $variant->sku,
+                'image_path' => $variant->product->images->first()?->path,
+                'unit_price' => $variant->price,
+                'unit_cost' => $variant->cost,
+                'quantity' => $quantity,
+                'line_total' => round($variant->price * $quantity, 2),
+            ]);
+
+            $this->changeStock->sell($variant, $quantity, $order);
+        }
+    }
+
+    /**
      * @param  Collection<int, int>  $quantities  variant id => quantity
      * @param  Collection<int, ProductVariant>  $variants
      *
      * @throws ValidationException
      */
-    private function assertAvailable(Collection $quantities, Collection $variants): void
+    public function assertAvailable(Collection $quantities, Collection $variants): void
     {
         $errors = [];
 

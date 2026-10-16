@@ -19,6 +19,12 @@ class LandingPageTest extends TestCase
             ->assertSee('<link rel="canonical" href="'.url('/').'"', false);
     }
 
+    public function test_the_terms_and_privacy_pages_are_served(): void
+    {
+        $this->get('/terms')->assertOk()->assertSee('<link rel="canonical" href="'.url('/terms').'"', false);
+        $this->get('/privacy')->assertOk()->assertSee('<link rel="canonical" href="'.url('/privacy').'"', false);
+    }
+
     public function test_a_store_domain_does_not_get_the_platform_meta_tags(): void
     {
         Store::factory()->create(['custom_domain' => 'shop.noor.com', 'custom_domain_verified_at' => now()]);

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\CommissionStatus;
 use App\Enums\CommissionType;
+use App\Enums\OrderSource;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
@@ -21,12 +22,13 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
- * An order, paid on delivery or online. Address, prices and the affiliate commission are
+ * An order, paid on delivery or online, placed on the storefront or recorded by the vendor
+ * from WhatsApp, Messenger, a call… (source). Address, prices and the affiliate commission are
  * snapshots taken when it was placed; status changes go through App\Actions\Orders\UpdateOrderStatus.
  * Online orders wait for their payment (payment_status) before the store can confirm them.
  */
 #[Fillable([
-    'customer_id', 'number', 'status', 'payment_method', 'payment_status', 'payment_expires_at', 'subtotal', 'discount', 'shipping_fee', 'shipping_discount', 'total', 'coupon_id', 'coupon_code',
+    'customer_id', 'number', 'source', 'status', 'payment_method', 'payment_status', 'payment_expires_at', 'subtotal', 'discount', 'shipping_fee', 'shipping_discount', 'total', 'coupon_id', 'coupon_code',
     'points_redeemed', 'points_discount',
     'recipient_name', 'phone', 'governorate_id', 'city_id', 'address_line', 'landmark', 'customer_note',
     'affiliate_id', 'referral_code_id', 'referral_code', 'commission_type', 'commission_rate', 'commission_amount', 'commission_status',
@@ -39,6 +41,9 @@ class Order extends Model
     /** @var list<string> Attributes not worth an activity log entry. */
     protected array $activityIgnored = ['payment_expires_at'];
 
+    /** @var array<string, mixed> */
+    protected $attributes = ['source' => 'store'];
+
     /**
      * Get the attributes that should be cast.
      *
@@ -48,6 +53,7 @@ class Order extends Model
     {
         return [
             'number' => 'integer',
+            'source' => OrderSource::class,
             'status' => OrderStatus::class,
             'payment_method' => PaymentMethod::class,
             'payment_status' => PaymentStatus::class,

@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Api\V1\Vendor;
 
+use App\Enums\OrderSource;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
@@ -21,6 +22,7 @@ class ListOrdersRequest extends FormRequest
         return [
             'status' => ['nullable', Rule::enum(OrderStatus::class)],
             'search' => ['nullable', 'string', 'max:100'],
+            'source' => ['nullable', Rule::enum(OrderSource::class)],
             'affiliate' => ['nullable', 'boolean'],
             'affiliate_id' => ['nullable', 'integer'],
             'customer_id' => ['nullable', 'integer'],

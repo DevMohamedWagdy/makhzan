@@ -75,6 +75,17 @@ export const REVIEW_STATUSES = {
     rejected: { label: t('مرفوض'), tone: 'neutral' },
 };
 
+/** Where an order came from (App\Enums\OrderSource); all but `store` are recorded by hand in the dashboard. */
+export const ORDER_SOURCES = {
+    store: { label: t('المتجر الإلكتروني'), icon: 'store' },
+    whatsapp: { label: t('واتساب'), icon: 'message-square' },
+    messenger: { label: t('ماسنجر'), icon: 'send' },
+    instagram: { label: t('إنستجرام'), icon: 'camera' },
+    phone: { label: t('مكالمة هاتفية'), icon: 'phone' },
+    walkin: { label: t('من المحل'), icon: 'shopping-bag' },
+    other: { label: t('أخرى'), icon: 'more-vertical' },
+};
+
 export const PURCHASE_ORDER_STATUSES = {
     draft: { label: t('مسودة'), tone: 'neutral', icon: 'edit' },
     ordered: { label: t('بانتظار الاستلام'), tone: 'info', icon: 'send' },

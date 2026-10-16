@@ -377,6 +377,7 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
             Route::post('orders/{order}/shipment', [OrderShipmentController::class, 'store'])->middleware('throttle:30,1')->name('orders.shipment.store')->defaults('_permission', 'orders.ship');
             Route::put('orders/{order}/tracking', [OrderShipmentController::class, 'updateTracking'])->name('orders.tracking.update')->defaults('_permission', 'orders.update');
             Route::get('orders', [VendorOrderController::class, 'index'])->name('orders.index');
+            Route::post('orders', [VendorOrderController::class, 'store'])->middleware('throttle:60,1')->name('orders.store');
             Route::get('orders/{order}', [VendorOrderController::class, 'show'])->name('orders.show');
             Route::patch('orders/{order}/status', [VendorOrderController::class, 'updateStatus'])->name('orders.status');
         });

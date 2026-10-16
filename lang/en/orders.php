@@ -19,6 +19,22 @@ return [
     'cannot_cancel' => 'The order can\'t be cancelled after the store confirmed it; contact the store',
     'price_invalid' => 'Enter a valid price',
 
+    'sources' => [
+        'store' => 'Online store',
+        'whatsapp' => 'WhatsApp',
+        'messenger' => 'Messenger',
+        'instagram' => 'Instagram',
+        'phone' => 'Phone call',
+        'walkin' => 'In store',
+        'other' => 'Other',
+    ],
+    'manual' => [
+        'recorded_from' => 'Recorded manually · :source',
+        'source_required' => 'Choose where the order came from',
+        'items_required' => 'Add at least one product',
+        'discount_too_high' => 'The discount is more than the products total',
+    ],
+
     'carriers' => [
         'bosta' => 'Bosta',
     ],
