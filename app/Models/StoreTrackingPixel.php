@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\PlanFeature;
 use App\Enums\TrackingProvider;
+use App\Models\Concerns\BelongsToStore;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Model;
@@ -19,6 +20,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 #[Hidden(['access_token'])]
 class StoreTrackingPixel extends Model
 {
+    use BelongsToStore;
+
     /**
      * Get the attributes that should be cast.
      *

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\BillingMethod;
 use App\Enums\SubscriptionRequestStatus;
+use App\Models\Concerns\BelongsToStore;
 use App\Models\Concerns\LogsActivity;
 use Database\Factories\SubscriptionRequestFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -18,7 +19,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class SubscriptionRequest extends Model
 {
     /** @use HasFactory<SubscriptionRequestFactory> */
-    use HasFactory, LogsActivity;
+    use BelongsToStore, HasFactory, LogsActivity;
 
     /**
      * Get the attributes that should be cast.

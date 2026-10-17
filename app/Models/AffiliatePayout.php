@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\PayoutMethod;
 use App\Enums\PayoutStatus;
+use App\Models\Concerns\BelongsToStore;
 use App\Models\Concerns\LogsActivity;
 use Database\Factories\AffiliatePayoutFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -23,7 +24,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class AffiliatePayout extends Model
 {
     /** @use HasFactory<AffiliatePayoutFactory> */
-    use HasFactory, LogsActivity;
+    use BelongsToStore, HasFactory, LogsActivity;
 
     /**
      * Get the attributes that should be cast.

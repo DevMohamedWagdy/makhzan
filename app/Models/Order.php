@@ -9,6 +9,7 @@ use App\Enums\OrderStatus;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
 use App\Enums\StockMovementType;
+use App\Models\Concerns\BelongsToStore;
 use App\Models\Concerns\LogsActivity;
 use App\Support\Shipping\BostaClient;
 use Database\Factories\OrderFactory;
@@ -36,7 +37,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 class Order extends Model
 {
     /** @use HasFactory<OrderFactory> */
-    use HasFactory, LogsActivity;
+    use BelongsToStore, HasFactory, LogsActivity;
 
     /** @var list<string> Attributes not worth an activity log entry. */
     protected array $activityIgnored = ['payment_expires_at'];

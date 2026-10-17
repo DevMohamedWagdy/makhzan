@@ -133,7 +133,7 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
             Route::post('customer/forgot-password', [CustomerPasswordResetController::class, 'store'])->middleware('throttle:customer-password')->name('customer.forgot-password');
             Route::post('customer/reset-password', [CustomerPasswordResetController::class, 'update'])->middleware('throttle:customer-password')->name('customer.reset-password');
 
-            Route::middleware(['auth:sanctum', 'customer'])->prefix('customer')->name('customer.')->group(function () {
+            Route::middleware(['auth:sanctum', 'customer', 'store.scope'])->prefix('customer')->name('customer.')->group(function () {
                 Route::get('me', [CustomerAuthController::class, 'me'])->name('me');
                 Route::post('logout', [CustomerAuthController::class, 'logout'])->name('logout');
                 Route::apiResource('addresses', CustomerAddressController::class)->except('show');
@@ -179,7 +179,7 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::post('auth/forgot-password', [AffiliatePasswordResetController::class, 'store'])->middleware('throttle:affiliate-password')->name('auth.forgot-password');
         Route::post('auth/reset-password', [AffiliatePasswordResetController::class, 'update'])->middleware('throttle:affiliate-password')->name('auth.reset-password');
 
-        Route::middleware(['auth:sanctum', 'affiliate'])->group(function () {
+        Route::middleware(['auth:sanctum', 'affiliate', 'store.scope'])->group(function () {
             Route::get('auth/me', [AffiliateAuthController::class, 'me'])->name('auth.me');
             Route::post('auth/logout', [AffiliateAuthController::class, 'logout'])->name('auth.logout');
             Route::get('payouts', [PayoutController::class, 'index'])->name('payouts.index');
@@ -188,7 +188,7 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         });
 
         // The affiliate acting as themselves only — never through a vendor's impersonation token.
-        Route::middleware(['auth:sanctum', 'affiliate:self'])->group(function () {
+        Route::middleware(['auth:sanctum', 'affiliate:self', 'store.scope'])->group(function () {
             Route::put('auth/password', [AffiliatePasswordController::class, 'update'])->name('auth.password');
             Route::post('payouts', [PayoutController::class, 'store'])->middleware('throttle:10,1')->name('payouts.store');
             // A vendor looking around as the affiliate leaves their notifications unread.
@@ -269,7 +269,7 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
     /*
     | Vendor dashboard (vendor bearer token required)
     */
-    Route::middleware(['auth:sanctum', 'vendor'])->prefix('vendor')->name('vendor.')->group(function () {
+    Route::middleware(['auth:sanctum', 'vendor', 'store.scope'])->prefix('vendor')->name('vendor.')->group(function () {
         Route::get('auth/me', [VendorAuthController::class, 'me'])->name('auth.me');
         Route::post('auth/logout', [VendorAuthController::class, 'logout'])->name('auth.logout');
         Route::put('auth/profile', [VendorAccountController::class, 'updateProfile'])->name('auth.profile');

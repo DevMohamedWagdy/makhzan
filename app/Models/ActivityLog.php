@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToStore;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -13,6 +14,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 #[Fillable(['actor_type', 'actor_id', 'actor_name', 'store_id', 'event', 'subject_type', 'subject_id', 'subject_label', 'changes', 'ip', 'user_agent'])]
 class ActivityLog extends Model
 {
+    use BelongsToStore;
+
     public const UPDATED_AT = null;
 
     /**
