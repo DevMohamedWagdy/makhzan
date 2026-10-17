@@ -102,7 +102,7 @@ export function AdminLayout() {
                 aria-label={t('قائمة الإدارة')}
             >
                 <div className="flex h-[72px] items-center gap-2 border-b border-line px-6">
-                    <Logo className="h-9" showTagline={false} />
+                    <Logo className="h-3.5" />
                     <Badge tone="primary">{t('الإدارة')}</Badge>
                 </div>
                 <nav className="mk-scroll flex-1 overflow-y-auto px-3 py-4">

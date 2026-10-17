@@ -52,7 +52,7 @@ export default {
     'الملف الشخصي': 'Profile',
     'تسجيل الخروج': 'Sign out',
     'مسار التنقل': 'Breadcrumb',
-    'مدعوم من منصة مخزن': 'Powered by Makhzan',
+    'مدعوم من': 'Powered by',
     'تأكيد': 'Confirm',
     'إلغاء': 'Cancel',
     'للتأكيد، اكتب «{confirmPhrase}» في الحقل التالي': 'To confirm, type “{confirmPhrase}” in the field below',

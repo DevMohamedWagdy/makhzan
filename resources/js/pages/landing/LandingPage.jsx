@@ -74,7 +74,7 @@ export function LandingPage() {
             <header className={cn('sticky top-0 z-30 transition', isScrolled || isMenuOpen ? 'border-b border-line bg-surface/85 backdrop-blur-md' : 'border-b border-transparent')}>
                 <div className="mx-auto flex h-18 max-w-6xl items-center gap-6 px-4 sm:px-6">
                     <Link to="/" aria-label={t('الصفحة الرئيسية لمخزن')}>
-                        <Logo className="h-9" />
+                        <Logo className="h-5" />
                     </Link>
                     <nav className="hidden items-center gap-1 md:flex" aria-label={t('القائمة الرئيسية')}>
                         {NAV_LINKS.map((link) => (

@@ -150,7 +150,7 @@ export function LegalPage({ document: name }) {
             <header className="border-b border-line bg-surface">
                 <div className="mx-auto flex h-18 max-w-6xl items-center gap-4 px-4 sm:px-6">
                     <Link to="/" aria-label={t('الصفحة الرئيسية لمخزن')}>
-                        <Logo className="h-9" />
+                        <Logo className="h-5" />
                     </Link>
                     <div className="ms-auto flex items-center gap-2">
                         <LanguageToggle className="hidden sm:grid" />

@@ -1,6 +1,6 @@
 import { Suspense, createContext, useContext, useEffect, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { LogoMark } from '@/components/brand/Logo';
+import { Logo } from '@/components/brand/Logo';
 import { Avatar } from '@/components/ui/Display';
 import { Dropdown } from '@/components/ui/Dropdown';
 import { Icon } from '@/components/ui/Icon';
@@ -356,8 +356,8 @@ export function StorefrontLayout() {
                             )}
                         </div>
                         <div className="flex items-center justify-center gap-2 border-t border-line py-4 text-xs text-muted">
-                            <LogoMark className="size-5" />
-                            {t('مدعوم من منصة مخزن')}
+                            {t('مدعوم من')}
+                            <Logo className="h-2.5" />
                         </div>
                     </footer>
                 </div>
