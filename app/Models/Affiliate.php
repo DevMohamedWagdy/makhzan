@@ -8,6 +8,7 @@ use App\Enums\AffiliateTier;
 use App\Enums\CommissionType;
 use App\Enums\PayoutMethod;
 use App\Enums\PayoutStatus;
+use App\Models\Concerns\BelongsToStore;
 use App\Models\Concerns\HasPreferredLocale;
 use App\Models\Concerns\LogsActivity;
 use App\Support\PhoneNumber;
@@ -44,7 +45,7 @@ class Affiliate extends Authenticatable implements HasLocalePreference
     public const IMPERSONATION_ABILITY = 'affiliate:impersonated';
 
     /** @use HasFactory<AffiliateFactory> */
-    use HasApiTokens, HasFactory, HasPreferredLocale, LogsActivity, Notifiable;
+    use BelongsToStore, HasApiTokens, HasFactory, HasPreferredLocale, LogsActivity, Notifiable;
 
     /** @var list<string> Attributes not worth an activity log entry. */
     protected array $activityIgnored = ['orders_count', 'sales_total', 'earned_commission', 'pending_balance', 'clicks_count', 'preferred_locale', 'last_login_at'];

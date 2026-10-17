@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\CouponType;
 use App\Enums\OrderStatus;
+use App\Models\Concerns\BelongsToStore;
 use App\Models\Concerns\LogsActivity;
 use Database\Factories\CouponFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -26,7 +27,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Coupon extends Model
 {
     /** @use HasFactory<CouponFactory> */
-    use HasFactory, LogsActivity;
+    use BelongsToStore, HasFactory, LogsActivity;
 
     /** @var list<string> Attributes not worth an activity log entry. */
     protected array $activityIgnored = ['uses_count', 'orders_count', 'discount_total'];

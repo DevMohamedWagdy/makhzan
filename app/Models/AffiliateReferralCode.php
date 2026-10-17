@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToStore;
 use Database\Factories\AffiliateReferralCodeFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -13,7 +14,7 @@ use Illuminate\Support\Str;
 class AffiliateReferralCode extends Model
 {
     /** @use HasFactory<AffiliateReferralCodeFactory> */
-    use HasFactory;
+    use BelongsToStore, HasFactory;
 
     /**
      * Get the attributes that should be cast.

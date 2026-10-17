@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToStore;
 use App\Models\Concerns\LogsActivity;
 use Database\Factories\StoreRoleFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -17,7 +18,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class StoreRole extends Model
 {
     /** @use HasFactory<StoreRoleFactory> */
-    use HasFactory, LogsActivity;
+    use BelongsToStore, HasFactory, LogsActivity;
 
     /**
      * Get the attributes that should be cast.

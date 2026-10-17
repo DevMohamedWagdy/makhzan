@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\ReviewStatus;
+use App\Models\Concerns\BelongsToStore;
 use Database\Factories\ProductReviewFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -19,7 +20,7 @@ use Illuminate\Support\Facades\Storage;
 class ProductReview extends Model
 {
     /** @use HasFactory<ProductReviewFactory> */
-    use HasFactory;
+    use BelongsToStore, HasFactory;
 
     /**
      * Get the attributes that should be cast.

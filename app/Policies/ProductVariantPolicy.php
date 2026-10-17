@@ -14,7 +14,10 @@ class ProductVariantPolicy
      */
     public function update(Vendor $vendor, ProductVariant $variant): Response
     {
-        return $vendor->store?->id === $variant->product->store_id
+        // The product is null when it belongs to another store: the store scope hides it.
+        $productStoreId = $variant->product?->store_id;
+
+        return $productStoreId !== null && $vendor->store?->id === $productStoreId
             ? Response::allow()
             : Response::denyAsNotFound(__('inventory.variant_not_found'));
     }

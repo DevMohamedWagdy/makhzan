@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToStore;
 use App\Models\Concerns\LogsActivity;
 use Database\Factories\ProductCategoryFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -20,7 +21,7 @@ use Illuminate\Support\Str;
 class ProductCategory extends Model
 {
     /** @use HasFactory<ProductCategoryFactory> */
-    use HasFactory, LogsActivity;
+    use BelongsToStore, HasFactory, LogsActivity;
 
     /** @var list<string> Attributes not worth an activity log entry. */
     protected array $activityIgnored = ['position'];

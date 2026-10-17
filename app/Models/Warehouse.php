@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToStore;
 use App\Models\Concerns\LogsActivity;
 use Database\Factories\WarehouseFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -19,7 +20,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Warehouse extends Model
 {
     /** @use HasFactory<WarehouseFactory> */
-    use HasFactory, LogsActivity;
+    use BelongsToStore, HasFactory, LogsActivity;
 
     /** @var list<string> Attributes not worth an activity log entry. */
     protected array $activityIgnored = ['priority'];

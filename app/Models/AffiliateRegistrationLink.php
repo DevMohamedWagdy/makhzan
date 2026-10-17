@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\AffiliateTier;
+use App\Models\Concerns\BelongsToStore;
 use Database\Factories\AffiliateRegistrationLinkFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -14,7 +15,7 @@ use Illuminate\Support\Str;
 class AffiliateRegistrationLink extends Model
 {
     /** @use HasFactory<AffiliateRegistrationLinkFactory> */
-    use HasFactory;
+    use BelongsToStore, HasFactory;
 
     /**
      * Mirrors the column defaults so a freshly created link serializes correctly.
