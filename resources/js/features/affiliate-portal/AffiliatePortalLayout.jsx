@@ -197,7 +197,7 @@ export function AffiliatePortalLayout() {
                 />
             )}
             <footer className="pb-8 text-center">
-                <Logo className="mx-auto h-7 opacity-60" />
+                <Logo className="mx-auto h-4 opacity-60" />
             </footer>
         </div>
     );

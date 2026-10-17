@@ -17,7 +17,7 @@ export function AuthLayout({ children, wide = false }) {
             <main className="flex flex-1 flex-col px-4 py-6 sm:px-10">
                 <header className="flex items-center justify-between">
                     <Link to="/login" aria-label={t('الصفحة الرئيسية لمخزن')}>
-                        <Logo className="h-10" />
+                        <Logo className="h-6" />
                     </Link>
                     <LanguageToggle />
                     <ThemeToggle />
