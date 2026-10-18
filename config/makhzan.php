@@ -88,6 +88,22 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Support Tickets
+    |--------------------------------------------------------------------------
+    |
+    | Files merchants and the platform team attach to ticket messages: images,
+    | PDFs and common office documents, kept on the private disk.
+    |
+    */
+
+    'support' => [
+        'max_attachments' => 5,
+        'max_attachment_kb' => 5120,
+        'attachment_types' => ['jpg', 'jpeg', 'png', 'webp', 'gif', 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'csv', 'txt'],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Custom Domains
     |--------------------------------------------------------------------------
     |

@@ -14,6 +14,7 @@ class AdminPermissions
         'stores' => ['view', 'update', 'suspend', 'impersonate'],
         'vendors' => ['view', 'update'],
         'orders' => ['view'],
+        'tickets' => ['view', 'reply'],
         'subscriptions' => ['view', 'manage'],
         'plans' => ['view', 'manage'],
         'logs' => ['view'],

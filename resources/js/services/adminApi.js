@@ -1,4 +1,4 @@
-import { request } from './client';
+import { request, requestFile } from './client';
 
 const BASE = '/api/v1/admin';
 const auth = 'admin';
@@ -46,6 +46,16 @@ export const adminApi = {
     requests: (filters) => request('GET', `${BASE}/subscription-requests`, { query: filters, auth }),
     approve: (requestId, amount = null) => request('POST', `${BASE}/subscription-requests/${requestId}/approve`, { body: { amount }, auth }),
     reject: (requestId, note) => request('POST', `${BASE}/subscription-requests/${requestId}/reject`, { body: { note }, auth }),
+
+    /** @param {{ status?: 'open'|'closed', type?: 'problem'|'suggestion', store_id?: number, awaiting_reply?: boolean, search?: string, page?: number }} filters  Returns `{ data, meta, summary, stores }`. */
+    tickets: (filters) => request('GET', `${BASE}/support-tickets`, { query: filters, auth, raw: true }),
+    ticket: (ticketId) => request('GET', `${BASE}/support-tickets/${ticketId}`, { auth }),
+    /** @param {{ body?: string, attachments?: File[] }} payload */
+    replyToTicket: (ticketId, payload) => request('POST', `${BASE}/support-tickets/${ticketId}/messages`, { body: payload, auth }),
+    closeTicket: (ticketId) => request('POST', `${BASE}/support-tickets/${ticketId}/close`, { auth }),
+    reopenTicket: (ticketId) => request('POST', `${BASE}/support-tickets/${ticketId}/reopen`, { auth }),
+    /** Resolves to a Blob: attachments are private and need the admin's token. */
+    ticketAttachment: (ticketId, attachmentId) => requestFile(`${BASE}/support-tickets/${ticketId}/attachments/${attachmentId}`, { auth }),
 
     payments: (page = 1) => request('GET', `${BASE}/subscription-payments`, { query: { page }, auth }),
 

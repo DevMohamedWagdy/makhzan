@@ -14,6 +14,12 @@ const TYPES = {
     store_registered: { icon: 'store', className: 'bg-success-soft text-success' },
     subscription_requested: { icon: 'send', className: 'bg-primary-soft text-primary' },
     trial_ended: { icon: 'clock', className: 'bg-danger-soft text-danger' },
+    ticket_opened: { icon: 'message-square', className: 'bg-primary-soft text-primary' },
+    ticket_vendor_replied: { icon: 'message-square', className: 'bg-warning-soft text-warning' },
+    // Support tickets (dashboard)
+    ticket_replied: { icon: 'message-square', className: 'bg-primary-soft text-primary' },
+    ticket_closed: { icon: 'lock', className: 'bg-surface-3 text-ink-2' },
+    ticket_reopened: { icon: 'refresh', className: 'bg-success-soft text-success' },
     late_payment: { icon: 'credit-card', className: 'bg-warning-soft text-warning' },
     stock_low: { icon: 'warehouse', className: 'bg-warning-soft text-warning' },
     stock_out: { icon: 'box', className: 'bg-danger-soft text-danger' },
@@ -38,6 +44,10 @@ export function notificationTarget(notification) {
         return '/dashboard/subscription';
     }
 
+    if (notification.type.startsWith('ticket_')) {
+        return `/dashboard/support/${notification.details.ticket_id}`;
+    }
+
     if (notification.type === 'review_submitted') {
         return '/dashboard/reviews';
     }
@@ -51,6 +61,10 @@ export function notificationTarget(notification) {
 
 /** Where clicking a notification takes a platform admin. */
 export function adminNotificationTarget(notification) {
+    if (notification.type.startsWith('ticket_')) {
+        return `/admin/support/${notification.details.ticket_id}`;
+    }
+
     return notification.type === 'subscription_requested' ? '/admin/requests' : `/admin/stores/${notification.details.store_id}`;
 }
 

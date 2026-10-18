@@ -69,6 +69,7 @@ const NAV_SECTIONS = [
             { label: t('فريق العمل'), icon: 'nav-staff', to: '/dashboard/staff', permission: 'owner' },
             { label: t('الاشتراك والباقة'), icon: 'nav-subscription', to: '/dashboard/subscription', permission: 'billing' },
             { label: t('سجل النشاط'), icon: 'nav-activity', to: '/dashboard/activity', permission: 'owner' },
+            { label: t('الدعم الفني'), icon: 'nav-support', to: '/dashboard/support', permission: 'support' },
             { label: t('إعدادات المتجر'), icon: 'nav-settings', to: '/dashboard/settings' },
         ],
     },

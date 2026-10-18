@@ -12,6 +12,7 @@ export const PERMISSION_SECTIONS = {
     payments: { label: t('المدفوعات'), icon: 'credit-card' },
     reports: { label: t('التقارير'), icon: 'bar-chart' },
     settings: { label: t('إعدادات المتجر والشحن'), icon: 'settings' },
+    support: { label: t('الدعم الفني'), icon: 'message-square' },
 };
 
 export const PERMISSION_ACTIONS = {

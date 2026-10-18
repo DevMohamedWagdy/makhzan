@@ -20,6 +20,7 @@ const SECTIONS = {
     stores: { label: t('المتاجر'), icon: 'store' },
     vendors: { label: t('التجار والحسابات'), icon: 'users' },
     orders: { label: t('الطلبات'), icon: 'shopping-bag' },
+    tickets: { label: t('تذاكر الدعم'), icon: 'message-square' },
     subscriptions: { label: t('الاشتراكات'), icon: 'wallet' },
     plans: { label: t('الباقات'), icon: 'zap' },
     logs: { label: t('سجل النشاط'), icon: 'clock' },
@@ -32,10 +33,11 @@ const ACTIONS = {
     suspend: t('إيقاف وتفعيل'),
     impersonate: t('الدخول بحساب التاجر'),
     manage: t('إدارة'),
+    reply: t('الرد والإغلاق'),
 };
 
 const TEMPLATES = [
-    { name: t('دعم فني'), description: t('يتابع المتاجر والحسابات والطلبات ويدخل بحساب التاجر للمساعدة'), permissions: ['overview.view', 'stores.view', 'stores.impersonate', 'vendors.view', 'vendors.update', 'orders.view', 'logs.view'] },
+    { name: t('دعم فني'), description: t('يتابع المتاجر والحسابات والطلبات ويدخل بحساب التاجر للمساعدة'), permissions: ['overview.view', 'stores.view', 'stores.impersonate', 'vendors.view', 'vendors.update', 'orders.view', 'tickets.view', 'tickets.reply', 'logs.view'] },
     { name: t('المالية'), description: t('يراجع طلبات الاشتراك ويفعّلها ويرى المدفوعات والباقات'), permissions: ['overview.view', 'stores.view', 'subscriptions.view', 'subscriptions.manage', 'plans.view'] },
     { name: t('مبيعات'), description: t('يتابع المتاجر الجديدة والتجارب وينشئ الاشتراكات'), permissions: ['overview.view', 'stores.view', 'subscriptions.view', 'subscriptions.manage', 'plans.view'] },
 ];

@@ -22,6 +22,7 @@ class StorePermissions
         'payments' => ['view', 'refund', 'settings'],
         'reports' => ['view'],
         'settings' => ['view', 'update'],
+        'support' => ['view', 'create'],
     ];
 
     /**

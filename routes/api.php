@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\V1\Admin\PlanController as AdminPlanController;
 use App\Http\Controllers\Api\V1\Admin\StoreController as AdminStoreController;
 use App\Http\Controllers\Api\V1\Admin\SubscriptionPaymentController as AdminSubscriptionPaymentController;
 use App\Http\Controllers\Api\V1\Admin\SubscriptionRequestController as AdminSubscriptionRequestController;
+use App\Http\Controllers\Api\V1\Admin\SupportTicketController as AdminSupportTicketController;
 use App\Http\Controllers\Api\V1\Admin\TeamController as AdminTeamController;
 use App\Http\Controllers\Api\V1\Admin\VendorController as AdminVendorController;
 use App\Http\Controllers\Api\V1\Affiliate\Auth\AffiliateAuthController;
@@ -86,6 +87,7 @@ use App\Http\Controllers\Api\V1\Vendor\StoreSettingsController;
 use App\Http\Controllers\Api\V1\Vendor\StoreSlugAvailabilityController;
 use App\Http\Controllers\Api\V1\Vendor\SubscriptionController;
 use App\Http\Controllers\Api\V1\Vendor\SupplierController;
+use App\Http\Controllers\Api\V1\Vendor\SupportTicketController;
 use App\Http\Controllers\Api\V1\Vendor\TrackingPixelController;
 use App\Http\Controllers\Api\V1\Vendor\WarehouseController;
 use App\Models\Store;
@@ -259,6 +261,17 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
                 Route::get('orders/{order}', [AdminOrderController::class, 'show'])->name('orders.show');
             });
 
+            Route::middleware('admin.can:tickets.view')->group(function () {
+                Route::get('support-tickets', [AdminSupportTicketController::class, 'index'])->name('support-tickets.index');
+                Route::get('support-tickets/{ticket}', [AdminSupportTicketController::class, 'show'])->name('support-tickets.show');
+                Route::get('support-tickets/{ticket}/attachments/{attachment}', [AdminSupportTicketController::class, 'attachment'])->whereNumber('attachment')->name('support-tickets.attachments.show');
+            });
+            Route::middleware('admin.can:tickets.reply')->group(function () {
+                Route::post('support-tickets/{ticket}/messages', [AdminSupportTicketController::class, 'reply'])->middleware('throttle:60,1')->name('support-tickets.messages.store');
+                Route::post('support-tickets/{ticket}/close', [AdminSupportTicketController::class, 'close'])->name('support-tickets.close');
+                Route::post('support-tickets/{ticket}/reopen', [AdminSupportTicketController::class, 'reopen'])->name('support-tickets.reopen');
+            });
+
             Route::get('logs', AdminActivityLogController::class)->middleware('admin.can:logs.view')->name('logs');
 
             Route::middleware('admin.can:team.manage')->group(function () {
@@ -280,6 +293,15 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::get('notifications', [NotificationController::class, 'index'])->name('notifications.index');
         Route::post('notifications/read-all', [NotificationController::class, 'readAll'])->name('notifications.read-all');
         Route::post('notifications/{notification}/read', [NotificationController::class, 'read'])->name('notifications.read');
+
+        // Support stays reachable while the store is suspended or unpaid; the ticket policy checks staff permissions.
+        Route::prefix('support-tickets')->name('support-tickets.')->group(function () {
+            Route::get('/', [SupportTicketController::class, 'index'])->name('index');
+            Route::post('/', [SupportTicketController::class, 'store'])->middleware('throttle:10,1')->name('store');
+            Route::get('{ticket}', [SupportTicketController::class, 'show'])->name('show');
+            Route::post('{ticket}/messages', [SupportTicketController::class, 'reply'])->middleware('throttle:30,1')->name('messages.store');
+            Route::get('{ticket}/attachments/{attachment}', [SupportTicketController::class, 'attachment'])->whereNumber('attachment')->name('attachments.show');
+        });
 
         Route::middleware('permission:owner')->group(function () {
             Route::apiResource('staff', StaffController::class)->except('show')->parameters(['staff' => 'staffMember']);

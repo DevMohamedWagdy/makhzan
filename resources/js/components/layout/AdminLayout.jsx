@@ -22,6 +22,7 @@ const NAV_SECTIONS = [
             { label: t('المتاجر'), icon: 'store', to: '/admin/stores', permission: 'stores.view' },
             { label: t('الطلبات'), icon: 'shopping-bag', to: '/admin/orders', permission: 'orders.view' },
             { label: t('التجار والحسابات'), icon: 'users', to: '/admin/vendors', permission: 'vendors.view' },
+            { label: t('تذاكر الدعم'), icon: 'message-square', to: '/admin/support', permission: 'tickets.view' },
         ],
     },
     {

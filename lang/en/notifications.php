@@ -23,6 +23,8 @@ return [
         'store_registered' => 'New store :store registered (:owner)',
         'subscription_requested' => 'New subscription request from :store for :plan (:amount EGP)',
         'trial_ended' => 'The trial of :store ended without a subscription',
+        'ticket_opened' => 'New support ticket from :store: :subject',
+        'ticket_vendor_replied' => ':store replied to the ticket: :subject',
     ],
     'subscription_activated' => [
         'subject' => 'Your :plan plan is active',
@@ -152,5 +154,18 @@ return [
         'subject' => 'Your new discount code: :code',
         'line' => 'Share it with your followers; every order using it counts for you, even without your link.',
     ],
+    'ticket_replied' => [
+        'subject' => 'New reply from the support team: :subject',
+        'message' => 'The support team replied to your ticket ":subject".',
+    ],
+    'ticket_closed' => [
+        'subject' => 'Your ticket was closed: :subject',
+        'message' => 'The support team closed your ticket ":subject". If you need more help, open a new ticket.',
+    ],
+    'ticket_reopened' => [
+        'subject' => 'Your ticket was reopened: :subject',
+        'message' => 'The support team reopened your ticket ":subject". You can reply to it now.',
+    ],
+    'ticket_action' => 'View ticket',
 
 ];

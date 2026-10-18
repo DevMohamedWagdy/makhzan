@@ -30,6 +30,7 @@ class AppServiceProvider extends ServiceProvider
         Route::pattern('collection', '[0-9]+');
         Route::pattern('order', '[0-9]+');
         Route::pattern('address', '[0-9]+');
+        Route::pattern('ticket', '[0-9]+');
 
         $this->configureRateLimiting();
     }

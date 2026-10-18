@@ -31,6 +31,8 @@ const AdminOverviewPage = lazy(() => import('@/pages/admin/AdminOverviewPage').t
 const AdminPaymentsPage = lazy(() => import('@/pages/admin/AdminPaymentsPage').then((module) => ({ default: module.AdminPaymentsPage })));
 const AdminPlansPage = lazy(() => import('@/pages/admin/AdminPlansPage').then((module) => ({ default: module.AdminPlansPage })));
 const AdminRequestsPage = lazy(() => import('@/pages/admin/AdminRequestsPage').then((module) => ({ default: module.AdminRequestsPage })));
+const AdminTicketPage = lazy(() => import('@/pages/admin/AdminTicketPage').then((module) => ({ default: module.AdminTicketPage })));
+const AdminTicketsPage = lazy(() => import('@/pages/admin/AdminTicketsPage').then((module) => ({ default: module.AdminTicketsPage })));
 const AdminStoresPage = lazy(() => import('@/pages/admin/AdminStoresPage').then((module) => ({ default: module.AdminStoresPage })));
 const AffiliateJoinPage = lazy(() => import('@/pages/affiliate-join/AffiliateJoinPage').then((module) => ({ default: module.AffiliateJoinPage })));
 const AffiliateAccountPage = lazy(() => import('@/pages/affiliate/AffiliateAccountPage').then((module) => ({ default: module.AffiliateAccountPage })));
@@ -47,6 +49,8 @@ const CollectionsPage = lazy(() => import('@/pages/collections/CollectionsPage')
 const CategoriesPage = lazy(() => import('@/pages/categories/CategoriesPage').then((module) => ({ default: module.CategoriesPage })));
 const LoyaltyPage = lazy(() => import('@/pages/loyalty/LoyaltyPage').then((module) => ({ default: module.LoyaltyPage })));
 const CouponsPage = lazy(() => import('@/pages/coupons/CouponsPage').then((module) => ({ default: module.CouponsPage })));
+const SupportTicketPage = lazy(() => import('@/pages/support/SupportTicketPage').then((module) => ({ default: module.SupportTicketPage })));
+const SupportTicketsPage = lazy(() => import('@/pages/support/SupportTicketsPage').then((module) => ({ default: module.SupportTicketsPage })));
 const ReviewsPage = lazy(() => import('@/pages/reviews/ReviewsPage').then((module) => ({ default: module.ReviewsPage })));
 const CustomersPage = lazy(() => import('@/pages/customers/CustomersPage').then((module) => ({ default: module.CustomersPage })));
 const DashboardHomePage = lazy(() => import('@/pages/dashboard/DashboardHomePage').then((module) => ({ default: module.DashboardHomePage })));
@@ -154,7 +158,8 @@ function AdminGuestOnly() {
 function RequirePermission({ permission }) {
     const { can, billingExpired, isOwner } = useAuth();
 
-    if (billingExpired && permission !== 'billing') {
+    // Support stays open after the trial or subscription ends: that's when merchants most need help.
+    if (billingExpired && !['billing', 'support'].includes(permission)) {
         return (
             <EmptyState
                 icon="zap"
@@ -229,6 +234,10 @@ export function App() {
                                         <Route path="staff" element={<StaffPage />} />
                                         <Route path="activity" element={<StoreActivityPage />} />
                                     </Route>
+                                    <Route element={<RequirePermission permission="support" />}>
+                                        <Route path="support" element={<SupportTicketsPage />} />
+                                        <Route path="support/:ticketId" element={<SupportTicketPage />} />
+                                    </Route>
                                     <Route element={<RequirePermission permission="reports" />}>
                                         <Route path="reports" element={<ReportsPage />} />
                                     </Route>
@@ -294,6 +303,10 @@ export function App() {
                                     </Route>
                                     <Route element={<RequireAdminPermission permission="orders.view" />}>
                                         <Route path="orders" element={<AdminOrdersPage />} />
+                                    </Route>
+                                    <Route element={<RequireAdminPermission permission="tickets.view" />}>
+                                        <Route path="support" element={<AdminTicketsPage />} />
+                                        <Route path="support/:ticketId" element={<AdminTicketPage />} />
                                     </Route>
                                     <Route element={<RequireAdminPermission permission="vendors.view" />}>
                                         <Route path="vendors" element={<AdminVendorsPage />} />

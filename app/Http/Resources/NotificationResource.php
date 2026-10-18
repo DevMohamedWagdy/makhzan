@@ -80,6 +80,8 @@ class NotificationResource extends JsonResource
             'store_registered' => __('notifications.admin.store_registered', ['store' => $details['store_name'], 'owner' => $details['owner_name'] ?? '']),
             'subscription_requested' => __('notifications.admin.subscription_requested', ['store' => $details['store_name'], 'plan' => $details['plan_name'], 'amount' => number_format((float) $details['amount'], 2)]),
             'trial_ended' => __('notifications.admin.trial_ended', ['store' => $details['store_name']]),
+            'ticket_opened', 'ticket_vendor_replied' => __("notifications.admin.{$this->type}", ['store' => $details['store_name'], 'subject' => $details['subject']]),
+            'ticket_replied', 'ticket_closed', 'ticket_reopened' => __("notifications.{$this->type}.message", ['subject' => $details['subject']]),
             default => $details['message'] ?? '',
         };
     }

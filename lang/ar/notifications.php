@@ -23,6 +23,8 @@ return [
         'store_registered' => 'تاجر جديد سجّل متجر :store (:owner)',
         'subscription_requested' => 'طلب اشتراك جديد من :store في باقة :plan بقيمة :amount ج.م',
         'trial_ended' => 'انتهت الفترة التجريبية لمتجر :store دون اشتراك',
+        'ticket_opened' => 'تذكرة دعم جديدة من :store: :subject',
+        'ticket_vendor_replied' => 'رد جديد من :store على التذكرة: :subject',
     ],
     'subscription_activated' => [
         'subject' => 'تم تفعيل باقة :plan',
@@ -152,5 +154,18 @@ return [
         'subject' => 'كود خصم جديد خاص بك: :code',
         'line' => 'شاركه مع متابعيك؛ كل طلب يستخدمه يُحسب لك حتى بدون رابطك.',
     ],
+    'ticket_replied' => [
+        'subject' => 'رد جديد من فريق الدعم: :subject',
+        'message' => 'رد فريق الدعم على تذكرتك ":subject".',
+    ],
+    'ticket_closed' => [
+        'subject' => 'تم إغلاق تذكرتك: :subject',
+        'message' => 'أغلق فريق الدعم تذكرتك ":subject". إن احتجت مساعدة أخرى افتح تذكرة جديدة.',
+    ],
+    'ticket_reopened' => [
+        'subject' => 'تمت إعادة فتح تذكرتك: :subject',
+        'message' => 'أعاد فريق الدعم فتح تذكرتك ":subject"، ويمكنك الرد عليها الآن.',
+    ],
+    'ticket_action' => 'عرض التذكرة',
 
 ];
