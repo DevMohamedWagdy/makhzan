@@ -24,7 +24,7 @@ import { affiliatesApi } from '@/services/affiliatesApi';
 /** @typedef {'add' | 'edit' | 'commission' | 'payout' | 'reject-payout' | 'freeze' | 'delete' | 'reject' | 'impersonate'} DialogType */
 
 export function AffiliatesPage() {
-    const { store, impersonate } = useAuth();
+    const { store, impersonate, can } = useAuth();
     const toast = useToast();
     const navigate = useNavigate();
     const list = useAffiliates();
@@ -130,14 +130,16 @@ export function AffiliatesPage() {
                 description={t('إدارة فريق المسوقين بالعمولة لمتجر {value}', { value: store?.name ?? '' })}
                 breadcrumbs={[t('لوحة التحكم'), t('التسويق'), t('المسوقين')]}
                 actions={
-                    <>
-                        <Button variant="secondary" icon="link" onClick={() => setDialog({ type: 'add', method: 'link' })}>
-                            {t('رابط التسجيل')}
-                        </Button>
-                        <Button icon="user-plus" onClick={() => setDialog({ type: 'add', method: 'manual' })}>
-                            {t('إضافة مسوق')}
-                        </Button>
-                    </>
+                    can('affiliates.create') && (
+                        <>
+                            <Button variant="secondary" icon="link" onClick={() => setDialog({ type: 'add', method: 'link' })}>
+                                {t('رابط التسجيل')}
+                            </Button>
+                            <Button icon="user-plus" onClick={() => setDialog({ type: 'add', method: 'manual' })}>
+                                {t('إضافة مسوق')}
+                            </Button>
+                        </>
+                    )
                 }
             />
 

@@ -63,7 +63,7 @@ export function CategoriesPage() {
                 description={t('نظّم منتجاتك في أقسام تظهر في متجرك. كل منتج يجب أن يتبع قسماً.')}
                 breadcrumbs={[t('لوحة التحكم'), t('الكتالوج'), t('الأقسام')]}
                 actions={
-                    can('products.create') && (
+                    can('categories.create') && (
                         <Button icon="plus" onClick={() => setDialog({ type: 'form' })}>
                             {t('إضافة قسم')}
                         </Button>
@@ -89,7 +89,7 @@ export function CategoriesPage() {
                             title={t('لا توجد أقسام بعد')}
                             description={t('ابدأ بإضافة الأقسام التي تعمل بها، مثل: فساتين، عبايات، إكسسوارات، ثم أضف منتجاتك إليها.')}
                             action={
-                                can('products.create') && <Button icon="plus" onClick={() => setDialog({ type: 'form' })}>
+                                can('categories.create') && <Button icon="plus" onClick={() => setDialog({ type: 'form' })}>
                                     {t('إضافة أول قسم')}
                                 </Button>
                             }
@@ -99,7 +99,7 @@ export function CategoriesPage() {
                     <ul className="divide-y divide-line">
                         {categories.map((category, index) => (
                             <li key={category.category_id} className="flex flex-wrap items-center gap-4 p-4">
-                                <div className={cn('flex flex-col', !can('products.update') && 'hidden')}>
+                                <div className={cn('flex flex-col', !can('categories.update') && 'hidden')}>
                                     <button type="button" onClick={() => move(index, -1)} disabled={busy || index === 0} className="grid size-6 place-items-center rounded text-muted hover:bg-surface-3 hover:text-ink disabled:opacity-30" aria-label={t('نقل {name} لأعلى', { name: localized(category) })}>
                                         <Icon name="chevron-down" className="size-4 rotate-180" />
                                     </button>
@@ -119,12 +119,12 @@ export function CategoriesPage() {
                                     {t('{value} منتج', { value: formatNumber(category.products_count) })}
                                 </Button>
                                 <div className="flex gap-1">
-                                    {can('products.update') && (
+                                    {can('categories.update') && (
                                         <Button variant="secondary" size="sm" icon="edit" onClick={() => setDialog({ type: 'form', category })}>
                                             {t('تعديل')}
                                         </Button>
                                     )}
-                                    {can('products.delete') && (
+                                    {can('categories.delete') && (
                                         <Button variant="danger-soft" size="icon" onClick={() => (category.products_count ? toast.error(t('لا يمكن حذف هذا القسم'), t('به {products_count} منتج. انقل منتجاته لقسم آخر أولاً، ثم احذفه.', { products_count: category.products_count })) : setDialog({ type: 'delete', category }))} aria-label={t('حذف {name}', { name: localized(category) })} title={t('حذف')}>
                                             <Icon name="trash" className="size-4" />
                                         </Button>

@@ -7,6 +7,8 @@ use App\Models\Product;
 use App\Models\StoreRole;
 use App\Models\Vendor;
 use App\Notifications\OrderPlacedNotification;
+use App\Notifications\StockAlertNotification;
+use App\Notifications\SubscriptionUpdateNotification;
 use App\Support\StorePermissions;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
@@ -40,6 +42,7 @@ class StaffTest extends TestCase
     {
         return $this->owner->store->staff()->create([
             'full_name' => 'أحمد سمير',
+            'job_title' => 'مسؤول الطلبات',
             'phone' => '01077778888',
             'email' => 'ahmed@noor.test',
             'password' => 'Staff2026pass',
@@ -63,6 +66,7 @@ class StaffTest extends TestCase
     {
         return [
             'full_name' => 'أحمد سمير',
+            'job_title' => 'مسؤول الطلبات',
             'phone' => '010 7777 8888',
             'email' => 'Ahmed@Noor.test',
             'password' => 'Staff2026pass',
@@ -110,6 +114,27 @@ class StaffTest extends TestCase
 
         $this->deleteJson("/api/v1/vendor/staff/{$staffId}")->assertNoContent();
         $this->assertNull(Vendor::find($staffId));
+    }
+
+    public function test_staff_need_a_job_title(): void
+    {
+        $this->actingAsVendor($this->owner);
+        $role = $this->role(['orders.view']);
+
+        $staffId = $this->postJson('/api/v1/vendor/staff', $this->payload($role, ['job_title' => 'مسؤول المخزن']))
+            ->assertCreated()
+            ->assertJsonPath('data.job_title', 'مسؤول المخزن')
+            ->json('data.staff_id');
+
+        $this->putJson("/api/v1/vendor/staff/{$staffId}", $this->payload($role, ['password' => null, 'job_title' => 'خدمة العملاء']))
+            ->assertOk()
+            ->assertJsonPath('data.job_title', 'خدمة العملاء');
+
+        $this->putJson("/api/v1/vendor/staff/{$staffId}", $this->payload($role, ['password' => null, 'job_title' => '']))
+            ->assertJsonValidationErrors(['job_title' => 'أدخل وظيفة الموظف']);
+
+        $this->putJson("/api/v1/vendor/staff/{$staffId}", $this->payload($role, ['password' => null, 'job_title' => str_repeat('أ', 101)]))
+            ->assertJsonValidationErrors(['job_title' => 'المسمى الوظيفي يجب ألا يزيد عن 100 حرف']);
     }
 
     public function test_staff_roles_must_belong_to_the_store(): void
@@ -175,15 +200,89 @@ class StaffTest extends TestCase
         $this->postJson('/api/v1/vendor/warehouses', ['name' => 'مخزن ٢'])->assertForbidden();
     }
 
-    public function test_staff_share_the_owners_notifications(): void
+    public function test_staff_see_only_the_notifications_of_sections_they_can_open(): void
     {
         $order = Order::factory()->for($this->owner->store)->create();
         $this->owner->notify(new OrderPlacedNotification($order));
-        $this->actingAsStaff([]);
+        $this->owner->notify(new StockAlertNotification(Product::factory()->for($this->owner->store)->create()->variants()->first(), 0, 5));
+        $this->owner->notify(new SubscriptionUpdateNotification(SubscriptionUpdateNotification::EXPIRING, 'Pro', now()->addDays(3)));
+        $this->actingAsStaff(['notifications.view', 'orders.view']);
 
-        $this->getJson('/api/v1/vendor/notifications')->assertOk()->assertJsonCount(1, 'data')->assertJsonPath('summary.unread_count', 1);
+        $this->getJson('/api/v1/vendor/notifications')
+            ->assertOk()
+            ->assertJsonPath('data.*.type', ['order_placed'])
+            ->assertJsonPath('summary.unread_count', 1);
+
         $this->postJson('/api/v1/vendor/notifications/read-all')->assertNoContent();
-        $this->assertSame(0, $this->owner->unreadNotifications()->count());
+        $this->assertSame(2, $this->owner->unreadNotifications()->count());
+
+        $stockAlert = $this->owner->notifications()->where('type', 'stock_out')->first();
+        $this->postJson("/api/v1/vendor/notifications/{$stockAlert->id}/read")->assertNotFound();
+    }
+
+    public function test_staff_without_the_notifications_permission_have_no_bell(): void
+    {
+        $this->actingAsStaff(['orders.view']);
+
+        $this->getJson('/api/v1/vendor/notifications')->assertForbidden();
+    }
+
+    public function test_the_owner_sees_every_notification(): void
+    {
+        $this->owner->notify(new OrderPlacedNotification(Order::factory()->for($this->owner->store)->create()));
+        $this->owner->notify(new SubscriptionUpdateNotification(SubscriptionUpdateNotification::EXPIRING, 'Pro', now()->addDays(3)));
+        $this->actingAsVendor($this->owner);
+
+        $this->getJson('/api/v1/vendor/notifications')->assertOk()->assertJsonPath('summary.unread_count', 2);
+    }
+
+    public function test_each_catalog_feature_has_its_own_permission(): void
+    {
+        $this->actingAsStaff(['products.view', 'products.update']);
+
+        $this->getJson('/api/v1/vendor/product-categories')->assertOk();
+        $this->postJson('/api/v1/vendor/product-categories', ['name' => 'جديد'])->assertForbidden();
+        $this->getJson('/api/v1/vendor/collections')->assertForbidden();
+        $this->getJson('/api/v1/vendor/warehouses')->assertOk();
+        $this->postJson('/api/v1/vendor/warehouses', ['name' => 'فرع'])->assertForbidden();
+        $this->getJson('/api/v1/vendor/suppliers')->assertForbidden();
+    }
+
+    public function test_lists_other_features_pick_from_are_open_to_those_features(): void
+    {
+        $this->actingAsStaff(['coupons.view', 'coupons.create']);
+
+        $this->getJson('/api/v1/vendor/products')->assertOk();
+        $this->getJson('/api/v1/vendor/product-categories')->assertOk();
+        $this->getJson('/api/v1/vendor/affiliates')->assertOk();
+        $this->getJson('/api/v1/vendor/products/summary')->assertForbidden();
+        $this->getJson('/api/v1/vendor/loyalty')->assertForbidden();
+        $this->getJson('/api/v1/vendor/payouts')->assertForbidden();
+    }
+
+    public function test_manual_orders_can_pick_products_without_the_inventory_permission(): void
+    {
+        $this->actingAsStaff(['orders.view', 'orders.create']);
+
+        $this->getJson('/api/v1/vendor/inventory')->assertOk();
+        $this->getJson('/api/v1/vendor/inventory/summary')->assertForbidden();
+    }
+
+    public function test_the_activity_log_can_be_shared_with_staff(): void
+    {
+        $staff = $this->actingAsStaff(['orders.view']);
+        $this->getJson('/api/v1/vendor/activity')->assertForbidden();
+
+        $staff->role->update(['permissions' => ['activity.view']]);
+        $this->getJson('/api/v1/vendor/activity')->assertOk();
+    }
+
+    public function test_roles_saved_with_the_old_permissions_are_upgraded_per_feature(): void
+    {
+        $this->assertEqualsCanonicalizing(
+            ['products.view', 'categories.view', 'collections.view', 'affiliates.view', 'payouts.view', 'coupons.view', 'loyalty.view', 'payouts.update', 'shipping.update', 'settings.update', 'warehouses.view', 'warehouses.create', 'warehouses.update', 'warehouses.delete', 'orders.view'],
+            StorePermissions::upgrade(['products.view', 'marketing.view', 'marketing.payouts', 'settings.update', 'inventory.warehouses', 'orders.view', 'marketing.unknown']),
+        );
     }
 
     public function test_deactivating_signs_staff_out_and_blocks_sign_in(): void

@@ -5,6 +5,7 @@ import { Alert, Avatar, Badge, DetailRow } from '@/components/ui/Display';
 import { Dropdown } from '@/components/ui/Dropdown';
 import { Icon } from '@/components/ui/Icon';
 import { Drawer } from '@/components/ui/Overlay';
+import { useAuth } from '@/context/AuthContext';
 import { useCopy } from '@/hooks/common';
 import { t } from '@/i18n';
 import { AFFILIATE_SOURCES, PAYOUT_METHODS } from '@/lib/constants';
@@ -65,6 +66,8 @@ export function AffiliateProfileDrawer({ affiliate, open, onClose, actions, crea
     const commission = getEffectiveCommission(affiliate);
     const payoutConfig = PAYOUT_METHODS[affiliate.payout_method.type];
     const isPending = affiliate.status === 'pending';
+    const { can } = useAuth();
+    const canUpdate = can('affiliates.update');
     const isFrozen = affiliate.status === 'frozen';
     const payoutRequest = affiliate.payout_request;
 
@@ -86,7 +89,7 @@ export function AffiliateProfileDrawer({ affiliate, open, onClose, actions, crea
                 </div>
             </div>
             <div className="flex flex-wrap gap-2 border-b border-line px-6 pb-5">
-                {isPending ? (
+                {!canUpdate ? null : isPending ? (
                     <>
                         <Button size="sm" variant="success" icon="check" onClick={() => actions.approve(affiliate)}>
                             {t('قبول الطلب')}
@@ -103,10 +106,12 @@ export function AffiliateProfileDrawer({ affiliate, open, onClose, actions, crea
                         <Button size="sm" variant="secondary" icon="percent" onClick={() => actions.commission(affiliate)}>
                             {t('تخصيص العمولة')}
                         </Button>
-                        <Button size="sm" variant="secondary" icon="log-in" onClick={() => actions.impersonate(affiliate)}>
-                            {t('الدخول بصفته')}
-                        </Button>
                     </>
+                )}
+                {!isPending && can('affiliates.impersonate') && (
+                    <Button size="sm" variant="secondary" icon="log-in" onClick={() => actions.impersonate(affiliate)}>
+                        {t('الدخول بصفته')}
+                    </Button>
                 )}
                 <Dropdown
                     label={t('إجراءات إضافية')}
@@ -116,11 +121,11 @@ export function AffiliateProfileDrawer({ affiliate, open, onClose, actions, crea
                         </button>
                     )}
                     items={[
-                        { label: t('تعديل البيانات'), icon: 'edit', onClick: () => actions.edit(affiliate), hidden: !isPending },
-                        { label: t('تجميد الحساب'), icon: 'snowflake', onClick: () => actions.freeze(affiliate), hidden: affiliate.status !== 'active' },
-                        { label: t('إلغاء التجميد'), icon: 'zap', tone: 'success', onClick: () => actions.activate(affiliate), hidden: !isFrozen },
+                        { label: t('تعديل البيانات'), icon: 'edit', onClick: () => actions.edit(affiliate), hidden: !isPending || !canUpdate },
+                        { label: t('تجميد الحساب'), icon: 'snowflake', onClick: () => actions.freeze(affiliate), hidden: affiliate.status !== 'active' || !canUpdate },
+                        { label: t('إلغاء التجميد'), icon: 'zap', tone: 'success', onClick: () => actions.activate(affiliate), hidden: !isFrozen || !canUpdate },
                         { divider: true },
-                        { label: t('حذف نهائي'), icon: 'trash', tone: 'danger', onClick: () => actions.remove(affiliate) },
+                        { label: t('حذف نهائي'), icon: 'trash', tone: 'danger', onClick: () => actions.remove(affiliate), hidden: !can('affiliates.delete') },
                     ]}
                 />
             </div>
@@ -142,7 +147,7 @@ export function AffiliateProfileDrawer({ affiliate, open, onClose, actions, crea
                         <p>
                             {t('أرسل المسوق الطلب {value}.{value2}', { value: formatRelative(payoutRequest.created_at), value2: payoutRequest.request_note ? t(' ملاحظته: {request_note}', { request_note: payoutRequest.request_note }) : '' })}
                         </p>
-                        <div className="mt-3 flex flex-wrap gap-2">
+                        <div className={cn('mt-3 flex flex-wrap gap-2', !can('payouts.update') && 'hidden')}>
                             <Button size="sm" variant="success" icon="check" onClick={() => actions.payout(affiliate)}>
                                 {t('تأكيد التحويل')}
                             </Button>
@@ -196,7 +201,7 @@ export function AffiliateProfileDrawer({ affiliate, open, onClose, actions, crea
                     </dl>
                 </Section>
 
-                <Section title={t('العمولة')} icon="percent" action={!isPending && <Button size="sm" variant="ghost" onClick={() => actions.commission(affiliate)}>{t('تعديل')}</Button>}>
+                <Section title={t('العمولة')} icon="percent" action={!isPending && canUpdate && <Button size="sm" variant="ghost" onClick={() => actions.commission(affiliate)}>{t('تعديل')}</Button>}>
                     <div className="flex items-center justify-between gap-3 rounded-xl border border-line p-4">
                         <div>
                             <p className="text-xs text-muted">{commission.isCustom ? t('عمولة استثنائية مخصصة') : t('عمولة الشريحة الافتراضية')}</p>
@@ -268,7 +273,8 @@ export function AffiliateProfileDrawer({ affiliate, open, onClose, actions, crea
                     title={t('أكواد الإحالة والروابط النشطة')}
                     icon="link"
                     action={
-                        affiliate.status === 'active' && (
+                        affiliate.status === 'active' &&
+                        canUpdate && (
                             <Button size="sm" variant="soft" icon="plus" loading={creatingCode} onClick={() => actions.createReferralCode(affiliate)}>
                                 {t('كود جديد')}
                             </Button>

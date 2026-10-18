@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { PageHeader } from '@/components/layout/DashboardLayout';
+import { Link, Navigate } from 'react-router-dom';
+import { PageHeader, allowedPages } from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/Button';
 import { TrendBadge } from '@/components/ui/Charts';
 import { Card, EmptyState, StatCard } from '@/components/ui/Display';
@@ -84,31 +84,43 @@ function RecentOrders({ orders }) {
     );
 }
 
-/** Sections the overview reads from; staff missing any of them get shortcuts instead. */
-const OVERVIEW_PERMISSIONS = ['reports', 'orders', 'products', 'marketing'];
+/** Sections the overview has widgets for; each widget shows only with its section's permission. */
+const OVERVIEW_SECTIONS = ['reports', 'orders', 'products', 'affiliates', 'payouts'];
 
-const SHORTCUTS = [
-    { permission: 'orders', to: '/dashboard/orders', icon: 'shopping-bag', label: t('الطلبات'), description: t('تابع الطلبات الجديدة وغيّر حالتها') },
-    { permission: 'products', to: '/dashboard/products', icon: 'box', label: t('المنتجات'), description: t('أضف المنتجات وعدّل أسعارها وصورها') },
-    { permission: 'inventory', to: '/dashboard/inventory', icon: 'warehouse', label: t('المخزون'), description: t('الكميات والحركات والمخازن') },
-    { permission: 'purchasing', to: '/dashboard/purchase-orders', icon: 'download', label: t('أوامر الشراء'), description: t('الموردين واستلام البضاعة') },
-    { permission: 'customers', to: '/dashboard/customers', icon: 'user', label: t('العملاء'), description: t('بيانات العملاء وطلباتهم') },
-    { permission: 'marketing', to: '/dashboard/affiliates', icon: 'users', label: t('المسوقين'), description: t('المسوقين والكوبونات والتحويلات') },
-    { permission: 'payments', to: '/dashboard/payments', icon: 'credit-card', label: t('المدفوعات'), description: t('المعاملات واسترداد المبالغ') },
-    { permission: 'reports', to: '/dashboard/reports', icon: 'bar-chart', label: t('التقارير'), description: t('المبيعات والأرباح') },
-    { permission: 'settings', to: '/dashboard/settings', icon: 'settings', label: t('إعدادات المتجر'), description: t('بيانات المتجر والشحن والسياسات') },
-];
+/** A line under some shortcuts on the limited home; the rest show their title alone. */
+const SHORTCUT_DESCRIPTIONS = {
+    '/dashboard/orders': t('تابع الطلبات الجديدة وغيّر حالتها'),
+    '/dashboard/products': t('أضف المنتجات وعدّل أسعارها وصورها'),
+    '/dashboard/inventory': t('الكميات والحركات والمخازن'),
+    '/dashboard/purchase-orders': t('الموردين واستلام البضاعة'),
+    '/dashboard/customers': t('بيانات العملاء وطلباتهم'),
+    '/dashboard/affiliates': t('المسوقين وعمولاتهم'),
+    '/dashboard/coupons': t('أكواد الخصم وحدودها'),
+    '/dashboard/payments': t('المعاملات واسترداد المبالغ'),
+    '/dashboard/reports': t('المبيعات والأرباح'),
+    '/dashboard/settings': t('بيانات المتجر والشحن والسياسات'),
+};
 
-/** The vendor's home: the full overview, or section shortcuts for staff with limited access. */
+/**
+ * The vendor's home. With the dashboard permission: the overview (each widget limited to the
+ * sections the role allows), or shortcuts when it allows none of them. Without it, staff go
+ * straight to the first page their role opens.
+ */
 export function DashboardHomePage() {
     const { can } = useAuth();
 
-    return OVERVIEW_PERMISSIONS.every(can) ? <OverviewHome /> : <TeamMemberHome />;
+    if (!can('dashboard')) {
+        const [firstPage] = allowedPages(can);
+
+        return firstPage ? <Navigate to={firstPage.to} replace /> : <TeamMemberHome />;
+    }
+
+    return OVERVIEW_SECTIONS.some(can) ? <OverviewHome /> : <TeamMemberHome />;
 }
 
 function TeamMemberHome() {
     const { vendor, can } = useAuth();
-    const shortcuts = SHORTCUTS.filter((shortcut) => can(shortcut.permission));
+    const shortcuts = allowedPages(can);
 
     return (
         <>
@@ -125,7 +137,7 @@ function TeamMemberHome() {
                             </span>
                             <span>
                                 <span className="block font-semibold text-ink group-hover:text-primary">{shortcut.label}</span>
-                                <span className="text-sm text-muted">{shortcut.description}</span>
+                                {SHORTCUT_DESCRIPTIONS[shortcut.to] && <span className="text-sm text-muted">{SHORTCUT_DESCRIPTIONS[shortcut.to]}</span>}
                             </span>
                         </Link>
                     ))}
@@ -144,13 +156,20 @@ function OverviewHome() {
         setError(null);
 
         try {
-            const [report, orders, products, affiliates, recent] = await Promise.all([reportsApi.get(), ordersApi.summary(), productsApi.summary(), affiliatesApi.summary(), ordersApi.list({ per_page: 10 })]);
+            // Only the sections this account can open are requested; the rest stay null and their widgets hidden.
+            const [report, orders, products, affiliates, recent] = await Promise.all([
+                can('reports') ? reportsApi.get() : null,
+                can('orders') ? ordersApi.summary() : null,
+                can('products') ? productsApi.summary() : null,
+                can('affiliates') || can('payouts') ? affiliatesApi.summary() : null,
+                can('orders') ? ordersApi.list({ per_page: 10 }) : null,
+            ]);
 
-            setData({ report, orders, products, affiliates, recent: recent.data.slice(0, 6) });
+            setData({ report, orders, products, affiliates, recent: recent?.data.slice(0, 6) ?? null });
         } catch (loadError) {
             setError(loadError.message);
         }
-    }, []);
+    }, [can]);
 
     useEffect(() => {
         load();
@@ -165,9 +184,11 @@ function OverviewHome() {
                 description={t('ملخص متجرك وما ينتظرك اليوم')}
                 actions={
                     <>
-                        <Button variant="secondary" icon="bar-chart" to="/dashboard/reports">
-                            {t('التقارير التفصيلية')}
-                        </Button>
+                        {can('reports') && (
+                            <Button variant="secondary" icon="bar-chart" to="/dashboard/reports">
+                                {t('التقارير التفصيلية')}
+                            </Button>
+                        )}
                         {can('products.create') && (
                             <Button icon="plus" to="/dashboard/products/new">
                                 {t('إضافة منتج')}
@@ -193,39 +214,51 @@ function OverviewHome() {
                 <div className="flex flex-col gap-6">
                     <NeedsAttention
                         items={[
-                            { key: 'orders', label: t('طلب بانتظار التأكيد'), count: data.orders.pending, icon: 'shopping-bag', tone: 'warning', to: '/dashboard/orders?status=pending' },
-                            { key: 'payouts', label: t('طلب تحويل عمولة'), count: data.affiliates.payout_requests, icon: 'send', tone: 'primary', to: '/dashboard/payout-requests' },
-                            { key: 'applicants', label: t('مسوق بانتظار الموافقة'), count: data.affiliates.pending, icon: 'user-plus', tone: 'info', to: '/dashboard/affiliates?status=pending' },
-                            { key: 'out', label: t('منتج نفد مخزونه'), count: data.products.out_of_stock, icon: 'box', tone: 'danger', to: '/dashboard/products?stock=out' },
-                            { key: 'low', label: t('منتج مخزونه منخفض'), count: data.products.low_stock, icon: 'warehouse', tone: 'warning', to: '/dashboard/products?stock=low' },
-                        ]}
+                            data.orders && { key: 'orders', label: t('طلب بانتظار التأكيد'), count: data.orders.pending, icon: 'shopping-bag', tone: 'warning', to: '/dashboard/orders?status=pending' },
+                            data.affiliates && can('payouts') && { key: 'payouts', label: t('طلب تحويل عمولة'), count: data.affiliates.payout_requests, icon: 'send', tone: 'primary', to: '/dashboard/payout-requests' },
+                            data.affiliates && can('affiliates') && { key: 'applicants', label: t('مسوق بانتظار الموافقة'), count: data.affiliates.pending, icon: 'user-plus', tone: 'info', to: '/dashboard/affiliates?status=pending' },
+                            data.products && { key: 'out', label: t('منتج نفد مخزونه'), count: data.products.out_of_stock, icon: 'box', tone: 'danger', to: '/dashboard/products?stock=out' },
+                            data.products && { key: 'low', label: t('منتج مخزونه منخفض'), count: data.products.low_stock, icon: 'warehouse', tone: 'warning', to: '/dashboard/products?stock=low' },
+                        ].filter(Boolean)}
                     />
 
-                    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                        <StatCard label={t('طلبات اليوم')} value={formatNumber(data.orders.today)} icon="shopping-bag" hint={t('{count} قيد الشحن الآن', { count: formatNumber(data.orders.shipped) })} />
-                        <StatCard label={t('مبيعات آخر ٣٠ يوماً')} value={formatMoney(data.report.totals.sales)} icon="bar-chart" tone="info" hint={<TrendBadge current={data.report.totals.sales} previous={data.report.previous.sales} />} />
-                        <StatCard label={t('إيرادات محصّلة (٣٠ يوماً)')} value={formatMoney(data.report.totals.revenue)} icon="wallet" tone="success" hint={<TrendBadge current={data.report.totals.revenue} previous={data.report.previous.revenue} />} />
-                        <StatCard label={t('عملاء جدد (٣٠ يوماً)')} value={formatNumber(data.report.totals.new_customers)} icon="users" tone="warning" hint={<TrendBadge current={data.report.totals.new_customers} previous={data.report.previous.new_customers} />} />
-                    </div>
-
-                    <DailyChartCard daily={data.report.daily} title={t('آخر ٣٠ يوماً')} />
-
-                    <div className="grid gap-6 lg:grid-cols-5">
-                        <Card
-                            title={t('أحدث الطلبات')}
-                            className="lg:col-span-3"
-                            actions={
-                                <Link to="/dashboard/orders" className="text-sm font-medium text-primary hover:underline">
-                                    {t('كل الطلبات')}
-                                </Link>
-                            }
-                        >
-                            <RecentOrders orders={data.recent} />
-                        </Card>
-                        <div className="lg:col-span-2">
-                            <TopProductsCard products={data.report.top_products} limit={5} />
+                    {(data.orders || data.report) && (
+                        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                            {data.orders && <StatCard label={t('طلبات اليوم')} value={formatNumber(data.orders.today)} icon="shopping-bag" hint={t('{count} قيد الشحن الآن', { count: formatNumber(data.orders.shipped) })} />}
+                            {data.report && (
+                                <>
+                                    <StatCard label={t('مبيعات آخر ٣٠ يوماً')} value={formatMoney(data.report.totals.sales)} icon="bar-chart" tone="info" hint={<TrendBadge current={data.report.totals.sales} previous={data.report.previous.sales} />} />
+                                    <StatCard label={t('إيرادات محصّلة (٣٠ يوماً)')} value={formatMoney(data.report.totals.revenue)} icon="wallet" tone="success" hint={<TrendBadge current={data.report.totals.revenue} previous={data.report.previous.revenue} />} />
+                                    <StatCard label={t('عملاء جدد (٣٠ يوماً)')} value={formatNumber(data.report.totals.new_customers)} icon="users" tone="warning" hint={<TrendBadge current={data.report.totals.new_customers} previous={data.report.previous.new_customers} />} />
+                                </>
+                            )}
                         </div>
-                    </div>
+                    )}
+
+                    {data.report && <DailyChartCard daily={data.report.daily} title={t('آخر ٣٠ يوماً')} />}
+
+                    {(data.recent || data.report) && (
+                        <div className="grid gap-6 lg:grid-cols-5">
+                            {data.recent && (
+                                <Card
+                                    title={t('أحدث الطلبات')}
+                                    className={data.report ? 'lg:col-span-3' : 'lg:col-span-5'}
+                                    actions={
+                                        <Link to="/dashboard/orders" className="text-sm font-medium text-primary hover:underline">
+                                            {t('كل الطلبات')}
+                                        </Link>
+                                    }
+                                >
+                                    <RecentOrders orders={data.recent} />
+                                </Card>
+                            )}
+                            {data.report && (
+                                <div className={data.recent ? 'lg:col-span-2' : 'lg:col-span-5'}>
+                                    <TopProductsCard products={data.report.top_products} limit={5} />
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
             )}
         </>

@@ -75,7 +75,7 @@ export function LoyaltyPage() {
     const setTier = (index, key) => (event) => setTiers((tiers) => tiers.map((tier, position) => (position === index ? { ...tier, [key]: event.target.value } : tier)));
     const addTier = () => setTiers((tiers) => [...tiers, { name: '', min_spend: '', multiplier: '' }]);
     const removeTier = (index) => setTiers((tiers) => tiers.filter((_, position) => position !== index));
-    const canEdit = can('marketing.update');
+    const canEdit = can('loyalty.update');
 
     // Points per 100 EGP × EGP per point = EGP back per 100 EGP, i.e. the cashback percentage.
     const cashbackPercent = form ? Number(form.loyalty_earn_rate) * Number(form.loyalty_point_value) : 0;
@@ -113,7 +113,7 @@ export function LoyaltyPage() {
                     <form onSubmit={save} noValidate className="mk-card flex flex-col gap-5 p-5 sm:p-6">
                         <Switch
                             checked={form.loyalty_enabled}
-                            disabled={!data.available || !can('marketing.update')}
+                            disabled={!data.available || !can('loyalty.update')}
                             onChange={(checked) => setForm((current) => ({ ...current, loyalty_enabled: checked }))}
                             label={t('تفعيل برنامج النقاط')}
                             description={t('عند الإيقاف لا يكسب العملاء نقاطاً جديدة ولا يستخدمون رصيدهم، ويبقى الرصيد محفوظاً.')}

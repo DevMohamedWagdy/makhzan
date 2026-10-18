@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/Button';
 import { Avatar, EmptyState } from '@/components/ui/Display';
 import { Pagination, Tabs } from '@/components/ui/Navigation';
 import { Skeleton } from '@/components/ui/Spinner';
+import { useAuth } from '@/context/AuthContext';
 import { PayoutStatusBadge } from '@/features/affiliates/PayoutHistory';
 import { RecordPayoutModal, RejectPayoutDialog } from '@/features/affiliates/PayoutModals';
 import { useAffiliateActions } from '@/features/affiliates/useAffiliateActions';
@@ -17,6 +18,7 @@ const STATUS_KEYS = ['requested', 'paid', 'rejected'];
 
 /** Store-wide commission transfers: open requests to confirm or reject, and the history. */
 export function PayoutRequestsPage() {
+    const { can } = useAuth();
     const [searchParams, setSearchParams] = useSearchParams();
     const status = searchParams.has('status') ? searchParams.get('status') : 'requested';
     const page = Number(searchParams.get('page')) || 1;
@@ -113,7 +115,7 @@ export function PayoutRequestsPage() {
                                     {payout.note && <p className="mt-1 text-xs text-ink-2">{t('ملاحظة المتجر: {note}', { note: payout.note })}</p>}
                                 </div>
 
-                                {payout.status === 'requested' && (
+                                {payout.status === 'requested' && can('payouts.update') && (
                                     <div className="flex gap-2">
                                         <Button size="sm" variant="success" icon="check" onClick={() => setDialog({ type: 'pay', affiliate: payout.affiliate })}>
                                             {t('تأكيد التحويل')}

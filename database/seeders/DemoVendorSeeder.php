@@ -91,6 +91,7 @@ class DemoVendorSeeder extends Seeder
 
         $vendor->store->staff()->create([
             'full_name' => 'أحمد سمير',
+            'job_title' => 'مسؤول الطلبات والمخزن',
             'phone' => '01022223333',
             'email' => self::STAFF_EMAIL,
             'password' => self::STAFF_PASSWORD,

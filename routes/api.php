@@ -290,9 +290,12 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::put('auth/profile', [VendorAccountController::class, 'updateProfile'])->name('auth.profile');
         Route::put('auth/password', [VendorAccountController::class, 'updatePassword'])->middleware('throttle:10,1')->name('auth.password');
 
-        Route::get('notifications', [NotificationController::class, 'index'])->name('notifications.index');
-        Route::post('notifications/read-all', [NotificationController::class, 'readAll'])->name('notifications.read-all');
-        Route::post('notifications/{notification}/read', [NotificationController::class, 'read'])->name('notifications.read');
+        // Staff see only the notifications of sections their role allows (see NotificationVisibility).
+        Route::middleware('permission:notifications')->group(function () {
+            Route::get('notifications', [NotificationController::class, 'index'])->name('notifications.index');
+            Route::post('notifications/read-all', [NotificationController::class, 'readAll'])->name('notifications.read-all')->defaults('_permission', 'notifications.view');
+            Route::post('notifications/{notification}/read', [NotificationController::class, 'read'])->name('notifications.read')->defaults('_permission', 'notifications.view');
+        });
 
         // Support stays reachable while the store is suspended or unpaid; the ticket policy checks staff permissions.
         Route::prefix('support-tickets')->name('support-tickets.')->group(function () {
@@ -306,8 +309,9 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::middleware('permission:owner')->group(function () {
             Route::apiResource('staff', StaffController::class)->except('show')->parameters(['staff' => 'staffMember']);
             Route::apiResource('roles', StoreRoleController::class)->except('show')->parameters(['roles' => 'role']);
-            Route::get('activity', VendorActivityLogController::class)->name('activity');
         });
+
+        Route::get('activity', VendorActivityLogController::class)->middleware('permission:activity')->name('activity');
 
         Route::middleware('permission:billing')->group(function () {
             Route::get('subscription', [SubscriptionController::class, 'show'])->name('subscription.show');
@@ -328,10 +332,12 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
                 Route::post('store/domain/verify', [StoreDomainController::class, 'verify'])->middleware('throttle:10,1')->name('store.domain.verify')->defaults('_permission', 'settings.update');
             });
             Route::delete('store/domain', [StoreDomainController::class, 'destroy'])->name('store.domain.destroy')->defaults('_permission', 'settings.update');
+        });
 
+        Route::middleware('permission:shipping')->group(function () {
             Route::get('shipping/bosta', [ShippingCarrierController::class, 'show'])->name('shipping.bosta.show');
             Route::put('shipping/bosta', [ShippingCarrierController::class, 'update'])->middleware('throttle:10,1')->name('shipping.bosta.update');
-            Route::delete('shipping/bosta', [ShippingCarrierController::class, 'destroy'])->name('shipping.bosta.destroy')->defaults('_permission', 'settings.update');
+            Route::delete('shipping/bosta', [ShippingCarrierController::class, 'destroy'])->name('shipping.bosta.destroy')->defaults('_permission', 'shipping.update');
 
             Route::get('shipping', [ShippingSettingsController::class, 'show'])->name('shipping.show');
             Route::put('shipping', [ShippingSettingsController::class, 'update'])->name('shipping.update');
@@ -352,34 +358,43 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
             Route::get('reports', ReportController::class)->name('reports');
         });
 
-        Route::middleware('permission:marketing')->group(function () {
+        Route::middleware('permission:loyalty')->group(function () {
             Route::get('loyalty', [LoyaltySettingsController::class, 'show'])->name('loyalty.show');
             Route::put('loyalty', [LoyaltySettingsController::class, 'update'])->name('loyalty.update');
-            Route::post('customers/{customer}/points', [CustomerPointsController::class, 'store'])->middleware('throttle:30,1')->name('customers.points.store')->defaults('_permission', 'marketing.update');
+            Route::post('customers/{customer}/points', [CustomerPointsController::class, 'store'])->middleware('throttle:30,1')->name('customers.points.store')->defaults('_permission', 'loyalty.update');
+        });
+
+        Route::middleware('permission:coupons')->group(function () {
             Route::patch('coupons/{coupon}/status', [CouponController::class, 'updateStatus'])->name('coupons.status');
             Route::apiResource('coupons', CouponController::class);
+        });
 
+        Route::middleware('permission:payouts')->group(function () {
+            Route::get('payouts', [VendorPayoutController::class, 'index'])->name('payouts.index');
+            Route::get('affiliates/{affiliate}/payouts', [AffiliatePayoutController::class, 'index'])->name('affiliates.payouts.index')->defaults('_permission', 'payouts.view|affiliates.view');
+            Route::post('affiliates/{affiliate}/payouts', [AffiliatePayoutController::class, 'store'])->name('affiliates.payouts.store')->defaults('_permission', 'payouts.update');
+            Route::post('affiliates/{affiliate}/payouts/{payout}/reject', [AffiliatePayoutController::class, 'reject'])->scopeBindings()->name('affiliates.payouts.reject')->defaults('_permission', 'payouts.update');
+        });
+
+        Route::middleware('permission:affiliates')->group(function () {
             Route::prefix('affiliates')->name('affiliates.')->group(function () {
-                Route::get('summary', AffiliateSummaryController::class)->name('summary');
-                Route::post('import', AffiliateImportController::class)->middleware(['throttle:10,1', 'plan.feature:affiliates'])->name('import')->defaults('_permission', 'marketing.create');
+                Route::get('summary', AffiliateSummaryController::class)->name('summary')->defaults('_permission', 'affiliates.view|payouts.view');
+                Route::post('import', AffiliateImportController::class)->middleware(['throttle:10,1', 'plan.feature:affiliates'])->name('import')->defaults('_permission', 'affiliates.create');
 
                 Route::get('registration-link', [AffiliateRegistrationLinkController::class, 'show'])->name('registration-link.show');
                 Route::patch('registration-link', [AffiliateRegistrationLinkController::class, 'update'])->name('registration-link.update');
-                Route::post('registration-link/regenerate', [AffiliateRegistrationLinkController::class, 'regenerate'])->name('registration-link.regenerate')->defaults('_permission', 'marketing.update');
+                Route::post('registration-link/regenerate', [AffiliateRegistrationLinkController::class, 'regenerate'])->name('registration-link.regenerate')->defaults('_permission', 'affiliates.update');
 
                 Route::patch('{affiliate}/status', AffiliateStatusController::class)->name('status.update');
                 Route::put('{affiliate}/commission', AffiliateCommissionController::class)->name('commission.update');
-                Route::post('{affiliate}/referral-codes', [AffiliateReferralCodeController::class, 'store'])->name('referral-codes.store')->defaults('_permission', 'marketing.update');
-                Route::get('{affiliate}/payouts', [AffiliatePayoutController::class, 'index'])->name('payouts.index');
-                Route::post('{affiliate}/payouts', [AffiliatePayoutController::class, 'store'])->name('payouts.store')->defaults('_permission', 'marketing.payouts');
-                Route::post('{affiliate}/payouts/{payout}/reject', [AffiliatePayoutController::class, 'reject'])->scopeBindings()->name('payouts.reject')->defaults('_permission', 'marketing.payouts');
-                Route::post('{affiliate}/impersonate', [AffiliateImpersonationController::class, 'store'])->middleware('throttle:20,1')->name('impersonate')->defaults('_permission', 'marketing.impersonate');
+                Route::post('{affiliate}/referral-codes', [AffiliateReferralCodeController::class, 'store'])->name('referral-codes.store')->defaults('_permission', 'affiliates.update');
+                Route::post('{affiliate}/impersonate', [AffiliateImpersonationController::class, 'store'])->middleware('throttle:20,1')->name('impersonate')->defaults('_permission', 'affiliates.impersonate');
             });
 
+            // The coupon form picks affiliates from this list.
+            Route::get('affiliates', [AffiliateController::class, 'index'])->name('affiliates.index')->defaults('_permission', 'affiliates.view|coupons.view');
             Route::post('affiliates', [AffiliateController::class, 'store'])->middleware('plan.feature:affiliates')->name('affiliates.store');
-            Route::apiResource('affiliates', AffiliateController::class)->except('store');
-
-            Route::get('payouts', [VendorPayoutController::class, 'index'])->name('payouts.index');
+            Route::apiResource('affiliates', AffiliateController::class)->except(['index', 'store']);
         });
 
         Route::middleware('permission:reviews')->group(function () {
@@ -408,7 +423,8 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
 
         Route::middleware('permission:inventory')->group(function () {
             Route::prefix('inventory')->name('inventory.')->group(function () {
-                Route::get('/', [InventoryController::class, 'index'])->name('index');
+                // Manual orders, purchase orders and stock transfers pick products from this list.
+                Route::get('/', [InventoryController::class, 'index'])->name('index')->defaults('_permission', 'inventory.view|orders.create|purchasing.create|purchasing.update');
                 Route::get('summary', InventorySummaryController::class)->name('summary');
                 Route::put('settings', [InventorySettingsController::class, 'update'])->name('settings.update')->defaults('_permission', 'inventory.update');
                 Route::get('movements', [StockMovementController::class, 'index'])->name('movements.index');
@@ -418,19 +434,27 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
                 Route::post('{variant}/movements', [StockMovementController::class, 'store'])->middleware('throttle:60,1')->name('movements.store')->defaults('_permission', 'inventory.update');
             });
 
-            Route::put('warehouses/order', [WarehouseController::class, 'reorder'])->name('warehouses.reorder')->defaults('_permission', 'inventory.warehouses');
-            Route::get('warehouses', [WarehouseController::class, 'index'])->name('warehouses.index');
-            Route::post('warehouses', [WarehouseController::class, 'store'])->defaults('_permission', 'inventory.warehouses')->name('warehouses.store');
-            Route::match(['put', 'patch'], 'warehouses/{warehouse}', [WarehouseController::class, 'update'])->defaults('_permission', 'inventory.warehouses')->name('warehouses.update');
-            Route::delete('warehouses/{warehouse}', [WarehouseController::class, 'destroy'])->defaults('_permission', 'inventory.warehouses')->name('warehouses.destroy');
             Route::get('stock-transfers', [StockTransferController::class, 'index'])->name('stock-transfers.index');
             Route::get('stock-transfers/{transfer}', [StockTransferController::class, 'show'])->name('stock-transfers.show');
             Route::post('stock-transfers', [StockTransferController::class, 'store'])->defaults('_permission', 'inventory.transfer')->name('stock-transfers.store');
         });
 
-        Route::middleware('permission:purchasing')->group(function () {
-            Route::apiResource('suppliers', SupplierController::class)->except('show');
+        Route::middleware('permission:warehouses')->group(function () {
+            // Product, inventory and purchase-order forms pick warehouses from this list.
+            Route::get('warehouses', [WarehouseController::class, 'index'])->name('warehouses.index')->defaults('_permission', 'warehouses.view|products.view|inventory.view|purchasing.view');
+            Route::put('warehouses/order', [WarehouseController::class, 'reorder'])->name('warehouses.reorder');
+            Route::post('warehouses', [WarehouseController::class, 'store'])->name('warehouses.store');
+            Route::match(['put', 'patch'], 'warehouses/{warehouse}', [WarehouseController::class, 'update'])->name('warehouses.update');
+            Route::delete('warehouses/{warehouse}', [WarehouseController::class, 'destroy'])->name('warehouses.destroy');
+        });
 
+        Route::middleware('permission:suppliers')->group(function () {
+            // The purchase-order form picks suppliers from this list.
+            Route::get('suppliers', [SupplierController::class, 'index'])->name('suppliers.index')->defaults('_permission', 'suppliers.view|purchasing.view');
+            Route::apiResource('suppliers', SupplierController::class)->except(['index', 'show']);
+        });
+
+        Route::middleware('permission:purchasing')->group(function () {
             Route::prefix('purchase-orders/{purchaseOrder}')->name('purchase-orders.')->group(function () {
                 Route::post('order', [PurchaseOrderController::class, 'markOrdered'])->name('order')->defaults('_permission', 'purchasing.update');
                 Route::post('receive', [PurchaseOrderController::class, 'receive'])->name('receive')->defaults('_permission', 'purchasing.update');
@@ -440,23 +464,31 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
             Route::apiResource('purchase-orders', PurchaseOrderController::class)->parameters(['purchase-orders' => 'purchaseOrder']);
         });
 
-        Route::middleware('permission:products')->group(function () {
+        Route::middleware('permission:categories')->group(function () {
+            // Product, inventory and coupon screens filter or pick by category from this list.
+            Route::get('product-categories', [ProductCategoryController::class, 'index'])->name('product-categories.index')->defaults('_permission', 'categories.view|products.view|inventory.view|coupons.view');
             Route::apiResource('product-categories', ProductCategoryController::class)
-                ->except('show')
+                ->except(['index', 'show'])
                 ->parameters(['product-categories' => 'category']);
+        });
 
+        Route::middleware('permission:collections')->group(function () {
             Route::prefix('collections/{collection}/products')->name('collections.products.')->group(function () {
-                Route::post('/', [CollectionProductController::class, 'store'])->name('store')->defaults('_permission', 'products.update');
+                Route::post('/', [CollectionProductController::class, 'store'])->name('store')->defaults('_permission', 'collections.update');
                 Route::put('order', [CollectionProductController::class, 'reorder'])->name('reorder');
-                Route::delete('{product}', [CollectionProductController::class, 'destroy'])->name('destroy')->defaults('_permission', 'products.update');
+                Route::delete('{product}', [CollectionProductController::class, 'destroy'])->name('destroy')->defaults('_permission', 'collections.update');
             });
             Route::apiResource('collections', ProductCollectionController::class);
+        });
 
+        Route::middleware('permission:products')->group(function () {
+            // The collection drawer and the coupon form pick products from this list.
+            Route::get('products', [ProductController::class, 'index'])->name('products.index')->defaults('_permission', 'products.view|collections.view|coupons.view');
             Route::get('products/summary', ProductSummaryController::class)->name('products.summary');
             Route::post('products/{product}/images', [ProductImageController::class, 'store'])->middleware('throttle:30,1')->name('products.images.store')->defaults('_permission', 'products.update');
             Route::put('products/{product}/images/order', [ProductImageController::class, 'reorder'])->name('products.images.reorder');
             Route::delete('products/{product}/images/{image}', [ProductImageController::class, 'destroy'])->scopeBindings()->name('products.images.destroy')->defaults('_permission', 'products.update');
-            Route::apiResource('products', ProductController::class);
+            Route::apiResource('products', ProductController::class)->except('index');
         });
     });
 });

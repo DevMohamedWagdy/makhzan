@@ -39,4 +39,6 @@ return [
     'role_name_required' => 'Enter a role name',
     'role_name_taken' => 'A role with this name already exists',
     'role_in_use' => 'A role with team members cannot be deleted. Move them to another role first.',
+    'job_title_max' => 'The job title may not be longer than 100 characters',
+    'job_title_required' => 'Enter the staff member\'s job title',
 ];

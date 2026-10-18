@@ -77,7 +77,7 @@ export function CustomerPoints({ customerId }) {
                     ))}
                 </ul>
             )}
-            {can('marketing.update') && (
+            {can('loyalty.update') && (
                 <form onSubmit={adjust} className="grid gap-2 sm:grid-cols-[8rem_1fr_auto] sm:items-start">
                     <Field error={errors.points}>
                         {(props) => <Input {...props} type="number" value={points} onChange={(event) => setPoints(event.target.value)} placeholder={t('+100 أو -50')} aria-label={t('عدد النقاط')} dir="ltr" />}

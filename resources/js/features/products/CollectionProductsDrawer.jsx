@@ -133,7 +133,7 @@ export function CollectionProductsDrawer({ collection, open, onClose, onChanged 
     const [attempt, setAttempt] = useState(0);
     /** Every product in the store for the chooser, loaded once each time the drawer opens. */
     const [storeProducts, setStoreProducts] = useState(null);
-    const canEdit = can('products.update');
+    const canEdit = can('collections.update');
 
     // A response that arrives after the drawer moved on to another collection (or closed) is ignored.
     useEffect(() => {

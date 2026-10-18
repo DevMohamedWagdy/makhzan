@@ -18,12 +18,13 @@ import { authApi } from '@/services/authApi';
 import { isRtl, t } from '@/i18n';
 import { cn } from '@/lib/format';
 
-const NAV_SECTIONS = [
+/** The sidebar, grouped; each item shows only with its permission (see App\Support\StorePermissions). */
+export const NAV_SECTIONS = [
     {
         title: t('الرئيسية'),
         items: [
-            { label: t('لوحة التحكم'), icon: 'nav-dashboard', to: '/dashboard', end: true },
-            { label: t('الإشعارات'), icon: 'nav-notifications', to: '/dashboard/notifications', counter: 'unreadCount' },
+            { label: t('لوحة التحكم'), icon: 'nav-dashboard', to: '/dashboard', end: true, permission: 'dashboard' },
+            { label: t('الإشعارات'), icon: 'nav-notifications', to: '/dashboard/notifications', counter: 'unreadCount', permission: 'notifications' },
         ],
     },
     {
@@ -33,33 +34,33 @@ const NAV_SECTIONS = [
             { label: t('المدفوعات'), icon: 'nav-payments', to: '/dashboard/payments', permission: 'payments' },
             { label: t('العملاء'), icon: 'nav-customers', to: '/dashboard/customers', permission: 'customers' },
             { label: t('التقييمات'), icon: 'nav-reviews', to: '/dashboard/reviews', permission: 'reviews' },
-            { label: t('الشحن'), icon: 'nav-shipping', to: '/dashboard/shipping', permission: 'settings' },
+            { label: t('الشحن'), icon: 'nav-shipping', to: '/dashboard/shipping', permission: 'shipping' },
         ],
     },
     {
         title: t('الكتالوج'),
         items: [
             { label: t('المنتجات'), icon: 'nav-products', to: '/dashboard/products', permission: 'products' },
-            { label: t('الأقسام'), icon: 'nav-categories', to: '/dashboard/categories', permission: 'products' },
-            { label: t('التصنيفات'), icon: 'nav-collections', to: '/dashboard/collections', permission: 'products' },
+            { label: t('الأقسام'), icon: 'nav-categories', to: '/dashboard/categories', permission: 'categories' },
+            { label: t('التصنيفات'), icon: 'nav-collections', to: '/dashboard/collections', permission: 'collections' },
         ],
     },
     {
         title: t('المخزون والمشتريات'),
         items: [
             { label: t('المخزون'), icon: 'nav-inventory', to: '/dashboard/inventory', permission: 'inventory' },
-            { label: t('المخازن'), icon: 'nav-warehouses', to: '/dashboard/warehouses', permission: 'inventory' },
+            { label: t('المخازن'), icon: 'nav-warehouses', to: '/dashboard/warehouses', permission: 'warehouses' },
             { label: t('أوامر الشراء'), icon: 'nav-purchase-orders', to: '/dashboard/purchase-orders', permission: 'purchasing' },
-            { label: t('الموردين'), icon: 'nav-suppliers', to: '/dashboard/suppliers', permission: 'purchasing' },
+            { label: t('الموردين'), icon: 'nav-suppliers', to: '/dashboard/suppliers', permission: 'suppliers' },
         ],
     },
     {
         title: t('التسويق'),
         items: [
-            { label: t('المسوقين'), icon: 'nav-affiliates', to: '/dashboard/affiliates', permission: 'marketing' },
-            { label: t('طلبات التحويل'), icon: 'nav-payouts', to: '/dashboard/payout-requests', counter: 'payoutRequestsCount', permission: 'marketing' },
-            { label: t('الكوبونات'), icon: 'nav-coupons', to: '/dashboard/coupons', permission: 'marketing' },
-            { label: t('برنامج النقاط'), icon: 'nav-loyalty', to: '/dashboard/loyalty', permission: 'marketing' },
+            { label: t('المسوقين'), icon: 'nav-affiliates', to: '/dashboard/affiliates', permission: 'affiliates' },
+            { label: t('طلبات التحويل'), icon: 'nav-payouts', to: '/dashboard/payout-requests', counter: 'payoutRequestsCount', permission: 'payouts' },
+            { label: t('الكوبونات'), icon: 'nav-coupons', to: '/dashboard/coupons', permission: 'coupons' },
+            { label: t('برنامج النقاط'), icon: 'nav-loyalty', to: '/dashboard/loyalty', permission: 'loyalty' },
         ],
     },
     {
@@ -68,9 +69,9 @@ const NAV_SECTIONS = [
             { label: t('التقارير'), icon: 'nav-reports', to: '/dashboard/reports', permission: 'reports' },
             { label: t('فريق العمل'), icon: 'nav-staff', to: '/dashboard/staff', permission: 'owner' },
             { label: t('الاشتراك والباقة'), icon: 'nav-subscription', to: '/dashboard/subscription', permission: 'billing' },
-            { label: t('سجل النشاط'), icon: 'nav-activity', to: '/dashboard/activity', permission: 'owner' },
+            { label: t('سجل النشاط'), icon: 'nav-activity', to: '/dashboard/activity', permission: 'activity' },
             { label: t('الدعم الفني'), icon: 'nav-support', to: '/dashboard/support', permission: 'support' },
-            { label: t('إعدادات المتجر'), icon: 'nav-settings', to: '/dashboard/settings' },
+            { label: t('إعدادات المتجر'), icon: 'nav-settings', to: '/dashboard/settings', permission: 'settings' },
         ],
     },
 ];
@@ -79,6 +80,14 @@ const NAV_SECTIONS = [
  * The public storefront link customers order from. Sessions saved before the API returned
  * `store.url` fall back to this app's address.
  */
+/**
+ * The sidebar pages an account can open (the dashboard home excluded), in sidebar order:
+ * where staff without the dashboard permission land, and the shortcuts on a limited home.
+ */
+export function allowedPages(can) {
+    return NAV_SECTIONS.flatMap((section) => section.items).filter((item) => item.to !== '/dashboard' && (!item.permission || can(item.permission)));
+}
+
 function storefrontUrl(store) {
     return store?.url ?? `${window.location.origin}/${store?.slug ?? ''}`;
 }
@@ -259,7 +268,7 @@ function DashboardShell() {
                     <div className="ms-auto flex items-center gap-2">
                         <LanguageToggle />
                         <ThemeToggle />
-                        <NotificationsMenu notifications={notifications} unreadCount={unreadCount} markRead={markRead} markAllRead={markAllRead} target={notificationTarget} allHref="/dashboard/notifications" />
+                        {can('notifications') && <NotificationsMenu notifications={notifications} unreadCount={unreadCount} markRead={markRead} markAllRead={markAllRead} target={notificationTarget} allHref="/dashboard/notifications" />}
                         <Dropdown
                             label={t('قائمة الحساب')}
                             trigger={(props) => (

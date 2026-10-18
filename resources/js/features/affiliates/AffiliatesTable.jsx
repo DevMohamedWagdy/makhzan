@@ -3,33 +3,37 @@ import { Dropdown } from '@/components/ui/Dropdown';
 import { Icon } from '@/components/ui/Icon';
 import { Skeleton } from '@/components/ui/Spinner';
 import { Button } from '@/components/ui/Button';
+import { useAuth } from '@/context/AuthContext';
 import { t } from '@/i18n';
 import { cn, formatMoney, formatNumber, formatRelative } from '@/lib/format';
 import { CommissionCell, PayoutMethodLabel, StatusBadge, TierBadge } from './AffiliateBadges';
 
 const COLUMNS = [t('المسوق'), t('الهاتف'), t('الشريحة'), t('العمولة'), t('وسيلة السحب'), t('المبيعات'), t('الحالة'), t('آخر نشاط'), ''];
 
-export function buildRowActions(affiliate, actions) {
+/** The row menu, limited to what the account's role allows (`can` from useAuth). */
+export function buildRowActions(affiliate, actions, can) {
+    const canUpdate = can('affiliates.update');
+
     if (affiliate.status === 'pending') {
         return [
             { label: t('عرض الطلب'), icon: 'eye', onClick: () => actions.view(affiliate) },
-            { label: t('قبول المسوق'), icon: 'check', tone: 'success', onClick: () => actions.approve(affiliate) },
+            { label: t('قبول المسوق'), icon: 'check', tone: 'success', onClick: () => actions.approve(affiliate), hidden: !canUpdate },
             { divider: true },
-            { label: t('رفض الطلب'), icon: 'x', tone: 'danger', onClick: () => actions.reject(affiliate) },
+            { label: t('رفض الطلب'), icon: 'x', tone: 'danger', onClick: () => actions.reject(affiliate), hidden: !canUpdate },
         ];
     }
 
     return [
         { label: t('عرض الملف'), icon: 'eye', onClick: () => actions.view(affiliate) },
-        { label: t('تعديل البيانات'), icon: 'edit', onClick: () => actions.edit(affiliate) },
-        { label: t('تخصيص عمولة استثنائية'), icon: 'percent', onClick: () => actions.commission(affiliate) },
-        { label: affiliate.payout_request ? t('تأكيد طلب التحويل') : t('تسجيل دفعة عمولة'), icon: 'wallet', onClick: () => actions.payout(affiliate), hidden: affiliate.stats.pending_balance <= 0 },
-        { label: t('الدخول بصفة المسوق'), icon: 'log-in', onClick: () => actions.impersonate(affiliate) },
+        { label: t('تعديل البيانات'), icon: 'edit', onClick: () => actions.edit(affiliate), hidden: !canUpdate },
+        { label: t('تخصيص عمولة استثنائية'), icon: 'percent', onClick: () => actions.commission(affiliate), hidden: !canUpdate },
+        { label: affiliate.payout_request ? t('تأكيد طلب التحويل') : t('تسجيل دفعة عمولة'), icon: 'wallet', onClick: () => actions.payout(affiliate), hidden: affiliate.stats.pending_balance <= 0 || !can('payouts.update') },
+        { label: t('الدخول بصفة المسوق'), icon: 'log-in', onClick: () => actions.impersonate(affiliate), hidden: !can('affiliates.impersonate') },
         { divider: true },
         affiliate.status === 'frozen'
-            ? { label: t('إلغاء التجميد'), icon: 'zap', tone: 'success', onClick: () => actions.activate(affiliate) }
-            : { label: t('تجميد / إيقاف الحساب'), icon: 'snowflake', onClick: () => actions.freeze(affiliate) },
-        { label: t('حذف نهائي'), icon: 'trash', tone: 'danger', onClick: () => actions.remove(affiliate) },
+            ? { label: t('إلغاء التجميد'), icon: 'zap', tone: 'success', onClick: () => actions.activate(affiliate), hidden: !canUpdate }
+            : { label: t('تجميد / إيقاف الحساب'), icon: 'snowflake', onClick: () => actions.freeze(affiliate), hidden: !canUpdate },
+        { label: t('حذف نهائي'), icon: 'trash', tone: 'danger', onClick: () => actions.remove(affiliate), hidden: !can('affiliates.delete') },
     ];
 }
 
@@ -55,6 +59,7 @@ function LoadingRows({ count }) {
 }
 
 export function AffiliatesTable({ items, loading, error, perPage, actions, hasActiveFilters, onResetFilters, onAdd, onRetry }) {
+    const { can } = useAuth();
     if (error) {
         return <EmptyState icon="alert-triangle" title={t('تعذر تحميل المسوقين')} description={error} action={<Button variant="secondary" icon="refresh" onClick={onRetry}>{t('إعادة المحاولة')}</Button>} />;
     }
@@ -145,7 +150,7 @@ export function AffiliatesTable({ items, loading, error, perPage, actions, hasAc
                                         )}
                                         <Dropdown
                                             label={t('إجراءات {full_name}', { full_name: affiliate.full_name })}
-                                            items={buildRowActions(affiliate, actions)}
+                                            items={buildRowActions(affiliate, actions, can)}
                                             trigger={(props) => (
                                                 <button type="button" {...props} className="grid size-8 place-items-center rounded-lg text-muted transition hover:bg-surface-3 hover:text-ink aria-expanded:bg-surface-3 aria-expanded:text-ink">
                                                     <Icon name="more-vertical" className="size-[18px]" />

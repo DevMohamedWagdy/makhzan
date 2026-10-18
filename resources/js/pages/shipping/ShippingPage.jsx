@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/Button';
 import { Alert, Card, EmptyState } from '@/components/ui/Display';
 import { Field, Input, Switch } from '@/components/ui/Form';
 import { Skeleton } from '@/components/ui/Spinner';
+import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
 import { BostaConnectionCard } from '@/features/shipping/BostaConnectionCard';
 import { t } from '@/i18n';
@@ -17,6 +18,7 @@ const toNumber = (value) => (value === '' ? null : Number(value));
 
 /** Delivery prices: a default price, per-governorate overrides or no delivery, free shipping. */
 export function ShippingPage() {
+    const { can } = useAuth();
     const toast = useToast();
     const [settings, setSettings] = useState(null);
     const [error, setError] = useState(null);
@@ -63,7 +65,8 @@ export function ShippingPage() {
             description={t('حدد أسعار التوصيل لكل محافظة، والمحافظات التي توصّل إليها')}
             breadcrumbs={[t('لوحة التحكم'), t('المبيعات'), t('الشحن')]}
             actions={
-                settings && (
+                settings &&
+                can('shipping.update') && (
                     <Button icon="check" loading={saving} onClick={save}>
                         {t('حفظ الإعدادات')}
                     </Button>

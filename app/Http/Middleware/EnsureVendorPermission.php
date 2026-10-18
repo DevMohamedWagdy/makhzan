@@ -42,7 +42,8 @@ class EnsureVendorPermission
 
         $allowed = in_array($permission, [self::OWNER, self::BILLING], true)
             ? $vendor->isOwner()
-            : $vendor->hasPermission(StorePermissions::forRequest($permission, $request->method(), $request->route()?->defaults['_permission'] ?? null));
+            : collect(explode('|', StorePermissions::forRequest($permission, $request->method(), $request->route()?->defaults['_permission'] ?? null)))
+                ->contains(fn (string $needed): bool => $vendor->hasPermission($needed));
 
         abort_unless($allowed, Response::HTTP_FORBIDDEN, __('auth.staff_forbidden'));
 

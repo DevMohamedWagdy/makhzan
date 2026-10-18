@@ -82,6 +82,36 @@ export function AuthProvider({ children }) {
         });
     }, []);
 
+    // The role's permissions (and the store's details) can change while signed in, e.g. the owner
+    // edits a role: reload them on start, when the tab regains focus and every two minutes, so
+    // the sidebar and pages follow without signing out.
+    const token = session?.token;
+
+    useEffect(() => {
+        if (!token) {
+            return undefined;
+        }
+
+        let active = true;
+        const refresh = () =>
+            authApi
+                .me()
+                .then((vendor) => active && updateVendor(vendor))
+                .catch(() => {});
+
+        refresh();
+
+        const timer = setInterval(refresh, 120_000);
+
+        window.addEventListener('focus', refresh);
+
+        return () => {
+            active = false;
+            clearInterval(timer);
+            window.removeEventListener('focus', refresh);
+        };
+    }, [token, updateVendor]);
+
     /** Starts a time-limited "login as affiliate" session; vendor session stays intact. */
     const impersonate = useCallback(async (affiliateId) => {
         const result = await affiliatesApi.impersonate(affiliateId);

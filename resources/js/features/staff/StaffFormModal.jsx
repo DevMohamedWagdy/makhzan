@@ -6,7 +6,7 @@ import { useToast } from '@/context/ToastContext';
 import { t } from '@/i18n';
 import { staffApi } from '@/services/staffApi';
 
-const EMPTY = { full_name: '', phone: '', email: '', password: '', role_id: '', is_active: true };
+const EMPTY = { full_name: '', job_title: '', phone: '', email: '', password: '', role_id: '', is_active: true };
 
 /** Add or edit a team member; `member` null means a new one. Calls onSaved with the saved member. */
 export function StaffFormModal({ open, member, roles, onClose, onSaved }) {
@@ -38,7 +38,7 @@ export function StaffFormModal({ open, member, roles, onClose, onSaved }) {
         setSubmitting(true);
 
         try {
-            const payload = { ...values, role_id: Number(values.role_id), password: values.password || null };
+            const payload = { ...values, job_title: values.job_title.trim(), role_id: Number(values.role_id), password: values.password || null };
             const saved = member ? await staffApi.update(member.staff_id, payload) : await staffApi.create(payload);
 
             toast.success(member ? t('تم حفظ بيانات الموظف') : t('تمت إضافة الموظف'), member ? undefined : t('شارك معه رقم الهاتف وكلمة المرور ليسجّل الدخول.'));
@@ -54,8 +54,11 @@ export function StaffFormModal({ open, member, roles, onClose, onSaved }) {
     return (
         <Modal open={open} onClose={onClose} dismissible={!submitting} size="lg" icon="user-plus" title={member ? t('تعديل الموظف') : t('موظف جديد')}>
             <form onSubmit={submit} noValidate className="grid gap-4 sm:grid-cols-2">
-                <Field label={t('الاسم بالكامل')} required error={errors.full_name} className="sm:col-span-2">
+                <Field label={t('الاسم بالكامل')} required error={errors.full_name}>
                     {(props) => <Input {...props} {...bind('full_name')} data-autofocus maxLength={255} />}
+                </Field>
+                <Field label={t('الوظيفة')} required error={errors.job_title} hint={t('للتوضيح فقط، والصلاحيات يحددها الدور.')}>
+                    {(props) => <Input {...props} {...bind('job_title')} placeholder={t('مثال: مسؤول المخزن')} maxLength={100} />}
                 </Field>
                 <Field label={t('رقم الهاتف')} required error={errors.phone}>
                     {(props) => <Input {...props} {...bind('phone')} type="tel" dir="ltr" className="text-start" placeholder="01012345678" />}

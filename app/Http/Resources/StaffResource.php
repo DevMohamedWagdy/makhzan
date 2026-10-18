@@ -23,6 +23,7 @@ class StaffResource extends JsonResource
         return [
             'staff_id' => $this->id,
             'full_name' => $this->full_name,
+            'job_title' => $this->job_title,
             'phone' => $this->phone,
             'email' => $this->email,
             'role' => $this->whenLoaded('role', fn (): ?array => $this->role ? ['role_id' => $this->role->id, 'name' => $this->role->name] : null),

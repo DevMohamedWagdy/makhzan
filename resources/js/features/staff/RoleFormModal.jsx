@@ -6,16 +6,17 @@ import { Modal } from '@/components/ui/Overlay';
 import { useToast } from '@/context/ToastContext';
 import { t } from '@/i18n';
 import { cn } from '@/lib/format';
-import { PERMISSION_ACTIONS, PERMISSION_SECTIONS, ROLE_TEMPLATES } from './permissions';
+import { PERMISSION_ACTIONS, PERMISSION_GROUPS, PERMISSION_SECTIONS, ROLE_TEMPLATES } from './permissions';
 
 const EMPTY = { name: '', description: '', permissions: [] };
 
 /**
  * Add or edit a role: a grid of sections × actions. Any action also grants "view" of its
- * section (the API applies the same rule). Store roles by default; the admin panel passes
- * its own labels, templates and save call.
+ * section (the API applies the same rule). Store roles by default, grouped like the sidebar;
+ * the admin panel passes its own labels, templates and save call, and its sections (which
+ * have no group) are listed without headings.
  */
-export function RoleFormModal({ open, role, catalog, onClose, onSaved, save, sections = PERMISSION_SECTIONS, actionLabels = PERMISSION_ACTIONS, templates = ROLE_TEMPLATES }) {
+export function RoleFormModal({ open, role, catalog, onClose, onSaved, save, sections = PERMISSION_SECTIONS, actionLabels = PERMISSION_ACTIONS, templates = ROLE_TEMPLATES, groups = PERMISSION_GROUPS }) {
     const toast = useToast();
     const [values, setValues] = useState(EMPTY);
     const [errors, setErrors] = useState({});
@@ -52,6 +53,51 @@ export function RoleFormModal({ open, role, catalog, onClose, onSaved, save, sec
         const all = keys.every(has);
 
         setValues((current) => ({ ...current, permissions: all ? current.permissions.filter((item) => !keys.includes(item)) : [...new Set([...current.permissions, ...keys])] }));
+    };
+
+    // Store sections carry a sidebar group; the admin panel's don't, and are listed as one block.
+    const groupedSections = groups
+        .map((group) => ({ ...group, entries: Object.entries(catalog).filter(([section]) => sections[section]?.group === group.key) }))
+        .filter((group) => group.entries.length > 0);
+    const ungrouped = Object.entries(catalog).filter(([section]) => !groupedSections.some((group) => group.entries.some(([key]) => key === section)));
+
+    if (ungrouped.length > 0) {
+        groupedSections.push({ key: 'other', label: groupedSections.length ? t('أخرى') : null, entries: ungrouped });
+    }
+
+    const renderSection = (section, actions) => {
+        const config = sections[section] ?? { label: section, icon: 'grid' };
+        const all = actions.every((action) => has(`${section}.${action}`));
+
+        return (
+            <div key={section} className="flex flex-wrap items-center gap-3 border-b border-line px-4 py-3 last:border-b-0">
+                <button type="button" onClick={() => toggleSection(section)} className="flex w-44 shrink-0 items-center gap-2 text-start text-sm font-semibold text-ink" title={all ? t('إلغاء الكل') : t('تحديد الكل')}>
+                    <Icon name={config.icon} className="size-4 text-primary" />
+                    <span>
+                        {config.label}
+                        {config.hint && <span className="block text-[11px] font-normal text-muted">{config.hint}</span>}
+                    </span>
+                </button>
+                <div className="flex flex-wrap gap-1.5">
+                    {actions.map((action) => {
+                        const active = has(`${section}.${action}`);
+
+                        return (
+                            <button
+                                key={action}
+                                type="button"
+                                aria-pressed={active}
+                                onClick={() => toggle(section, action)}
+                                className={cn('rounded-lg border px-2.5 py-1 text-xs font-medium transition', active ? 'border-primary bg-primary-soft text-primary' : 'border-line text-muted hover:border-line-strong hover:text-ink')}
+                            >
+                                {active && <Icon name="check" className="me-1 inline size-3" />}
+                                {actionLabels[action] ?? action}
+                            </button>
+                        );
+                    })}
+                </div>
+            </div>
+        );
     };
 
     const submit = async (event) => {
@@ -95,38 +141,13 @@ export function RoleFormModal({ open, role, catalog, onClose, onSaved, save, sec
                     </Field>
                 </div>
 
-                <div className="overflow-hidden rounded-xl border border-line">
-                    {Object.entries(catalog).map(([section, actions]) => {
-                        const config = sections[section] ?? { label: section, icon: 'grid' };
-                        const all = actions.every((action) => has(`${section}.${action}`));
-
-                        return (
-                            <div key={section} className="flex flex-wrap items-center gap-3 border-b border-line px-4 py-3 last:border-b-0">
-                                <button type="button" onClick={() => toggleSection(section)} className="flex w-44 shrink-0 items-center gap-2 text-start text-sm font-semibold text-ink" title={all ? t('إلغاء الكل') : t('تحديد الكل')}>
-                                    <Icon name={config.icon} className="size-4 text-primary" />
-                                    {config.label}
-                                </button>
-                                <div className="flex flex-wrap gap-1.5">
-                                    {actions.map((action) => {
-                                        const active = has(`${section}.${action}`);
-
-                                        return (
-                                            <button
-                                                key={action}
-                                                type="button"
-                                                aria-pressed={active}
-                                                onClick={() => toggle(section, action)}
-                                                className={cn('rounded-lg border px-2.5 py-1 text-xs font-medium transition', active ? 'border-primary bg-primary-soft text-primary' : 'border-line text-muted hover:border-line-strong hover:text-ink')}
-                                            >
-                                                {active && <Icon name="check" className="me-1 inline size-3" />}
-                                                {actionLabels[action] ?? action}
-                                            </button>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-                        );
-                    })}
+                <div className="mk-scroll max-h-[55vh] overflow-y-auto rounded-xl border border-line">
+                    {groupedSections.map(({ key, label, entries }) => (
+                        <div key={key}>
+                            {label && <p className="sticky top-0 z-10 border-b border-line bg-surface-2 px-4 py-2 text-[11px] font-semibold tracking-wide text-muted uppercase">{label}</p>}
+                            {entries.map(([section, actions]) => renderSection(section, actions))}
+                        </div>
+                    ))}
                 </div>
                 {errors.permissions && <p className="text-xs text-danger">{errors.permissions}</p>}
 

@@ -32,7 +32,7 @@ class StaffController extends Controller
             throw ValidationException::withMessages(['plan' => __('billing.staff_limit', ['limit' => $store->currentPlan()->max_staff])]);
         }
 
-        $staffMember = $store->staff()->create($request->safe()->only(['full_name', 'phone', 'email', 'password', 'role_id', 'is_active']));
+        $staffMember = $store->staff()->create($request->safe()->only(['full_name', 'job_title', 'phone', 'email', 'password', 'role_id', 'is_active']));
 
         return new StaffResource($staffMember->refresh()->load('role'));
     }
@@ -44,7 +44,7 @@ class StaffController extends Controller
     {
         $this->ensureWorksHere($request, $staffMember);
 
-        $staffMember->fill($request->safe()->only(['full_name', 'phone', 'email', 'role_id', 'is_active']));
+        $staffMember->fill($request->safe()->only(['full_name', 'job_title', 'phone', 'email', 'role_id', 'is_active']));
 
         if ($request->filled('password')) {
             $staffMember->password = $request->validated('password');

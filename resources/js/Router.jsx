@@ -225,13 +225,17 @@ export function App() {
                                     <Route element={<RequirePermission permission="any" />}>
                                         <Route index element={<DashboardHomePage />} />
                                     </Route>
-                                    <Route path="notifications" element={<NotificationsPage />} />
+                                    <Route element={<RequirePermission permission="notifications" />}>
+                                        <Route path="notifications" element={<NotificationsPage />} />
+                                    </Route>
                                     <Route path="settings" element={<SettingsPage />} />
                                     <Route element={<RequirePermission permission="billing" />}>
                                         <Route path="subscription" element={<SubscriptionPage />} />
                                     </Route>
                                     <Route element={<RequirePermission permission="owner" />}>
                                         <Route path="staff" element={<StaffPage />} />
+                                    </Route>
+                                    <Route element={<RequirePermission permission="activity" />}>
                                         <Route path="activity" element={<StoreActivityPage />} />
                                     </Route>
                                     <Route element={<RequirePermission permission="support" />}>
@@ -247,19 +251,29 @@ export function App() {
                                     <Route element={<RequirePermission permission="reviews" />}>
                                         <Route path="reviews" element={<ReviewsPage />} />
                                     </Route>
-                                    <Route element={<RequirePermission permission="marketing" />}>
+                                    <Route element={<RequirePermission permission="coupons" />}>
                                         <Route path="coupons" element={<CouponsPage />} />
+                                    </Route>
+                                    <Route element={<RequirePermission permission="loyalty" />}>
                                         <Route path="loyalty" element={<LoyaltyPage />} />
+                                    </Route>
+                                    <Route element={<RequirePermission permission="affiliates" />}>
                                         <Route path="affiliates" element={<AffiliatesPage />} />
+                                    </Route>
+                                    <Route element={<RequirePermission permission="payouts" />}>
                                         <Route path="payout-requests" element={<PayoutRequestsPage />} />
                                     </Route>
                                     <Route element={<RequirePermission permission="inventory" />}>
                                         <Route path="inventory" element={<InventoryPage />} />
                                         <Route path="inventory/movements" element={<StockMovementsPage />} />
+                                    </Route>
+                                    <Route element={<RequirePermission permission="warehouses" />}>
                                         <Route path="warehouses" element={<WarehousesPage />} />
                                     </Route>
-                                    <Route element={<RequirePermission permission="purchasing" />}>
+                                    <Route element={<RequirePermission permission="suppliers" />}>
                                         <Route path="suppliers" element={<SuppliersPage />} />
+                                    </Route>
+                                    <Route element={<RequirePermission permission="purchasing" />}>
                                         <Route path="purchase-orders" element={<PurchaseOrdersPage />} />
                                         <Route path="purchase-orders/new" element={<PurchaseOrderFormPage />} />
                                         <Route path="purchase-orders/:purchaseOrderId" element={<PurchaseOrderPage />} />
@@ -274,12 +288,16 @@ export function App() {
                                     <Route element={<RequirePermission permission="payments" />}>
                                         <Route path="payments" element={<PaymentsPage />} />
                                     </Route>
-                                    <Route element={<RequirePermission permission="settings" />}>
+                                    <Route element={<RequirePermission permission="shipping" />}>
                                         <Route path="shipping" element={<ShippingPage />} />
                                     </Route>
-                                    <Route element={<RequirePermission permission="products" />}>
+                                    <Route element={<RequirePermission permission="categories" />}>
                                         <Route path="categories" element={<CategoriesPage />} />
+                                    </Route>
+                                    <Route element={<RequirePermission permission="collections" />}>
                                         <Route path="collections" element={<CollectionsPage />} />
+                                    </Route>
+                                    <Route element={<RequirePermission permission="products" />}>
                                         <Route path="products" element={<ProductsPage />} />
                                         <Route element={<RequirePermission permission="products.create" />}>
                                             <Route path="products/new" element={<ProductFormPage />} />

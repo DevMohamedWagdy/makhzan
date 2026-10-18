@@ -115,7 +115,7 @@ export function CouponsPage() {
                 description={t('أكواد خصم يكتبها العميل عند إتمام الطلب')}
                 breadcrumbs={[t('لوحة التحكم'), t('التسويق'), t('الكوبونات')]}
                 actions={
-                    can('marketing.create') && (
+                    can('coupons.create') && (
                         <Button icon="plus" onClick={() => setQuery({ coupon: 'new' })}>
                             {t('كوبون جديد')}
                         </Button>
@@ -145,7 +145,7 @@ export function CouponsPage() {
                             icon="gift"
                             title={state || searchQuery ? t('لا توجد كوبونات مطابقة') : t('لا توجد كوبونات بعد')}
                             description={t('أنشئ كود خصم لعرض أو مناسبة، أو اربطه بمسوق ليشاركه مع متابعيه.')}
-                            action={can('marketing.create') && <Button icon="plus" onClick={() => setQuery({ coupon: 'new' })}>{t('كوبون جديد')}</Button>}
+                            action={can('coupons.create') && <Button icon="plus" onClick={() => setQuery({ coupon: 'new' })}>{t('كوبون جديد')}</Button>}
                         />
                     </div>
                 ) : (
@@ -206,7 +206,7 @@ export function CouponsPage() {
                                                           </button>
                                                       )}
                                                       items={[
-                                                          { label: t('تعديل'), icon: 'edit', onClick: () => setQuery({ coupon: coupon.coupon_id }), hidden: !can('marketing.update') },
+                                                          { label: t('تعديل'), icon: 'edit', onClick: () => setQuery({ coupon: coupon.coupon_id }), hidden: !can('coupons.update') },
                                                           {
                                                               label: t('نسخ رابط الكوبون'),
                                                               icon: 'link',
@@ -216,9 +216,9 @@ export function CouponsPage() {
                                                               },
                                                           },
                                                           { label: t('عرض الطلبات'), icon: 'shopping-bag', onClick: () => navigate(`/dashboard/orders?coupon_id=${coupon.coupon_id}`) },
-                                                          { label: coupon.is_active ? t('إيقاف') : t('تفعيل'), icon: coupon.is_active ? 'eye-off' : 'check-circle', onClick: () => toggle(coupon), hidden: !can('marketing.update') },
+                                                          { label: coupon.is_active ? t('إيقاف') : t('تفعيل'), icon: coupon.is_active ? 'eye-off' : 'check-circle', onClick: () => toggle(coupon), hidden: !can('coupons.update') },
                                                           { divider: true },
-                                                          { label: t('حذف'), icon: 'trash', tone: 'danger', onClick: () => setDeleting(coupon), hidden: !can('marketing.delete'), disabled: coupon.stats.uses > 0, hint: coupon.stats.uses > 0 ? t('مستخدم في طلبات') : undefined },
+                                                          { label: t('حذف'), icon: 'trash', tone: 'danger', onClick: () => setDeleting(coupon), hidden: !can('coupons.delete'), disabled: coupon.stats.uses > 0, hint: coupon.stats.uses > 0 ? t('مستخدم في طلبات') : undefined },
                                                       ]}
                                                   />
                                               </td>

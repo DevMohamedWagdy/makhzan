@@ -79,7 +79,7 @@ export function CollectionsPage() {
                 description={t('اجمع منتجات مختارة في تصنيفات مثل «أحدث العروض» لتظهر كأقسام في الصفحة الرئيسية لمتجرك.')}
                 breadcrumbs={[t('لوحة التحكم'), t('الكتالوج'), t('التصنيفات')]}
                 actions={
-                    can('products.create') && (
+                    can('collections.create') && (
                         <Button icon="plus" onClick={() => setDialog({ type: 'form' })}>
                             {t('إضافة تصنيف')}
                         </Button>
@@ -105,7 +105,7 @@ export function CollectionsPage() {
                             title={t('لا توجد تصنيفات بعد')}
                             description={t('أنشئ تصنيفاً مثل «أحدث العروض» أو «أحدث المنتجات»، ثم اختر منتجاته ليظهر قسماً في الصفحة الرئيسية لمتجرك.')}
                             action={
-                                can('products.create') && <Button icon="plus" onClick={() => setDialog({ type: 'form' })}>
+                                can('collections.create') && <Button icon="plus" onClick={() => setDialog({ type: 'form' })}>
                                     {t('إضافة أول تصنيف')}
                                 </Button>
                             }
@@ -115,7 +115,7 @@ export function CollectionsPage() {
                     <ul className="divide-y divide-line">
                         {collections.map((collection, index) => (
                             <li key={collection.collection_id} className="flex flex-wrap items-center gap-4 p-4">
-                                <div className={cn('flex flex-col', !can('products.update') && 'hidden')}>
+                                <div className={cn('flex flex-col', !can('collections.update') && 'hidden')}>
                                     <button type="button" onClick={() => move(index, -1)} disabled={busy || index === 0} className="grid size-6 place-items-center rounded text-muted hover:bg-surface-3 hover:text-ink disabled:opacity-30" aria-label={t('نقل {name} لأعلى', { name: localized(collection) })}>
                                         <Icon name="chevron-down" className="size-4 rotate-180" />
                                     </button>
@@ -134,15 +134,15 @@ export function CollectionsPage() {
                                     <p className="mt-0.5 text-xs text-muted">{t('{value} منتج', { value: formatNumber(collection.products_count) })}</p>
                                 </div>
                                 <Button variant="secondary" size="sm" icon="box" onClick={() => setDialog({ type: 'products', collection })}>
-                                    {can('products.update') ? t('إدارة المنتجات') : t('عرض المنتجات')}
+                                    {can('collections.update') ? t('إدارة المنتجات') : t('عرض المنتجات')}
                                 </Button>
                                 <div className="flex gap-1">
-                                    {can('products.update') && (
+                                    {can('collections.update') && (
                                         <Button variant="secondary" size="sm" icon="edit" onClick={() => setDialog({ type: 'form', collection })}>
                                             {t('تعديل')}
                                         </Button>
                                     )}
-                                    {can('products.delete') && (
+                                    {can('collections.delete') && (
                                         <Button variant="danger-soft" size="icon" onClick={() => setDialog({ type: 'delete', collection })} aria-label={t('حذف {name}', { name: localized(collection) })} title={t('حذف')}>
                                             <Icon name="trash" className="size-4" />
                                         </Button>

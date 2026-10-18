@@ -22,7 +22,7 @@ use Laravel\Sanctum\HasApiTokens;
  * A dashboard account: either a store owner (owns a store through stores.vendor_id) or a staff
  * member working in another vendor's store (store_id) with a role's permissions.
  */
-#[Fillable(['full_name', 'phone', 'email', 'password', 'role_id', 'is_active'])]
+#[Fillable(['full_name', 'job_title', 'phone', 'email', 'password', 'role_id', 'is_active'])]
 #[Hidden(['password', 'remember_token'])]
 class Vendor extends Authenticatable implements HasLocalePreference
 {
@@ -118,6 +118,24 @@ class Vendor extends Authenticatable implements HasLocalePreference
     public function grantedPermissions(): array
     {
         return $this->isOwner() ? StorePermissions::all() : array_values(array_intersect(StorePermissions::all(), $this->role?->permissions ?? []));
+    }
+
+    /**
+     * The notification types this account may see in the shared inbox, from its role; null
+     * for the owner, who sees them all.
+     *
+     * @return list<string>|null
+     */
+    public function visibleNotificationTypes(): ?array
+    {
+        if ($this->isOwner()) {
+            return null;
+        }
+
+        return collect(StorePermissions::NOTIFICATIONS)
+            ->filter(fn (array $permissions): bool => collect($permissions)->contains(fn (string $permission): bool => $this->hasPermission($permission)))
+            ->keys()
+            ->all();
     }
 
     /**

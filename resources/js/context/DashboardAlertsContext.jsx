@@ -27,13 +27,13 @@ export function DashboardAlertsProvider({ children }) {
         try {
             // Staff only poll the sections they can open.
             const [list, summary, orders] = await Promise.all([
-                notificationsApi.list({ per_page: 8 }),
-                can('marketing') ? affiliatesApi.summary() : null,
+                can('notifications') ? notificationsApi.list({ per_page: 8 }) : null,
+                can('payouts') || can('affiliates') ? affiliatesApi.summary() : null,
                 can('orders') ? ordersApi.summary() : null,
             ]);
 
-            setNotifications(list.data);
-            setUnreadCount(list.summary.unread_count);
+            setNotifications(list?.data ?? []);
+            setUnreadCount(list?.summary.unread_count ?? 0);
             setPayoutRequestsCount(summary?.payout_requests ?? 0);
             setPendingOrdersCount(orders?.pending ?? 0);
         } catch {

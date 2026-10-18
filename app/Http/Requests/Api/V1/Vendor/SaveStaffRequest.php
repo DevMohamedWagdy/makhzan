@@ -47,6 +47,7 @@ class SaveStaffRequest extends FormRequest
 
         return [
             'full_name' => ['required', 'string', 'min:3', 'max:255'],
+            'job_title' => ['required', 'string', 'max:100'],
             'phone' => ['required', 'regex:'.PhoneNumber::PATTERN, Rule::unique('vendors', 'phone')->ignore($staffMember?->id)],
             'email' => ['required', 'email', 'max:255', Rule::unique('vendors', 'email')->ignore($staffMember?->id)],
             'password' => [$staffMember ? 'nullable' : 'required', 'string', 'min:8', 'regex:/[A-Za-z]/', 'regex:/\d/'],
@@ -62,6 +63,8 @@ class SaveStaffRequest extends FormRequest
     {
         return [
             'full_name.required' => __('forms.full_name_required'),
+            'job_title.required' => __('forms.job_title_required'),
+            'job_title.max' => __('forms.job_title_max'),
             'phone.required' => __('forms.vendor_phone_required'),
             'phone.regex' => __('forms.phone_invalid'),
             'phone.unique' => __('forms.phone_taken'),

@@ -11,7 +11,7 @@ import { useToast } from '@/context/ToastContext';
 import { useWarehouses } from '@/features/inventory/useWarehouses';
 import { TransferModal, WarehouseFormModal } from '@/features/inventory/WarehouseModals';
 import { t } from '@/i18n';
-import { cn, formatDate, formatMoney, formatNumber } from '@/lib/format';
+import { formatDate, formatMoney, formatNumber } from '@/lib/format';
 import { findGovernorate } from '@/lib/locations';
 import { transfersApi, warehousesApi } from '@/services/warehousesApi';
 
@@ -125,7 +125,7 @@ export function WarehousesPage() {
                                 {t('تحويل بين المخازن')}
                             </Button>
                         )}
-                        {can('inventory.warehouses') && (
+                        {can('warehouses.create') && (
                             <Button icon="plus" onClick={() => setEditing({})}>
                                 {t('مخزن جديد')}
                             </Button>
@@ -156,11 +156,17 @@ export function WarehousesPage() {
                                         <p className="font-semibold text-ink">{t('{count} قطعة', { count: formatNumber(warehouse.units ?? 0) })}</p>
                                         <p className="text-xs text-muted">{t('بالتكلفة {value}', { value: formatMoney(warehouse.cost_value ?? 0) })}</p>
                                     </div>
-                                    <div className={cn('flex items-center gap-1', !can('inventory.warehouses') && 'hidden')}>
-                                        <Button size="icon" variant="ghost" icon="chevron-down" className="rotate-180" onClick={() => move(index, -1)} disabled={index === 0} aria-label={t('رفع {name} في الترتيب', { name: warehouse.name })} />
-                                        <Button size="icon" variant="ghost" icon="chevron-down" onClick={() => move(index, 1)} disabled={index === warehouses.length - 1} aria-label={t('خفض {name} في الترتيب', { name: warehouse.name })} />
-                                        <Button size="icon" variant="ghost" icon="edit" onClick={() => setEditing(warehouse)} aria-label={t('تعديل {name}', { name: warehouse.name })} />
-                                        <Button size="icon" variant="ghost" icon="trash" onClick={() => setDeleting(warehouse)} disabled={warehouses.length === 1 || warehouse.units > 0} title={warehouse.units > 0 ? t('انقل كل الكميات من هذا المخزن قبل حذفه') : undefined} aria-label={t('حذف {name}', { name: warehouse.name })} />
+                                    <div className="flex items-center gap-1">
+                                        {can('warehouses.update') && (
+                                            <>
+                                                <Button size="icon" variant="ghost" icon="chevron-down" className="rotate-180" onClick={() => move(index, -1)} disabled={index === 0} aria-label={t('رفع {name} في الترتيب', { name: warehouse.name })} />
+                                                <Button size="icon" variant="ghost" icon="chevron-down" onClick={() => move(index, 1)} disabled={index === warehouses.length - 1} aria-label={t('خفض {name} في الترتيب', { name: warehouse.name })} />
+                                                <Button size="icon" variant="ghost" icon="edit" onClick={() => setEditing(warehouse)} aria-label={t('تعديل {name}', { name: warehouse.name })} />
+                                            </>
+                                        )}
+                                        {can('warehouses.delete') && (
+                                            <Button size="icon" variant="ghost" icon="trash" onClick={() => setDeleting(warehouse)} disabled={warehouses.length === 1 || warehouse.units > 0} title={warehouse.units > 0 ? t('انقل كل الكميات من هذا المخزن قبل حذفه') : undefined} aria-label={t('حذف {name}', { name: warehouse.name })} />
+                                        )}
                                     </div>
                                 </li>
                             ))}

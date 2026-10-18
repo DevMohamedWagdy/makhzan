@@ -121,7 +121,7 @@ class SubscriptionTest extends TestCase
 
         $this->postJson('/api/v1/vendor/products', ['category_id' => $category->id, 'name' => 'فستان', 'status' => 'active', 'options' => [], 'variants' => [['option_values' => [], 'price' => 100, 'stock' => 1]]])
             ->assertJsonValidationErrors('plan');
-        $this->postJson('/api/v1/vendor/staff', ['full_name' => 'Staff One', 'phone' => '01055554444', 'email' => 's@x.test', 'password' => 'Staff2026pass', 'role_id' => StoreRole::factory()->for($this->vendor->store)->create()->id])
+        $this->postJson('/api/v1/vendor/staff', ['full_name' => 'Staff One', 'job_title' => 'Sales', 'phone' => '01055554444', 'email' => 's@x.test', 'password' => 'Staff2026pass', 'role_id' => StoreRole::factory()->for($this->vendor->store)->create()->id])
             ->assertJsonValidationErrors('plan');
         $this->postJson('/api/v1/vendor/affiliates', [])->assertStatus(402);
         $this->assertFalse($this->vendor->fresh()->store->hasFeature(PlanFeature::OnlinePayments));
