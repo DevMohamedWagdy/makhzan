@@ -305,7 +305,7 @@ export function StorefrontLayout() {
             <CustomerAuthProvider storeSlug={storeSlug}>
             <CartProvider storeSlug={storeSlug}>
                 <div className="flex min-h-dvh flex-col bg-bg pb-16 md:pb-0">
-                    <div className="bg-primary text-white">
+                    <div className="bg-brand text-white">
                         <div className="mx-auto flex h-9 max-w-7xl items-center justify-between gap-4 px-4 text-xs sm:px-6">
                             <p className="truncate font-medium">{store?.announcement || perks.map((perk) => perk.title).join('  •  ')}</p>
                             {whatsappNumber && (

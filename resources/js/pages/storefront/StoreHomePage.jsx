@@ -26,14 +26,14 @@ function HeroBanner({ storeSlug, store, products }) {
     const photos = products.filter((product) => product.image_url).slice(0, 3);
 
     return (
-        <Link to={`/${storeSlug}/products`} className="group relative flex min-h-64 overflow-hidden rounded-3xl bg-gradient-to-br from-primary via-primary to-primary-hover p-6 text-white sm:min-h-80 sm:p-10 lg:col-span-2">
+        <Link to={`/${storeSlug}/products`} className="group relative flex min-h-64 overflow-hidden rounded-3xl bg-gradient-to-br from-brand via-brand to-accent p-6 text-white sm:min-h-80 sm:p-10 lg:col-span-2">
             <div className="absolute -top-24 -end-24 size-80 rounded-full bg-white/10" aria-hidden="true" />
             <div className="absolute -bottom-32 end-1/3 size-72 rounded-full bg-white/5" aria-hidden="true" />
             <div className="relative flex max-w-md flex-col justify-center">
                 <span className="w-fit rounded-full bg-white/15 px-3 py-1 text-xs font-semibold backdrop-blur">{t('أهلاً بك في')}</span>
                 <h1 className="mt-3 text-3xl leading-tight font-extrabold sm:text-5xl">{store.name}</h1>
                 <p className="mt-3 text-sm leading-relaxed text-white/85 sm:text-base">{store.description || t('تسوّق أحدث التشكيلات بأفضل الأسعار، والدفع عند الاستلام.')}</p>
-                <span className="mt-6 inline-flex h-12 w-fit items-center gap-2 rounded-xl bg-white px-6 text-sm font-bold text-primary shadow-lg transition group-hover:gap-3">
+                <span className="mt-6 inline-flex h-12 w-fit items-center gap-2 rounded-xl bg-white px-6 text-sm font-bold text-brand shadow-lg transition group-hover:gap-3">
                     {t('تسوّق الآن')}
                     <Icon name="arrow-left" className="size-4" />
                 </span>
@@ -144,7 +144,7 @@ export function StoreHomePage() {
             <section className="grid gap-4 lg:grid-cols-3">
                 <HeroBanner storeSlug={storeSlug} store={store} products={featured.length ? featured : latest} />
                 <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-1">
-                    <PromoCard to={`/${storeSlug}/products`} {...firstPromo} tone="bg-warning-soft text-ink" />
+                    <PromoCard to={`/${storeSlug}/products`} {...firstPromo} tone="bg-primary-soft text-ink" />
                     <PromoCard to={`/${storeSlug}/products?sort=newest`} eyebrow={t('جديد')} title={t('وصل حديثاً')} product={latest[0]} tone="bg-info-soft text-ink" />
                 </div>
             </section>

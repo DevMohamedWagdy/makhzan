@@ -21,13 +21,11 @@ export function ProductImage({ src, alt, className = '' }) {
 
 export function PriceTag({ price, priceMax, compareAtPrice, size = 'md' }) {
     const isRange = priceMax !== null && priceMax !== undefined && priceMax !== price;
-    const discount = compareAtPrice > price ? Math.round((1 - price / compareAtPrice) * 100) : 0;
 
     return (
         <span className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
             <span className={size === 'lg' ? 'text-3xl font-extrabold text-ink' : 'text-base font-extrabold text-ink'}>{isRange ? t('من {price}', { price: formatMoney(price) }) : formatMoney(price)}</span>
             {compareAtPrice && <span className={size === 'lg' ? 'text-base text-muted line-through' : 'text-xs text-muted line-through'}>{formatMoney(compareAtPrice)}</span>}
-            {discount > 0 && size !== 'lg' && <span className="text-xs font-bold text-success">{t('خصم {percent}%', { percent: discount })}</span>}
         </span>
     );
 }
@@ -36,10 +34,8 @@ export function PriceTag({ price, priceMax, compareAtPrice, size = 'md' }) {
 function CardRating({ rating, count }) {
     return (
         <span className="flex items-center gap-1 text-xs text-muted">
-            <span className="flex items-center gap-0.5 rounded-md bg-success px-1.5 py-0.5 text-[11px] font-bold text-white">
-                {formatNumber(rating)}
-                <Icon name="star" className="size-3 fill-current" />
-            </span>
+            <Icon name="star" className="size-3.5 fill-amber-400 text-amber-400" />
+            <span className="font-semibold text-ink-2">{formatNumber(rating)}</span>
             ({formatNumber(count)})
         </span>
     );
