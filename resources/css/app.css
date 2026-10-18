@@ -23,6 +23,7 @@
     --mk-primary: #b33939;
     --mk-primary-hover: #992f2f;
     --mk-primary-soft: #f8ebeb;
+    --mk-secondary: #303952;
     --mk-accent: #0ea5e9;
     --mk-success: #16a34a;
     --mk-success-soft: #e9f9ef;
@@ -50,6 +51,7 @@
     --mk-primary: #d65a5a;
     --mk-primary-hover: #e07070;
     --mk-primary-soft: #3a1c1f;
+    --mk-secondary: #8d97b8;
     --mk-accent: #38bdf8;
     --mk-success: #34d399;
     --mk-success-soft: #0f2a22;
@@ -79,6 +81,7 @@
     --color-primary: var(--mk-primary);
     --color-primary-hover: var(--mk-primary-hover);
     --color-primary-soft: var(--mk-primary-soft);
+    --color-secondary: var(--mk-secondary);
     --color-brand: #303952;
     --color-brand-light: #3f4a69;
     --color-accent: var(--mk-accent);

@@ -161,12 +161,12 @@ export function RegisterPage() {
         <AuthLayout wide>
             <AuthHeading title={t('أنشئ متجرك على مخزن')} subtitle={t('خطوتان فقط وتبدأ في إدارة مخزونك ومسوقيك من مكان واحد.')} />
 
-            <div className="mk-card overflow-hidden">
-                <div className="border-b border-line bg-surface-2 px-6 py-5">
+            <div>
+                <div className="rounded-xl border border-line bg-surface-2 px-5 py-4">
                     <Stepper steps={STEPS} current={step} />
                 </div>
 
-                <form onSubmit={onSubmit} noValidate className="p-6 sm:p-8">
+                <form onSubmit={onSubmit} noValidate className="pt-7">
                     {formError && <Alert tone="danger" className="mb-6">{formError}</Alert>}
 
                     {step === 0 ? (
