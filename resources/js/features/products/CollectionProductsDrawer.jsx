@@ -1,88 +1,141 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/Display';
-import { Input } from '@/components/ui/Form';
 import { Icon } from '@/components/ui/Icon';
 import { Drawer } from '@/components/ui/Overlay';
-import { Skeleton, Spinner } from '@/components/ui/Spinner';
+import { Tabs } from '@/components/ui/Navigation';
+import { Skeleton } from '@/components/ui/Spinner';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
 import { ProductStatusBadge, ProductThumb } from '@/features/products/ProductBadges';
-import { useClickOutside, useDebouncedValue } from '@/hooks/common';
 import { t } from '@/i18n';
-import { formatMoney } from '@/lib/format';
+import { cn, formatMoney, formatNumber } from '@/lib/format';
 import { collectionsApi, productsApi } from '@/services/productsApi';
 
-/** Search box that finds the store's products by name and adds the chosen one. */
-function ProductPicker({ excludedIds, onPick, disabled }) {
-    const [term, setTerm] = useState('');
-    const search = useDebouncedValue(term, 250);
-    const [results, setResults] = useState(null);
-    const [open, setOpen] = useState(false);
-    const containerRef = useRef(null);
+/** Loads every product in the store, following the pages of the products list. */
+async function fetchAllProducts() {
+    const products = [];
 
-    useClickOutside(containerRef, () => setOpen(false), open);
+    for (let page = 1; ; page++) {
+        const response = await productsApi.list({ per_page: 50, page });
+
+        products.push(...response.data);
+
+        if (page >= response.meta.last_page) {
+            return products;
+        }
+    }
+}
+
+/**
+ * The store's products that are not in the collection yet, as cards that all start unchecked.
+ * The merchant checks the ones they want and adds them together with `onAdd(productIds)`.
+ */
+function ProductChooser({ addedIds, onAdd, disabled }) {
+    const toast = useToast();
+    const [allProducts, setAllProducts] = useState(null);
+    const [categoryId, setCategoryId] = useState('all');
+    const [checkedIds, setCheckedIds] = useState([]);
 
     useEffect(() => {
-        if (!open) {
-            return;
+        fetchAllProducts()
+            .then(setAllProducts)
+            .catch((loadError) => {
+                toast.error(t('تعذر تحميل المنتجات'), loadError.message);
+                setAllProducts([]);
+            });
+    }, [toast]);
+
+    if (allProducts === null) {
+        return (
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                {[0, 1, 2, 3, 4, 5].map((index) => (
+                    <Skeleton key={index} className="h-48 w-full" />
+                ))}
+            </div>
+        );
+    }
+
+    if (allProducts.length === 0) {
+        return <EmptyState icon="box" title={t('لا توجد منتجات في متجرك بعد')} description={t('أضف منتجاتك أولاً ثم اخترها هنا لتظهر في هذا التصنيف.')} />;
+    }
+
+    const available = allProducts.filter((product) => !addedIds.includes(product.product_id));
+
+    if (available.length === 0) {
+        return <EmptyState icon="check-circle" title={t('كل منتجاتك مضافة لهذا التصنيف')} description={t('يمكنك ترتيبها أو إزالة ما لا تريده من تبويب «منتجات التصنيف».')} />;
+    }
+
+    const categories = [...new Map(available.filter((product) => product.category).map((product) => [product.category.category_id, product.category.name])).entries()];
+    const visible = categoryId === 'all' ? available : available.filter((product) => product.category?.category_id === categoryId);
+    const chipClass = (active) => cn('shrink-0 rounded-full border px-3 py-1.5 text-xs font-medium transition', active ? 'border-primary bg-primary-soft text-primary' : 'border-line text-ink-2 hover:border-line-strong');
+    const toggle = (productId) => setCheckedIds((current) => (current.includes(productId) ? current.filter((id) => id !== productId) : [...current, productId]));
+
+    const addChecked = async () => {
+        if (await onAdd(checkedIds)) {
+            setCheckedIds([]);
         }
-
-        setResults(null);
-        productsApi
-            .list({ search, per_page: 20 })
-            .then((response) => setResults(response.data))
-            .catch(() => setResults([]));
-    }, [search, open]);
-
-    const available = (results ?? []).filter((product) => !excludedIds.includes(product.product_id));
-    const placeholder = t('ابحث عن منتج بالاسم لإضافته...');
+    };
 
     return (
-        <div ref={containerRef} className="relative">
-            <Input
-                type="search"
-                icon="search"
-                value={term}
-                disabled={disabled}
-                onFocus={() => setOpen(true)}
-                onChange={(event) => {
-                    setTerm(event.target.value);
-                    setOpen(true);
-                }}
-                placeholder={placeholder}
-                aria-label={placeholder}
-            />
-            {open && (
-                <div className="mk-card mk-scroll absolute inset-x-0 top-12 z-20 max-h-80 overflow-y-auto p-1.5 shadow-pop">
-                    {results === null ? (
-                        <div className="grid place-items-center p-6">
-                            <Spinner className="size-5" />
-                        </div>
-                    ) : available.length === 0 ? (
-                        <p className="p-4 text-center text-sm text-muted">{t('لا توجد منتجات مطابقة.')}</p>
-                    ) : (
-                        available.map((product) => (
-                            <button
-                                key={product.product_id}
-                                type="button"
-                                onClick={() => {
-                                    onPick(product);
-                                    setOpen(false);
-                                }}
-                                className="flex w-full items-center gap-3 rounded-lg p-2 text-start transition hover:bg-surface-3"
-                            >
-                                <ProductThumb src={product.image_url} name={product.name} className="size-9" />
-                                <span className="min-w-0 flex-1">
-                                    <span className="block truncate text-sm font-medium text-ink">{product.name}</span>
-                                    <span className="text-xs text-muted">{product.category?.name}</span>
-                                </span>
-                                <Icon name="plus" className="size-4 text-primary" />
-                            </button>
-                        ))
-                    )}
+        <div className="flex flex-col gap-4">
+            {categories.length > 1 && (
+                <div className="mk-scroll flex gap-2 overflow-x-auto pb-1">
+                    <button type="button" onClick={() => setCategoryId('all')} className={chipClass(categoryId === 'all')}>
+                        {t('الكل')} ({formatNumber(available.length)})
+                    </button>
+                    {categories.map(([id, name]) => (
+                        <button key={id} type="button" onClick={() => setCategoryId(id)} className={chipClass(categoryId === id)}>
+                            {name}
+                        </button>
+                    ))}
                 </div>
             )}
+
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                {visible.map((product) => {
+                    const isChecked = checkedIds.includes(product.product_id);
+
+                    return (
+                        <button
+                            key={product.product_id}
+                            type="button"
+                            disabled={disabled}
+                            onClick={() => toggle(product.product_id)}
+                            aria-pressed={isChecked}
+                            className={cn(
+                                'relative flex flex-col overflow-hidden rounded-xl border text-start transition disabled:cursor-wait',
+                                isChecked ? 'border-primary bg-primary-soft' : 'border-line bg-surface hover:border-line-strong',
+                            )}
+                        >
+                            <ProductThumb src={product.image_url} name={product.name} className="aspect-square h-auto w-full !rounded-none !border-0" />
+                            <span className={cn('absolute start-2 top-2 grid size-6 place-items-center rounded-full border-2 transition', isChecked ? 'border-primary bg-primary text-white' : 'border-white bg-black/25')}>
+                                {isChecked && <Icon name="check" strokeWidth={3} className="size-3.5" />}
+                            </span>
+                            <span className="flex flex-col gap-0.5 p-2.5">
+                                <span className="truncate text-sm font-semibold text-ink">{product.name}</span>
+                                {product.price != null && <span className="text-xs text-muted">{formatMoney(product.price)}</span>}
+                            </span>
+                        </button>
+                    );
+                })}
+            </div>
+
+            <div className="sticky bottom-0 -mx-6 -mb-6 flex items-center justify-between gap-3 border-t border-line bg-surface px-6 py-4">
+                <p className="text-sm text-muted">
+                    {checkedIds.length > 0 ? t('تم اختيار {count} منتج', { count: formatNumber(checkedIds.length) }) : t('اختر المنتجات التي تريد إضافتها')}
+                </p>
+                <div className="flex gap-2">
+                    {checkedIds.length > 0 && (
+                        <Button variant="ghost" disabled={disabled} onClick={() => setCheckedIds([])}>
+                            {t('إلغاء التحديد')}
+                        </Button>
+                    )}
+                    <Button icon="plus" disabled={disabled || checkedIds.length === 0} loading={disabled && checkedIds.length > 0} onClick={addChecked}>
+                        {t('إضافة للتصنيف')}
+                    </Button>
+                </div>
+            </div>
         </div>
     );
 }
@@ -96,6 +149,7 @@ export function CollectionProductsDrawer({ collection, open, onClose, onChanged 
     const toast = useToast();
     const [products, setProducts] = useState(null);
     const [busy, setBusy] = useState(false);
+    const [tab, setTab] = useState('choose');
     const canEdit = can('products.update');
 
     useEffect(() => {
@@ -104,6 +158,7 @@ export function CollectionProductsDrawer({ collection, open, onClose, onChanged 
         }
 
         setProducts(null);
+        setTab(canEdit ? 'choose' : 'order');
         collectionsApi
             .get(collection.collection_id)
             .then((response) => setProducts(response.products))
@@ -111,7 +166,7 @@ export function CollectionProductsDrawer({ collection, open, onClose, onChanged 
                 toast.error(t('تعذر تحميل منتجات التصنيف'), loadError.message);
                 setProducts([]);
             });
-    }, [open, collection, toast]);
+    }, [open, collection, toast, canEdit]);
 
     const apply = async (action, failureTitle) => {
         setBusy(true);
@@ -121,8 +176,12 @@ export function CollectionProductsDrawer({ collection, open, onClose, onChanged 
 
             setProducts(updated.products);
             onChanged(updated);
+
+            return true;
         } catch (actionError) {
             toast.error(failureTitle, actionError.message);
+
+            return false;
         } finally {
             setBusy(false);
         }
@@ -146,21 +205,34 @@ export function CollectionProductsDrawer({ collection, open, onClose, onChanged 
         >
             <div className="flex flex-col gap-4 p-6">
                 {canEdit && (
-                    <ProductPicker
-                        disabled={busy || products === null}
-                        excludedIds={(products ?? []).map((product) => product.product_id)}
-                        onPick={(product) => apply(() => collectionsApi.addProducts(collection.collection_id, [product.product_id]), t('تعذر إضافة المنتج'))}
+                    <Tabs
+                        value={tab}
+                        onChange={setTab}
+                        tabs={[
+                            { value: 'choose', label: t('اختيار المنتجات'), icon: 'grid' },
+                            { value: 'order', label: t('منتجات التصنيف'), icon: 'filter', count: products?.length ?? 0 },
+                        ]}
                     />
                 )}
 
-                {products === null ? (
+                {tab === 'choose' && canEdit ? (
+                    products === null ? (
+                        <Skeleton className="h-48 w-full" />
+                    ) : (
+                        <ProductChooser
+                            disabled={busy}
+                            addedIds={products.map((product) => product.product_id)}
+                            onAdd={(productIds) => apply(() => collectionsApi.addProducts(collection.collection_id, productIds), t('تعذر إضافة المنتجات'))}
+                        />
+                    )
+                ) : products === null ? (
                     <div className="flex flex-col gap-3">
                         {[0, 1, 2].map((index) => (
                             <Skeleton key={index} className="h-14 w-full" />
                         ))}
                     </div>
                 ) : products.length === 0 ? (
-                    <EmptyState icon="box" title={t('لا توجد منتجات في هذا التصنيف')} description={t('ابحث عن منتجاتك بالأعلى وأضفها لتظهر في هذا القسم بالصفحة الرئيسية لمتجرك.')} />
+                    <EmptyState icon="box" title={t('لا توجد منتجات في هذا التصنيف')} description={canEdit ? t('اختر منتجاتك من تبويب «اختيار المنتجات» لتظهر في هذا القسم بالصفحة الرئيسية لمتجرك.') : undefined} />
                 ) : (
                     <ul className="divide-y divide-line rounded-xl border border-line">
                         {products.map((product, index) => (
