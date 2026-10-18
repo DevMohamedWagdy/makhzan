@@ -19,7 +19,7 @@ import { captureClickIds, initTracking, trackPageView } from './tracking';
 
 const StorefrontContext = createContext(null);
 
-/** `{ storeSlug, store, categories, featured, latest }` from the store home endpoint. */
+/** `{ storeSlug, store, categories, collections, featured, latest }` from the store home endpoint. */
 export function useStorefront() {
     return useContext(StorefrontContext);
 }

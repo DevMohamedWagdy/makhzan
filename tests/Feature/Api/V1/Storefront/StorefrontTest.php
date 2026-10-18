@@ -5,6 +5,7 @@ namespace Tests\Feature\Api\V1\Storefront;
 use App\Models\Affiliate;
 use App\Models\Product;
 use App\Models\ProductCategory;
+use App\Models\ProductCollection;
 use App\Models\Store;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -47,6 +48,25 @@ class StorefrontTest extends TestCase
             ->assertJsonPath('featured.*.product_id', [$featured->id])
             ->assertJsonCount(2, 'latest')
             ->assertJsonPath('latest.0.product_id', $regular->id);
+    }
+
+    public function test_home_lists_active_collections_with_their_visible_products_in_order(): void
+    {
+        $first = $this->product();
+        $second = $this->product();
+        $draft = $this->product(['status' => 'draft']);
+        $offers = ProductCollection::factory()->for($this->store)->create(['name' => 'أحدث العروض', 'position' => 1]);
+        $offers->products()->attach([$second->id => ['position' => 0], $first->id => ['position' => 1], $draft->id => ['position' => 2]]);
+        ProductCollection::factory()->for($this->store)->hidden()->create()->products()->attach($first);
+        ProductCollection::factory()->for($this->store)->create(['name' => 'فارغ'])->products()->attach($draft);
+        ProductCollection::factory()->create()->products()->attach(Product::factory()->create());
+
+        $this->getJson('/api/v1/storefront/noor-fashion')
+            ->assertOk()
+            ->assertJsonCount(1, 'collections')
+            ->assertJsonPath('collections.0.name', 'أحدث العروض')
+            ->assertJsonPath('collections.0.products.*.product_id', [$second->id, $first->id])
+            ->assertJsonPath('collections.0.products.0.category.slug', 'dresses');
     }
 
     public function test_lists_products_by_category_search_and_price(): void

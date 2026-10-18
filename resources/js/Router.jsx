@@ -43,6 +43,7 @@ const AffiliateForgotPasswordPage = lazy(() => import('@/pages/affiliate/Affilia
 const AffiliateLoginPage = lazy(() => import('@/pages/affiliate/AffiliateLoginPage').then((module) => ({ default: module.AffiliateLoginPage })));
 const AffiliateResetPasswordPage = lazy(() => import('@/pages/affiliate/AffiliateResetPasswordPage').then((module) => ({ default: module.AffiliateResetPasswordPage })));
 const AffiliatesPage = lazy(() => import('@/pages/affiliates/AffiliatesPage').then((module) => ({ default: module.AffiliatesPage })));
+const CollectionsPage = lazy(() => import('@/pages/collections/CollectionsPage').then((module) => ({ default: module.CollectionsPage })));
 const CategoriesPage = lazy(() => import('@/pages/categories/CategoriesPage').then((module) => ({ default: module.CategoriesPage })));
 const LoyaltyPage = lazy(() => import('@/pages/loyalty/LoyaltyPage').then((module) => ({ default: module.LoyaltyPage })));
 const CouponsPage = lazy(() => import('@/pages/coupons/CouponsPage').then((module) => ({ default: module.CouponsPage })));
@@ -269,6 +270,7 @@ export function App() {
                                     </Route>
                                     <Route element={<RequirePermission permission="products" />}>
                                         <Route path="categories" element={<CategoriesPage />} />
+                                        <Route path="collections" element={<CollectionsPage />} />
                                         <Route path="products" element={<ProductsPage />} />
                                         <Route path="products/new" element={<ProductFormPage />} />
                                         <Route path="products/:productId" element={<ProductFormPage />} />

@@ -22,53 +22,54 @@ const NAV_SECTIONS = [
     {
         title: t('الرئيسية'),
         items: [
-            { label: t('لوحة التحكم'), icon: 'grid', to: '/dashboard', end: true },
-            { label: t('الإشعارات'), icon: 'bell', to: '/dashboard/notifications', counter: 'unreadCount' },
+            { label: t('لوحة التحكم'), icon: 'nav-dashboard', to: '/dashboard', end: true },
+            { label: t('الإشعارات'), icon: 'nav-notifications', to: '/dashboard/notifications', counter: 'unreadCount' },
         ],
     },
     {
         title: t('المبيعات'),
         items: [
-            { label: t('الطلبات'), icon: 'shopping-bag', to: '/dashboard/orders', counter: 'pendingOrdersCount', permission: 'orders' },
-            { label: t('المدفوعات'), icon: 'credit-card', to: '/dashboard/payments', permission: 'payments' },
-            { label: t('العملاء'), icon: 'user', to: '/dashboard/customers', permission: 'customers' },
-            { label: t('التقييمات'), icon: 'star', to: '/dashboard/reviews', permission: 'reviews' },
-            { label: t('الشحن'), icon: 'truck', to: '/dashboard/shipping', permission: 'settings' },
+            { label: t('الطلبات'), icon: 'nav-orders', to: '/dashboard/orders', counter: 'pendingOrdersCount', permission: 'orders' },
+            { label: t('المدفوعات'), icon: 'nav-payments', to: '/dashboard/payments', permission: 'payments' },
+            { label: t('العملاء'), icon: 'nav-customers', to: '/dashboard/customers', permission: 'customers' },
+            { label: t('التقييمات'), icon: 'nav-reviews', to: '/dashboard/reviews', permission: 'reviews' },
+            { label: t('الشحن'), icon: 'nav-shipping', to: '/dashboard/shipping', permission: 'settings' },
         ],
     },
     {
         title: t('الكتالوج'),
         items: [
-            { label: t('المنتجات'), icon: 'box', to: '/dashboard/products', permission: 'products' },
-            { label: t('الأقسام'), icon: 'grid', to: '/dashboard/categories', permission: 'products' },
+            { label: t('المنتجات'), icon: 'nav-products', to: '/dashboard/products', permission: 'products' },
+            { label: t('الأقسام'), icon: 'nav-categories', to: '/dashboard/categories', permission: 'products' },
+            { label: t('التصنيفات'), icon: 'nav-collections', to: '/dashboard/collections', permission: 'products' },
         ],
     },
     {
         title: t('المخزون والمشتريات'),
         items: [
-            { label: t('المخزون'), icon: 'warehouse', to: '/dashboard/inventory', permission: 'inventory' },
-            { label: t('المخازن'), icon: 'building', to: '/dashboard/warehouses', permission: 'inventory' },
-            { label: t('أوامر الشراء'), icon: 'download', to: '/dashboard/purchase-orders', permission: 'purchasing' },
-            { label: t('الموردين'), icon: 'users', to: '/dashboard/suppliers', permission: 'purchasing' },
+            { label: t('المخزون'), icon: 'nav-inventory', to: '/dashboard/inventory', permission: 'inventory' },
+            { label: t('المخازن'), icon: 'nav-warehouses', to: '/dashboard/warehouses', permission: 'inventory' },
+            { label: t('أوامر الشراء'), icon: 'nav-purchase-orders', to: '/dashboard/purchase-orders', permission: 'purchasing' },
+            { label: t('الموردين'), icon: 'nav-suppliers', to: '/dashboard/suppliers', permission: 'purchasing' },
         ],
     },
     {
         title: t('التسويق'),
         items: [
-            { label: t('المسوقين'), icon: 'users', to: '/dashboard/affiliates', permission: 'marketing' },
-            { label: t('طلبات التحويل'), icon: 'send', to: '/dashboard/payout-requests', counter: 'payoutRequestsCount', permission: 'marketing' },
-            { label: t('الكوبونات'), icon: 'gift', to: '/dashboard/coupons', permission: 'marketing' },
-            { label: t('برنامج النقاط'), icon: 'star', to: '/dashboard/loyalty', permission: 'marketing' },
+            { label: t('المسوقين'), icon: 'nav-affiliates', to: '/dashboard/affiliates', permission: 'marketing' },
+            { label: t('طلبات التحويل'), icon: 'nav-payouts', to: '/dashboard/payout-requests', counter: 'payoutRequestsCount', permission: 'marketing' },
+            { label: t('الكوبونات'), icon: 'nav-coupons', to: '/dashboard/coupons', permission: 'marketing' },
+            { label: t('برنامج النقاط'), icon: 'nav-loyalty', to: '/dashboard/loyalty', permission: 'marketing' },
         ],
     },
     {
         title: t('الإدارة'),
         items: [
-            { label: t('التقارير'), icon: 'bar-chart', to: '/dashboard/reports', permission: 'reports' },
-            { label: t('فريق العمل'), icon: 'user-plus', to: '/dashboard/staff', permission: 'owner' },
-            { label: t('الاشتراك والباقة'), icon: 'zap', to: '/dashboard/subscription', permission: 'billing' },
-            { label: t('سجل النشاط'), icon: 'clock', to: '/dashboard/activity', permission: 'owner' },
-            { label: t('إعدادات المتجر'), icon: 'settings', to: '/dashboard/settings' },
+            { label: t('التقارير'), icon: 'nav-reports', to: '/dashboard/reports', permission: 'reports' },
+            { label: t('فريق العمل'), icon: 'nav-staff', to: '/dashboard/staff', permission: 'owner' },
+            { label: t('الاشتراك والباقة'), icon: 'nav-subscription', to: '/dashboard/subscription', permission: 'billing' },
+            { label: t('سجل النشاط'), icon: 'nav-activity', to: '/dashboard/activity', permission: 'owner' },
+            { label: t('إعدادات المتجر'), icon: 'nav-settings', to: '/dashboard/settings' },
         ],
     },
 ];
@@ -254,10 +255,6 @@ function DashboardShell() {
                     <button type="button" onClick={() => setSidebarOpen(true)} className="grid size-10 place-items-center rounded-xl border border-line text-ink-2 lg:hidden" aria-label={t('فتح القائمة')}>
                         <Icon name="menu" />
                     </button>
-                    <div className="relative hidden max-w-md flex-1 md:block">
-                        <Icon name="search" className="pointer-events-none absolute start-3.5 top-1/2 size-[18px] -translate-y-1/2 text-muted" />
-                        <input type="search" placeholder={t('ابحث في الطلبات، المنتجات، المسوقين...')} className="mk-input h-10 bg-surface-2 ps-10" aria-label={t('بحث عام')} />
-                    </div>
                     <div className="ms-auto flex items-center gap-2">
                         <LanguageToggle />
                         <ThemeToggle />
@@ -276,7 +273,7 @@ function DashboardShell() {
                             )}
                             items={[
                                 { label: t('الملف الشخصي'), icon: 'user', onClick: () => navigate('/dashboard/settings?tab=account') },
-                                { label: t('إعدادات المتجر'), icon: 'store', onClick: () => navigate('/dashboard/settings'), hidden: !can('settings') },
+                                { label: t('إعدادات المتجر'), icon: 'settings', onClick: () => navigate('/dashboard/settings'), hidden: !can('settings') },
                                 { divider: true },
                                 {
                                     label: t('تسجيل الخروج'),

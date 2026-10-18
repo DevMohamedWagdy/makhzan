@@ -242,8 +242,8 @@ export function RegisterPage() {
                                         <div
                                             dir="ltr"
                                             className={cn(
-                                                'flex h-11 items-center overflow-hidden rounded-lg border bg-surface transition focus-within:ring-4',
-                                                errors.slug || slugStatus === 'taken' ? 'border-danger focus-within:ring-danger/15' : 'border-line focus-within:border-primary focus-within:ring-primary/15',
+                                                'flex h-11 items-center overflow-hidden rounded-lg border bg-surface transition',
+                                                errors.slug || slugStatus === 'taken' ? 'border-danger' : 'border-line focus-within:border-primary',
                                             )}
                                         >
                                             <span className="flex h-full items-center border-e border-line bg-surface-2 px-3 text-sm text-muted select-none">{APP_DOMAIN}/</span>

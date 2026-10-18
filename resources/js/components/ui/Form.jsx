@@ -109,7 +109,7 @@ export function Checkbox({ label, description, className, ...props }) {
     return (
         <label className={cn('group inline-flex cursor-pointer items-start gap-2.5 select-none', className)}>
             <span className="relative mt-0.5 grid size-[18px] shrink-0 place-items-center">
-                <input type="checkbox" className="peer absolute inset-0 cursor-pointer appearance-none rounded-[5px] border-2 border-line-strong bg-surface transition checked:border-primary checked:bg-primary focus-visible:ring-4 focus-visible:ring-primary/20" {...props} />
+                <input type="checkbox" className="peer absolute inset-0 cursor-pointer appearance-none rounded-[5px] border-2 border-line-strong bg-surface transition checked:border-primary checked:bg-primary" {...props} />
                 <Icon name="check" strokeWidth={3} className="pointer-events-none relative size-3 text-white opacity-0 peer-checked:opacity-100" />
             </span>
             <span className="flex flex-col">
@@ -137,7 +137,7 @@ export function Switch({ checked, onChange, label, description, disabled, id }) 
                 disabled={disabled}
                 onClick={() => onChange(!checked)}
                 className={cn(
-                    'relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition focus-visible:ring-4 focus-visible:ring-primary/25 focus-visible:outline-none',
+                    'relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition focus-visible:outline-none',
                     checked ? 'bg-primary' : 'bg-line-strong',
                 )}
             >

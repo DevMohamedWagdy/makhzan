@@ -9,6 +9,7 @@ const SUBJECTS = {
     store_role: t('دور'),
     product: t('منتج'),
     product_category: t('قسم'),
+    product_collection: t('تصنيف'),
     product_variant: t('صنف منتج'),
     order: t('طلب'),
     customer: t('عميل'),

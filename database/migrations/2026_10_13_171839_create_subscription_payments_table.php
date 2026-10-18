@@ -21,8 +21,8 @@ return new class extends Migration
             $table->string('method', 30);
             $table->string('reference', 100)->nullable();
             $table->string('notes', 500)->nullable();
-            $table->timestamp('starts_at');
-            $table->timestamp('ends_at');
+            $table->dateTime('starts_at');
+            $table->dateTime('ends_at');
             $table->foreignId('recorded_by')->nullable()->constrained('admins')->nullOnDelete();
             $table->timestamps();
 

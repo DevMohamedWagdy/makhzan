@@ -349,6 +349,14 @@ class Store extends Model
     }
 
     /**
+     * @return HasMany<ProductCollection, $this>
+     */
+    public function productCollections(): HasMany
+    {
+        return $this->hasMany(ProductCollection::class)->orderBy('position')->orderBy('id');
+    }
+
+    /**
      * @return HasMany<Product, $this>
      */
     public function products(): HasMany

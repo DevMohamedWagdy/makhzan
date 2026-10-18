@@ -27,3 +27,19 @@ export const categoriesApi = {
     update: (categoryId, payload) => request('PUT', `${CATEGORIES}/${categoryId}`, { body: payload }),
     remove: (categoryId) => request('DELETE', `${CATEGORIES}/${categoryId}`),
 };
+
+const COLLECTIONS = '/api/v1/vendor/collections';
+
+export const collectionsApi = {
+    list: () => request('GET', COLLECTIONS),
+    /** The collection with its `products` in display order. */
+    get: (collectionId) => request('GET', `${COLLECTIONS}/${collectionId}`),
+    create: (payload) => request('POST', COLLECTIONS, { body: payload }),
+    update: (collectionId, payload) => request('PUT', `${COLLECTIONS}/${collectionId}`, { body: payload }),
+    remove: (collectionId) => request('DELETE', `${COLLECTIONS}/${collectionId}`),
+
+    /** Each returns the collection with its updated `products`. */
+    addProducts: (collectionId, productIds) => request('POST', `${COLLECTIONS}/${collectionId}/products`, { body: { product_ids: productIds } }),
+    removeProduct: (collectionId, productId) => request('DELETE', `${COLLECTIONS}/${collectionId}/products/${productId}`),
+    reorderProducts: (collectionId, productIds) => request('PUT', `${COLLECTIONS}/${collectionId}/products/order`, { body: { product_ids: productIds } }),
+};

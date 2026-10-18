@@ -16,9 +16,9 @@ function SectionHeader({ title, action }) {
     );
 }
 
-/** Store landing page: hero, categories, featured and newest products. */
+/** Store landing page: hero, categories, the merchant's collections, featured and newest products. */
 export function StoreHomePage() {
-    const { storeSlug, store, categories, featured, latest } = useStorefront();
+    const { storeSlug, store, categories, collections, featured, latest } = useStorefront();
     const loading = !store;
 
     useEffect(() => {
@@ -75,6 +75,13 @@ export function StoreHomePage() {
                     </div>
                 </section>
             )}
+
+            {collections?.map((collection) => (
+                <section key={collection.collection_id}>
+                    <SectionHeader title={collection.name} />
+                    <ProductGrid storeSlug={storeSlug} products={collection.products} />
+                </section>
+            ))}
 
             {(loading || featured.length > 0) && (
                 <section>

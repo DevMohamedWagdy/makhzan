@@ -139,11 +139,11 @@
 
     .mk-input {
         @apply h-11 w-full rounded-lg border border-line bg-surface px-3.5 text-sm text-ink placeholder:text-muted transition outline-none;
-        @apply focus:border-primary focus:ring-4 focus:ring-primary/15;
+        @apply focus:border-primary;
     }
 
     .mk-input[aria-invalid='true'] {
-        @apply border-danger focus:ring-danger/15;
+        @apply border-danger;
     }
 
     .mk-scroll::-webkit-scrollbar {

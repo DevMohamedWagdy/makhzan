@@ -50,6 +50,7 @@ use App\Http\Controllers\Api\V1\Vendor\AffiliateSummaryController;
 use App\Http\Controllers\Api\V1\Vendor\Auth\PasswordResetController;
 use App\Http\Controllers\Api\V1\Vendor\Auth\VendorAccountController;
 use App\Http\Controllers\Api\V1\Vendor\Auth\VendorAuthController;
+use App\Http\Controllers\Api\V1\Vendor\CollectionProductController;
 use App\Http\Controllers\Api\V1\Vendor\CouponController;
 use App\Http\Controllers\Api\V1\Vendor\CustomerController;
 use App\Http\Controllers\Api\V1\Vendor\CustomerPointsController;
@@ -67,6 +68,7 @@ use App\Http\Controllers\Api\V1\Vendor\PaymentSettingsController;
 use App\Http\Controllers\Api\V1\Vendor\PaymentTransactionController;
 use App\Http\Controllers\Api\V1\Vendor\PayoutController as VendorPayoutController;
 use App\Http\Controllers\Api\V1\Vendor\ProductCategoryController;
+use App\Http\Controllers\Api\V1\Vendor\ProductCollectionController;
 use App\Http\Controllers\Api\V1\Vendor\ProductController;
 use App\Http\Controllers\Api\V1\Vendor\ProductImageController;
 use App\Http\Controllers\Api\V1\Vendor\ProductReviewController;
@@ -420,6 +422,13 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
             Route::apiResource('product-categories', ProductCategoryController::class)
                 ->except('show')
                 ->parameters(['product-categories' => 'category']);
+
+            Route::prefix('collections/{collection}/products')->name('collections.products.')->group(function () {
+                Route::post('/', [CollectionProductController::class, 'store'])->name('store')->defaults('_permission', 'products.update');
+                Route::put('order', [CollectionProductController::class, 'reorder'])->name('reorder');
+                Route::delete('{product}', [CollectionProductController::class, 'destroy'])->name('destroy')->defaults('_permission', 'products.update');
+            });
+            Route::apiResource('collections', ProductCollectionController::class);
 
             Route::get('products/summary', ProductSummaryController::class)->name('products.summary');
             Route::post('products/{product}/images', [ProductImageController::class, 'store'])->middleware('throttle:30,1')->name('products.images.store')->defaults('_permission', 'products.update');

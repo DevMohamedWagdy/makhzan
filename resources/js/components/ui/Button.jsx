@@ -5,11 +5,11 @@ import { Icon } from './Icon';
 import { Spinner } from './Spinner';
 
 const VARIANTS = {
-    primary: 'bg-primary text-white hover:bg-primary-hover shadow-sm shadow-primary/25',
+    primary: 'bg-primary text-white hover:bg-primary-hover',
     secondary: 'border border-line bg-surface text-ink hover:bg-surface-3',
     soft: 'bg-primary-soft text-primary hover:bg-primary/15',
     ghost: 'text-ink-2 hover:bg-surface-3 hover:text-ink',
-    danger: 'bg-danger text-white hover:opacity-90 shadow-sm shadow-danger/25',
+    danger: 'bg-danger text-white hover:opacity-90',
     'danger-soft': 'bg-danger-soft text-danger hover:bg-danger/15',
     success: 'bg-success text-white hover:opacity-90',
 };
@@ -27,7 +27,7 @@ export const Button = forwardRef(function Button(
 ) {
     const classes = cn(
         'inline-flex shrink-0 items-center justify-center font-medium whitespace-nowrap transition select-none',
-        'focus-visible:ring-4 focus-visible:ring-primary/25 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-55',
+        'focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-55',
         VARIANTS[variant],
         SIZES[size],
         className,

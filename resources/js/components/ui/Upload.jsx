@@ -168,7 +168,7 @@ export function DropZone({ accept, maxSizeMb = 5, onFile, onError, title, descri
             onKeyDown={(event) => (event.key === 'Enter' || event.key === ' ') && (event.preventDefault(), inputRef.current?.click())}
             {...handlers}
             className={cn(
-                'flex cursor-pointer flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed px-6 py-10 text-center transition focus-visible:ring-4 focus-visible:ring-primary/20 focus-visible:outline-none',
+                'flex cursor-pointer flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed px-6 py-10 text-center transition focus-visible:outline-none',
                 dragging ? 'border-primary bg-primary-soft' : 'border-line-strong bg-surface-2 hover:border-primary',
             )}
         >
