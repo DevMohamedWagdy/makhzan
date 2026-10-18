@@ -85,6 +85,26 @@ class ProductControllerTest extends TestCase
         $this->getJson('/api/v1/vendor/products?search=evening')->assertOk()->assertJsonPath('data.*.product_id', [$productId]);
     }
 
+    public function test_a_slug_taken_at_the_same_moment_is_retried_with_a_suffix(): void
+    {
+        $vendor = $this->actingAsVendor();
+        $category = $this->category($vendor);
+        Product::factory()->for($vendor->store)->create(['slug' => 'taken-slug']);
+        $collided = false;
+
+        // Simulates another request creating the same slug between the check and the insert.
+        Product::creating(function (Product $product) use (&$collided): void {
+            if (! $collided) {
+                $collided = true;
+                $product->slug = 'taken-slug';
+            }
+        });
+
+        $this->postJson('/api/v1/vendor/products', $this->payload($category))
+            ->assertCreated()
+            ->assertJsonPath('data.slug', fn (string $slug): bool => str_starts_with($slug, 'fstan-shr-') && $slug !== 'taken-slug');
+    }
+
     public function test_a_simple_product_has_a_single_variant(): void
     {
         $vendor = $this->actingAsVendor();

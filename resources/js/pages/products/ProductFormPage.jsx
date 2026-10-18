@@ -227,7 +227,8 @@ export function ProductFormPage() {
 
     return (
         <>
-            <form onSubmit={submit} noValidate>
+            {/* Enter in a field (a price, an option name) shouldn't save the whole product; only the Save button does. */}
+            <form onSubmit={submit} noValidate onKeyDown={(event) => event.key === 'Enter' && event.target.tagName === 'INPUT' && event.preventDefault()}>
                 <PageHeader
                     title={title}
                     breadcrumbs={[t('لوحة التحكم'), t('المنتجات'), isEdit ? t('تعديل') : t('منتج جديد')]}
@@ -265,7 +266,7 @@ export function ProductFormPage() {
                         </Card>
 
                         <Card title={t('الصور')} description={isEdit ? t('التغييرات على الصور تُحفظ مباشرة') : t('تُرفع الصور بعد حفظ المنتج')}>
-                            <ProductImagesField productId={isEdit ? productId : null} images={images} onImagesChange={setImages} pendingFiles={pendingFiles} onPendingChange={setPendingFiles} />
+                            <ProductImagesField readOnly={!canSave} productId={isEdit ? productId : null} images={images} onImagesChange={setImages} pendingFiles={pendingFiles} onPendingChange={setPendingFiles} />
                         </Card>
 
                         <Card title={t('السعر والمخزون')}>

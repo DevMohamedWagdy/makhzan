@@ -103,8 +103,12 @@ export const COUPON_STATES = {
     disabled: { label: t('موقوف'), tone: 'danger' },
 };
 
-/** Common option names offered as suggestions in the product form. */
-export const OPTION_SUGGESTIONS = [t('المقاس'), t('اللون'), t('الخامة'), t('الوزن')];
+/**
+ * Common option names offered as suggestions in the product form. They are store content that
+ * shoppers see, so they stay in the store's language (Arabic) whatever language the dashboard is in.
+ */
+export const OPTION_NAMES = { size: 'المقاس', color: 'اللون' };
+export const OPTION_SUGGESTIONS = [OPTION_NAMES.size, OPTION_NAMES.color, 'الخامة', 'الوزن'];
 
 /** @type {Record<'requested' | 'paid' | 'rejected', { label: string, tone: string, icon: string }>} */
 export const PAYOUT_STATUSES = {

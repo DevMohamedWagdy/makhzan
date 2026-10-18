@@ -14,9 +14,9 @@ const ACCEPTED_TYPES = ['image/png', 'image/jpeg', 'image/webp'];
 /**
  * Product photos. For a saved product (`productId`) every change goes to the API at once;
  * for a new product the picked files are kept in `pendingFiles` and uploaded after saving.
- * The first image is the main one shown in the catalog.
+ * The first image is the main one shown in the catalog. `readOnly` (no edit permission) only shows them.
  */
-export function ProductImagesField({ productId, images, onImagesChange, pendingFiles, onPendingChange }) {
+export function ProductImagesField({ productId, images, onImagesChange, pendingFiles, onPendingChange, readOnly = false }) {
     const toast = useToast();
     const inputRef = useRef(null);
     /** Index of a saved photo waiting for the merchant to confirm its deletion (it can't be undone). */
@@ -84,22 +84,24 @@ export function ProductImagesField({ productId, images, onImagesChange, pendingF
                     <li key={item.key} className="group relative aspect-square overflow-hidden rounded-xl border border-line bg-surface-2">
                         <img src={item.url} alt={t('صورة المنتج {value}', { value: index + 1 })} className="size-full object-cover" />
                         {index === 0 && <span className="absolute top-1.5 start-1.5 rounded-md bg-primary px-1.5 py-0.5 text-[10px] font-semibold text-white">{t('الرئيسية')}</span>}
-                        <div className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-1 bg-slate-950/60 p-1 opacity-100 transition sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
-                            <div className="flex">
-                                <button type="button" onClick={() => move(index, -1)} disabled={busy || index === 0} className="grid size-7 place-items-center rounded text-white hover:bg-white/20 disabled:opacity-30" aria-label={t('تقديم الصورة')} title={t('تقديم')}>
-                                    <Icon name="chevron-right" className="size-4" />
-                                </button>
-                                <button type="button" onClick={() => move(index, 1)} disabled={busy || index === items.length - 1} className="grid size-7 place-items-center rounded text-white hover:bg-white/20 disabled:opacity-30" aria-label={t('تأخير الصورة')} title={t('تأخير')}>
-                                    <Icon name="chevron-left" className="size-4" />
+                        {!readOnly && (
+                            <div className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-1 bg-slate-950/60 p-1 opacity-100 transition sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
+                                <div className="flex">
+                                    <button type="button" onClick={() => move(index, -1)} disabled={busy || index === 0} className="grid size-7 place-items-center rounded text-white hover:bg-white/20 disabled:opacity-30" aria-label={t('تقديم الصورة')} title={t('تقديم')}>
+                                        <Icon name="chevron-right" className="size-4" />
+                                    </button>
+                                    <button type="button" onClick={() => move(index, 1)} disabled={busy || index === items.length - 1} className="grid size-7 place-items-center rounded text-white hover:bg-white/20 disabled:opacity-30" aria-label={t('تأخير الصورة')} title={t('تأخير')}>
+                                        <Icon name="chevron-left" className="size-4" />
+                                    </button>
+                                </div>
+                                <button type="button" onClick={() => (productId ? setConfirmIndex(index) : remove(index))} disabled={busy} className="grid size-7 place-items-center rounded text-white hover:bg-danger" aria-label={t('حذف الصورة')} title={t('حذف')}>
+                                    <Icon name="trash" className="size-4" />
                                 </button>
                             </div>
-                            <button type="button" onClick={() => (productId ? setConfirmIndex(index) : remove(index))} disabled={busy} className="grid size-7 place-items-center rounded text-white hover:bg-danger" aria-label={t('حذف الصورة')} title={t('حذف')}>
-                                <Icon name="trash" className="size-4" />
-                            </button>
-                        </div>
+                        )}
                     </li>
                 ))}
-                {items.length < MAX_IMAGES && (
+                {!readOnly && items.length < MAX_IMAGES && (
                     <li>
                         <button
                             type="button"
@@ -151,7 +153,7 @@ export function ProductImagesField({ productId, images, onImagesChange, pendingF
                 description={t('ستُحذف الصورة من المنتج والمتجر نهائياً.')}
                 confirmLabel={t('حذف الصورة')}
             />
-            <p className="text-xs text-muted">
+            <p className={cn('text-xs text-muted', readOnly && 'hidden')}>
                 {t('حتى {MAX_IMAGES} صور، PNG أو JPG أو WEBP بحد أقصى {MAX_SIZE_MB} ميجابايت للصورة. الصورة الأولى هي الرئيسية.', { MAX_IMAGES, MAX_SIZE_MB })}
             </p>
         </div>

@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/Button';
 import { Field, Input, Switch } from '@/components/ui/Form';
 import { Icon } from '@/components/ui/Icon';
 import { t } from '@/i18n';
-import { CURRENCY, OPTION_SUGGESTIONS } from '@/lib/constants';
+import { CURRENCY, OPTION_NAMES, OPTION_SUGGESTIONS } from '@/lib/constants';
 import { cn, formatNumber } from '@/lib/format';
 import { combinations, comboKey, isPerWarehouse, syncRows, warehouseStockOf } from './variants';
 
@@ -185,7 +185,7 @@ export function VariantsEditor({ value, onChange, errors, warehouses = null }) {
 
     const toggleOptions = (enabled) => {
         if (enabled && value.options.length === 0) {
-            update({ hasOptions: true, options: [{ name: t('المقاس'), values: [] }] });
+            update({ hasOptions: true, options: [{ name: OPTION_NAMES.size, values: [] }] });
         } else {
             update({ hasOptions: enabled });
         }
@@ -231,7 +231,7 @@ export function VariantsEditor({ value, onChange, errors, warehouses = null }) {
                                     {errors[`options.${index}.name`] && <p className="mt-1 text-xs text-danger">{errors[`options.${index}.name`]}</p>}
                                 </div>
                                 <div>
-                                    <ValuesInput values={option.values} onChange={(values) => setOption(index, { values })} invalid={Boolean(errors[`options.${index}.values`])} placeholder={option.name === t('اللون') ? t('مثال: أسود، أحمر') : t('مثال: S، M، L')} />
+                                    <ValuesInput values={option.values} onChange={(values) => setOption(index, { values })} invalid={Boolean(errors[`options.${index}.values`])} placeholder={[OPTION_NAMES.color, 'color'].includes(option.name.trim().toLowerCase()) ? t('مثال: أسود، أحمر') : t('مثال: S، M، L')} />
                                     {errors[`options.${index}.values`] && <p className="mt-1 text-xs text-danger">{errors[`options.${index}.values`]}</p>}
                                 </div>
                                 <Button variant="ghost" size="icon" onClick={() => update({ options: value.options.filter((_, position) => position !== index) })} aria-label={t('حذف الخيار {name}', { name: option.name })} title={t('حذف الخيار')}>
@@ -241,7 +241,7 @@ export function VariantsEditor({ value, onChange, errors, warehouses = null }) {
                         ))}
                         {errors.options && <p className="text-xs text-danger">{errors.options}</p>}
                         {value.options.length < MAX_OPTIONS && (
-                            <Button variant="soft" size="sm" icon="plus" className="self-start" onClick={() => update({ options: [...value.options, { name: value.options.some((option) => option.name === t('اللون')) ? '' : t('اللون'), values: [] }] })}>
+                            <Button variant="soft" size="sm" icon="plus" className="self-start" onClick={() => update({ options: [...value.options, { name: value.options.some((option) => option.name === OPTION_NAMES.color) ? '' : OPTION_NAMES.color, values: [] }] })}>
                                 {t('إضافة خيار')}
                             </Button>
                         )}

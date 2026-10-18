@@ -9,7 +9,9 @@ use App\Models\ProductVariant;
 use App\Models\StockMovement;
 use App\Models\Store;
 use App\Models\Warehouse;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 class SaveProduct
@@ -38,7 +40,8 @@ class SaveProduct
                 'status' => $data['status'],
                 'options' => array_values($data['options']),
                 ...$this->optionalAttributes($data, $product),
-            ])->save();
+            ]);
+            $this->saveWithUniqueSlug($product, $store);
 
             $keptIds = collect($data['variants'])->pluck('id')->filter()->all();
             $product->variants()->whereKeyNot($keptIds)->with('warehouseStocks.warehouse')->get()
@@ -77,6 +80,27 @@ class SaveProduct
 
             return $product->load(['category', 'variants.warehouseStocks', 'images']);
         });
+    }
+
+    /**
+     * Saves the product; when another product with the same name was created at the same moment
+     * and took the slug first, a new product retries with a short random suffix.
+     */
+    private function saveWithUniqueSlug(Product $product, Store $store): void
+    {
+        for ($attempt = 1; ; $attempt++) {
+            try {
+                $product->save();
+
+                return;
+            } catch (UniqueConstraintViolationException $exception) {
+                if ($product->exists || $attempt === 3) {
+                    throw $exception;
+                }
+
+                $product->slug = Str::limit(Product::uniqueSlug($store->id, $product->name), 145, '').'-'.Str::lower(Str::random(4));
+            }
+        }
     }
 
     /**
