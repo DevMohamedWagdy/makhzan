@@ -11,8 +11,7 @@ use Illuminate\Support\Carbon;
 
 /**
  * Alerts for the store owner about their account and store: the platform suspending or
- * reopening the store, the plan's product or staff limit coming close, a coupon running
- * out or expiring, and sign-ins from a new device or a password change.
+ * reopening the store, a coupon running out or expiring, and sign-ins from a new device or a password change.
  */
 class StoreAlertNotification extends Notification implements ShouldQueue
 {
@@ -21,10 +20,6 @@ class StoreAlertNotification extends Notification implements ShouldQueue
     public const STORE_SUSPENDED = 'store_suspended';
 
     public const STORE_REACTIVATED = 'store_reactivated';
-
-    public const PLAN_LIMIT_NEAR = 'plan_limit_near';
-
-    public const PLAN_LIMIT_REACHED = 'plan_limit_reached';
 
     public const COUPON_USED_UP = 'coupon_used_up';
 
@@ -42,8 +37,6 @@ class StoreAlertNotification extends Notification implements ShouldQueue
     private const ACTIONS = [
         self::STORE_SUSPENDED => '/dashboard/support',
         self::STORE_REACTIVATED => '/dashboard',
-        self::PLAN_LIMIT_NEAR => '/dashboard/subscription',
-        self::PLAN_LIMIT_REACHED => '/dashboard/subscription',
         self::COUPON_USED_UP => '/dashboard/coupons',
         self::COUPON_EXPIRED => '/dashboard/coupons',
         self::NEW_SIGN_IN => '/dashboard/settings?tab=account',
@@ -147,11 +140,6 @@ class StoreAlertNotification extends Notification implements ShouldQueue
     {
         return match ($event) {
             self::STORE_SUSPENDED => ['reason' => $details['reason'] ?? '—'],
-            self::PLAN_LIMIT_NEAR, self::PLAN_LIMIT_REACHED => [
-                'resource' => __("notifications.plan_resources.{$details['resource']}"),
-                'used' => $details['used'],
-                'limit' => $details['limit'],
-            ],
             self::COUPON_USED_UP, self::COUPON_EXPIRED => ['code' => $details['code']],
             self::NEW_SIGN_IN, self::PASSWORD_CHANGED => [
                 'device' => $details['device'] ?? __('notifications.unknown_device'),

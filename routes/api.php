@@ -6,10 +6,7 @@ use App\Http\Controllers\Api\V1\Admin\AuthController as AdminAuthController;
 use App\Http\Controllers\Api\V1\Admin\NotificationController as AdminNotificationController;
 use App\Http\Controllers\Api\V1\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Api\V1\Admin\OverviewController as AdminOverviewController;
-use App\Http\Controllers\Api\V1\Admin\PlanController as AdminPlanController;
 use App\Http\Controllers\Api\V1\Admin\StoreController as AdminStoreController;
-use App\Http\Controllers\Api\V1\Admin\SubscriptionPaymentController as AdminSubscriptionPaymentController;
-use App\Http\Controllers\Api\V1\Admin\SubscriptionRequestController as AdminSubscriptionRequestController;
 use App\Http\Controllers\Api\V1\Admin\SupportTicketController as AdminSupportTicketController;
 use App\Http\Controllers\Api\V1\Admin\TeamController as AdminTeamController;
 use App\Http\Controllers\Api\V1\Admin\VendorController as AdminVendorController;
@@ -22,7 +19,6 @@ use App\Http\Controllers\Api\V1\Affiliate\PayoutController;
 use App\Http\Controllers\Api\V1\Payments\PaymobCallbackController;
 use App\Http\Controllers\Api\V1\Public\AffiliateRegistrationController;
 use App\Http\Controllers\Api\V1\Public\StoreController;
-use App\Http\Controllers\Api\V1\Shipping\BostaWebhookController;
 use App\Http\Controllers\Api\V1\Storefront\CartController;
 use App\Http\Controllers\Api\V1\Storefront\Customer\AddressController as CustomerAddressController;
 use App\Http\Controllers\Api\V1\Storefront\Customer\AuthController as CustomerAuthController;
@@ -76,7 +72,6 @@ use App\Http\Controllers\Api\V1\Vendor\ProductReviewController;
 use App\Http\Controllers\Api\V1\Vendor\ProductSummaryController;
 use App\Http\Controllers\Api\V1\Vendor\PurchaseOrderController;
 use App\Http\Controllers\Api\V1\Vendor\ReportController;
-use App\Http\Controllers\Api\V1\Vendor\ShippingCarrierController;
 use App\Http\Controllers\Api\V1\Vendor\ShippingSettingsController;
 use App\Http\Controllers\Api\V1\Vendor\StaffController;
 use App\Http\Controllers\Api\V1\Vendor\StockMovementController;
@@ -85,7 +80,6 @@ use App\Http\Controllers\Api\V1\Vendor\StoreDomainController;
 use App\Http\Controllers\Api\V1\Vendor\StoreRoleController;
 use App\Http\Controllers\Api\V1\Vendor\StoreSettingsController;
 use App\Http\Controllers\Api\V1\Vendor\StoreSlugAvailabilityController;
-use App\Http\Controllers\Api\V1\Vendor\SubscriptionController;
 use App\Http\Controllers\Api\V1\Vendor\SupplierController;
 use App\Http\Controllers\Api\V1\Vendor\SupportTicketController;
 use App\Http\Controllers\Api\V1\Vendor\TrackingPixelController;
@@ -168,13 +162,6 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         });
 
     /*
-    | Shipping company webhooks (public, verified by the store's shared secret)
-    */
-    Route::post('shipping/bosta/{store:slug}/orders/{order}/webhook', BostaWebhookController::class)
-        ->middleware('throttle:240,1')
-        ->name('shipping.bosta.webhook');
-
-    /*
     | Affiliate portal
     */
     Route::prefix('affiliate')->name('affiliate.')->group(function () {
@@ -239,20 +226,6 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
             Route::post('stores/{store}/unsuspend', [AdminStoreController::class, 'unsuspend'])->middleware('admin.can:stores.suspend')->name('stores.unsuspend');
             Route::post('stores/{store}/impersonate', [AdminStoreController::class, 'impersonate'])->middleware(['admin.can:stores.impersonate', 'throttle:20,1'])->name('stores.impersonate');
 
-            Route::middleware('admin.can:subscriptions.manage')->group(function () {
-                Route::post('stores/{store}/subscription', [AdminStoreController::class, 'activateSubscription'])->name('stores.subscription');
-                Route::post('stores/{store}/trial', [AdminStoreController::class, 'extendTrial'])->name('stores.trial');
-                Route::post('subscription-requests/{subscriptionRequest}/approve', [AdminSubscriptionRequestController::class, 'approve'])->name('subscription-requests.approve');
-                Route::post('subscription-requests/{subscriptionRequest}/reject', [AdminSubscriptionRequestController::class, 'reject'])->name('subscription-requests.reject');
-            });
-            Route::middleware('admin.can:subscriptions.view')->group(function () {
-                Route::get('subscription-requests', [AdminSubscriptionRequestController::class, 'index'])->name('subscription-requests.index');
-                Route::get('subscription-payments', [AdminSubscriptionPaymentController::class, 'index'])->name('subscription-payments.index');
-            });
-
-            Route::get('plans', [AdminPlanController::class, 'index'])->middleware('admin.can:plans.view')->name('plans.index');
-            Route::apiResource('plans', AdminPlanController::class)->except(['index', 'show'])->middleware('admin.can:plans.manage');
-
             Route::get('vendors', [AdminVendorController::class, 'index'])->middleware('admin.can:vendors.view')->name('vendors.index');
             Route::patch('vendors/{vendor}', [AdminVendorController::class, 'update'])->middleware('admin.can:vendors.update')->name('vendors.update');
 
@@ -313,11 +286,6 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
 
         Route::get('activity', VendorActivityLogController::class)->middleware('permission:activity')->name('activity');
 
-        Route::middleware('permission:billing')->group(function () {
-            Route::get('subscription', [SubscriptionController::class, 'show'])->name('subscription.show');
-            Route::post('subscription/requests', [SubscriptionController::class, 'requestPlan'])->middleware('throttle:10,1')->name('subscription.requests.store');
-        });
-
         Route::middleware('permission:settings')->group(function () {
             Route::get('tracking-pixels', [TrackingPixelController::class, 'show'])->name('tracking-pixels.show');
             Route::put('tracking-pixels', [TrackingPixelController::class, 'update'])->middleware('throttle:20,1')->name('tracking-pixels.update');
@@ -327,18 +295,12 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
             Route::delete('store/logo', [StoreSettingsController::class, 'removeLogo'])->name('store.logo.remove')->defaults('_permission', 'settings.update');
 
             Route::get('store/domain', [StoreDomainController::class, 'show'])->name('store.domain.show');
-            Route::middleware('plan.feature:custom_domain')->group(function () {
-                Route::put('store/domain', [StoreDomainController::class, 'update'])->name('store.domain.update');
-                Route::post('store/domain/verify', [StoreDomainController::class, 'verify'])->middleware('throttle:10,1')->name('store.domain.verify')->defaults('_permission', 'settings.update');
-            });
+            Route::put('store/domain', [StoreDomainController::class, 'update'])->name('store.domain.update');
+            Route::post('store/domain/verify', [StoreDomainController::class, 'verify'])->middleware('throttle:10,1')->name('store.domain.verify')->defaults('_permission', 'settings.update');
             Route::delete('store/domain', [StoreDomainController::class, 'destroy'])->name('store.domain.destroy')->defaults('_permission', 'settings.update');
         });
 
         Route::middleware('permission:shipping')->group(function () {
-            Route::get('shipping/bosta', [ShippingCarrierController::class, 'show'])->name('shipping.bosta.show');
-            Route::put('shipping/bosta', [ShippingCarrierController::class, 'update'])->middleware('throttle:10,1')->name('shipping.bosta.update');
-            Route::delete('shipping/bosta', [ShippingCarrierController::class, 'destroy'])->name('shipping.bosta.destroy')->defaults('_permission', 'shipping.update');
-
             Route::get('shipping', [ShippingSettingsController::class, 'show'])->name('shipping.show');
             Route::put('shipping', [ShippingSettingsController::class, 'update'])->name('shipping.update');
         });
@@ -379,7 +341,7 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::middleware('permission:affiliates')->group(function () {
             Route::prefix('affiliates')->name('affiliates.')->group(function () {
                 Route::get('summary', AffiliateSummaryController::class)->name('summary')->defaults('_permission', 'affiliates.view|payouts.view');
-                Route::post('import', AffiliateImportController::class)->middleware(['throttle:10,1', 'plan.feature:affiliates'])->name('import')->defaults('_permission', 'affiliates.create');
+                Route::post('import', AffiliateImportController::class)->middleware('throttle:10,1')->name('import')->defaults('_permission', 'affiliates.create');
 
                 Route::get('registration-link', [AffiliateRegistrationLinkController::class, 'show'])->name('registration-link.show');
                 Route::patch('registration-link', [AffiliateRegistrationLinkController::class, 'update'])->name('registration-link.update');
@@ -393,7 +355,7 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
 
             // The coupon form picks affiliates from this list.
             Route::get('affiliates', [AffiliateController::class, 'index'])->name('affiliates.index')->defaults('_permission', 'affiliates.view|coupons.view');
-            Route::post('affiliates', [AffiliateController::class, 'store'])->middleware('plan.feature:affiliates')->name('affiliates.store');
+            Route::post('affiliates', [AffiliateController::class, 'store'])->name('affiliates.store');
             Route::apiResource('affiliates', AffiliateController::class)->except(['index', 'store']);
         });
 
@@ -412,8 +374,6 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
 
         Route::middleware('permission:orders')->group(function () {
             Route::get('orders/summary', OrderSummaryController::class)->name('orders.summary');
-            Route::get('orders/airway-bills', [OrderShipmentController::class, 'airwayBills'])->middleware('throttle:20,1')->name('orders.airway-bills')->defaults('_permission', 'orders.view');
-            Route::post('orders/{order}/shipment', [OrderShipmentController::class, 'store'])->middleware('throttle:30,1')->name('orders.shipment.store')->defaults('_permission', 'orders.ship');
             Route::put('orders/{order}/tracking', [OrderShipmentController::class, 'updateTracking'])->name('orders.tracking.update')->defaults('_permission', 'orders.update');
             Route::get('orders', [VendorOrderController::class, 'index'])->name('orders.index');
             Route::post('orders', [VendorOrderController::class, 'store'])->middleware('throttle:60,1')->name('orders.store');

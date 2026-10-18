@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
- * A named set of admin panel permissions ("stores.view", "subscriptions.manage", …).
+ * A named set of admin panel permissions ("stores.view", "tickets.reply", …).
  */
 #[Fillable(['name', 'description', 'permissions'])]
 class AdminRole extends Model

@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests\Api\V1\Vendor;
 
-use App\Enums\PlanFeature;
 use App\Enums\TrackingProvider;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -63,18 +62,12 @@ class UpdateTrackingPixelsRequest extends FormRequest
     {
         return [
             function (Validator $validator): void {
-                $serverSide = $this->user()->store->hasFeature(PlanFeature::ConversionsApi);
-
                 foreach ((array) $this->input('pixels') as $provider => $pixel) {
                     $type = TrackingProvider::tryFrom((string) $provider);
                     $pixelId = $pixel['pixel_id'] ?? null;
 
                     if ($type && filled($pixelId) && ! preg_match($type->idPattern(), $pixelId)) {
                         $validator->errors()->add("pixels.{$provider}.pixel_id", __('tracking.pixel_id_invalid'));
-                    }
-
-                    if (! $serverSide && filled($pixel['access_token'] ?? null)) {
-                        $validator->errors()->add("pixels.{$provider}.access_token", __('tracking.feature_unavailable'));
                     }
                 }
             },

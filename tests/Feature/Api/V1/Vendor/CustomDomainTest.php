@@ -2,7 +2,6 @@
 
 namespace Tests\Feature\Api\V1\Vendor;
 
-use App\Models\Plan;
 use App\Models\Store;
 use App\Models\Vendor;
 use App\Support\DomainVerifier;
@@ -56,14 +55,6 @@ class CustomDomainTest extends TestCase
         foreach (['not a domain', 'taken.com', 'makhzan.app'] as $domain) {
             $this->putJson('/api/v1/vendor/store/domain', ['domain' => $domain])->assertJsonValidationErrors('domain');
         }
-    }
-
-    public function test_requires_a_plan_with_custom_domains(): void
-    {
-        $this->vendor->store->forceFill(['plan_id' => Plan::factory()->create(['features' => []])->id, 'plan_expires_at' => now()->addMonth()])->save();
-
-        $this->putJson('/api/v1/vendor/store/domain', ['domain' => 'shop.noor.com'])->assertStatus(402);
-        $this->getJson('/api/v1/vendor/store/domain')->assertOk();
     }
 
     public function test_a_verified_domain_serves_its_storefront_and_unknown_domains_404(): void

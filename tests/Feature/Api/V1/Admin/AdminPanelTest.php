@@ -5,10 +5,8 @@ namespace Tests\Feature\Api\V1\Admin;
 use App\Enums\OrderStatus;
 use App\Models\Admin;
 use App\Models\Order;
-use App\Models\Plan;
 use App\Models\Store;
 use App\Models\Vendor;
-use App\Notifications\SubscriptionUpdateNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use Laravel\Sanctum\Sanctum;
@@ -84,71 +82,23 @@ class AdminPanelTest extends TestCase
 
         Sanctum::actingAs($vendor->fresh(), [Vendor::TOKEN_ABILITY]);
         $this->getJson('/api/v1/vendor/orders')->assertForbidden();
-        $this->getJson('/api/v1/vendor/subscription')->assertOk();
 
         $this->actingAsAdmin();
         $this->postJson("/api/v1/admin/stores/{$store->id}/unsuspend")->assertOk()->assertJsonPath('data.suspended_at', null);
         $this->getJson("/api/v1/storefront/{$store->slug}")->assertOk();
     }
 
-    public function test_activating_a_subscription_records_the_payment_and_extends_renewals(): void
+    public function test_overview_counts_stores(): void
     {
         $this->actingAsAdmin();
-        $plan = Plan::factory()->create(['name' => 'Pro']);
-        $store = Store::factory()->create();
-        $payload = ['plan_id' => $plan->id, 'months' => 1, 'amount' => 299, 'method' => 'instapay', 'reference' => 'IP-1'];
-
-        $this->postJson("/api/v1/admin/stores/{$store->id}/subscription", $payload)->assertOk()->assertJsonPath('data.billing.plan.name', 'Pro')->assertJsonPath('data.billing.status', 'active');
-        $firstExpiry = $store->fresh()->plan_expires_at;
-        $this->assertTrue($firstExpiry->between(now()->addMonth()->subMinute(), now()->addMonth()->addMinute()));
-
-        $this->postJson("/api/v1/admin/stores/{$store->id}/subscription", $payload)->assertOk();
-
-        $this->assertTrue($store->fresh()->plan_expires_at->equalTo($firstExpiry->copy()->addMonthNoOverflow()));
-        $this->assertDatabaseCount('subscription_payments', 2);
-        $this->assertDatabaseHas('subscription_payments', ['store_id' => $store->id, 'recorded_by' => $this->admin->id, 'plan_name' => 'Pro']);
-        Notification::assertSentToTimes($store->vendor, SubscriptionUpdateNotification::class, 2);
-    }
-
-    public function test_manages_plans(): void
-    {
-        $this->actingAsAdmin();
-        $payload = ['name' => 'Starter', 'price_monthly' => 149, 'max_products' => 50, 'max_staff' => 1, 'features' => ['affiliates'], 'is_active' => true];
-
-        $planId = $this->postJson('/api/v1/admin/plans', $payload)->assertCreated()->assertJsonPath('data.slug', 'starter')->json('data.plan_id');
-
-        $this->putJson("/api/v1/admin/plans/{$planId}", [...$payload, 'max_products' => 80])->assertOk()->assertJsonPath('data.max_products', 80);
-
-        Store::factory()->subscribed(Plan::find($planId))->create();
-        $this->deleteJson("/api/v1/admin/plans/{$planId}")->assertJsonValidationErrors('plan');
-
-        $unused = Plan::factory()->create();
-        $this->deleteJson("/api/v1/admin/plans/{$unused->id}")->assertNoContent();
-    }
-
-    public function test_extends_a_stores_trial(): void
-    {
-        $this->actingAsAdmin();
-        $store = Store::factory()->trialEnded()->create();
-
-        $this->postJson("/api/v1/admin/stores/{$store->id}/trial", ['days' => 7])->assertOk()->assertJsonPath('data.billing.status', 'trial')->assertJsonPath('data.billing.days_left', 7);
-    }
-
-    public function test_overview_counts_stores_billing_and_requests(): void
-    {
-        $this->actingAsAdmin();
-        $plan = Plan::factory()->create();
-        Store::factory()->create(['plan_id' => $plan->id, 'plan_expires_at' => now()->addDays(3)]);
+        Store::factory()->create();
         Store::factory()->create(['suspended_at' => now()]);
-        Store::factory()->trialEnded()->create();
 
         $this->getJson('/api/v1/admin/overview')
             ->assertOk()
-            ->assertJsonPath('data.stores.total', 3)
-            ->assertJsonPath('data.stores.on_trial', 1)
-            ->assertJsonPath('data.stores.paying', 1)
-            ->assertJsonPath('data.stores.expiring_7_days', 1)
-            ->assertJsonPath('data.stores.suspended', 1);
+            ->assertJsonPath('data.stores.total', 2)
+            ->assertJsonPath('data.stores.suspended', 1)
+            ->assertJsonMissingPath('data.billing');
     }
 
     public function test_create_admin_command_creates_and_resets_admins(): void

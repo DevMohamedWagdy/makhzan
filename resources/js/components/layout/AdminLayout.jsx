@@ -26,14 +26,6 @@ const NAV_SECTIONS = [
         ],
     },
     {
-        title: t('الاشتراكات'),
-        items: [
-            { label: t('طلبات الاشتراك'), icon: 'send', to: '/admin/requests', permission: 'subscriptions.view' },
-            { label: t('مدفوعات الاشتراكات'), icon: 'wallet', to: '/admin/payments', permission: 'subscriptions.view' },
-            { label: t('الباقات'), icon: 'zap', to: '/admin/plans', permission: 'plans.view' },
-        ],
-    },
-    {
         title: t('الإدارة'),
         items: [
             { label: t('سجل النشاط'), icon: 'clock', to: '/admin/logs', permission: 'logs.view' },

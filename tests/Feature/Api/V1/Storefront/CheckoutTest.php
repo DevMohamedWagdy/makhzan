@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Api\V1\Storefront;
 
+use App\Actions\Orders\UpdateOrderStatus;
 use App\Enums\CommissionStatus;
 use App\Enums\CommissionType;
 use App\Enums\OrderStatus;
@@ -9,9 +10,11 @@ use App\Models\Affiliate;
 use App\Models\Customer;
 use App\Models\CustomerAddress;
 use App\Models\Order;
+use App\Models\OrderEvent;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\Store;
+use App\Notifications\OrderCancelledByCustomerNotification;
 use App\Notifications\OrderPlacedNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
@@ -170,6 +173,20 @@ class CheckoutTest extends TestCase
             ->assertJsonPath('data.cancel_reason', 'طلبت بالخطأ');
 
         $this->assertSame(5, $this->variant->fresh()->stock);
+        Notification::assertSentTo(
+            $this->store->vendor,
+            OrderCancelledByCustomerNotification::class,
+            fn (OrderCancelledByCustomerNotification $notification): bool => $notification->order->number === $number && $notification->order->cancel_reason === 'طلبت بالخطأ',
+        );
+    }
+
+    public function test_the_vendor_is_not_told_about_cancellations_they_made_themselves(): void
+    {
+        $order = Order::factory()->for($this->store)->for($this->customer)->create();
+
+        app(UpdateOrderStatus::class)->handle($order, OrderStatus::Cancelled, OrderEvent::ACTOR_VENDOR, 'نفد المخزون');
+
+        Notification::assertNotSentTo($this->store->vendor, OrderCancelledByCustomerNotification::class);
     }
 
     public function test_confirmed_orders_cannot_be_cancelled_by_the_customer(): void

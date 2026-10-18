@@ -19,11 +19,7 @@ const SUBJECTS = {
     warehouse: t('مخزن'),
     supplier: t('مورد'),
     purchase_order: t('أمر شراء'),
-    plan: t('باقة'),
-    subscription_payment: t('دفعة اشتراك'),
-    subscription_request: t('طلب اشتراك'),
     store_payment_gateway: t('بوابة الدفع'),
-    store_shipping_account: t('حساب الشحن'),
     shipping_rate: t('سعر شحن'),
 };
 
@@ -37,8 +33,6 @@ const VERBS = {
     unsuspended: t('إعادة تفعيل'),
     login: t('تسجيل دخول'),
     impersonated: t('دخول الإدارة بحساب'),
-    subscription_changed: t('تغيير اشتراك'),
-    trial_changed: t('تعديل الفترة التجريبية'),
     domain_verified: t('تفعيل دومين'),
 };
 
@@ -55,7 +49,7 @@ export const ACTOR_TYPES = [
 
 export const EVENT_FILTERS = [
     { value: '', label: t('كل الأحداث') },
-    ...['order', 'product', 'customer', 'coupon', 'affiliate', 'store', 'vendor', 'subscription_request', 'subscription_payment', 'plan', 'admin'].map((value) => ({ value: `${value}.`, label: SUBJECTS[value] })),
+    ...['order', 'product', 'customer', 'coupon', 'affiliate', 'store', 'vendor', 'admin'].map((value) => ({ value: `${value}.`, label: SUBJECTS[value] })),
 ];
 
 /** "تعديل منتج", "تسجيل دخول حساب", … */

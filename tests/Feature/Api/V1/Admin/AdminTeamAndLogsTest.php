@@ -6,7 +6,6 @@ use App\Models\ActivityLog;
 use App\Models\Admin;
 use App\Models\AdminRole;
 use App\Models\Order;
-use App\Models\Plan;
 use App\Models\Product;
 use App\Models\Store;
 use App\Models\Vendor;
@@ -119,7 +118,7 @@ class AdminTeamAndLogsTest extends TestCase
         $this->assertNotContains('store.suspended', $events);
     }
 
-    public function test_admins_are_alerted_about_new_stores_and_subscription_requests(): void
+    public function test_admins_are_alerted_about_new_stores(): void
     {
         $limited = Admin::factory()->withPermissions(['orders.view'])->create();
 
@@ -131,14 +130,9 @@ class AdminTeamAndLogsTest extends TestCase
         $this->assertSame(1, $this->super->notifications()->where('type', AdminAlertNotification::STORE_REGISTERED)->count());
         $this->assertSame(0, $limited->notifications()->count());
 
-        $vendor = Vendor::query()->firstWhere('email', 'new@shop.test');
-        $this->actingAsVendor($vendor);
-        $plan = Plan::factory()->create(['name' => 'Pro']);
-        $this->postJson('/api/v1/vendor/subscription/requests', ['plan_id' => $plan->id, 'months' => 1, 'method' => 'instapay', 'reference' => 'IP-9'])->assertCreated();
-
         $this->actingAsAdmin();
-        $types = $this->getJson('/api/v1/admin/notifications')->assertOk()->assertJsonPath('summary.unread_count', 2)->json('data.*.type');
-        $this->assertEqualsCanonicalizing([AdminAlertNotification::STORE_REGISTERED, AdminAlertNotification::SUBSCRIPTION_REQUESTED], $types);
+        $types = $this->getJson('/api/v1/admin/notifications')->assertOk()->assertJsonPath('summary.unread_count', 1)->json('data.*.type');
+        $this->assertSame([AdminAlertNotification::STORE_REGISTERED], $types);
         $this->postJson('/api/v1/admin/notifications/read-all')->assertNoContent();
         $this->assertSame(0, $this->super->unreadNotifications()->count());
     }
@@ -166,14 +160,12 @@ class AdminTeamAndLogsTest extends TestCase
     public function test_the_overview_has_daily_series_and_attention_lists(): void
     {
         $this->actingAsAdmin();
-        Store::factory()->create(['trial_ends_at' => now()->addDays(2)]);
+        Store::factory()->create();
 
         $this->getJson('/api/v1/admin/overview')
             ->assertOk()
             ->assertJsonCount(30, 'data.daily')
-            ->assertJsonCount(12, 'data.monthly_revenue')
             ->assertJsonPath('data.daily.29.stores', 1)
-            ->assertJsonCount(1, 'data.trials_ending')
             ->assertJsonCount(1, 'data.latest_stores');
     }
 
@@ -183,6 +175,6 @@ class AdminTeamAndLogsTest extends TestCase
         AdminRole::factory()->create(['name' => 'مالية']);
 
         $this->postJson('/api/v1/admin/roles', ['name' => 'مالية', 'permissions' => ['stores.fly']])->assertJsonValidationErrors(['name', 'permissions.0']);
-        $this->getJson('/api/v1/admin/roles')->assertOk()->assertJsonPath('catalog.subscriptions', ['view', 'manage']);
+        $this->getJson('/api/v1/admin/roles')->assertOk()->assertJsonPath('catalog.tickets', ['view', 'reply'])->assertJsonMissingPath('catalog.subscriptions');
     }
 }

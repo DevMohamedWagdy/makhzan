@@ -28,7 +28,6 @@ class StoreResource extends JsonResource
             'governorate_id' => $this->governorate_id,
             'city_id' => $this->city_id,
             'suspended' => $this->isSuspended(),
-            'billing' => $this->billingSummary(),
             'suspension_reason' => $this->suspension_reason,
             // Printed on invoices and packing slips.
             'contact_phone' => $this->contact_phone,

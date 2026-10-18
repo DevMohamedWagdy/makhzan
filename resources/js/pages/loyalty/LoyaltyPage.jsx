@@ -101,19 +101,10 @@ export function LoyaltyPage() {
                         <StatCard label={t('نقاط مستخدمة')} value={formatNumber(stats.redeemed_points)} icon="check-circle" tone="info" />
                     </div>
 
-                    {!data.available && (
-                        <Alert tone="warning" icon="zap" title={t('برنامج النقاط غير متاح في باقتك')}>
-                            {t('رقِّ باقتك لتفعيل النقاط وتشجيع عملائك على تكرار الشراء.')}
-                            <Button to="/dashboard/subscription" size="sm" variant="secondary" icon="zap" className="ms-2">
-                                {t('ترقية الباقة')}
-                            </Button>
-                        </Alert>
-                    )}
-
                     <form onSubmit={save} noValidate className="mk-card flex flex-col gap-5 p-5 sm:p-6">
                         <Switch
                             checked={form.loyalty_enabled}
-                            disabled={!data.available || !can('loyalty.update')}
+                            disabled={!can('loyalty.update')}
                             onChange={(checked) => setForm((current) => ({ ...current, loyalty_enabled: checked }))}
                             label={t('تفعيل برنامج النقاط')}
                             description={t('عند الإيقاف لا يكسب العملاء نقاطاً جديدة ولا يستخدمون رصيدهم، ويبقى الرصيد محفوظاً.')}

@@ -11,15 +11,12 @@ use Symfony\Component\HttpFoundation\Response;
 /**
  * Limits a dashboard route to staff whose role allows it (`permission:orders`: the action
  * comes from the HTTP method or the route's `_permission` default, see StorePermissions),
- * or to the store owner alone (`permission:owner`, `permission:billing`). Owners pass every check; nobody passes while the
- * platform has suspended the store, or while its trial or subscription has ended.
+ * or to the store owner alone (`permission:owner`). Owners pass every check; nobody passes
+ * while the platform has suspended the store.
  */
 class EnsureVendorPermission
 {
     public const OWNER = 'owner';
-
-    /** Owner-only, and still reachable while the store is suspended (to renew or pay). */
-    public const BILLING = 'billing';
 
     /**
      * Handle an incoming request.
@@ -32,15 +29,11 @@ class EnsureVendorPermission
         $vendor = $request->user();
         $store = $vendor->store;
 
-        if ($store?->isSuspended() && $permission !== self::BILLING) {
-            abort(Response::HTTP_FORBIDDEN, __('billing.vendor_suspended', ['reason' => $store->suspension_reason ?: '—']));
+        if ($store?->isSuspended()) {
+            abort(Response::HTTP_FORBIDDEN, __('settings.vendor_suspended', ['reason' => $store->suspension_reason ?: '—']));
         }
 
-        if ($store && $permission !== self::BILLING && ! $store->hasBillingAccess()) {
-            abort(Response::HTTP_PAYMENT_REQUIRED, __('billing.subscription_required'));
-        }
-
-        $allowed = in_array($permission, [self::OWNER, self::BILLING], true)
+        $allowed = $permission === self::OWNER
             ? $vendor->isOwner()
             : collect(explode('|', StorePermissions::forRequest($permission, $request->method(), $request->route()?->defaults['_permission'] ?? null)))
                 ->contains(fn (string $needed): bool => $vendor->hasPermission($needed));

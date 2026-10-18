@@ -6,9 +6,10 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Models\StoreRole;
 use App\Models\Vendor;
+use App\Notifications\OrderCancelledByCustomerNotification;
 use App\Notifications\OrderPlacedNotification;
 use App\Notifications\StockAlertNotification;
-use App\Notifications\SubscriptionUpdateNotification;
+use App\Notifications\StoreAlertNotification;
 use App\Support\StorePermissions;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
@@ -84,7 +85,7 @@ class StaffTest extends TestCase
             ->assertJsonPath('data.permissions', ['orders.view', 'orders.update', 'customers.view'])
             ->json('data.role_id');
 
-        $this->getJson('/api/v1/vendor/roles')->assertOk()->assertJsonPath('data.0.role_id', $roleId)->assertJsonPath('catalog.orders', ['view', 'create', 'update', 'ship']);
+        $this->getJson('/api/v1/vendor/roles')->assertOk()->assertJsonPath('data.0.role_id', $roleId)->assertJsonPath('catalog.orders', ['view', 'create', 'update']);
         $this->postJson('/api/v1/vendor/roles', ['name' => 'خدمة العملاء', 'permissions' => []])->assertJsonValidationErrors('name');
         $this->postJson('/api/v1/vendor/roles', ['name' => 'مدير', 'permissions' => ['orders.fly']])->assertJsonValidationErrors('permissions.0');
 
@@ -184,7 +185,6 @@ class StaffTest extends TestCase
         $this->actingAsStaff(['orders.view', 'orders.update', 'products.view', 'products.delete']);
 
         $this->patchJson("/api/v1/vendor/orders/{$order->id}/status", ['status' => 'confirmed'])->assertOk();
-        $this->postJson("/api/v1/vendor/orders/{$order->id}/shipment")->assertForbidden();
         $this->postJson("/api/v1/vendor/orders/{$order->id}/refunds", ['amount' => 10])->assertForbidden();
         $this->deleteJson("/api/v1/vendor/products/{$product->id}")->assertNoContent();
         $this->getJson('/api/v1/vendor/reports')->assertForbidden();
@@ -205,7 +205,7 @@ class StaffTest extends TestCase
         $order = Order::factory()->for($this->owner->store)->create();
         $this->owner->notify(new OrderPlacedNotification($order));
         $this->owner->notify(new StockAlertNotification(Product::factory()->for($this->owner->store)->create()->variants()->first(), 0, 5));
-        $this->owner->notify(new SubscriptionUpdateNotification(SubscriptionUpdateNotification::EXPIRING, 'Pro', now()->addDays(3)));
+        $this->owner->notify(new StoreAlertNotification(StoreAlertNotification::STORE_REACTIVATED));
         $this->actingAsStaff(['notifications.view', 'orders.view']);
 
         $this->getJson('/api/v1/vendor/notifications')
@@ -220,6 +220,19 @@ class StaffTest extends TestCase
         $this->postJson("/api/v1/vendor/notifications/{$stockAlert->id}/read")->assertNotFound();
     }
 
+    public function test_staff_who_see_orders_are_told_when_a_customer_cancels(): void
+    {
+        $order = Order::factory()->for($this->owner->store)->create(['number' => 3001, 'recipient_name' => 'منى', 'total' => 450, 'cancel_reason' => 'طلبت بالخطأ']);
+        $this->owner->notify(new OrderCancelledByCustomerNotification($order));
+        $this->actingAsStaff(['notifications.view', 'orders.view']);
+
+        $this->getJson('/api/v1/vendor/notifications')
+            ->assertOk()
+            ->assertJsonPath('data.0.type', 'order_cancelled')
+            ->assertJsonPath('data.0.message', 'ألغى منى الطلب #3001 (450.00 ج.م)، السبب: طلبت بالخطأ')
+            ->assertJsonPath('data.0.details.order_id', $order->id);
+    }
+
     public function test_staff_without_the_notifications_permission_have_no_bell(): void
     {
         $this->actingAsStaff(['orders.view']);
@@ -230,7 +243,7 @@ class StaffTest extends TestCase
     public function test_the_owner_sees_every_notification(): void
     {
         $this->owner->notify(new OrderPlacedNotification(Order::factory()->for($this->owner->store)->create()));
-        $this->owner->notify(new SubscriptionUpdateNotification(SubscriptionUpdateNotification::EXPIRING, 'Pro', now()->addDays(3)));
+        $this->owner->notify(new StoreAlertNotification(StoreAlertNotification::STORE_REACTIVATED));
         $this->actingAsVendor($this->owner);
 
         $this->getJson('/api/v1/vendor/notifications')->assertOk()->assertJsonPath('summary.unread_count', 2);

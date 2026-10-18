@@ -6,7 +6,7 @@ namespace App\Support;
  * What a store's staff can be allowed to do, as "section.action" keys grouped into roles.
  * Owners hold everything. Routes are guarded per section (`permission:orders`): the action
  * follows the HTTP method (GET = view, POST = create, PUT/PATCH = update, DELETE = delete)
- * unless the route names one (`->defaults('_permission', 'orders.ship')`). A route can accept
+ * unless the route names one (`->defaults('_permission', 'orders.update')`). A route can accept
  * any of several permissions with "|" (`'categories.view|products.view'`), for lists other
  * features look things up in.
  */
@@ -14,14 +14,14 @@ class StorePermissions
 {
     /**
      * One section per dashboard feature, so the owner decides exactly what each role can see.
-     * Staff management and the subscription stay with the owner.
+     * Staff management stays with the owner.
      *
      * @var array<string, list<string>>
      */
     public const CATALOG = [
         'dashboard' => ['view'],
         'notifications' => ['view'],
-        'orders' => ['view', 'create', 'update', 'ship'],
+        'orders' => ['view', 'create', 'update'],
         'payments' => ['view', 'refund', 'settings'],
         'customers' => ['view'],
         'reviews' => ['view', 'update', 'delete'],
@@ -46,12 +46,13 @@ class StorePermissions
     /**
      * The store's notifications (types in the owner's inbox, which staff share) and the
      * permissions that let staff see each one; any of them is enough. Kinds not listed, like
-     * subscription reminders, stay with the owner.
+     * account alerts, stay with the owner.
      *
      * @var array<string, list<string>>
      */
     public const NOTIFICATIONS = [
         'order_placed' => ['orders.view'],
+        'order_cancelled' => ['orders.view'],
         'late_payment' => ['orders.view', 'payments.view'],
         'stock_out' => ['inventory.view', 'products.view'],
         'stock_low' => ['inventory.view', 'products.view'],

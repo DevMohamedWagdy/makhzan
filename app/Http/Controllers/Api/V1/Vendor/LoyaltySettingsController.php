@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Api\V1\Vendor;
 
 use App\Enums\LoyaltyTransactionType;
-use App\Enums\PlanFeature;
 use App\Http\Controllers\Controller;
 use App\Models\Store;
 use Illuminate\Http\JsonResponse;
@@ -48,10 +47,6 @@ class LoyaltySettingsController extends Controller
             $settings['loyalty_tiers'] = $this->tiers($settings['loyalty_tiers']);
         }
 
-        if ($settings['loyalty_enabled'] && ! $store->hasFeature(PlanFeature::Loyalty)) {
-            throw ValidationException::withMessages(['loyalty_enabled' => __('billing.feature_unavailable')]);
-        }
-
         $store->forceFill($settings)->save();
 
         return response()->json($this->payload($store));
@@ -89,7 +84,6 @@ class LoyaltySettingsController extends Controller
         $outstanding = (int) $store->customers()->sum('points_balance');
 
         return [
-            'available' => $store->hasFeature(PlanFeature::Loyalty),
             'settings' => [
                 'loyalty_enabled' => $store->loyalty_enabled,
                 'loyalty_earn_rate' => $store->loyalty_earn_rate,

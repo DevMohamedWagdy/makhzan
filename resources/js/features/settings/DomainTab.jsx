@@ -3,7 +3,6 @@ import { Button } from '@/components/ui/Button';
 import { Alert, Badge } from '@/components/ui/Display';
 import { Field, Input } from '@/components/ui/Form';
 import { Skeleton } from '@/components/ui/Spinner';
-import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
 import { useCopy } from '@/hooks/common';
 import { t } from '@/i18n';
@@ -13,12 +12,10 @@ import { storeSettingsApi } from '@/services/storeSettingsApi';
 /** The store's own domain: save it, add the CNAME record, then verify. */
 export function DomainTab() {
     const toast = useToast();
-    const { isOwner } = useAuth();
     const { copy, copiedValue } = useCopy();
     const [data, setData] = useState(null);
     const [domain, setDomain] = useState('');
     const [error, setError] = useState(null);
-    const [planRequired, setPlanRequired] = useState(false);
     const [busy, setBusy] = useState(null);
 
     useEffect(() => {
@@ -42,7 +39,6 @@ export function DomainTab() {
             setDomain(updated.domain ?? '');
             toast.success(message);
         } catch (actionError) {
-            setPlanRequired(actionError.status === 402);
             setError(actionError.errors?.domain ?? actionError.message);
         } finally {
             setBusy(null);
@@ -59,18 +55,7 @@ export function DomainTab() {
         <div className="flex max-w-2xl flex-col gap-5">
             <p className="text-sm leading-relaxed text-muted">{t('اعرض متجرك على دومينك الخاص (مثل shop.example.com) بدلاً من رابط Sellygrow. يظل الرابط القديم يعمل.')}</p>
 
-            {planRequired && (
-                <Alert tone="warning" title={t('الدومين الخاص غير متاح في باقتك')}>
-                    {isOwner ? t('رقِّ باقتك من صفحة الاشتراك لاستخدام دومين خاص.') : t('اطلب من صاحب المتجر ترقية الباقة.')}
-                    {isOwner && (
-                        <Button to="/dashboard/subscription" size="sm" variant="secondary" icon="zap" className="ms-2">
-                            {t('الاشتراك والباقة')}
-                        </Button>
-                    )}
-                </Alert>
-            )}
-
-            <Field label={t('الدومين')} error={!planRequired ? error : null} hint={t('بدون https أو /، مثل: shop.example.com')}>
+            <Field label={t('الدومين')} error={error} hint={t('بدون https أو /، مثل: shop.example.com')}>
                 {(props) => <Input {...props} value={domain} onChange={(event) => setDomain(event.target.value)} dir="ltr" className="text-start" placeholder="shop.example.com" />}
             </Field>
 

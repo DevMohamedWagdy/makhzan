@@ -2,16 +2,12 @@
 
 namespace App\Http\Controllers\Api\V1\Admin;
 
-use App\Actions\Subscriptions\ActivateSubscription;
-use App\Enums\BillingMethod;
 use App\Enums\OrderStatus;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Api\V1\Admin\ActivateSubscriptionRequest;
 use App\Http\Resources\AdminStoreResource;
 use App\Http\Resources\ProductResource;
 use App\Http\Resources\StoreCustomerResource;
 use App\Http\Resources\VendorResource;
-use App\Models\Plan;
 use App\Models\Store;
 use App\Models\Vendor;
 use App\Notifications\StoreAlertNotification;
@@ -23,20 +19,19 @@ use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Validation\Rule;
 
 /**
- * Every store on the platform: search, inspect, suspend and activate subscriptions.
+ * Every store on the platform: search, inspect and suspend.
  */
 class StoreController extends Controller
 {
     /**
      * Stores, newest first, searched by store name/slug or owner name/email/phone and
-     * filtered by status (active, suspended, paying, expired) or plan.
+     * filtered by status (active, suspended).
      */
     public function index(Request $request): AnonymousResourceCollection
     {
         $filters = $request->validate([
             'search' => ['nullable', 'string', 'max:100'],
-            'status' => ['nullable', Rule::in(['active', 'suspended', 'paying', 'trial', 'expired'])],
-            'plan_id' => ['nullable', 'integer'],
+            'status' => ['nullable', Rule::in(['active', 'suspended'])],
             'page' => ['nullable', 'integer', 'min:1'],
         ]);
 
@@ -50,11 +45,7 @@ class StoreController extends Controller
             ->when($filters['status'] ?? null, fn (Builder $query, string $status) => match ($status) {
                 'active' => $query->whereNull('suspended_at'),
                 'suspended' => $query->whereNotNull('suspended_at'),
-                'paying' => $query->whereNotNull('plan_id')->where('plan_expires_at', '>', now()),
-                'trial' => $query->withoutActiveSubscription()->where('trial_ends_at', '>', now()),
-                'expired' => $query->withoutActiveSubscription()->where(fn (Builder $query) => $query->whereNull('trial_ends_at')->orWhere('trial_ends_at', '<=', now())),
             })
-            ->when($filters['plan_id'] ?? null, fn (Builder $query, int $planId) => $query->where('plan_id', $planId)->where('plan_expires_at', '>', now()))
             ->latest('id')
             ->paginate(20)
             ->withQueryString();
@@ -64,9 +55,7 @@ class StoreController extends Controller
 
     public function show(Store $store): AdminStoreResource
     {
-        $store = $this->withActivity(Store::query())
-            ->with(['subscriptionPayments' => fn ($query) => $query->with('recorder')->latest('id')])
-            ->findOrFail($store->id);
+        $store = $this->withActivity(Store::query())->findOrFail($store->id);
 
         return new AdminStoreResource($store);
     }
@@ -119,7 +108,7 @@ class StoreController extends Controller
     }
 
     /**
-     * Closes the storefront and the dashboard until unsuspended. Owners can still renew.
+     * Closes the storefront and the dashboard until unsuspended.
      */
     public function suspend(Request $request, Store $store): AdminStoreResource
     {
@@ -146,45 +135,13 @@ class StoreController extends Controller
     }
 
     /**
-     * Gives the store more trial days, counted from today or from the current trial's end.
-     */
-    public function extendTrial(Request $request, Store $store): AdminStoreResource
-    {
-        $days = (int) $request->validate(['days' => ['required', 'integer', 'min:1', 'max:365']])['days'];
-        $from = $store->trial_ends_at?->isFuture() ? $store->trial_ends_at : now();
-
-        $store->forceFill(['trial_ends_at' => $from->copy()->addDays($days)])->save();
-
-        return $this->show($store);
-    }
-
-    /**
-     * Records a payment taken outside a request (e.g. cash) and activates the plan.
-     */
-    public function activateSubscription(ActivateSubscriptionRequest $request, Store $store, ActivateSubscription $activate): AdminStoreResource
-    {
-        $activate->handle(
-            $store,
-            Plan::query()->findOrFail($request->integer('plan_id')),
-            $request->integer('months'),
-            (float) $request->validated('amount'),
-            BillingMethod::from($request->validated('method')),
-            $request->validated('reference'),
-            $request->validated('notes'),
-            $request->user(),
-        );
-
-        return $this->show($store);
-    }
-
-    /**
      * @param  Builder<Store>  $query
      * @return Builder<Store>
      */
     private function withActivity(Builder $query): Builder
     {
         return $query
-            ->with(['vendor', 'plan'])
+            ->with('vendor')
             ->withCount(['products', 'orders', 'staff'])
             ->withSum(['orders as delivered_sales' => fn (Builder $query) => $query->where('status', OrderStatus::Delivered)], 'total')
             ->withMax('orders', 'created_at');

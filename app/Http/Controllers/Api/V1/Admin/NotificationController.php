@@ -9,7 +9,7 @@ use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
 
 /**
- * The admin's bell: new stores, subscription requests, ended trials.
+ * The admin's bell: new stores and support tickets.
  */
 class NotificationController extends Controller
 {

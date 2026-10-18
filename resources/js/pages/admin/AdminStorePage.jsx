@@ -3,7 +3,7 @@ import { useParams, useSearchParams } from 'react-router-dom';
 import { PageHeader } from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/Button';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
-import { Avatar, Badge, Card, DetailRow, EmptyState, StatCard } from '@/components/ui/Display';
+import { Avatar, Badge, DetailRow, EmptyState, StatCard } from '@/components/ui/Display';
 import { Field, Input, Switch, Textarea } from '@/components/ui/Form';
 import { Pagination, Tabs } from '@/components/ui/Navigation';
 import { Modal } from '@/components/ui/Overlay';
@@ -11,17 +11,14 @@ import { Skeleton } from '@/components/ui/Spinner';
 import { useAdminAuth } from '@/context/AdminAuthContext';
 import { useToast } from '@/context/ToastContext';
 import { ActivityLogList } from '@/features/activity/ActivityLogList';
-import { ActivateSubscriptionModal } from '@/features/admin/ActivateSubscriptionModal';
 import { AdminOrdersTable } from '@/features/admin/AdminOrders';
 import { AdminVendorsTable } from '@/features/admin/AdminVendors';
-import { BILLING_METHODS } from '@/features/billing/billing';
 import { ProductStatusBadge } from '@/features/products/ProductBadges';
 import { localized, t } from '@/i18n';
 import { formatDate, formatMoney, formatNumber, formatRelative } from '@/lib/format';
 import { findGovernorate } from '@/lib/locations';
 import { adminApi } from '@/services/adminApi';
 import { sessionStore } from '@/services/session';
-import { BillingBadge } from './AdminOverviewPage';
 import { StoreStatus } from './AdminStoresPage';
 
 const TABS = [
@@ -30,7 +27,6 @@ const TABS = [
     { value: 'products', label: t('المنتجات'), icon: 'box' },
     { value: 'customers', label: t('العملاء'), icon: 'user' },
     { value: 'team', label: t('الحسابات'), icon: 'users', permission: 'vendors.view' },
-    { value: 'billing', label: t('الاشتراك'), icon: 'zap' },
     { value: 'activity', label: t('السجل'), icon: 'clock', permission: 'logs.view' },
 ];
 
@@ -43,7 +39,6 @@ export function AdminStorePage() {
     const tabs = TABS.filter((tab) => !tab.permission || can(tab.permission));
     const tab = tabs.some((item) => item.value === searchParams.get('tab')) ? searchParams.get('tab') : 'overview';
     const [store, setStore] = useState(null);
-    const [plans, setPlans] = useState([]);
     const [error, setError] = useState(null);
     const [dialog, setDialog] = useState(null);
     const [busy, setBusy] = useState(false);
@@ -57,12 +52,6 @@ export function AdminStorePage() {
     }, [storeId]);
 
     useEffect(load, [load]);
-
-    useEffect(() => {
-        if (can('plans.view')) {
-            adminApi.plans().then(setPlans).catch(() => {});
-        }
-    }, [can]);
 
     const act = async (action, message) => {
         setBusy(true);
@@ -139,16 +128,6 @@ export function AdminStorePage() {
                     </p>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                    {can('subscriptions.manage') && (
-                        <>
-                            <Button size="sm" icon="zap" onClick={() => setDialog('activate')} disabled={plans.length === 0}>
-                                {t('تفعيل / تجديد اشتراك')}
-                            </Button>
-                            <Button size="sm" variant="secondary" icon="clock" onClick={() => setDialog('trial')}>
-                                {t('تمديد التجربة')}
-                            </Button>
-                        </>
-                    )}
                     {can('stores.update') && (
                         <Button size="sm" variant="secondary" icon="edit" onClick={() => setDialog('edit')}>
                             {t('تعديل المتجر')}
@@ -175,23 +154,9 @@ export function AdminStorePage() {
                 {tab === 'products' && <ProductsTab storeId={store.store_id} />}
                 {tab === 'customers' && <CustomersTab storeId={store.store_id} />}
                 {tab === 'team' && <AdminVendorsTable storeId={store.store_id} />}
-                {tab === 'billing' && <BillingTab store={store} />}
                 {tab === 'activity' && <ActivityLogList load={adminApi.logs} fixed={{ store_id: store.store_id }} />}
             </section>
 
-            {dialog === 'activate' && (
-                <ActivateSubscriptionModal
-                    store={store}
-                    plans={plans}
-                    onClose={() => setDialog(null)}
-                    onSaved={(next) => {
-                        setDialog(null);
-                        setStore(next);
-                        toast.success(t('تم تفعيل الاشتراك'));
-                    }}
-                />
-            )}
-            {dialog === 'trial' && <TrialModal busy={busy} onClose={() => setDialog(null)} onSubmit={(days) => act(() => adminApi.extendTrial(store.store_id, days), t('تم تمديد الفترة التجريبية'))} />}
             {dialog === 'edit' && <EditStoreModal store={store} busy={busy} onClose={() => setDialog(null)} onSubmit={(payload) => act(() => adminApi.updateStore(store.store_id, payload), t('تم حفظ المتجر'))} />}
             <SuspendDialog open={dialog === 'suspend'} busy={busy} onClose={() => setDialog(null)} onConfirm={(reason) => act(() => adminApi.suspend(store.store_id, reason), t('تم إيقاف المتجر'))} />
         </>
@@ -215,11 +180,6 @@ function OverviewTab({ store }) {
                 <DetailRow label={t('البريد')} ltr>
                     {store.owner?.email}
                 </DetailRow>
-                <DetailRow label={t('الاشتراك')}>
-                    <BillingBadge billing={store.billing} />
-                </DetailRow>
-                <DetailRow label={t('ينتهي الاشتراك')}>{store.billing.plan_expires_at ? formatDate(store.billing.plan_expires_at) : '—'}</DetailRow>
-                <DetailRow label={t('نهاية الفترة التجريبية')}>{store.billing.trial_ends_at ? formatDate(store.billing.trial_ends_at) : '—'}</DetailRow>
                 <DetailRow label={t('رابط المتجر')} ltr>
                     {store.url}
                 </DetailRow>
@@ -317,63 +277,6 @@ function CustomersTab({ storeId }) {
     );
 }
 
-function BillingTab({ store }) {
-    return (
-        <div className="p-5">
-            <Card title={t('مدفوعات الاشتراك')}>
-                {store.payments.length === 0 ? (
-                    <p className="text-sm text-muted">{t('لا توجد مدفوعات بعد.')}</p>
-                ) : (
-                    <ul className="divide-y divide-line text-sm">
-                        {store.payments.map((payment) => (
-                            <li key={payment.payment_id} className="flex items-center justify-between gap-3 py-2.5">
-                                <span>
-                                    <span className="block font-medium text-ink">
-                                        {payment.plan_name} · {t('{count} شهر', { count: payment.months })}
-                                    </span>
-                                    <span className="text-xs text-muted">
-                                        {formatDate(payment.starts_at)} ← {formatDate(payment.ends_at)} · {BILLING_METHODS[payment.method]}
-                                        {payment.recorded_by && ` · ${payment.recorded_by}`}
-                                    </span>
-                                </span>
-                                <span className="font-semibold text-ink">{formatMoney(payment.amount)}</span>
-                            </li>
-                        ))}
-                    </ul>
-                )}
-            </Card>
-        </div>
-    );
-}
-
-function TrialModal({ busy, onClose, onSubmit }) {
-    const [days, setDays] = useState('7');
-
-    return (
-        <Modal open onClose={onClose} dismissible={!busy} icon="clock" title={t('تمديد الفترة التجريبية')}>
-            <form
-                onSubmit={(event) => {
-                    event.preventDefault();
-                    onSubmit(Number(days));
-                }}
-                className="flex flex-col gap-4"
-            >
-                <Field label={t('عدد الأيام')} hint={t('تُضاف إلى نهاية التجربة الحالية، أو من اليوم إن كانت انتهت.')}>
-                    {(props) => <Input {...props} type="number" min="1" max="365" value={days} onChange={(event) => setDays(event.target.value)} dir="ltr" className="text-start" />}
-                </Field>
-                <div className="flex justify-end gap-2">
-                    <Button variant="secondary" onClick={onClose} disabled={busy}>
-                        {t('إلغاء')}
-                    </Button>
-                    <Button type="submit" loading={busy} icon="check" disabled={!Number(days)}>
-                        {t('تمديد')}
-                    </Button>
-                </div>
-            </form>
-        </Modal>
-    );
-}
-
 function EditStoreModal({ store, busy, onClose, onSubmit }) {
     const [values, setValues] = useState({ name: store.name, accepting_orders: store.accepting_orders, closed_message: '' });
 
@@ -412,7 +315,7 @@ function SuspendDialog({ open, busy, onClose, onConfirm }) {
     const [reason, setReason] = useState('');
 
     return (
-        <ConfirmDialog open={open} onClose={onClose} onConfirm={() => onConfirm(reason)} loading={busy} icon="lock" title={t('إيقاف المتجر؟')} description={t('سيُغلق المتجر أمام العملاء ويُسجَّل خروج صاحبه وفريقه، ويمكنه فقط تجديد اشتراكه.')} confirmLabel={t('إيقاف')}>
+        <ConfirmDialog open={open} onClose={onClose} onConfirm={() => onConfirm(reason)} loading={busy} icon="lock" title={t('إيقاف المتجر؟')} description={t('سيُغلق المتجر أمام العملاء ويُسجَّل خروج صاحبه وفريقه حتى تعيد تفعيله.')} confirmLabel={t('إيقاف')}>
             <Textarea value={reason} onChange={(event) => setReason(event.target.value)} placeholder={t('سبب الإيقاف (يظهر لصاحب المتجر)')} maxLength={255} className="mt-3" aria-label={t('سبب الإيقاف')} />
         </ConfirmDialog>
     );

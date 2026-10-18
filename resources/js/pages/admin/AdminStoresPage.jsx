@@ -10,28 +10,23 @@ import { useDebouncedValue } from '@/hooks/common';
 import { t } from '@/i18n';
 import { formatDate, formatMoney, formatNumber } from '@/lib/format';
 import { adminApi } from '@/services/adminApi';
-import { BillingBadge } from './AdminOverviewPage';
 
 const STATUSES = [
     { value: '', label: t('كل المتاجر') },
     { value: 'active', label: t('نشطة') },
-    { value: 'paying', label: t('مشتركة') },
-    { value: 'trial', label: t('فترة تجريبية') },
-    { value: 'expired', label: t('انتهت دون اشتراك') },
     { value: 'suspended', label: t('موقوفة') },
 ];
 
 export function StoreStatus({ store }) {
-    return store.suspended_at ? <Badge tone="danger">{t('موقوف')}</Badge> : <BillingBadge billing={store.billing} />;
+    return store.suspended_at ? <Badge tone="danger">{t('موقوف')}</Badge> : <Badge tone="success">{t('نشط')}</Badge>;
 }
 
-/** Every store on the platform with search, status and plan filters, and a details drawer. */
+/** Every store on the platform with search and status filters, and a details drawer. */
 export function AdminStoresPage() {
     const [searchParams, setSearchParams] = useSearchParams();
     const [searchTerm, setSearchTerm] = useState(searchParams.get('search') ?? '');
     const search = useDebouncedValue(searchTerm, 300);
     const status = searchParams.get('status') ?? '';
-    const planId = searchParams.get('plan_id') ?? '';
     const page = Number(searchParams.get('page') ?? 1);
     const [result, setResult] = useState(null);
     const [error, setError] = useState(null);
@@ -48,26 +43,21 @@ export function AdminStoresPage() {
     const load = useCallback(() => {
         setError(null);
         adminApi
-            .stores({ search, status, plan_id: planId, page })
+            .stores({ search, status, page })
             .then(setResult)
             .catch((loadError) => setError(loadError.message));
-    }, [search, status, planId, page]);
+    }, [search, status, page]);
 
     useEffect(load, [load]);
 
     return (
         <>
-            <PageHeader title={t('المتاجر')} description={t('كل المتاجر على المنصة وباقاتها وحالتها')} />
+            <PageHeader title={t('المتاجر')} description={t('كل المتاجر على المنصة وحالتها')} />
 
             <section className="mk-card overflow-hidden">
                 <div className="flex flex-wrap items-center gap-3 p-4">
                     <Input type="search" icon="search" value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder={t('ابحث باسم المتجر أو الرابط أو المالك...')} aria-label={t('بحث في المتاجر')} className="lg:w-96" />
                     <Select value={status} onChange={(event) => setQuery({ status: event.target.value })} aria-label={t('الحالة')} className="sm:w-48" options={STATUSES} />
-                    {planId && (
-                        <Button variant="soft" size="sm" iconEnd="x" onClick={() => setQuery({ plan_id: '' })}>
-                            {t('باقة محددة')}
-                        </Button>
-                    )}
                 </div>
 
                 {error ? (
@@ -89,7 +79,7 @@ export function AdminStoresPage() {
                         <table className="w-full min-w-[860px] text-sm">
                             <thead className="border-y border-line bg-surface-2 text-xs text-muted">
                                 <tr>
-                                    {[t('المتجر'), t('المالك'), t('الباقة'), t('المنتجات'), t('الطلبات'), t('المبيعات المسلّمة'), t('تاريخ التسجيل')].map((column) => (
+                                    {[t('المتجر'), t('المالك'), t('الحالة'), t('المنتجات'), t('الطلبات'), t('المبيعات المسلّمة'), t('تاريخ التسجيل')].map((column) => (
                                         <th key={column} scope="col" className="px-4 py-3 text-start font-medium whitespace-nowrap">
                                             {column}
                                         </th>

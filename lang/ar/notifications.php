@@ -21,29 +21,9 @@ return [
     ],
     'admin' => [
         'store_registered' => 'تاجر جديد سجّل متجر :store (:owner)',
-        'subscription_requested' => 'طلب اشتراك جديد من :store في باقة :plan بقيمة :amount ج.م',
-        'trial_ended' => 'انتهت الفترة التجريبية لمتجر :store دون اشتراك',
         'ticket_opened' => 'تذكرة دعم جديدة من :store: :subject',
         'ticket_vendor_replied' => 'رد جديد من :store على التذكرة: :subject',
     ],
-    'subscription_activated' => [
-        'subject' => 'تم تفعيل باقة :plan',
-        'message' => 'تم تفعيل باقة :plan لمتجرك حتى :date. شكراً لثقتك في Sellygrow!',
-    ],
-    'subscription_rejected' => [
-        'subject' => 'لم نتمكن من تفعيل باقة :plan',
-        'message' => 'لم نتمكن من تأكيد الدفع لطلب تفعيل باقة :plan. راجع بيانات التحويل وأرسل الطلب مرة أخرى.',
-    ],
-    'subscription_expiring' => [
-        'subject' => 'باقة :plan تنتهي قريباً',
-        'message' => 'تنتهي باقة :plan لمتجرك في :date. جدّد اشتراكك حتى لا تتوقف مميزات الباقة.',
-    ],
-    'trial_ending' => [
-        'subject' => 'الفترة التجريبية تنتهي قريباً',
-        'message' => 'تنتهي الفترة التجريبية لمتجرك في :date. اختر باقة الآن حتى يستمر متجرك في استقبال الطلبات.',
-    ],
-    'subscription_note' => 'ملاحظة: :note',
-    'subscription_action' => 'إدارة الاشتراك',
     'customer_order' => [
         'pending' => [
             'subject' => 'استلمنا طلبك #:number - :store',
@@ -70,7 +50,6 @@ return [
             'line' => 'تم تسجيل إرجاع طلبك رقم #:number. تواصل مع :store إذا كان لديك أي استفسار.',
         ],
         'tracking' => 'رقم التتبع لدى :carrier: :number',
-        'tracking_link' => 'تابع شحنتك مباشرة: :url',
         'reason' => 'السبب: :reason',
         'item' => ':name × :quantity — :total ج.م',
         'total' => 'الإجمالي: :total ج.م',
@@ -101,6 +80,14 @@ return [
         'subject' => 'طلب جديد #:number',
         'line' => 'وصلك طلب جديد #:number من :customer بقيمة :total ج.م.',
         'line_paid' => 'وصلك طلب جديد #:number من :customer بقيمة :total ج.م، ودفعه العميل أونلاين.',
+        'action' => 'عرض الطلب',
+    ],
+    'order_cancelled' => [
+        'message' => 'ألغى :customer الطلب #:number (:total ج.م)',
+        'message_reason' => 'ألغى :customer الطلب #:number (:total ج.م)، السبب: :reason',
+        'subject' => 'العميل ألغى الطلب #:number',
+        'line' => 'ألغى :customer الطلب #:number بقيمة :total ج.م من المتجر، فلا تجهّزه أو تشحنه.',
+        'reason' => 'سبب الإلغاء: :reason',
         'action' => 'عرض الطلب',
     ],
     'late_payment' => [
@@ -171,10 +158,6 @@ return [
     'open_dashboard' => 'فتح لوحة التحكم',
     'device' => ':browser على :system',
     'unknown_device' => 'جهاز غير معروف',
-    'plan_resources' => [
-        'products' => 'المنتجات',
-        'staff' => 'الموظفين',
-    ],
     'store_suspended' => [
         'subject' => 'تم إيقاف متجرك مؤقتاً',
         'message' => 'أوقفت إدارة المنصة متجرك مؤقتاً، فلن يظهر للعملاء ولن تستقبل طلبات حتى يُعاد تفعيله. السبب: :reason. تواصل مع الدعم الفني لمعرفة التفاصيل.',
@@ -182,14 +165,6 @@ return [
     'store_reactivated' => [
         'subject' => 'عاد متجرك للعمل',
         'message' => 'أعادت إدارة المنصة تفعيل متجرك، وأصبح ظاهراً للعملاء ويستقبل الطلبات من جديد.',
-    ],
-    'plan_limit_near' => [
-        'subject' => 'اقتربت من حد :resource في باقتك',
-        'message' => 'استخدمت :used من :limit من حد :resource في باقتك الحالية. رقِّ باقتك قبل الوصول للحد حتى لا تتوقف الإضافة.',
-    ],
-    'plan_limit_reached' => [
-        'subject' => 'وصلت لحد :resource في باقتك',
-        'message' => 'وصلت لحد :resource في باقتك (:limit)، ولن تستطيع إضافة المزيد حتى ترقّي الباقة.',
     ],
     'coupon_used_up' => [
         'subject' => 'انتهت مرات استخدام الكوبون :code',

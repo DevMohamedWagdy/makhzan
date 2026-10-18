@@ -5,9 +5,7 @@ namespace Tests\Feature;
 use App\Models\Admin;
 use App\Models\Coupon;
 use App\Models\Customer;
-use App\Models\Plan;
 use App\Models\Product;
-use App\Models\ProductCategory;
 use App\Models\Vendor;
 use App\Notifications\StoreAlertNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -41,26 +39,6 @@ class StoreAlertNotificationTest extends TestCase
 
         $this->postJson("/api/v1/admin/stores/{$owner->store->id}/unsuspend")->assertOk();
         $this->assertTrue($this->sent($owner, StoreAlertNotification::STORE_REACTIVATED));
-    }
-
-    public function test_the_owner_is_warned_once_at_80_percent_and_once_at_the_plan_limit(): void
-    {
-        Notification::fake();
-        $owner = $this->actingAsVendor();
-        $plan = Plan::factory()->create(['max_products' => 5, 'max_staff' => 3, 'features' => []]);
-        $owner->store->forceFill(['plan_id' => $plan->id, 'plan_expires_at' => now()->addMonth()])->save();
-        Product::factory()->count(3)->for($owner->store)->create();
-        $category = ProductCategory::factory()->for($owner->store)->create();
-        $addProduct = fn () => $this->postJson('/api/v1/vendor/products', ['category_id' => $category->id, 'name' => 'فستان', 'status' => 'active', 'options' => [], 'variants' => [['option_values' => [], 'price' => 100, 'stock' => 1]]])->assertCreated();
-
-        $addProduct();
-        Notification::assertSentToTimes($owner, StoreAlertNotification::class, 1);
-        $this->assertTrue($this->sent($owner, StoreAlertNotification::PLAN_LIMIT_NEAR));
-
-        $addProduct();
-        Notification::assertSentToTimes($owner, StoreAlertNotification::class, 2);
-        Notification::assertSentTo($owner, StoreAlertNotification::class, fn (StoreAlertNotification $notification): bool => $notification->event === StoreAlertNotification::PLAN_LIMIT_REACHED
-            && $notification->details === ['resource' => 'products', 'used' => 5, 'limit' => 5]);
     }
 
     public function test_the_owner_is_told_when_a_coupon_is_used_up(): void
@@ -132,7 +110,7 @@ class StoreAlertNotificationTest extends TestCase
     {
         $owner = Vendor::factory()->withStore()->create();
         $owner->notify(new StoreAlertNotification(StoreAlertNotification::COUPON_EXPIRED, ['coupon_id' => 1, 'code' => 'FLASH']));
-        $owner->notify(new StoreAlertNotification(StoreAlertNotification::PLAN_LIMIT_NEAR, ['resource' => 'staff', 'used' => 4, 'limit' => 5]));
+        $owner->notify(new StoreAlertNotification(StoreAlertNotification::STORE_REACTIVATED));
         $staff = $owner->store->staff()->create([
             'full_name' => 'أحمد سمير', 'job_title' => 'تسويق', 'phone' => '01077778888', 'email' => 'ahmed@noor.test', 'password' => 'Staff2026pass',
             'role_id' => $owner->store->roles()->create(['name' => 'تسويق', 'permissions' => ['notifications.view', 'coupons.view']])->id,
@@ -142,7 +120,7 @@ class StoreAlertNotificationTest extends TestCase
         $this->getJson('/api/v1/vendor/notifications')
             ->assertOk()
             ->assertJsonCount(2, 'data')
-            ->assertJsonFragment(['message' => 'استخدمت 4 من 5 من حد الموظفين في باقتك الحالية. رقِّ باقتك قبل الوصول للحد حتى لا تتوقف الإضافة.'])
+            ->assertJsonFragment(['message' => 'أعادت إدارة المنصة تفعيل متجرك، وأصبح ظاهراً للعملاء ويستقبل الطلبات من جديد.'])
             ->assertJsonFragment(['message' => 'انتهت مدة الكوبون FLASH ولم يعد يعمل في المتجر.']);
 
         Sanctum::actingAs($staff, [Vendor::TOKEN_ABILITY]);

@@ -7,10 +7,8 @@ import { Input, Select } from '@/components/ui/Form';
 import { Pagination, Tabs } from '@/components/ui/Navigation';
 import { Skeleton } from '@/components/ui/Spinner';
 import { useAuth } from '@/context/AuthContext';
-import { useToast } from '@/context/ToastContext';
 import { OrderDrawer } from '@/features/orders/OrderDrawer';
 import { OrderSourceBadge, OrderStatusBadge, PaymentBadge } from '@/features/orders/OrderBadges';
-import { openAirwayBills } from '@/features/orders/ShipmentSection';
 import { useDebouncedValue } from '@/hooks/common';
 import { t } from '@/i18n';
 import { ORDER_SOURCES, ORDER_STATUSES, PAYMENT_METHODS, PAYMENT_STATUSES } from '@/lib/constants';
@@ -32,7 +30,6 @@ const PAYMENT_FILTERS = [
  * and printing invoices or packing slips for the selected orders.
  */
 export function OrdersPage() {
-    const toast = useToast();
     const { can } = useAuth();
     const [searchParams, setSearchParams] = useSearchParams();
     const status = searchParams.get('status') ?? '';
@@ -151,11 +148,6 @@ export function OrdersPage() {
                             <Button size="sm" variant="secondary" icon="box" onClick={() => openOrderPrint(selectedIds, 'packing')}>
                                 {t('طباعة بوالص التغليف')}
                             </Button>
-                            {items.some((order) => selectedIds.includes(order.order_id) && order.shipment?.is_bosta) && (
-                                <Button size="sm" variant="secondary" icon="truck" onClick={() => openAirwayBills(selectedIds, toast)}>
-                                    {t('بوالص بوسطة')}
-                                </Button>
-                            )}
                         </span>
                     )}
                     {affiliateId && (

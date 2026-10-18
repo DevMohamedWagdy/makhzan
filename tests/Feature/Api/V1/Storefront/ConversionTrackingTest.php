@@ -8,7 +8,6 @@ use App\Enums\TrackingProvider;
 use App\Models\Customer;
 use App\Models\Order;
 use App\Models\OrderEvent;
-use App\Models\Plan;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\Store;
@@ -140,14 +139,10 @@ class ConversionTrackingTest extends TestCase
         $this->assertNull($pixel->last_sent_at);
     }
 
-    public function test_nothing_is_sent_without_a_token_or_on_a_plan_without_server_side_tracking(): void
+    public function test_nothing_is_sent_without_a_token(): void
     {
         $this->fakePlatforms();
         $this->connect(TrackingProvider::Meta, '123456789012345', token: null);
-        $this->placeOrder();
-
-        $this->store->forceFill(['plan_id' => Plan::factory()->create(['features' => []])->id, 'plan_expires_at' => now()->addMonth(), 'trial_ends_at' => now()->subDay()])->save();
-        $this->store->trackingPixels()->sole()->update(['access_token' => 'token']);
         $this->placeOrder();
 
         Http::assertNothingSent();

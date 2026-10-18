@@ -149,22 +149,19 @@ export function AuthProvider({ children }) {
 function permissionsFor(vendor) {
     const isOwner = vendor?.role !== 'staff';
     const granted = new Set(vendor?.permissions ?? []);
-    const billingStatus = vendor?.store?.billing?.status ?? 'active';
 
     return {
         isOwner,
-        /** Trial or subscription ended: only the subscription page works until a plan is chosen. */
-        billingExpired: billingStatus === 'expired',
         /**
          * A "section.action" permission (orders.update), or a bare section meaning it can be
-         * viewed (orders = orders.view); "owner"/"billing" are owner-only, "any" always passes.
+         * viewed (orders = orders.view); "owner" is owner-only, "any" always passes.
          */
         can: (permission) => {
             if (permission === 'any' || isOwner) {
                 return true;
             }
 
-            if (['owner', 'billing'].includes(permission)) {
+            if (permission === 'owner') {
                 return false;
             }
 

@@ -2,7 +2,6 @@
 
 namespace App\Http\Resources;
 
-use App\Enums\PlanFeature;
 use App\Enums\TrackingProvider;
 use App\Models\Store;
 use App\Models\StoreTrackingPixel;
@@ -27,7 +26,6 @@ class TrackingPixelSettingsResource extends JsonResource
         $pixels = $this->trackingPixels->keyBy(fn (StoreTrackingPixel $pixel): string => $pixel->provider->value);
 
         return [
-            'server_side_available' => $this->hasFeature(PlanFeature::ConversionsApi),
             'pixels' => collect(TrackingProvider::cases())->mapWithKeys(fn (TrackingProvider $provider): array => [
                 $provider->value => ($pixel = $pixels->get($provider->value)) ? [
                     'pixel_id' => $pixel->pixel_id,

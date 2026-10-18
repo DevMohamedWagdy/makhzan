@@ -1,7 +1,6 @@
 import { Suspense, useEffect, useState } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Logo } from '@/components/brand/Logo';
-import { Button } from '@/components/ui/Button';
 import { Alert, Avatar } from '@/components/ui/Display';
 import { Dropdown } from '@/components/ui/Dropdown';
 import { Icon } from '@/components/ui/Icon';
@@ -68,7 +67,6 @@ export const NAV_SECTIONS = [
         items: [
             { label: t('التقارير'), icon: 'nav-reports', to: '/dashboard/reports', permission: 'reports' },
             { label: t('فريق العمل'), icon: 'nav-staff', to: '/dashboard/staff', permission: 'owner' },
-            { label: t('الاشتراك والباقة'), icon: 'nav-subscription', to: '/dashboard/subscription', permission: 'billing' },
             { label: t('سجل النشاط'), icon: 'nav-activity', to: '/dashboard/activity', permission: 'activity' },
             { label: t('الدعم الفني'), icon: 'nav-support', to: '/dashboard/support', permission: 'support' },
             { label: t('إعدادات المتجر'), icon: 'nav-settings', to: '/dashboard/settings', permission: 'settings' },
@@ -248,7 +246,7 @@ function DashboardShell() {
 
     useEffect(() => setSidebarOpen(false), [location.pathname]);
 
-    // Permissions and billing change on the server (staff edits, trial ending): refresh on load.
+    // Permissions change on the server (staff edits): refresh on load.
     useEffect(() => {
         authApi
             .me()
@@ -299,10 +297,9 @@ function DashboardShell() {
                     </div>
                 </header>
                 <main className="px-4 py-6 sm:px-8 sm:py-8">
-                    <BillingBanner billing={store?.billing} isOwner={isOwner} />
                     {store?.suspended && (
                         <Alert tone="danger" title={t('متجرك موقوف من إدارة المنصة')} className="mb-6">
-                            {t('السبب: {reason}. لا يستطيع العملاء الطلب الآن. تواصل مع الدعم، أو جدّد اشتراكك من صفحة الاشتراك إن كان السبب انتهاء الباقة.', { reason: store.suspension_reason ?? '—' })}
+                            {t('السبب: {reason}. لا يستطيع العملاء الطلب الآن. تواصل مع الدعم لإعادة تفعيله.', { reason: store.suspension_reason ?? '—' })}
                         </Alert>
                     )}
                     <Suspense fallback={<PageLoader />}>
@@ -312,41 +309,6 @@ function DashboardShell() {
             </div>
         </div>
     );
-}
-
-/** Trial days left, or that the trial/subscription ended (the owner gets a link to subscribe). */
-function BillingBanner({ billing, isOwner }) {
-    const location = useLocation();
-
-    if (!billing || location.pathname === '/dashboard/subscription') {
-        return null;
-    }
-
-    const action = isOwner && (
-        <Button to="/dashboard/subscription" size="sm" icon="zap" className="shrink-0">
-            {t('اختر باقة')}
-        </Button>
-    );
-
-    if (billing.status === 'expired') {
-        return (
-            <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-danger/30 bg-danger-soft px-4 py-3 text-sm text-danger">
-                <span>{isOwner ? t('انتهت الفترة التجريبية. اختر باقة لتفتح لوحة التحكم ويستقبل متجرك الطلبات من جديد.') : t('انتهت الفترة التجريبية للمتجر. اطلب من صاحب المتجر اختيار باقة.')}</span>
-                {action}
-            </div>
-        );
-    }
-
-    if (billing.status === 'trial') {
-        return (
-            <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-primary/30 bg-primary-soft px-4 py-3 text-sm text-primary">
-                <span>{t('أنت في الفترة التجريبية المجانية: متبقي {days} يوم لاستخدام كل مميزات المنصة.', { days: billing.days_left })}</span>
-                {action}
-            </div>
-        );
-    }
-
-    return null;
 }
 
 export function PageHeader({ title, description, breadcrumbs = [], actions }) {

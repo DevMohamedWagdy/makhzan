@@ -45,7 +45,7 @@ export function AdminLoginPage() {
 
     return (
         <AuthLayout>
-            <AuthHeading title={t('إدارة المنصة')} subtitle={t('تسجيل دخول فريق Sellygrow لإدارة المتاجر والاشتراكات.')} />
+            <AuthHeading title={t('إدارة المنصة')} subtitle={t('تسجيل دخول فريق Sellygrow لإدارة المتاجر والدعم.')} />
 
             <form onSubmit={onSubmit} noValidate className="flex flex-col gap-5">
                 {formError && <Alert tone="danger">{formError}</Alert>}

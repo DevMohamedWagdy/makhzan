@@ -64,10 +64,6 @@ class CustomerOrderUpdateNotification extends Notification implements ShouldQueu
 
         if ($shipment) {
             $mail->line(__('notifications.customer_order.tracking', ['carrier' => $shipment['carrier'], 'number' => $shipment['tracking_number']]));
-
-            if ($shipment['tracking_url']) {
-                $mail->line(__('notifications.customer_order.tracking_link', ['url' => $shipment['tracking_url']]));
-            }
         }
 
         if ($this->status === OrderStatus::Shipped && ! $this->order->payment_method?->isOnline()) {

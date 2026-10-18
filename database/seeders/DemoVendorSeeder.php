@@ -5,7 +5,6 @@ namespace Database\Seeders;
 use App\Enums\AffiliateTier;
 use App\Enums\CommissionType;
 use App\Models\Affiliate;
-use App\Models\Plan;
 use App\Models\Store;
 use App\Models\Vendor;
 use Illuminate\Database\Seeder;
@@ -58,24 +57,6 @@ class DemoVendorSeeder extends Seeder
             );
         }
 
-        $this->subscribeDemoStores();
-    }
-
-    /**
-     * Demo stores get the top plan for a year, so every feature can be tried locally.
-     */
-    private function subscribeDemoStores(): void
-    {
-        $plan = Plan::query()->orderByDesc('price_monthly')->first();
-
-        if (! $plan) {
-            return;
-        }
-
-        Store::query()
-            ->whereIn('slug', self::STORE_SLUGS)
-            ->where(fn ($query) => $query->whereNull('plan_expires_at')->orWhere('plan_expires_at', '<=', now()))
-            ->update(['plan_id' => $plan->id, 'plan_expires_at' => now()->addYear()]);
     }
 
     private function seedDemoStaff(Vendor $vendor): void
@@ -85,8 +66,8 @@ class DemoVendorSeeder extends Seeder
         }
 
         $role = $vendor->store->roles()->firstOrCreate(['name' => 'موظف طلبات ومخزن'], [
-            'description' => 'يتابع الطلبات ويشحنها ويعدّل المخزون، دون حذف أو تقارير',
-            'permissions' => ['orders.view', 'orders.update', 'orders.ship', 'inventory.view', 'inventory.update'],
+            'description' => 'يتابع الطلبات ويعدّل المخزون، دون حذف أو تقارير',
+            'permissions' => ['orders.view', 'orders.update', 'inventory.view', 'inventory.update'],
         ]);
 
         $vendor->store->staff()->create([

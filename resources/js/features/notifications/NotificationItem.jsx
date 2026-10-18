@@ -6,14 +6,9 @@ const TYPES = {
     payout_requested: { icon: 'send', className: 'bg-warning-soft text-warning' },
     affiliate_registered: { icon: 'user-plus', className: 'bg-primary-soft text-primary' },
     order_placed: { icon: 'shopping-bag', className: 'bg-success-soft text-success' },
-    subscription_activated: { icon: 'zap', className: 'bg-success-soft text-success' },
-    subscription_rejected: { icon: 'alert-circle', className: 'bg-danger-soft text-danger' },
-    subscription_expiring: { icon: 'clock', className: 'bg-warning-soft text-warning' },
-    trial_ending: { icon: 'clock', className: 'bg-warning-soft text-warning' },
+    order_cancelled: { icon: 'x', className: 'bg-danger-soft text-danger' },
     // Admin panel
     store_registered: { icon: 'store', className: 'bg-success-soft text-success' },
-    subscription_requested: { icon: 'send', className: 'bg-primary-soft text-primary' },
-    trial_ended: { icon: 'clock', className: 'bg-danger-soft text-danger' },
     ticket_opened: { icon: 'message-square', className: 'bg-primary-soft text-primary' },
     ticket_vendor_replied: { icon: 'message-square', className: 'bg-warning-soft text-warning' },
     // Support tickets (dashboard)
@@ -26,8 +21,6 @@ const TYPES = {
     review_submitted: { icon: 'star', className: 'bg-warning-soft text-warning' },
     store_suspended: { icon: 'lock', className: 'bg-danger-soft text-danger' },
     store_reactivated: { icon: 'check-circle', className: 'bg-success-soft text-success' },
-    plan_limit_near: { icon: 'alert-triangle', className: 'bg-warning-soft text-warning' },
-    plan_limit_reached: { icon: 'alert-circle', className: 'bg-danger-soft text-danger' },
     coupon_used_up: { icon: 'percent', className: 'bg-surface-3 text-ink-2' },
     coupon_expired: { icon: 'clock', className: 'bg-surface-3 text-ink-2' },
     new_sign_in: { icon: 'log-in', className: 'bg-info-soft text-info' },
@@ -51,8 +44,6 @@ export function notificationTarget(notification) {
     const fixed = {
         store_suspended: '/dashboard/support',
         store_reactivated: '/dashboard',
-        plan_limit_near: '/dashboard/subscription',
-        plan_limit_reached: '/dashboard/subscription',
         coupon_used_up: '/dashboard/coupons',
         coupon_expired: '/dashboard/coupons',
         new_sign_in: '/dashboard/settings?tab=account',
@@ -61,10 +52,6 @@ export function notificationTarget(notification) {
 
     if (fixed) {
         return fixed;
-    }
-
-    if (notification.type.startsWith('subscription_') || notification.type === 'trial_ending') {
-        return '/dashboard/subscription';
     }
 
     if (notification.type.startsWith('ticket_')) {
@@ -79,7 +66,7 @@ export function notificationTarget(notification) {
         return `/dashboard/inventory?level=${notification.type === 'stock_out' ? 'out' : 'low'}&search=${encodeURIComponent(notification.details.product_name)}`;
     }
 
-    return ['order_placed', 'late_payment'].includes(notification.type) ? `/dashboard/orders?order=${notification.details.order_id}` : `/dashboard/affiliates?affiliate=${notification.details.affiliate_id}`;
+    return ['order_placed', 'order_cancelled', 'late_payment'].includes(notification.type) ? `/dashboard/orders?order=${notification.details.order_id}` : `/dashboard/affiliates?affiliate=${notification.details.affiliate_id}`;
 }
 
 /** Where clicking a notification takes a platform admin. */
@@ -88,7 +75,7 @@ export function adminNotificationTarget(notification) {
         return `/admin/support/${notification.details.ticket_id}`;
     }
 
-    return notification.type === 'subscription_requested' ? '/admin/requests' : `/admin/stores/${notification.details.store_id}`;
+    return `/admin/stores/${notification.details.store_id}`;
 }
 
 /** Where clicking a notification takes the affiliate: their orders, payouts, account or home. */

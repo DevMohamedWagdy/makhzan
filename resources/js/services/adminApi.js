@@ -16,7 +16,7 @@ export const adminApi = {
 
     overview: () => request('GET', `${BASE}/overview`, { auth }),
 
-    /** @param {{ search?: string, status?: 'active'|'suspended'|'paying'|'trial'|'expired', plan_id?: number, page?: number }} filters */
+    /** @param {{ search?: string, status?: 'active'|'suspended', page?: number }} filters */
     stores: (filters) => request('GET', `${BASE}/stores`, { query: filters, auth }),
     store: (storeId) => request('GET', `${BASE}/stores/${storeId}`, { auth }),
     updateStore: (storeId, payload) => request('PATCH', `${BASE}/stores/${storeId}`, { body: payload, auth }),
@@ -24,11 +24,8 @@ export const adminApi = {
     storeCustomers: (storeId, query = {}) => request('GET', `${BASE}/stores/${storeId}/customers`, { query, auth }),
     suspend: (storeId, reason) => request('POST', `${BASE}/stores/${storeId}/suspend`, { body: { reason }, auth }),
     unsuspend: (storeId) => request('POST', `${BASE}/stores/${storeId}/unsuspend`, { auth }),
-    extendTrial: (storeId, days) => request('POST', `${BASE}/stores/${storeId}/trial`, { body: { days }, auth }),
     /** `{ token, vendor }` — a one-hour dashboard session as the store's owner. */
     impersonate: (storeId) => request('POST', `${BASE}/stores/${storeId}/impersonate`, { auth }),
-    /** @param {{ plan_id: number, months: number, amount: number, method: string, reference?: string, notes?: string }} payload */
-    activate: (storeId, payload) => request('POST', `${BASE}/stores/${storeId}/subscription`, { body: payload, auth }),
 
     /** @param {{ store_id?: number, status?: string, search?: string, from?: string, to?: string, page?: number }} filters */
     orders: (filters) => request('GET', `${BASE}/orders`, { query: filters, auth }),
@@ -37,15 +34,6 @@ export const adminApi = {
     /** @param {{ search?: string, type?: 'owner'|'staff', store_id?: number, page?: number }} filters */
     vendors: (filters) => request('GET', `${BASE}/vendors`, { query: filters, auth }),
     updateVendor: (vendorId, payload) => request('PATCH', `${BASE}/vendors/${vendorId}`, { body: payload, auth }),
-
-    plans: () => request('GET', `${BASE}/plans`, { auth }),
-    savePlan: (payload, planId = null) => request(planId ? 'PUT' : 'POST', `${BASE}/plans${planId ? `/${planId}` : ''}`, { body: payload, auth }),
-    removePlan: (planId) => request('DELETE', `${BASE}/plans/${planId}`, { auth }),
-
-    /** @param {{ status?: 'pending'|'approved'|'rejected', page?: number }} filters */
-    requests: (filters) => request('GET', `${BASE}/subscription-requests`, { query: filters, auth }),
-    approve: (requestId, amount = null) => request('POST', `${BASE}/subscription-requests/${requestId}/approve`, { body: { amount }, auth }),
-    reject: (requestId, note) => request('POST', `${BASE}/subscription-requests/${requestId}/reject`, { body: { note }, auth }),
 
     /** @param {{ status?: 'open'|'closed', type?: 'problem'|'suggestion', store_id?: number, awaiting_reply?: boolean, search?: string, page?: number }} filters  Returns `{ data, meta, summary, stores }`. */
     tickets: (filters) => request('GET', `${BASE}/support-tickets`, { query: filters, auth, raw: true }),
@@ -56,8 +44,6 @@ export const adminApi = {
     reopenTicket: (ticketId) => request('POST', `${BASE}/support-tickets/${ticketId}/reopen`, { auth }),
     /** Resolves to a Blob: attachments are private and need the admin's token. */
     ticketAttachment: (ticketId, attachmentId) => requestFile(`${BASE}/support-tickets/${ticketId}/attachments/${attachmentId}`, { auth }),
-
-    payments: (page = 1) => request('GET', `${BASE}/subscription-payments`, { query: { page }, auth }),
 
     /** @param {{ store_id?: number, actor_type?: string, actor_id?: number, subject_type?: string, subject_id?: number, event?: string, search?: string, from?: string, to?: string, page?: number }} filters */
     logs: (filters) => request('GET', `${BASE}/logs`, { query: filters, auth }),

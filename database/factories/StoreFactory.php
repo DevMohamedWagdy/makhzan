@@ -2,7 +2,6 @@
 
 namespace Database\Factories;
 
-use App\Models\Plan;
 use App\Models\Store;
 use App\Models\Vendor;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -27,21 +26,5 @@ class StoreFactory extends Factory
             'governorate_id' => 'cairo',
             'city_id' => 'nasr_city',
         ];
-    }
-
-    /**
-     * Past its trial without a subscription: must choose a plan.
-     */
-    public function trialEnded(): static
-    {
-        return $this->state(fn (): array => ['trial_ends_at' => now()->subDay()]);
-    }
-
-    /**
-     * On a paid plan for the next month.
-     */
-    public function subscribed(?Plan $plan = null): static
-    {
-        return $this->state(fn (): array => ['plan_id' => $plan?->id ?? Plan::factory(), 'plan_expires_at' => now()->addMonth(), 'trial_ends_at' => now()->subDay()]);
     }
 }

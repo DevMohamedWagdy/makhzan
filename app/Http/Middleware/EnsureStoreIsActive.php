@@ -21,7 +21,7 @@ class EnsureStoreIsActive
     {
         $store = $request->route('store');
 
-        abort_if($store instanceof Store && $store->isSuspended(), Response::HTTP_FORBIDDEN, __('billing.store_suspended'));
+        abort_if($store instanceof Store && $store->isSuspended(), Response::HTTP_FORBIDDEN, __('settings.store_suspended'));
 
         return $next($request);
     }

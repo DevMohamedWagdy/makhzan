@@ -33,11 +33,6 @@ return [
         'base_url' => env('PAYMOB_BASE_URL', 'https://accept.paymob.com'),
     ],
 
-    // Stores connect their own Bosta accounts (store_shipping_accounts); this is the API host.
-    'bosta' => [
-        'base_url' => env('BOSTA_BASE_URL', 'https://app.bosta.co'),
-    ],
-
     'slack' => [
         'notifications' => [
             'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),

@@ -135,15 +135,6 @@ export function TrackingTab() {
                 {t('البيكسل يخبر فيسبوك وتيك توك وجوجل بمن اشترى من إعلاناتك، فتعرف أي إعلان يجيب مبيعات وتصبح إعلاناتك أرخص وأدق. يكفي أن تلصق المعرّف ونحن نرسل الزيارات والإضافة للسلة والطلبات تلقائياً.')}
             </Alert>
 
-            {!settings.server_side_available && (
-                <Alert tone="warning" icon="zap" title={t('الإرسال من السيرفر غير متاح في باقتك')}>
-                    {t('البيكسل يعمل في كل الباقات. في الباقة الاحترافية نرسل الطلبات أيضاً من السيرفر (Conversions API)، فلا تضيع بسبب مانعات الإعلانات وقيود الآيفون، ونبلغ المنصات بالطلبات التي تم تسليمها فعلاً.')}
-                    <Button to="/dashboard/subscription" size="sm" variant="secondary" icon="zap" className="ms-2">
-                        {t('ترقية الباقة')}
-                    </Button>
-                </Alert>
-            )}
-
             {Object.entries(PROVIDERS).map(([provider, config]) => {
                 const saved = settings.pixels[provider];
                 const values = form[provider];
@@ -159,7 +150,7 @@ export function TrackingTab() {
                             </div>
                             {saved ? (
                                 <Badge tone={saved.is_active ? 'success' : 'neutral'} dot>
-                                    {saved.is_active ? (saved.has_access_token && settings.server_side_available ? t('مفعّل · متصفح وسيرفر') : t('مفعّل · متصفح')) : t('متوقف')}
+                                    {saved.is_active ? (saved.has_access_token ? t('مفعّل · متصفح وسيرفر') : t('مفعّل · متصفح')) : t('متوقف')}
                                 </Badge>
                             ) : (
                                 <Badge>{t('غير مربوط')}</Badge>
@@ -170,12 +161,10 @@ export function TrackingTab() {
                             <Field label={config.idLabel} error={error('pixel_id')} hint={saved ? t('امسحه واحفظ لفصل المنصة.') : undefined}>
                                 {(props) => <Input {...props} {...ltr} value={values.pixel_id} onChange={(event) => set(provider, 'pixel_id', event.target.value)} placeholder={config.idPlaceholder} />}
                             </Field>
-                            {settings.server_side_available && (
-                                <Field label={config.tokenLabel} optional error={error('access_token')} hint={saved?.access_token_hint ? t('اتركه فارغاً للإبقاء على المحفوظ ({hint}).', { hint: saved.access_token_hint }) : t('لإرسال الطلبات من السيرفر.')}>
-                                    {(props) => <PasswordInput {...props} {...ltr} value={values.access_token} onChange={(event) => set(provider, 'access_token', event.target.value)} />}
-                                </Field>
-                            )}
-                            {config.testCode && settings.server_side_available && (
+                            <Field label={config.tokenLabel} optional error={error('access_token')} hint={saved?.access_token_hint ? t('اتركه فارغاً للإبقاء على المحفوظ ({hint}).', { hint: saved.access_token_hint }) : t('لإرسال الطلبات من السيرفر.')}>
+                                {(props) => <PasswordInput {...props} {...ltr} value={values.access_token} onChange={(event) => set(provider, 'access_token', event.target.value)} />}
+                            </Field>
+                            {config.testCode && (
                                 <Field label={t('Test Event Code')} optional error={error('test_event_code')} hint={t('للتجربة فقط: تظهر الأحداث في تبويب Test Events. امسحه بعد التأكد.')}>
                                     {(props) => <Input {...props} {...ltr} value={values.test_event_code} onChange={(event) => set(provider, 'test_event_code', event.target.value)} placeholder="TEST12345" />}
                                 </Field>

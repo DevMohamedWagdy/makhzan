@@ -21,29 +21,9 @@ return [
     ],
     'admin' => [
         'store_registered' => 'New store :store registered (:owner)',
-        'subscription_requested' => 'New subscription request from :store for :plan (:amount EGP)',
-        'trial_ended' => 'The trial of :store ended without a subscription',
         'ticket_opened' => 'New support ticket from :store: :subject',
         'ticket_vendor_replied' => ':store replied to the ticket: :subject',
     ],
-    'subscription_activated' => [
-        'subject' => 'Your :plan plan is active',
-        'message' => 'The :plan plan is now active for your store until :date. Thank you for choosing Sellygrow!',
-    ],
-    'subscription_rejected' => [
-        'subject' => 'We could not activate the :plan plan',
-        'message' => 'We could not confirm the payment for your :plan plan request. Check the transfer details and send the request again.',
-    ],
-    'subscription_expiring' => [
-        'subject' => 'Your :plan plan ends soon',
-        'message' => 'Your store\'s :plan plan ends on :date. Renew so its features keep working.',
-    ],
-    'trial_ending' => [
-        'subject' => 'Your trial ends soon',
-        'message' => 'Your store\'s trial ends on :date. Choose a plan now so your store keeps taking orders.',
-    ],
-    'subscription_note' => 'Note: :note',
-    'subscription_action' => 'Manage subscription',
     'customer_order' => [
         'pending' => [
             'subject' => 'We received your order #:number - :store',
@@ -70,7 +50,6 @@ return [
             'line' => 'The return of your order #:number has been recorded. Contact :store if you have any questions.',
         ],
         'tracking' => 'Tracking number with :carrier: :number',
-        'tracking_link' => 'Track your shipment: :url',
         'reason' => 'Reason: :reason',
         'item' => ':name × :quantity — :total EGP',
         'total' => 'Total: :total EGP',
@@ -101,6 +80,14 @@ return [
         'subject' => 'New order #:number',
         'line' => 'You received a new order #:number from :customer for :total EGP.',
         'line_paid' => 'You received a new order #:number from :customer for :total EGP, paid online.',
+        'action' => 'View order',
+    ],
+    'order_cancelled' => [
+        'message' => ':customer cancelled order #:number (:total EGP)',
+        'message_reason' => ':customer cancelled order #:number (:total EGP). Reason: :reason',
+        'subject' => 'Order #:number was cancelled by the customer',
+        'line' => ':customer cancelled order #:number for :total EGP from the store, so don\'t prepare or ship it.',
+        'reason' => 'Cancellation reason: :reason',
         'action' => 'View order',
     ],
     'late_payment' => [
@@ -171,10 +158,6 @@ return [
     'open_dashboard' => 'Open dashboard',
     'device' => ':browser on :system',
     'unknown_device' => 'Unknown device',
-    'plan_resources' => [
-        'products' => 'products',
-        'staff' => 'staff members',
-    ],
     'store_suspended' => [
         'subject' => 'Your store has been suspended',
         'message' => 'The platform has suspended your store, so shoppers can\'t see it and it won\'t take orders until it\'s reactivated. Reason: :reason. Contact support for details.',
@@ -182,14 +165,6 @@ return [
     'store_reactivated' => [
         'subject' => 'Your store is back online',
         'message' => 'The platform has reactivated your store. Shoppers can see it and it takes orders again.',
-    ],
-    'plan_limit_near' => [
-        'subject' => 'You\'re close to your plan\'s :resource limit',
-        'message' => 'You\'ve used :used of :limit :resource on your current plan. Upgrade before you reach the limit so you can keep adding.',
-    ],
-    'plan_limit_reached' => [
-        'subject' => 'You\'ve reached your plan\'s :resource limit',
-        'message' => 'You\'ve reached your plan\'s limit of :limit :resource and can\'t add more until you upgrade.',
     ],
     'coupon_used_up' => [
         'subject' => 'Coupon :code is used up',

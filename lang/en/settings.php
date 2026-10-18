@@ -17,4 +17,6 @@ return [
     'domain_taken' => 'This domain is connected to another store.',
     'domain_missing' => 'Add the domain first.',
     'domain_not_pointing' => 'The domain does not point to us yet. Add a CNAME record pointing to :target, then wait for it to propagate (it can take an hour).',
+    'store_suspended' => 'This store is temporarily unavailable.',
+    'vendor_suspended' => 'Your store has been suspended by the platform (:reason). Contact support to reactivate it.',
 ];

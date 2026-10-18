@@ -122,49 +122,6 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Shipping Companies
-    |--------------------------------------------------------------------------
-    |
-    | Bosta city names for our governorate ids (as Bosta's own plugin sends them).
-    |
-    */
-
-    'shipping' => [
-        'bosta_cities' => [
-            'cairo' => 'Cairo', 'giza' => 'Giza', 'alexandria' => 'Alexandria', 'qalyubia' => 'Qalyubia',
-            'dakahlia' => 'Dakahlia', 'sharqia' => 'Al Sharqia', 'gharbia' => 'Gharbia', 'monufia' => 'Monufia',
-            'beheira' => 'Beheira', 'ismailia' => 'Ismailia', 'port_said' => 'Port Said', 'suez' => 'Suez',
-            'faiyum' => 'Faiyum', 'minya' => 'Minya', 'asyut' => 'Asyut', 'sohag' => 'Sohag', 'qena' => 'Qena',
-            'luxor' => 'Luxor', 'aswan' => 'Aswan', 'red_sea' => 'Red Sea', 'south_sinai' => 'South Sinai',
-            'damietta' => 'Damietta', 'kafr_elsheikh' => 'Kafr el-Sheikh', 'beni_suef' => 'Beni Suef',
-        ],
-    ],
-
-    /*
-    |--------------------------------------------------------------------------
-    | Platform Billing
-    |--------------------------------------------------------------------------
-    |
-    | Where vendors transfer subscription fees; a platform admin confirms the
-    | transfer and activates the plan. Methods without an account are hidden.
-    |
-    */
-
-    'billing' => [
-        'accounts' => [
-            'vodafone_cash' => env('MAKHZAN_BILLING_VODAFONE_CASH'),
-            'instapay' => env('MAKHZAN_BILLING_INSTAPAY'),
-            'bank_transfer' => env('MAKHZAN_BILLING_BANK_ACCOUNT'),
-        ],
-        'support_whatsapp' => env('MAKHZAN_SUPPORT_WHATSAPP'),
-        // Owners are reminded this many days before their plan (or trial) ends.
-        'expiry_reminder_days' => 3,
-        // Every new store can use the whole platform for this long before subscribing.
-        'trial_days' => (int) env('MAKHZAN_TRIAL_DAYS', 14),
-    ],
-
-    /*
-    |--------------------------------------------------------------------------
     | Storefront Customers
     |--------------------------------------------------------------------------
     */

@@ -11,7 +11,6 @@ use App\Enums\PaymentStatus;
 use App\Enums\StockMovementType;
 use App\Models\Concerns\BelongsToStore;
 use App\Models\Concerns\LogsActivity;
-use App\Support\Shipping\BostaClient;
 use Database\Factories\OrderFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -75,7 +74,6 @@ class Order extends Model
             'delivered_at' => 'datetime',
             'cancelled_at' => 'datetime',
             'returned_at' => 'datetime',
-            'carrier_status_code' => 'integer',
             'carrier_updated_at' => 'datetime',
             'tracking' => 'array',
             'points_redeemed' => 'integer',
@@ -215,9 +213,9 @@ class Order extends Model
     }
 
     /**
-     * Who carries the order and how to track it, or null before it has a tracking number.
+     * Who carries the order and its tracking number, or null before it has one.
      *
-     * @return array{carrier: string, tracking_number: string, tracking_url: string|null, status: string|null, updated_at: string|null, is_bosta: bool}|null
+     * @return array{carrier: string, tracking_number: string, updated_at: string|null}|null
      */
     public function shipment(): ?array
     {
@@ -225,15 +223,10 @@ class Order extends Model
             return null;
         }
 
-        $isBosta = $this->carrier === StoreShippingAccount::BOSTA;
-
         return [
-            'carrier' => $isBosta ? __('orders.carriers.bosta') : (string) $this->carrier,
+            'carrier' => (string) $this->carrier,
             'tracking_number' => $this->tracking_number,
-            'tracking_url' => $isBosta ? BostaClient::trackingUrl($this->tracking_number) : null,
-            'status' => $this->carrier_status,
             'updated_at' => $this->carrier_updated_at?->toIso8601String(),
-            'is_bosta' => $isBosta,
         ];
     }
 

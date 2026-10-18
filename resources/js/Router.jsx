@@ -28,9 +28,6 @@ const AdminOrdersPage = lazy(() => import('@/pages/admin/AdminOrdersPage').then(
 const AdminNotificationsPage = lazy(() => import('@/pages/admin/AdminNotificationsPage').then((module) => ({ default: module.AdminNotificationsPage })));
 const AdminLogsPage = lazy(() => import('@/pages/admin/AdminLogsPage').then((module) => ({ default: module.AdminLogsPage })));
 const AdminOverviewPage = lazy(() => import('@/pages/admin/AdminOverviewPage').then((module) => ({ default: module.AdminOverviewPage })));
-const AdminPaymentsPage = lazy(() => import('@/pages/admin/AdminPaymentsPage').then((module) => ({ default: module.AdminPaymentsPage })));
-const AdminPlansPage = lazy(() => import('@/pages/admin/AdminPlansPage').then((module) => ({ default: module.AdminPlansPage })));
-const AdminRequestsPage = lazy(() => import('@/pages/admin/AdminRequestsPage').then((module) => ({ default: module.AdminRequestsPage })));
 const AdminTicketPage = lazy(() => import('@/pages/admin/AdminTicketPage').then((module) => ({ default: module.AdminTicketPage })));
 const AdminTicketsPage = lazy(() => import('@/pages/admin/AdminTicketsPage').then((module) => ({ default: module.AdminTicketsPage })));
 const AdminStoresPage = lazy(() => import('@/pages/admin/AdminStoresPage').then((module) => ({ default: module.AdminStoresPage })));
@@ -86,7 +83,6 @@ const SuppliersPage = lazy(() => import('@/pages/purchasing/SuppliersPage').then
 const ReportsPage = lazy(() => import('@/pages/reports/ReportsPage').then((module) => ({ default: module.ReportsPage })));
 const SettingsPage = lazy(() => import('@/pages/settings/SettingsPage').then((module) => ({ default: module.SettingsPage })));
 const StaffPage = lazy(() => import('@/pages/staff/StaffPage').then((module) => ({ default: module.StaffPage })));
-const SubscriptionPage = lazy(() => import('@/pages/subscription/SubscriptionPage').then((module) => ({ default: module.SubscriptionPage })));
 const ForgotPasswordPage = lazy(() => import('@/pages/auth/ForgotPasswordPage').then((module) => ({ default: module.ForgotPasswordPage })));
 const LandingPage = lazy(() => import('@/pages/landing/LandingPage').then((module) => ({ default: module.LandingPage })));
 const LegalPage = lazy(() => import('@/pages/legal/LegalPage').then((module) => ({ default: module.LegalPage })));
@@ -156,19 +152,7 @@ function AdminGuestOnly() {
 
 /** Dashboard sections a staff member wasn't given show a notice instead of failing requests. */
 function RequirePermission({ permission }) {
-    const { can, billingExpired, isOwner } = useAuth();
-
-    // Support stays open after the trial or subscription ends: that's when merchants most need help.
-    if (billingExpired && !['billing', 'support'].includes(permission)) {
-        return (
-            <EmptyState
-                icon="zap"
-                title={t('اشتراكك منتهي')}
-                description={isOwner ? t('اختر باقة لتستكمل استخدام لوحة التحكم.') : t('اطلب من صاحب المتجر اختيار باقة.')}
-                action={isOwner && <Button to="/dashboard/subscription" icon="zap">{t('اختر باقة')}</Button>}
-            />
-        );
-    }
+    const { can } = useAuth();
 
     if (can(permission)) {
         return <Outlet />;
@@ -229,9 +213,6 @@ export function App() {
                                         <Route path="notifications" element={<NotificationsPage />} />
                                     </Route>
                                     <Route path="settings" element={<SettingsPage />} />
-                                    <Route element={<RequirePermission permission="billing" />}>
-                                        <Route path="subscription" element={<SubscriptionPage />} />
-                                    </Route>
                                     <Route element={<RequirePermission permission="owner" />}>
                                         <Route path="staff" element={<StaffPage />} />
                                     </Route>
@@ -328,13 +309,6 @@ export function App() {
                                     </Route>
                                     <Route element={<RequireAdminPermission permission="vendors.view" />}>
                                         <Route path="vendors" element={<AdminVendorsPage />} />
-                                    </Route>
-                                    <Route element={<RequireAdminPermission permission="subscriptions.view" />}>
-                                        <Route path="requests" element={<AdminRequestsPage />} />
-                                        <Route path="payments" element={<AdminPaymentsPage />} />
-                                    </Route>
-                                    <Route element={<RequireAdminPermission permission="plans.view" />}>
-                                        <Route path="plans" element={<AdminPlansPage />} />
                                     </Route>
                                     <Route element={<RequireAdminPermission permission="logs.view" />}>
                                         <Route path="logs" element={<AdminLogsPage />} />

@@ -3,8 +3,6 @@
 namespace Tests\Feature\Api\V1\Vendor;
 
 use App\Enums\TrackingProvider;
-use App\Models\Plan;
-use App\Models\Store;
 use App\Models\StoreTrackingPixel;
 use App\Models\Vendor;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -31,7 +29,6 @@ class TrackingPixelControllerTest extends TestCase
             'google' => ['pixel_id' => 'g-ab12cd34ef', 'access_token' => 'ga-api-secret'],
         ]])
             ->assertOk()
-            ->assertJsonPath('data.server_side_available', true)
             ->assertJsonPath('data.pixels.meta.pixel_id', '123456789012345')
             ->assertJsonPath('data.pixels.meta.has_access_token', true)
             ->assertJsonPath('data.pixels.meta.access_token_hint', '••••9876')
@@ -70,17 +67,6 @@ class TrackingPixelControllerTest extends TestCase
         ]])->assertJsonValidationErrors(['pixels.meta.pixel_id', 'pixels.google.pixel_id']);
 
         $this->putJson('/api/v1/vendor/tracking-pixels', ['pixels' => ['snapchat' => ['pixel_id' => '1']]])->assertJsonValidationErrors('pixels');
-    }
-
-    public function test_server_side_tokens_need_a_plan_that_includes_them(): void
-    {
-        $store = Store::factory()->subscribed(Plan::factory()->create(['features' => []]))->create();
-        $this->actingAsVendor($store->vendor);
-
-        $this->getJson('/api/v1/vendor/tracking-pixels')->assertJsonPath('data.server_side_available', false);
-        $this->putJson('/api/v1/vendor/tracking-pixels', ['pixels' => ['meta' => ['pixel_id' => '123456789012345', 'access_token' => 'token']]])
-            ->assertJsonValidationErrors(['pixels.meta.access_token' => __('tracking.feature_unavailable')]);
-        $this->putJson('/api/v1/vendor/tracking-pixels', ['pixels' => ['meta' => ['pixel_id' => '123456789012345']]])->assertOk();
     }
 
     public function test_the_storefront_gets_active_pixel_ids_only(): void

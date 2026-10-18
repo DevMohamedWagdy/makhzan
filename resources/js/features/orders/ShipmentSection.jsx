@@ -10,28 +10,10 @@ import { t } from '@/i18n';
 import { formatRelative } from '@/lib/format';
 import { ordersApi } from '@/services/ordersApi';
 
-/**
- * Opens Bosta's airway bills for the orders in a new tab. The tab opens before the download
- * so the browser doesn't treat it as an unrequested popup.
- */
-export async function openAirwayBills(orderIds, toast) {
-    const tab = window.open('', '_blank');
-
-    try {
-        const pdf = await ordersApi.airwayBills(orderIds);
-
-        tab.location.href = URL.createObjectURL(pdf);
-    } catch (error) {
-        tab?.close();
-        toast.error(t('تعذر طباعة بوالص بوسطة'), error.errors?.ids ?? error.errors?.carrier ?? error.message);
-    }
-}
-
-/** Who carries the order: ship with Bosta, record another company's tracking number, or track it. */
+/** Who carries the order: the vendor records the shipping company and its tracking number. */
 export function ShipmentSection({ order, onUpdated }) {
     const toast = useToast();
     const { copy, copiedValue } = useCopy();
-    const [shipping, setShipping] = useState(false);
     const [manualOpen, setManualOpen] = useState(false);
     const [manual, setManual] = useState({ carrier: '', tracking_number: '' });
     const [manualErrors, setManualErrors] = useState({});
@@ -43,21 +25,6 @@ export function ShipmentSection({ order, onUpdated }) {
     if (!shipment && !canShip) {
         return null;
     }
-
-    const shipWithBosta = async () => {
-        setShipping(true);
-
-        try {
-            const updated = await ordersApi.shipWithBosta(order.order_id);
-
-            toast.success(t('تم إنشاء شحنة بوسطة'), t('رقم التتبع: {number}', { number: updated.shipment?.tracking_number }));
-            onUpdated(updated);
-        } catch (error) {
-            toast.error(t('تعذر إنشاء الشحنة'), error.errors?.carrier ?? error.errors?.status ?? error.message);
-        } finally {
-            setShipping(false);
-        }
-    };
 
     const saveManual = async (event) => {
         event.preventDefault();
@@ -87,49 +54,26 @@ export function ShipmentSection({ order, onUpdated }) {
                                 {copiedValue === shipment.tracking_number ? t('تم النسخ') : shipment.tracking_number}
                             </button>
                         </DetailRow>
-                        {shipment.status && (
-                            <DetailRow label={t('حالة الشحنة')}>
-                                {shipment.status}
-                                {shipment.updated_at && <span className="ms-1 text-xs text-muted">({formatRelative(shipment.updated_at)})</span>}
-                            </DetailRow>
-                        )}
+                        {shipment.updated_at && <DetailRow label={t('آخر تحديث')}>{formatRelative(shipment.updated_at)}</DetailRow>}
                     </dl>
-                    <div className="mt-3 flex flex-wrap gap-2">
-                        {shipment.tracking_url && (
-                            <Button size="sm" variant="secondary" icon="external-link" onClick={() => window.open(shipment.tracking_url, '_blank', 'noopener')}>
-                                {t('تتبع الشحنة')}
-                            </Button>
-                        )}
-                        {shipment.is_bosta && (
-                            <Button size="sm" variant="secondary" icon="printer" onClick={() => openAirwayBills([order.order_id], toast)}>
-                                {t('طباعة بوليصة بوسطة')}
-                            </Button>
-                        )}
-                    </div>
                 </>
             ) : (
                 <div className="flex flex-wrap gap-2">
-                    {order.status === 'confirmed' && can('orders.ship') && (
-                        <Button size="sm" icon="truck" loading={shipping} onClick={shipWithBosta}>
-                            {t('شحن مع بوسطة')}
-                        </Button>
-                    )}
                     <Button
                         size="sm"
-                        variant="secondary"
-                        icon="edit"
+                        icon="truck"
                         onClick={() => {
                             setManual({ carrier: '', tracking_number: '' });
                             setManualErrors({});
                             setManualOpen(true);
                         }}
                     >
-                        {t('إضافة رقم تتبع يدوياً')}
+                        {t('إضافة رقم التتبع')}
                     </Button>
                 </div>
             )}
 
-            <Modal open={manualOpen} onClose={() => setManualOpen(false)} dismissible={!saving} icon="truck" title={t('رقم التتبع')} description={t('لشركات الشحن غير المربوطة؛ يظهر للعميل في صفحة طلبه.')}>
+            <Modal open={manualOpen} onClose={() => setManualOpen(false)} dismissible={!saving} icon="truck" title={t('رقم التتبع')} description={t('يظهر للعميل في صفحة طلبه.')}>
                 <form onSubmit={saveManual} noValidate className="flex flex-col gap-4">
                     <Field label={t('شركة الشحن')} required error={manualErrors.carrier}>
                         {(props) => <Input {...props} value={manual.carrier} onChange={(event) => setManual((current) => ({ ...current, carrier: event.target.value }))} data-autofocus maxLength={60} placeholder={t('مثال: أرامكس')} />}

@@ -44,7 +44,6 @@ export const PERMISSION_ACTIONS = {
     create: t('إضافة'),
     update: t('تعديل'),
     delete: t('حذف'),
-    ship: t('الشحن مع بوسطة'),
     transfer: t('التحويل بين المخازن'),
     impersonate: t('الدخول كمسوق'),
     refund: t('استرداد المبالغ'),
@@ -54,7 +53,7 @@ export const PERMISSION_ACTIONS = {
 /** Ready-made roles to start from. */
 export const ROLE_TEMPLATES = [
     { name: t('خدمة العملاء'), description: t('يتابع الطلبات ويغيّر حالتها ويرى العملاء'), permissions: ['dashboard.view', 'notifications.view', 'orders.view', 'orders.create', 'orders.update', 'customers.view', 'reviews.view', 'reviews.update', 'support.view', 'support.create'] },
-    { name: t('موظف مخزن'), description: t('يجهّز ويشحن الطلبات ويعدّل الكميات'), permissions: ['dashboard.view', 'notifications.view', 'orders.view', 'orders.update', 'orders.ship', 'inventory.view', 'inventory.update', 'inventory.transfer', 'warehouses.view'] },
+    { name: t('موظف مخزن'), description: t('يجهّز ويشحن الطلبات ويعدّل الكميات'), permissions: ['dashboard.view', 'notifications.view', 'orders.view', 'orders.update', 'inventory.view', 'inventory.update', 'inventory.transfer', 'warehouses.view'] },
     { name: t('مدير منتجات'), description: t('يضيف ويعدّل المنتجات والأقسام والتصنيفات والمخزون'), permissions: ['dashboard.view', 'notifications.view', 'products.view', 'products.create', 'products.update', 'products.delete', 'categories.view', 'categories.create', 'categories.update', 'categories.delete', 'collections.view', 'collections.create', 'collections.update', 'collections.delete', 'inventory.view', 'inventory.update', 'warehouses.view'] },
     { name: t('مسوّق'), description: t('يدير المسوقين والكوبونات وبرنامج النقاط ويرى التقارير'), permissions: ['dashboard.view', 'notifications.view', 'affiliates.view', 'affiliates.create', 'affiliates.update', 'payouts.view', 'coupons.view', 'coupons.create', 'coupons.update', 'coupons.delete', 'loyalty.view', 'loyalty.update', 'reports.view'] },
     { name: t('محاسب'), description: t('يرى المدفوعات والتقارير ويسترد المبالغ ويحوّل العمولات'), permissions: ['dashboard.view', 'notifications.view', 'orders.view', 'payments.view', 'payments.refund', 'payouts.view', 'payouts.update', 'reports.view'] },

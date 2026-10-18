@@ -4,7 +4,6 @@ use App\Http\Middleware\EnsureAdminPermission;
 use App\Http\Middleware\EnsureAdminToken;
 use App\Http\Middleware\EnsureAffiliateToken;
 use App\Http\Middleware\EnsureCustomerToken;
-use App\Http\Middleware\EnsurePlanFeature;
 use App\Http\Middleware\EnsureStoreIsActive;
 use App\Http\Middleware\EnsureVendorPermission;
 use App\Http\Middleware\EnsureVendorToken;
@@ -32,7 +31,6 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin' => EnsureAdminToken::class,
             'admin.can' => EnsureAdminPermission::class,
             'permission' => EnsureVendorPermission::class,
-            'plan.feature' => EnsurePlanFeature::class,
             'store.active' => EnsureStoreIsActive::class,
             'affiliate' => EnsureAffiliateToken::class,
             'customer' => EnsureCustomerToken::class,

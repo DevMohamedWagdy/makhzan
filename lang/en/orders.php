@@ -35,16 +35,4 @@ return [
         'discount_too_high' => 'The discount is more than the products total',
     ],
 
-    'carriers' => [
-        'bosta' => 'Bosta',
-    ],
-    'shipping' => [
-        'bosta_not_connected' => 'Connect your Bosta account first from the shipping page.',
-        'must_be_confirmed' => 'Confirm the order before shipping it.',
-        'already_shipped' => 'This order already has a shipment.',
-        'bosta_failed' => 'Bosta could not create the shipment: :reason',
-        'bosta_key_invalid' => 'This API key is not valid. Copy it from your Bosta dashboard (Settings → API Integration).',
-        'no_bosta_orders' => 'None of the selected orders has a Bosta shipment.',
-        'updated_by_bosta' => 'Updated automatically by Bosta',
-    ],
 ];

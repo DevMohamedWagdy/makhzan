@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Enums\PlanFeature;
 use App\Enums\TrackingProvider;
 use App\Models\Concerns\BelongsToStore;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -47,11 +46,11 @@ class StoreTrackingPixel extends Model
     }
 
     /**
-     * Whether orders can be sent from the server: active, with a token, and on a plan that has it.
+     * Whether orders can be sent from the server: active, with a token.
      */
     public function sendsFromServer(): bool
     {
-        return $this->is_active && filled($this->access_token) && $this->store->hasFeature(PlanFeature::ConversionsApi);
+        return $this->is_active && filled($this->access_token);
     }
 
     public function recordDelivery(?string $error = null): void

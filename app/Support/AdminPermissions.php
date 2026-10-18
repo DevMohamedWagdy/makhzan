@@ -15,8 +15,6 @@ class AdminPermissions
         'vendors' => ['view', 'update'],
         'orders' => ['view'],
         'tickets' => ['view', 'reply'],
-        'subscriptions' => ['view', 'manage'],
-        'plans' => ['view', 'manage'],
         'logs' => ['view'],
         'team' => ['manage'],
     ];

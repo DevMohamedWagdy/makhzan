@@ -15,7 +15,7 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
 /**
- * A member of the platform team, managing stores, plans and subscriptions. Created with
+ * A member of the platform team, managing stores and support. Created with
  * `php artisan makhzan:create-admin`; there is no public sign-up.
  */
 #[Fillable(['full_name', 'email', 'password', 'role_id', 'is_super', 'is_active'])]

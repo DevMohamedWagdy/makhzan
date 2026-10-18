@@ -9,7 +9,7 @@ import { NotificationItem, adminNotificationTarget } from '@/features/notificati
 import { t } from '@/i18n';
 import { adminApi } from '@/services/adminApi';
 
-/** All admin alerts: new stores, subscription requests, ended trials. */
+/** All admin alerts: new stores and support tickets. */
 export function AdminNotificationsPage() {
     const navigate = useNavigate();
     const { reloadNotifications } = useOutletContext() ?? {};
@@ -41,7 +41,7 @@ export function AdminNotificationsPage() {
         <>
             <PageHeader
                 title={t('الإشعارات')}
-                description={t('تجار جدد وطلبات اشتراك وفترات تجريبية انتهت')}
+                description={t('تجار جدد وتذاكر دعم')}
                 actions={
                     result?.summary?.unread_count > 0 && (
                         <Button variant="secondary" icon="check" onClick={markAll}>

@@ -7,7 +7,6 @@ use App\Notifications\StoreAlertNotification;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Notifications\DatabaseNotification;
-use Illuminate\Support\Carbon;
 
 /**
  * @mixin DatabaseNotification
@@ -51,6 +50,12 @@ class NotificationResource extends JsonResource
                 'customer' => $details['customer_name'],
                 'total' => number_format((float) $details['total'], 2),
             ]),
+            'order_cancelled' => __(filled($details['reason'] ?? null) ? 'notifications.order_cancelled.message_reason' : 'notifications.order_cancelled.message', [
+                'number' => $details['number'],
+                'customer' => $details['customer_name'],
+                'total' => number_format((float) $details['total'], 2),
+                'reason' => $details['reason'] ?? '',
+            ]),
             'late_payment' => __('notifications.late_payment.message', [
                 'number' => $details['number'],
                 'total' => number_format((float) $details['total'], 2),
@@ -74,16 +79,10 @@ class NotificationResource extends JsonResource
                 'product' => $details['product_name'],
             ]),
             'coupon_assigned' => AffiliateCouponNotification::message($details['code'], $details['type'], $details['value']),
-            'subscription_activated', 'subscription_rejected', 'subscription_expiring', 'trial_ending' => __("notifications.{$this->type}.message", [
-                'plan' => $details['plan_name'],
-                'date' => $details['ends_at'] ? Carbon::parse($details['ends_at'])->translatedFormat('j F Y') : '',
-            ]),
             'store_registered' => __('notifications.admin.store_registered', ['store' => $details['store_name'], 'owner' => $details['owner_name'] ?? '']),
-            'subscription_requested' => __('notifications.admin.subscription_requested', ['store' => $details['store_name'], 'plan' => $details['plan_name'], 'amount' => number_format((float) $details['amount'], 2)]),
-            'trial_ended' => __('notifications.admin.trial_ended', ['store' => $details['store_name']]),
             'ticket_opened', 'ticket_vendor_replied' => __("notifications.admin.{$this->type}", ['store' => $details['store_name'], 'subject' => $details['subject']]),
             'ticket_replied', 'ticket_closed', 'ticket_reopened' => __("notifications.{$this->type}.message", ['subject' => $details['subject']]),
-            'store_suspended', 'store_reactivated', 'plan_limit_near', 'plan_limit_reached', 'coupon_used_up', 'coupon_expired', 'new_sign_in', 'password_changed' => StoreAlertNotification::message($this->type, $details),
+            'store_suspended', 'store_reactivated', 'coupon_used_up', 'coupon_expired', 'new_sign_in', 'password_changed' => StoreAlertNotification::message($this->type, $details),
             default => $details['message'] ?? '',
         };
     }

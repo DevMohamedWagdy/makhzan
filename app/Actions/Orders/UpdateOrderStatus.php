@@ -17,6 +17,7 @@ use App\Models\ProductVariant;
 use App\Models\StockMovement;
 use App\Notifications\AffiliateCommissionNotification;
 use App\Notifications\CustomerOrderUpdateNotification;
+use App\Notifications\OrderCancelledByCustomerNotification;
 use App\Support\Tracking\ConversionEvent;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -44,9 +45,10 @@ class UpdateOrderStatus
     {
         $commissionEvent = null;
         $notifyCustomer = false;
+        $notifyVendorOfCancellation = false;
         $delivered = false;
 
-        $order = DB::transaction(function () use ($order, $status, $actor, $note, $onlyIfUnpaid, &$commissionEvent, &$notifyCustomer, &$delivered): Order {
+        $order = DB::transaction(function () use ($order, $status, $actor, $note, $onlyIfUnpaid, &$commissionEvent, &$notifyCustomer, &$notifyVendorOfCancellation, &$delivered): Order {
             $order = Order::query()->whereKey($order->id)->lockForUpdate()->firstOrFail();
             $previous = $order->status;
             $unpaid = $order->awaitingPayment();
@@ -84,6 +86,8 @@ class UpdateOrderStatus
             $order->save();
             $order->events()->create(['status' => $status, 'actor' => $actor, 'note' => $note]);
             $notifyCustomer = ! $unpaid && $actor !== OrderEvent::ACTOR_CUSTOMER;
+            // Unpaid online orders never reached the vendor, so neither does their cancellation.
+            $notifyVendorOfCancellation = ! $unpaid && $actor === OrderEvent::ACTOR_CUSTOMER && $status === OrderStatus::Cancelled;
             $delivered = $status === OrderStatus::Delivered;
 
             return $order;
@@ -95,6 +99,10 @@ class UpdateOrderStatus
 
         if ($notifyCustomer) {
             $order->customer?->notify(new CustomerOrderUpdateNotification($order, $status));
+        }
+
+        if ($notifyVendorOfCancellation) {
+            $order->store->vendor->notify(new OrderCancelledByCustomerNotification($order));
         }
 
         if ($delivered) {

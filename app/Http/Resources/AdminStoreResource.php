@@ -8,7 +8,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Carbon;
 
 /**
- * A store as the platform team sees it: owner, plan, suspension and activity.
+ * A store as the platform team sees it: owner, suspension and activity.
  *
  * @mixin Store
  */
@@ -34,7 +34,6 @@ class AdminStoreResource extends JsonResource
                 'phone' => $this->vendor->phone,
                 'email' => $this->vendor->email,
             ]),
-            'billing' => $this->billingSummary(),
             'suspended_at' => $this->suspended_at?->toIso8601String(),
             'suspension_reason' => $this->suspension_reason,
             'accepting_orders' => $this->accepting_orders,
@@ -43,7 +42,6 @@ class AdminStoreResource extends JsonResource
             'staff_count' => $this->whenCounted('staff'),
             'delivered_sales' => $this->whenHas('delivered_sales', fn ($value): float => (float) $value),
             'last_order_at' => $this->whenHas('orders_max_created_at', fn ($value): ?string => $value ? Carbon::parse($value)->toIso8601String() : null),
-            'payments' => SubscriptionPaymentResource::collection($this->whenLoaded('subscriptionPayments')),
             'created_at' => $this->created_at?->toIso8601String(),
         ];
     }

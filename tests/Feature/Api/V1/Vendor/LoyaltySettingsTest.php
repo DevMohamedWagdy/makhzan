@@ -5,8 +5,6 @@ namespace Tests\Feature\Api\V1\Vendor;
 use App\Enums\OrderStatus;
 use App\Models\Customer;
 use App\Models\Order;
-use App\Models\Plan;
-use App\Models\Store;
 use App\Models\StoreRole;
 use App\Models\Vendor;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -39,23 +37,12 @@ class LoyaltySettingsTest extends TestCase
 
         $this->putJson('/api/v1/vendor/loyalty', $this->settings())
             ->assertOk()
-            ->assertJsonPath('available', true)
             ->assertJsonPath('settings', ['loyalty_enabled' => true, 'loyalty_earn_rate' => 20, 'loyalty_point_value' => 0.5, 'loyalty_min_redeem' => 50, 'loyalty_tiers' => []])
             ->assertJsonPath('stats.members', 1)
             ->assertJsonPath('stats.outstanding_points', 300)
             ->assertJsonPath('stats.outstanding_value', 150);
 
         $this->putJson('/api/v1/vendor/loyalty', $this->settings(['loyalty_point_value' => 0]))->assertJsonValidationErrors('loyalty_point_value');
-    }
-
-    public function test_the_program_needs_a_plan_that_includes_it(): void
-    {
-        $store = Store::factory()->subscribed(Plan::factory()->create(['features' => []]))->create();
-        $this->actingAsVendor($store->vendor);
-
-        $this->getJson('/api/v1/vendor/loyalty')->assertJsonPath('available', false);
-        $this->putJson('/api/v1/vendor/loyalty', $this->settings())->assertJsonValidationErrors('loyalty_enabled');
-        $this->putJson('/api/v1/vendor/loyalty', $this->settings(['loyalty_enabled' => false]))->assertOk();
     }
 
     public function test_sets_up_customer_tiers_lowest_spend_first(): void

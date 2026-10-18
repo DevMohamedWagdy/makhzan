@@ -17,7 +17,7 @@ export const storeSettingsApi = {
     removeDomain: () => request('DELETE', `${BASE}/domain`),
 
     /** `{ cod_enabled, methods, paymob: { is_live, public_key, secret_key_hint, hmac_secret_hint, card_integration_id, wallet_integration_id, verified_at } | null, webhook_url }` */
-    /** Ad platform accounts: `{ server_side_available, pixels: { meta, tiktok, google } }` (null when not connected). */
+    /** Ad platform accounts: `{ pixels: { meta, tiktok, google } }` (null when not connected). */
     trackingPixels: () => request('GET', '/api/v1/vendor/tracking-pixels'),
     /** @param {{ [provider: string]: { pixel_id: string, access_token?: string, test_event_code?: string, is_active?: boolean } }} pixels  An empty pixel_id disconnects. */
     updateTrackingPixels: (pixels) => request('PUT', '/api/v1/vendor/tracking-pixels', { body: { pixels } }),
