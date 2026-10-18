@@ -5,17 +5,19 @@ import { t } from '@/i18n';
  * {
  *   hasOptions: boolean,
  *   options: Array<{ name: string, values: string[] }>,
- *   rows: Record<comboKey, { id?: number, price: string, compare_at_price: string, cost: string, sku: string, stock: string, enabled: boolean }>,
- *   simple: { id?: number, price: string, compare_at_price: string, cost: string, sku: string, stock: string },
+ *   rows: Record<comboKey, { id?: number, price: string, compare_at_price: string, cost: string, sku: string, stock: string, warehouseStocks: Record<warehouseId, string>, enabled: boolean }>,
+ *   simple: { id?: number, price: string, compare_at_price: string, cost: string, sku: string, stock: string, warehouseStocks: Record<warehouseId, string> },
  * }
  * Rows are keyed by option combination so price/stock survive edits to the options.
+ * When the store has more than one warehouse the quantity is entered per warehouse
+ * (`warehouseStocks`, missing warehouses count as 0) and `stock` is not used.
  */
 
 const SEPARATOR = '\u0001';
 
 export const comboKey = (values) => values.join(SEPARATOR);
 
-const blankRow = (defaults = {}) => ({ price: '', compare_at_price: '', cost: '', sku: '', stock: '0', enabled: true, ...defaults });
+const blankRow = (defaults = {}) => ({ price: '', compare_at_price: '', cost: '', sku: '', stock: '0', warehouseStocks: {}, enabled: true, ...defaults });
 
 const toField = (value) => (value === null || value === undefined ? '' : String(value));
 
@@ -46,6 +48,7 @@ export function variantsStateFromProduct(product) {
         cost: toField(variant.cost),
         sku: toField(variant.sku),
         stock: toField(variant.stock),
+        warehouseStocks: Object.fromEntries((variant.warehouses ?? []).map((warehouse) => [warehouse.warehouse_id, toField(warehouse.stock)])),
         enabled: true,
     });
 
@@ -77,20 +80,35 @@ export function syncRows(state) {
 
 const numberOrNull = (value) => (value === '' || value === null ? null : Number(value));
 
+/** The row's quantity in one warehouse, as typed (a warehouse never filled in counts as 0). */
+export const warehouseStockOf = (row, warehouseId) => row.warehouseStocks?.[warehouseId] ?? '0';
+
+/** True when quantities are entered per warehouse rather than as one total. */
+export const isPerWarehouse = (warehouses) => (warehouses?.length ?? 0) > 1;
+
 /**
+ * @param {object} state
+ * @param {Array<{ warehouse_id: number }>|null} warehouses  the store's warehouses; with more than one, each variant sends warehouse_stocks
  * @returns {{ options: Array<{ name: string, values: string[] }>, variants: object[], keys: string[] }}
  *   `keys[i]` is the row key of `variants[i]`, to map server errors (variants.i.price) back to rows.
  */
-export function buildVariantsPayload(state) {
-    const toVariant = (row, optionValues) => ({
-        ...(row.id && { id: row.id }),
-        option_values: optionValues,
-        price: numberOrNull(row.price),
-        compare_at_price: numberOrNull(row.compare_at_price),
-        cost: numberOrNull(row.cost),
-        sku: row.sku.trim() || null,
-        stock: numberOrNull(row.stock) ?? 0,
-    });
+export function buildVariantsPayload(state, warehouses = null) {
+    const perWarehouse = isPerWarehouse(warehouses);
+
+    const toVariant = (row, optionValues) => {
+        const warehouseStocks = perWarehouse ? warehouses.map((warehouse) => ({ warehouse_id: warehouse.warehouse_id, stock: numberOrNull(warehouseStockOf(row, warehouse.warehouse_id)) ?? 0 })) : null;
+
+        return {
+            ...(row.id && { id: row.id }),
+            option_values: optionValues,
+            price: numberOrNull(row.price),
+            compare_at_price: numberOrNull(row.compare_at_price),
+            cost: numberOrNull(row.cost),
+            sku: row.sku.trim() || null,
+            stock: warehouseStocks ? warehouseStocks.reduce((total, warehouseStock) => total + warehouseStock.stock, 0) : (numberOrNull(row.stock) ?? 0),
+            ...(warehouseStocks && { warehouse_stocks: warehouseStocks }),
+        };
+    };
 
     if (!state.hasOptions) {
         return { options: [], variants: [toVariant(state.simple, [])], keys: ['simple'] };
@@ -102,7 +120,9 @@ export function buildVariantsPayload(state) {
     return { options, variants: enabled.map((values) => toVariant(state.rows[comboKey(values)], values)), keys: enabled.map(comboKey) };
 }
 
-function rowErrors(row) {
+const isValidQuantity = (value) => value !== '' && Number.isInteger(Number(value)) && Number(value) >= 0;
+
+function rowErrors(row, warehouses) {
     const errors = {};
     const price = Number(row.price);
 
@@ -118,7 +138,11 @@ function rowErrors(row) {
         errors.cost = t('أدخل تكلفة صحيحة');
     }
 
-    if (row.stock === '' || !Number.isInteger(Number(row.stock)) || Number(row.stock) < 0) {
+    if (isPerWarehouse(warehouses)) {
+        if (!warehouses.every((warehouse) => isValidQuantity(warehouseStockOf(row, warehouse.warehouse_id)))) {
+            errors.warehouse_stocks = t('أدخل كمية صحيحة لكل مخزن');
+        }
+    } else if (!isValidQuantity(row.stock)) {
         errors.stock = t('أدخل كمية صحيحة');
     }
 
@@ -127,11 +151,13 @@ function rowErrors(row) {
 
 /**
  * Client-side checks mirroring SaveProductRequest.
+ * @param {object} state
+ * @param {Array<{ warehouse_id: number }>|null} warehouses
  * @returns {Record<string, string>}  keys: "options", "options.{i}.name", "options.{i}.values", "simple.{field}", "rows.{key}.{field}"
  */
-export function validateVariants(state) {
+export function validateVariants(state, warehouses = null) {
     const errors = {};
-    const addRowErrors = (prefix, row) => Object.entries(rowErrors(row)).forEach(([field, message]) => (errors[`${prefix}.${field}`] = message));
+    const addRowErrors = (prefix, row) => Object.entries(rowErrors(row, warehouses)).forEach(([field, message]) => (errors[`${prefix}.${field}`] = message));
 
     if (!state.hasOptions) {
         addRowErrors('simple', state.simple);

@@ -59,7 +59,7 @@ class ProductController extends Controller
     {
         Gate::authorize('view', $product);
 
-        return new ProductResource($product->load(['category', 'variants', 'images']));
+        return new ProductResource($product->load(['category', 'variants.warehouseStocks', 'images']));
     }
 
     /**

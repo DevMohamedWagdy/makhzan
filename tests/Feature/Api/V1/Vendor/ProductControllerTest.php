@@ -6,6 +6,8 @@ use App\Enums\ProductStatus;
 use App\Models\Product;
 use App\Models\ProductCategory;
 use App\Models\Vendor;
+use App\Models\Warehouse;
+use App\Models\WarehouseStock;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -64,6 +66,21 @@ class ProductControllerTest extends TestCase
         $this->assertSame(['أسود', 'L'], $product->variants[1]->option_values);
     }
 
+    public function test_saves_the_english_name_and_description(): void
+    {
+        $vendor = $this->actingAsVendor();
+        $payload = $this->payload($this->category($vendor), ['name_en' => 'Evening dress', 'description_en' => 'Shiny satin']);
+
+        $productId = $this->postJson('/api/v1/vendor/products', $payload)
+            ->assertCreated()
+            ->assertJsonPath('data.name', 'فستان سهرة')
+            ->assertJsonPath('data.name_en', 'Evening dress')
+            ->assertJsonPath('data.description_en', 'Shiny satin')
+            ->json('data.product_id');
+
+        $this->getJson('/api/v1/vendor/products?search=evening')->assertOk()->assertJsonPath('data.*.product_id', [$productId]);
+    }
+
     public function test_a_simple_product_has_a_single_variant(): void
     {
         $vendor = $this->actingAsVendor();
@@ -72,6 +89,140 @@ class ProductControllerTest extends TestCase
             'options' => [],
             'variants' => [['option_values' => [], 'price' => 150, 'stock' => 12]],
         ]))->assertCreated()->assertJsonPath('data.variants.0.title', '')->assertJsonPath('data.stock_total', 12);
+    }
+
+    public function test_opening_stock_goes_into_the_chosen_warehouse(): void
+    {
+        $vendor = $this->actingAsVendor();
+        $defaultWarehouse = $vendor->store->defaultWarehouse();
+        $branch = Warehouse::factory()->for($vendor->store)->create(['name' => 'فرع الإسكندرية', 'priority' => 2]);
+
+        $response = $this->postJson('/api/v1/vendor/products', $this->payload($this->category($vendor), [
+            'warehouse_id' => $branch->id,
+            'options' => [],
+            'variants' => [['option_values' => [], 'price' => 150, 'stock' => 12]],
+        ]))->assertCreated()->assertJsonPath('data.stock_total', 12);
+
+        $variantId = $response->json('data.variants.0.variant_id');
+        $stockIn = fn (Warehouse $warehouse): int => (int) WarehouseStock::query()->where(['warehouse_id' => $warehouse->id, 'product_variant_id' => $variantId])->value('stock');
+
+        $this->assertSame(12, $stockIn($branch));
+        $this->assertSame(0, $stockIn($defaultWarehouse));
+    }
+
+    public function test_opening_stock_goes_into_the_default_warehouse_when_none_is_chosen(): void
+    {
+        $vendor = $this->actingAsVendor();
+        $defaultWarehouse = $vendor->store->defaultWarehouse();
+
+        $response = $this->postJson('/api/v1/vendor/products', $this->payload($this->category($vendor), [
+            'options' => [],
+            'variants' => [['option_values' => [], 'price' => 150, 'stock' => 7]],
+        ]))->assertCreated();
+
+        $variantId = $response->json('data.variants.0.variant_id');
+
+        $this->assertSame(7, (int) WarehouseStock::query()->where(['warehouse_id' => $defaultWarehouse->id, 'product_variant_id' => $variantId])->value('stock'));
+    }
+
+    public function test_quantity_changes_on_edit_go_into_the_chosen_warehouse(): void
+    {
+        $vendor = $this->actingAsVendor();
+        $defaultWarehouse = $vendor->store->defaultWarehouse();
+        $branch = Warehouse::factory()->for($vendor->store)->create(['name' => 'فرع الإسكندرية', 'priority' => 2]);
+        $payload = $this->payload($this->category($vendor), [
+            'options' => [],
+            'variants' => [['option_values' => [], 'price' => 150, 'stock' => 10]],
+        ]);
+
+        $variantId = $this->postJson('/api/v1/vendor/products', $payload)->assertCreated()->json('data.variants.0.variant_id');
+        $productId = Product::query()->latest('id')->value('id');
+
+        $this->putJson("/api/v1/vendor/products/{$productId}", [
+            ...$payload,
+            'warehouse_id' => $branch->id,
+            'variants' => [['id' => $variantId, 'option_values' => [], 'price' => 150, 'stock' => 14]],
+        ])->assertOk()->assertJsonPath('data.stock_total', 14);
+
+        $stockIn = fn (Warehouse $warehouse): int => (int) WarehouseStock::query()->where(['warehouse_id' => $warehouse->id, 'product_variant_id' => $variantId])->value('stock');
+
+        $this->assertSame(10, $stockIn($defaultWarehouse));
+        $this->assertSame(4, $stockIn($branch));
+    }
+
+    public function test_sets_the_quantity_of_each_warehouse_on_create_and_edit(): void
+    {
+        $vendor = $this->actingAsVendor();
+        $defaultWarehouse = $vendor->store->defaultWarehouse();
+        $branch = Warehouse::factory()->for($vendor->store)->create(['name' => 'فرع الإسكندرية', 'priority' => 2]);
+        $payload = $this->payload($this->category($vendor), ['options' => [['name' => 'المقاس', 'values' => ['M', 'L']]]]);
+        $variant = fn (string $size, int $main, int $other, ?int $id = null): array => [
+            ...($id ? ['id' => $id] : []),
+            'option_values' => [$size],
+            'price' => 150,
+            'stock' => $main + $other,
+            'warehouse_stocks' => [
+                ['warehouse_id' => $defaultWarehouse->id, 'stock' => $main],
+                ['warehouse_id' => $branch->id, 'stock' => $other],
+            ],
+        ];
+
+        $created = $this->postJson('/api/v1/vendor/products', [...$payload, 'variants' => [$variant('M', 6, 4), $variant('L', 2, 0)]])
+            ->assertCreated()
+            ->assertJsonPath('data.stock_total', 12)
+            ->assertJsonPath('data.variants.0.warehouses', [
+                ['warehouse_id' => $defaultWarehouse->id, 'stock' => 6],
+                ['warehouse_id' => $branch->id, 'stock' => 4],
+            ]);
+
+        [$mediumId, $largeId] = $created->json('data.variants.*.variant_id');
+        $productId = $created->json('data.product_id');
+
+        $this->putJson("/api/v1/vendor/products/{$productId}", [...$payload, 'variants' => [$variant('M', 0, 10, $mediumId), $variant('L', 1, 1, $largeId)]])
+            ->assertOk()
+            ->assertJsonPath('data.stock_total', 12)
+            ->assertJsonPath('data.variants.0.warehouses', [
+                ['warehouse_id' => $defaultWarehouse->id, 'stock' => 0],
+                ['warehouse_id' => $branch->id, 'stock' => 10],
+            ])
+            ->assertJsonPath('data.variants.1.warehouses', [
+                ['warehouse_id' => $defaultWarehouse->id, 'stock' => 1],
+                ['warehouse_id' => $branch->id, 'stock' => 1],
+            ]);
+
+        $this->getJson("/api/v1/vendor/products/{$productId}")
+            ->assertOk()
+            ->assertJsonPath('data.variants.0.warehouses.1.stock', 10);
+    }
+
+    public function test_a_variant_cannot_list_the_same_warehouse_twice(): void
+    {
+        $vendor = $this->actingAsVendor();
+        $warehouseId = $vendor->store->defaultWarehouse()->id;
+
+        $this->postJson('/api/v1/vendor/products', $this->payload($this->category($vendor), [
+            'options' => [],
+            'variants' => [['option_values' => [], 'price' => 150, 'stock' => 3, 'warehouse_stocks' => [['warehouse_id' => $warehouseId, 'stock' => 1], ['warehouse_id' => $warehouseId, 'stock' => 2]]]],
+        ]))->assertUnprocessable()->assertJsonValidationErrors(['variants.0.warehouse_stocks' => 'لا يمكن تكرار نفس المخزن في كميات التركيبة']);
+    }
+
+    public function test_rejects_another_stores_warehouse_in_variant_quantities(): void
+    {
+        $vendor = $this->actingAsVendor();
+
+        $this->postJson('/api/v1/vendor/products', $this->payload($this->category($vendor), [
+            'options' => [],
+            'variants' => [['option_values' => [], 'price' => 150, 'stock' => 3, 'warehouse_stocks' => [['warehouse_id' => Warehouse::factory()->create()->id, 'stock' => 3]]]],
+        ]))->assertUnprocessable()->assertJsonValidationErrors(['variants.0.warehouse_stocks.0.warehouse_id' => 'المخزن غير موجود']);
+    }
+
+    public function test_rejects_another_stores_warehouse(): void
+    {
+        $vendor = $this->actingAsVendor();
+
+        $this->postJson('/api/v1/vendor/products', $this->payload($this->category($vendor), ['warehouse_id' => Warehouse::factory()->create()->id]))
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['warehouse_id' => 'المخزن غير موجود']);
     }
 
     public function test_a_category_is_required(): void

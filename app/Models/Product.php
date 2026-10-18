@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\ProductStatus;
 use App\Models\Concerns\BelongsToStore;
+use App\Models\Concerns\HasEnglishTranslation;
 use App\Models\Concerns\LogsActivity;
 use Database\Factories\ProductFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -20,11 +21,11 @@ use Illuminate\Support\Str;
  * A catalog item. Price and stock live on its variants: a product without options has a
  * single variant whose option_values is empty, so orders always point at a variant.
  */
-#[Fillable(['category_id', 'name', 'slug', 'description', 'status', 'is_featured', 'options'])]
+#[Fillable(['category_id', 'name', 'name_en', 'slug', 'description', 'description_en', 'status', 'is_featured', 'options'])]
 class Product extends Model
 {
     /** @use HasFactory<ProductFactory> */
-    use BelongsToStore, HasFactory, LogsActivity, SoftDeletes;
+    use BelongsToStore, HasEnglishTranslation, HasFactory, LogsActivity, SoftDeletes;
 
     /**
      * Get the attributes that should be cast.
@@ -98,6 +99,7 @@ class Product extends Model
 
         $query->where(function (Builder $query) use ($term): void {
             $query->where('name', 'like', "%{$term}%")
+                ->orWhere('name_en', 'like', "%{$term}%")
                 ->orWhereHas('variants', fn (Builder $query) => $query->where('sku', 'like', "%{$term}%"));
         });
     }

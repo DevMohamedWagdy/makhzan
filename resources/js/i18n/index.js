@@ -65,6 +65,16 @@ export function t(text, params) {
     return params ? translated.replace(/\{(\w+)\}/g, (match, name) => (name in params ? String(params[name]) : match)) : translated;
 }
 
+/**
+ * A catalog record's text in the current language: in English, its English version
+ * (`name_en`, `description_en`) when the merchant entered one, otherwise the main text.
+ * @param {object | null | undefined} record
+ * @param {string} [field]
+ */
+export function localized(record, field = 'name') {
+    return (locale === 'en' && record?.[`${field}_en`]) || record?.[field] || '';
+}
+
 /** Saves the choice and reloads so every label, format and API message follows it. */
 export function setLocale(next) {
     if (!(next in LOCALES) || next === locale) {

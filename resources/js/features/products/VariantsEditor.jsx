@@ -4,8 +4,8 @@ import { Field, Input, Switch } from '@/components/ui/Form';
 import { Icon } from '@/components/ui/Icon';
 import { t } from '@/i18n';
 import { CURRENCY, OPTION_SUGGESTIONS } from '@/lib/constants';
-import { cn } from '@/lib/format';
-import { combinations, comboKey, syncRows } from './variants';
+import { cn, formatNumber } from '@/lib/format';
+import { combinations, comboKey, isPerWarehouse, syncRows, warehouseStockOf } from './variants';
 
 const MAX_OPTIONS = 3;
 
@@ -56,9 +56,26 @@ function ValuesInput({ values, onChange, invalid, placeholder }) {
     );
 }
 
-function PriceInputs({ row, errors, prefix, onChange, compact = false }) {
+function PriceInputs({ row, errors, prefix, onChange, warehouses, compact = false }) {
     const fieldClass = compact ? 'h-9 text-sm' : '';
     const money = <span className="px-2 text-xs text-muted">{CURRENCY}</span>;
+
+    const perWarehouse = isPerWarehouse(warehouses);
+    const setWarehouseStock = (warehouseId, stock) => onChange({ warehouseStocks: { ...row.warehouseStocks, [warehouseId]: stock } });
+    const warehouseInput = (warehouse, props) => (
+        <Input
+            type="number"
+            inputMode="numeric"
+            min={0}
+            step={1}
+            value={warehouseStockOf(row, warehouse.warehouse_id)}
+            onChange={(event) => setWarehouseStock(warehouse.warehouse_id, event.target.value)}
+            aria-invalid={errors[`${prefix}.warehouse_stocks`] ? 'true' : undefined}
+            aria-label={t('الكمية في {warehouse}', { warehouse: warehouse.name })}
+            className={fieldClass}
+            {...props}
+        />
+    );
 
     const input = (field, props) => (
         <Input
@@ -92,10 +109,19 @@ function PriceInputs({ row, errors, prefix, onChange, compact = false }) {
                     <Input value={row.sku} onChange={(event) => onChange({ sku: event.target.value })} dir="ltr" className={cn(fieldClass, 'text-start')} aria-label="SKU" placeholder="—" maxLength={60} aria-invalid={errors[`${prefix}.sku`] ? 'true' : undefined} />
                     {errors[`${prefix}.sku`] && <p className="mt-1 text-[11px] text-danger">{errors[`${prefix}.sku`]}</p>}
                 </td>
-                <td className="px-2 py-2">
-                    {input('stock', { step: 1, 'aria-label': t('الكمية') })}
-                    {errors[`${prefix}.stock`] && <p className="mt-1 text-[11px] text-danger">{errors[`${prefix}.stock`]}</p>}
-                </td>
+                {perWarehouse ? (
+                    warehouses.map((warehouse, index) => (
+                        <td key={warehouse.warehouse_id} className="px-2 py-2">
+                            {warehouseInput(warehouse)}
+                            {index === 0 && errors[`${prefix}.warehouse_stocks`] && <p className="mt-1 text-[11px] text-danger">{errors[`${prefix}.warehouse_stocks`]}</p>}
+                        </td>
+                    ))
+                ) : (
+                    <td className="px-2 py-2">
+                        {input('stock', { step: 1, 'aria-label': t('الكمية') })}
+                        {errors[`${prefix}.stock`] && <p className="mt-1 text-[11px] text-danger">{errors[`${prefix}.stock`]}</p>}
+                    </td>
+                )}
             </>
         );
     }
@@ -114,9 +140,30 @@ function PriceInputs({ row, errors, prefix, onChange, compact = false }) {
             <Field label={t('رمز المنتج (SKU)')} optional error={errors[`${prefix}.sku`]}>
                 {(props) => <Input {...props} value={row.sku} onChange={(event) => onChange({ sku: event.target.value })} dir="ltr" className="text-start" placeholder="NF-1001" maxLength={60} />}
             </Field>
-            <Field label={t('الكمية المتاحة')} required error={errors[`${prefix}.stock`]}>
-                {(props) => input('stock', { ...props, step: 1 })}
-            </Field>
+            {perWarehouse ? (
+                <fieldset className="flex flex-col gap-2 sm:col-span-2">
+                    <legend className="mb-1.5 text-sm font-medium text-ink">
+                        {t('الكمية المتاحة في كل مخزن')} <span className="text-danger">*</span>
+                    </legend>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                        {warehouses.map((warehouse) => (
+                            <label key={warehouse.warehouse_id} className="flex flex-col gap-1.5">
+                                <span className="text-xs text-muted">{warehouse.name}</span>
+                                {warehouseInput(warehouse, { 'aria-label': undefined })}
+                            </label>
+                        ))}
+                    </div>
+                    {errors[`${prefix}.warehouse_stocks`] ? (
+                        <p className="text-xs text-danger">{errors[`${prefix}.warehouse_stocks`]}</p>
+                    ) : (
+                        <p className="text-xs text-muted">{t('الإجمالي: {count} قطعة', { count: formatNumber(warehouses.reduce((total, warehouse) => total + (Number(warehouseStockOf(row, warehouse.warehouse_id)) || 0), 0)) })}</p>
+                    )}
+                </fieldset>
+            ) : (
+                <Field label={t('الكمية المتاحة')} required error={errors[`${prefix}.stock`]}>
+                    {(props) => input('stock', { ...props, step: 1 })}
+                </Field>
+            )}
         </div>
     );
 }
@@ -124,14 +171,17 @@ function PriceInputs({ row, errors, prefix, onChange, compact = false }) {
 /**
  * Pricing and stock: a single price/stock for simple products, or options (size, color…)
  * with one row per combination. `value` is the state described in ./variants.js.
+ * With more than one of the store's `warehouses`, quantities are entered per warehouse.
  */
-export function VariantsEditor({ value, onChange, errors }) {
+export function VariantsEditor({ value, onChange, errors, warehouses = null }) {
     const suggestionsId = useId();
     const [bulk, setBulk] = useState({ price: '', stock: '' });
     const update = (patch) => onChange(syncRows({ ...value, ...patch }));
     const updateRow = (key, patch) => onChange({ ...value, rows: { ...value.rows, [key]: { ...value.rows[key], ...patch } } });
     const setOption = (index, patch) => update({ options: value.options.map((option, position) => (position === index ? { ...option, ...patch } : option)) });
     const combos = combinations(value.options);
+    const perWarehouse = isPerWarehouse(warehouses);
+    const stockColumns = perWarehouse ? warehouses.length : 1;
 
     const toggleOptions = (enabled) => {
         if (enabled && value.options.length === 0) {
@@ -160,7 +210,7 @@ export function VariantsEditor({ value, onChange, errors }) {
             </div>
 
             {!value.hasOptions ? (
-                <PriceInputs row={value.simple} errors={errors} prefix="simple" onChange={(patch) => onChange({ ...value, simple: { ...value.simple, ...patch } })} />
+                <PriceInputs row={value.simple} errors={errors} prefix="simple" warehouses={warehouses} onChange={(patch) => onChange({ ...value, simple: { ...value.simple, ...patch } })} />
             ) : (
                 <>
                     <datalist id={suggestionsId}>
@@ -200,13 +250,13 @@ export function VariantsEditor({ value, onChange, errors }) {
                                     {t('التركيبات')} <span className="font-normal text-muted">({t('{count} من {total}', { count: combos.filter((values) => value.rows[comboKey(values)]?.enabled).length, total: combos.length })})</span>
                                 </p>
                                 <Input type="number" min={0} value={bulk.price} onChange={(event) => setBulk({ ...bulk, price: event.target.value })} placeholder={t('سعر للكل')} className="h-9 w-28 text-sm" aria-label={t('سعر لكل التركيبات')} />
-                                <Input type="number" min={0} value={bulk.stock} onChange={(event) => setBulk({ ...bulk, stock: event.target.value })} placeholder={t('كمية للكل')} className="h-9 w-28 text-sm" aria-label={t('كمية لكل التركيبات')} />
+                                {!perWarehouse && <Input type="number" min={0} value={bulk.stock} onChange={(event) => setBulk({ ...bulk, stock: event.target.value })} placeholder={t('كمية للكل')} className="h-9 w-28 text-sm" aria-label={t('كمية لكل التركيبات')} />}
                                 <Button size="sm" variant="secondary" onClick={applyBulk} disabled={bulk.price === '' && bulk.stock === ''}>
                                     {t('تطبيق على الكل')}
                                 </Button>
                             </div>
                             <div className="mk-scroll overflow-x-auto">
-                                <table className="w-full min-w-[760px] text-sm">
+                                <table className="w-full text-sm" style={{ minWidth: 760 + (stockColumns - 1) * 120 }}>
                                     <thead className="text-xs text-muted">
                                         <tr>
                                             <th className="px-3 py-2 text-start font-medium">{t('التركيبة')}</th>
@@ -214,7 +264,15 @@ export function VariantsEditor({ value, onChange, errors }) {
                                             <th className="px-2 py-2 text-start font-medium">{t('قبل الخصم')}</th>
                                             <th className="px-2 py-2 text-start font-medium">{t('التكلفة')}</th>
                                             <th className="px-2 py-2 text-start font-medium">SKU</th>
-                                            <th className="w-24 px-2 py-2 text-start font-medium">{t('الكمية')}</th>
+                                            {perWarehouse ? (
+                                                warehouses.map((warehouse) => (
+                                                    <th key={warehouse.warehouse_id} className="w-24 px-2 py-2 text-start font-medium whitespace-nowrap">
+                                                        {t('كمية: {warehouse}', { warehouse: warehouse.name })}
+                                                    </th>
+                                                ))
+                                            ) : (
+                                                <th className="w-24 px-2 py-2 text-start font-medium">{t('الكمية')}</th>
+                                            )}
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-line">
@@ -231,9 +289,9 @@ export function VariantsEditor({ value, onChange, errors }) {
                                                         </label>
                                                     </td>
                                                     {row.enabled ? (
-                                                        <PriceInputs row={row} errors={errors} prefix={`rows.${key}`} onChange={(patch) => updateRow(key, patch)} compact />
+                                                        <PriceInputs row={row} errors={errors} prefix={`rows.${key}`} warehouses={warehouses} onChange={(patch) => updateRow(key, patch)} compact />
                                                     ) : (
-                                                        <td colSpan={4} className="px-2 py-2 text-xs text-muted">
+                                                        <td colSpan={4 + stockColumns} className="px-2 py-2 text-xs text-muted">
                                                             {t('غير متاحة للبيع')}
                                                         </td>
                                                     )}

@@ -65,15 +65,15 @@ class ChangeStock
 
     /**
      * Sets the variant's total (the product form's quantity field): the difference is applied
-     * to the default warehouse, whose quantity can't go below zero.
+     * to the given warehouse (the store's default when none is given), whose quantity can't go below zero.
      *
      * @throws ValidationException when the total is less than what the other warehouses hold
      */
-    public function total(ProductVariant $variant, int $total, StockMovementType $type, string $actor): ?StockMovement
+    public function total(ProductVariant $variant, int $total, StockMovementType $type, string $actor, ?Warehouse $warehouse = null): ?StockMovement
     {
-        return DB::transaction(function () use ($variant, $total, $type, $actor): ?StockMovement {
+        return DB::transaction(function () use ($variant, $total, $type, $actor, $warehouse): ?StockMovement {
             $locked = $this->lock($variant);
-            $warehouse = $locked->product->store->defaultWarehouse();
+            $warehouse ??= $locked->product->store->defaultWarehouse();
             $elsewhere = $locked->stock - $this->warehouseStock($warehouse, $locked)->stock;
 
             if ($total < $elsewhere) {

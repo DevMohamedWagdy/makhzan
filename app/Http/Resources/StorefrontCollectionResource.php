@@ -22,7 +22,7 @@ class StorefrontCollectionResource extends JsonResource
     {
         return [
             'collection_id' => $this->id,
-            'name' => $this->name,
+            'name' => $this->translated('name'),
             'products' => StorefrontProductResource::collection($this->whenLoaded('products')),
         ];
     }

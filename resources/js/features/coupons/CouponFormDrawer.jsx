@@ -8,7 +8,7 @@ import { Skeleton, Spinner } from '@/components/ui/Spinner';
 import { useToast } from '@/context/ToastContext';
 import { useCategories } from '@/features/products/useCategories';
 import { useClickOutside, useDebouncedValue } from '@/hooks/common';
-import { t } from '@/i18n';
+import { localized, t } from '@/i18n';
 import { CURRENCY } from '@/lib/constants';
 import { affiliatesApi } from '@/services/affiliatesApi';
 import { couponsApi } from '@/services/couponsApi';
@@ -289,7 +289,7 @@ export function CouponFormDrawer({ open, couponId, onClose, onSaved }) {
                                     {(categories ?? []).map((category) => (
                                         <Checkbox
                                             key={category.category_id}
-                                            label={category.name}
+                                            label={localized(category)}
                                             checked={values.category_ids.includes(category.category_id)}
                                             onChange={(event) => set({ category_ids: event.target.checked ? [...values.category_ids, category.category_id] : values.category_ids.filter((id) => id !== category.category_id) })}
                                         />
@@ -301,14 +301,14 @@ export function CouponFormDrawer({ open, couponId, onClose, onSaved }) {
                                     <SearchPick
                                         search={searchProducts}
                                         placeholder={t('ابحث عن منتج لإضافته...')}
-                                        renderLabel={(product) => <span className="truncate text-ink">{product.name}</span>}
-                                        onPick={(product) => !values.products.some((item) => item.product_id === product.product_id) && set({ products: [...values.products, { product_id: product.product_id, name: product.name }] })}
+                                        renderLabel={(product) => <span className="truncate text-ink">{localized(product)}</span>}
+                                        onPick={(product) => !values.products.some((item) => item.product_id === product.product_id) && set({ products: [...values.products, { product_id: product.product_id, name: product.name, name_en: product.name_en }] })}
                                     />
                                     <div className="flex flex-wrap gap-2">
                                         {values.products.map((product) => (
                                             <Badge key={product.product_id} tone="primary" className="gap-2">
-                                                {product.name}
-                                                <button type="button" onClick={() => set({ products: values.products.filter((item) => item.product_id !== product.product_id) })} aria-label={t('إزالة {name}', { name: product.name })}>
+                                                {localized(product)}
+                                                <button type="button" onClick={() => set({ products: values.products.filter((item) => item.product_id !== product.product_id) })} aria-label={t('إزالة {name}', { name: localized(product) })}>
                                                     <Icon name="x" className="size-3" />
                                                 </button>
                                             </Badge>

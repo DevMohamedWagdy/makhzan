@@ -14,7 +14,7 @@ import { useToast } from '@/context/ToastContext';
 import { PriceCell, ProductStatusBadge, ProductThumb, StockBadge } from '@/features/products/ProductBadges';
 import { useCategories } from '@/features/products/useCategories';
 import { useDebouncedValue } from '@/hooks/common';
-import { t } from '@/i18n';
+import { localized, t } from '@/i18n';
 import { PER_PAGE_OPTIONS, PRODUCT_STATUSES, STOCK_LEVELS } from '@/lib/constants';
 import { cn, formatNumber, formatRelative } from '@/lib/format';
 import { productsApi } from '@/services/productsApi';
@@ -94,7 +94,7 @@ export function ProductsPage() {
     const setStatus = async (product, status) => {
         try {
             await productsApi.update(product.product_id, toPayload(product, { status }));
-            toast.success(status === 'active' ? t('تم نشر المنتج') : status === 'archived' ? t('تمت أرشفة المنتج') : t('تم تحويل المنتج لمسودة'), product.name);
+            toast.success(status === 'active' ? t('تم نشر المنتج') : status === 'archived' ? t('تمت أرشفة المنتج') : t('تم تحويل المنتج لمسودة'), localized(product));
             load();
         } catch (updateError) {
             toast.error(t('تعذر تحديث المنتج'), updateError.message);
@@ -185,7 +185,7 @@ export function ProductsPage() {
                             value={filters.category_id}
                             onChange={(event) => setFilters({ category_id: event.target.value })}
                             placeholder={t('كل الأقسام')}
-                            options={(categories ?? []).map((category) => ({ value: category.category_id, label: category.name }))}
+                            options={(categories ?? []).map((category) => ({ value: category.category_id, label: localized(category) }))}
                             className="lg:w-44"
                         />
                         <Select aria-label={t('فلترة حسب المخزون')} value={filters.stock} onChange={(event) => setFilters({ stock: event.target.value })} placeholder={t('كل حالات المخزون')} options={Object.entries(STOCK_LEVELS).map(([value, label]) => ({ value, label }))} className="lg:w-44" />
@@ -243,14 +243,14 @@ export function ProductsPage() {
                                           <tr key={product.product_id} className="group cursor-pointer transition hover:bg-surface-2" onClick={() => navigate(`/dashboard/products/${product.product_id}`)}>
                                               <td className="px-4 py-3">
                                                   <div className="flex items-center gap-3">
-                                                      <ProductThumb src={product.image_url} name={product.name} />
+                                                      <ProductThumb src={product.image_url} name={localized(product)} />
                                                       <div className="min-w-0">
-                                                          <span className="block max-w-64 truncate font-semibold text-ink group-hover:text-primary">{product.name}</span>
+                                                          <span className="block max-w-64 truncate font-semibold text-ink group-hover:text-primary">{localized(product)}</span>
                                                           <span className="text-xs text-muted">{product.options.length ? t('{length} تركيبة · {value}', { length: product.variants.length, value: product.options.map((option) => option.name).join('، ') }) : t('بدون خيارات')}</span>
                                                       </div>
                                                   </div>
                                               </td>
-                                              <td className="px-4 py-3 whitespace-nowrap text-ink-2">{product.category?.name}</td>
+                                              <td className="px-4 py-3 whitespace-nowrap text-ink-2">{localized(product.category)}</td>
                                               <td className="px-4 py-3">
                                                   <PriceCell product={product} />
                                               </td>
@@ -263,7 +263,7 @@ export function ProductsPage() {
                                               <td className="px-4 py-3 text-xs whitespace-nowrap text-muted">{formatRelative(product.updated_at)}</td>
                                               <td className="px-4 py-3" onClick={(event) => event.stopPropagation()}>
                                                   <Dropdown
-                                                      label={t('إجراءات {name}', { name: product.name })}
+                                                      label={t('إجراءات {name}', { name: localized(product) })}
                                                       trigger={(props) => (
                                                           <button type="button" {...props} className="grid size-8 place-items-center rounded-lg text-muted transition hover:bg-surface-3 hover:text-ink">
                                                               <Icon name="more-vertical" className="size-[18px]" />
@@ -312,7 +312,9 @@ export function toPayload(product, overrides = {}) {
     return {
         category_id: product.category?.category_id,
         name: product.name,
+        name_en: product.name_en,
         description: product.description,
+        description_en: product.description_en,
         status: product.status,
         is_featured: product.is_featured,
         options: product.options,

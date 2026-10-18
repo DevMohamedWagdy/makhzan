@@ -43,4 +43,5 @@ return [
     'images_required' => 'Choose at least one image',
     'images_max' => 'A product can have at most :max images',
 
+    'warehouse_stocks_duplicate' => 'Each warehouse can only be listed once per variant',
 ];

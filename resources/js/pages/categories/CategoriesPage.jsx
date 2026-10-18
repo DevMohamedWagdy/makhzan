@@ -10,7 +10,7 @@ import { useToast } from '@/context/ToastContext';
 import { CategoryFormModal } from '@/features/products/CategoryFormModal';
 import { ProductThumb } from '@/features/products/ProductBadges';
 import { useCategories } from '@/features/products/useCategories';
-import { t } from '@/i18n';
+import { localized, t } from '@/i18n';
 import { cn, formatNumber } from '@/lib/format';
 import { categoriesApi } from '@/services/productsApi';
 
@@ -99,17 +99,17 @@ export function CategoriesPage() {
                         {categories.map((category, index) => (
                             <li key={category.category_id} className="flex flex-wrap items-center gap-4 p-4">
                                 <div className="flex flex-col">
-                                    <button type="button" onClick={() => move(index, -1)} disabled={busy || index === 0} className="grid size-6 place-items-center rounded text-muted hover:bg-surface-3 hover:text-ink disabled:opacity-30" aria-label={t('نقل {name} لأعلى', { name: category.name })}>
+                                    <button type="button" onClick={() => move(index, -1)} disabled={busy || index === 0} className="grid size-6 place-items-center rounded text-muted hover:bg-surface-3 hover:text-ink disabled:opacity-30" aria-label={t('نقل {name} لأعلى', { name: localized(category) })}>
                                         <Icon name="chevron-down" className="size-4 rotate-180" />
                                     </button>
-                                    <button type="button" onClick={() => move(index, 1)} disabled={busy || index === categories.length - 1} className="grid size-6 place-items-center rounded text-muted hover:bg-surface-3 hover:text-ink disabled:opacity-30" aria-label={t('نقل {name} لأسفل', { name: category.name })}>
+                                    <button type="button" onClick={() => move(index, 1)} disabled={busy || index === categories.length - 1} className="grid size-6 place-items-center rounded text-muted hover:bg-surface-3 hover:text-ink disabled:opacity-30" aria-label={t('نقل {name} لأسفل', { name: localized(category) })}>
                                         <Icon name="chevron-down" className="size-4" />
                                     </button>
                                 </div>
-                                <ProductThumb src={category.image_url} name={category.name} />
+                                <ProductThumb src={category.image_url} name={localized(category)} />
                                 <div className="min-w-0 flex-1">
                                     <div className="flex flex-wrap items-center gap-2">
-                                        <span className="font-semibold text-ink">{category.name}</span>
+                                        <span className="font-semibold text-ink">{localized(category)}</span>
                                         {!category.is_active && <Badge tone="neutral" icon="eye-off">{t('مخفي من المتجر')}</Badge>}
                                     </div>
                                     {category.description && <p className="mt-0.5 truncate text-xs text-muted">{category.description}</p>}
@@ -121,7 +121,7 @@ export function CategoriesPage() {
                                     <Button variant="secondary" size="sm" icon="edit" onClick={() => setDialog({ type: 'form', category })}>
                                         {t('تعديل')}
                                     </Button>
-                                    <Button variant="danger-soft" size="icon" onClick={() => (category.products_count ? toast.error(t('لا يمكن حذف هذا القسم'), t('به {products_count} منتج. انقل منتجاته لقسم آخر أولاً، ثم احذفه.', { products_count: category.products_count })) : setDialog({ type: 'delete', category }))} aria-label={t('حذف {name}', { name: category.name })} title={t('حذف')}>
+                                    <Button variant="danger-soft" size="icon" onClick={() => (category.products_count ? toast.error(t('لا يمكن حذف هذا القسم'), t('به {products_count} منتج. انقل منتجاته لقسم آخر أولاً، ثم احذفه.', { products_count: category.products_count })) : setDialog({ type: 'delete', category }))} aria-label={t('حذف {name}', { name: localized(category) })} title={t('حذف')}>
                                         <Icon name="trash" className="size-4" />
                                     </Button>
                                 </div>
@@ -148,7 +148,7 @@ export function CategoriesPage() {
                 onConfirm={remove}
                 loading={busy}
                 icon="trash"
-                title={t('حذف قسم «{value}»؟', { value: dialog?.category?.name ?? '' })}
+                title={t('حذف قسم «{value}»؟', { value: localized(dialog?.category) })}
                 description={t('سيتم حذف القسم نهائياً.')}
                 confirmLabel={t('حذف القسم')}
             />

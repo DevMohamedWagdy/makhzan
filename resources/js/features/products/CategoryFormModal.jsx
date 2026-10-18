@@ -13,7 +13,9 @@ import { categoriesApi } from '@/services/productsApi';
  */
 export function CategoryFormModal({ category, open, onClose, onSaved }) {
     const [name, setName] = useState('');
+    const [nameEn, setNameEn] = useState('');
     const [description, setDescription] = useState('');
+    const [descriptionEn, setDescriptionEn] = useState('');
     const [image, setImage] = useState(null);
     const [isActive, setIsActive] = useState(true);
     const [errors, setErrors] = useState({});
@@ -22,7 +24,9 @@ export function CategoryFormModal({ category, open, onClose, onSaved }) {
     useEffect(() => {
         if (open) {
             setName(category?.name ?? '');
+            setNameEn(category?.name_en ?? '');
             setDescription(category?.description ?? '');
+            setDescriptionEn(category?.description_en ?? '');
             setImage(category?.image_url ?? null);
             setIsActive(category?.is_active ?? true);
             setErrors({});
@@ -40,7 +44,9 @@ export function CategoryFormModal({ category, open, onClose, onSaved }) {
 
         const payload = {
             name: name.trim(),
+            name_en: nameEn.trim() || null,
             description: description.trim() || null,
+            description_en: descriptionEn.trim() || null,
             is_active: isActive,
             ...(image instanceof File && { image }),
             ...(category?.image_url && !image && { remove_image: true }),
@@ -84,8 +90,14 @@ export function CategoryFormModal({ category, open, onClose, onSaved }) {
                         />
                     )}
                 </Field>
+                <Field label={t('الاسم بالإنجليزية')} optional error={errors.name_en} hint={t('اختياري. يظهر بدلاً من الاسم عند استخدام المتجر أو لوحة التحكم بالإنجليزية.')}>
+                    {(props) => <Input {...props} value={nameEn} onChange={(event) => setNameEn(event.target.value)} dir="ltr" placeholder="Evening dresses" maxLength={80} />}
+                </Field>
                 <Field label={t('وصف مختصر')} optional error={errors.description} hint={t('يظهر أعلى صفحة القسم في المتجر')}>
                     {(props) => <Textarea {...props} value={description} onChange={(event) => setDescription(event.target.value)} maxLength={300} />}
+                </Field>
+                <Field label={t('الوصف بالإنجليزية')} optional error={errors.description_en}>
+                    {(props) => <Textarea {...props} value={descriptionEn} onChange={(event) => setDescriptionEn(event.target.value)} dir="ltr" maxLength={300} />}
                 </Field>
                 <Field label={t('صورة القسم')} optional error={errors.image}>
                     {() => <ImageUpload value={image} onChange={setImage} onError={(message) => setErrors(message ? { image: message } : {})} />}

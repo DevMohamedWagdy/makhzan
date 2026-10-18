@@ -64,9 +64,9 @@ class CouponResource extends JsonResource
     {
         return [
             'products' => Product::query()->whereIn('id', $this->product_ids ?? [])->where('store_id', $this->store_id)->get(['id', 'name'])
-                ->map(fn (Product $product): array => ['product_id' => $product->id, 'name' => $product->name])->all(),
+                ->map(fn (Product $product): array => ['product_id' => $product->id, 'name' => $product->name, 'name_en' => $product->name_en])->all(),
             'categories' => ProductCategory::query()->whereIn('id', $this->category_ids ?? [])->where('store_id', $this->store_id)->get(['id', 'name'])
-                ->map(fn (ProductCategory $category): array => ['category_id' => $category->id, 'name' => $category->name])->all(),
+                ->map(fn (ProductCategory $category): array => ['category_id' => $category->id, 'name' => $category->name, 'name_en' => $category->name_en])->all(),
         ];
     }
 }

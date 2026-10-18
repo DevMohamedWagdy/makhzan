@@ -7,12 +7,13 @@ import { Alert, Card, EmptyState } from '@/components/ui/Display';
 import { Field, Input, OptionCards, Select, Switch, Textarea } from '@/components/ui/Form';
 import { Skeleton } from '@/components/ui/Spinner';
 import { useToast } from '@/context/ToastContext';
+import { useWarehouses } from '@/features/inventory/useWarehouses';
 import { CategoryFormModal } from '@/features/products/CategoryFormModal';
 import { ProductImagesField } from '@/features/products/ProductImagesField';
 import { useCategories } from '@/features/products/useCategories';
 import { VariantsEditor } from '@/features/products/VariantsEditor';
 import { buildVariantsPayload, emptyVariantsState, mapVariantServerErrors, validateVariants, variantsStateFromProduct } from '@/features/products/variants';
-import { t } from '@/i18n';
+import { localized, t } from '@/i18n';
 import { PRODUCT_STATUSES } from '@/lib/constants';
 import { productsApi } from '@/services/productsApi';
 
@@ -26,7 +27,9 @@ const STATUS_OPTIONS = Object.entries(PRODUCT_STATUSES).map(([value, config]) =>
 function detailsFromProduct(product) {
     return {
         name: product?.name ?? '',
+        name_en: product?.name_en ?? '',
         description: product?.description ?? '',
+        description_en: product?.description_en ?? '',
         category_id: product?.category?.category_id ? String(product.category.category_id) : '',
         status: product?.status ?? 'active',
         is_featured: product?.is_featured ?? false,
@@ -51,6 +54,7 @@ export function ProductFormPage() {
     const [categoryModalOpen, setCategoryModalOpen] = useState(false);
     const [deleteOpen, setDeleteOpen] = useState(false);
     const [deleting, setDeleting] = useState(false);
+    const { warehouses } = useWarehouses();
 
     useEffect(() => {
         if (!isEdit) {
@@ -86,7 +90,7 @@ export function ProductFormPage() {
         const clientErrors = {
             ...(!details.name.trim() && { name: t('أدخل اسم المنتج') }),
             ...(!details.category_id && { category_id: t('اختر القسم') }),
-            ...validateVariants(variants),
+            ...validateVariants(variants, warehouses),
         };
 
         setErrors(clientErrors);
@@ -97,8 +101,8 @@ export function ProductFormPage() {
             return;
         }
 
-        const { options, variants: variantRows, keys } = buildVariantsPayload(variants);
-        const payload = { ...details, name: details.name.trim(), description: details.description.trim() || null, category_id: Number(details.category_id), options, variants: variantRows };
+        const { options, variants: variantRows, keys } = buildVariantsPayload(variants, warehouses);
+        const payload = { ...details, name: details.name.trim(), name_en: details.name_en.trim() || null, description: details.description.trim() || null, description_en: details.description_en.trim() || null, category_id: Number(details.category_id), options, variants: variantRows };
 
         setSaving(true);
 
@@ -132,7 +136,7 @@ export function ProductFormPage() {
 
         try {
             await productsApi.remove(productId);
-            toast.success(t('تم حذف المنتج'), product.name);
+            toast.success(t('تم حذف المنتج'), localized(product));
             navigate('/dashboard/products');
         } catch (error) {
             toast.error(t('تعذر حذف المنتج'), error.message);
@@ -140,7 +144,7 @@ export function ProductFormPage() {
         }
     };
 
-    const title = isEdit ? (product?.name ?? t('تعديل المنتج')) : t('إضافة منتج');
+    const title = isEdit ? (localized(product) || t('تعديل المنتج')) : t('إضافة منتج');
     const header = <PageHeader title={title} breadcrumbs={[t('لوحة التحكم'), t('المنتجات'), isEdit ? t('تعديل') : t('منتج جديد')]} />;
 
     if (loadError) {
@@ -216,8 +220,14 @@ export function ProductFormPage() {
                                 <Field label={t('اسم المنتج')} required error={errors.name}>
                                     {(props) => <Input {...props} data-autofocus value={details.name} onChange={(event) => setDetail('name', event.target.value)} aria-invalid={errors.name ? 'true' : undefined} placeholder={t('مثال: فستان سهرة ستان')} maxLength={150} />}
                                 </Field>
+                                <Field label={t('الاسم بالإنجليزية')} optional error={errors.name_en} hint={t('اختياري. يظهر بدلاً من الاسم عند استخدام المتجر أو لوحة التحكم بالإنجليزية.')}>
+                                    {(props) => <Input {...props} value={details.name_en} onChange={(event) => setDetail('name_en', event.target.value)} dir="ltr" placeholder="Satin evening dress" maxLength={150} />}
+                                </Field>
                                 <Field label={t('الوصف')} optional error={errors.description} hint={t('الخامة، المقاسات، طريقة العناية... يظهر في صفحة المنتج بالمتجر')}>
                                     {(props) => <Textarea {...props} value={details.description} onChange={(event) => setDetail('description', event.target.value)} className="min-h-32" maxLength={5000} />}
+                                </Field>
+                                <Field label={t('الوصف بالإنجليزية')} optional error={errors.description_en}>
+                                    {(props) => <Textarea {...props} value={details.description_en} onChange={(event) => setDetail('description_en', event.target.value)} dir="ltr" className="min-h-32" maxLength={5000} />}
                                 </Field>
                             </div>
                         </Card>
@@ -227,7 +237,7 @@ export function ProductFormPage() {
                         </Card>
 
                         <Card title={t('السعر والمخزون')}>
-                            <VariantsEditor value={variants} onChange={setVariants} errors={errors} />
+                            <VariantsEditor value={variants} onChange={setVariants} errors={errors} warehouses={warehouses} />
                         </Card>
 
                         {isEdit && (
@@ -250,7 +260,7 @@ export function ProductFormPage() {
                                         value={details.category_id}
                                         onChange={(event) => setDetail('category_id', event.target.value)}
                                         placeholder={t('اختر القسم')}
-                                        options={categories.map((category) => ({ value: String(category.category_id), label: category.name }))}
+                                        options={categories.map((category) => ({ value: String(category.category_id), label: localized(category) }))}
                                         aria-invalid={errors.category_id ? 'true' : undefined}
                                     />
                                 )}
@@ -276,7 +286,7 @@ export function ProductFormPage() {
                 onClose={() => setCategoryModalOpen(false)}
                 onSaved={async (category) => {
                     setCategoryModalOpen(false);
-                    toast.success(t('تمت إضافة القسم'), category.name);
+                    toast.success(t('تمت إضافة القسم'), localized(category));
                     await reloadCategories();
                     setDetail('category_id', String(category.category_id));
                 }}
@@ -288,7 +298,7 @@ export function ProductFormPage() {
                 onConfirm={remove}
                 loading={deleting}
                 icon="trash"
-                title={t('حذف «{value}»؟', { value: product?.name ?? '' })}
+                title={t('حذف «{value}»؟', { value: localized(product) })}
                 description={t('لإيقاف بيعه مؤقتاً اختر «مؤرشف» من حالة المنتج بدلاً من الحذف.')}
                 confirmLabel={t('حذف المنتج')}
             />

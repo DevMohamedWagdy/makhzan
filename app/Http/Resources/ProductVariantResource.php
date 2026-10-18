@@ -28,6 +28,10 @@ class ProductVariantResource extends JsonResource
             'cost' => $this->cost,
             'stock' => $this->stock,
             'low_stock_threshold' => $this->low_stock_threshold,
+            'warehouses' => $this->whenLoaded('warehouseStocks', fn (): array => $this->warehouseStocks
+                ->map(fn ($warehouseStock): array => ['warehouse_id' => $warehouseStock->warehouse_id, 'stock' => $warehouseStock->stock])
+                ->values()
+                ->all()),
         ];
     }
 }

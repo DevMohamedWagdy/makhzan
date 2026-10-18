@@ -12,6 +12,7 @@ import { collectionsApi } from '@/services/productsApi';
  */
 export function CollectionFormModal({ collection, open, onClose, onSaved }) {
     const [name, setName] = useState('');
+    const [nameEn, setNameEn] = useState('');
     const [isActive, setIsActive] = useState(true);
     const [errors, setErrors] = useState({});
     const [saving, setSaving] = useState(false);
@@ -19,6 +20,7 @@ export function CollectionFormModal({ collection, open, onClose, onSaved }) {
     useEffect(() => {
         if (open) {
             setName(collection?.name ?? '');
+            setNameEn(collection?.name_en ?? '');
             setIsActive(collection?.is_active ?? true);
             setErrors({});
         }
@@ -33,7 +35,7 @@ export function CollectionFormModal({ collection, open, onClose, onSaved }) {
             return;
         }
 
-        const payload = { name: name.trim(), is_active: isActive };
+        const payload = { name: name.trim(), name_en: nameEn.trim() || null, is_active: isActive };
 
         setSaving(true);
 
@@ -72,6 +74,9 @@ export function CollectionFormModal({ collection, open, onClose, onSaved }) {
                             maxLength={80}
                         />
                     )}
+                </Field>
+                <Field label={t('الاسم بالإنجليزية')} optional error={errors.name_en} hint={t('اختياري. يظهر بدلاً من الاسم عند استخدام المتجر أو لوحة التحكم بالإنجليزية.')}>
+                    {(props) => <Input {...props} value={nameEn} onChange={(event) => setNameEn(event.target.value)} dir="ltr" placeholder="Latest offers" maxLength={80} />}
                 </Field>
                 <div className="rounded-xl border border-line bg-surface-2 p-4">
                     <Switch checked={isActive} onChange={setIsActive} label={t('ظاهر في المتجر')} description={t('أوقفه لإخفاء التصنيف من الصفحة الرئيسية مؤقتاً مع الإبقاء على منتجاته.')} />

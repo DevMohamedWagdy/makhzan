@@ -35,6 +35,7 @@ class SaveProductCollectionRequest extends FormRequest
                 'required', 'string', 'max:80',
                 Rule::unique('product_collections')->where('store_id', $this->user()->store->id)->ignore($this->route('collection')),
             ],
+            'name_en' => ['nullable', 'string', 'max:80'],
             'is_active' => ['sometimes', 'boolean'],
             'position' => ['sometimes', 'integer', 'min:0', 'max:65535'],
         ];

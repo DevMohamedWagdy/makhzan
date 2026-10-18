@@ -35,12 +35,16 @@ class ProductCategoryControllerTest extends TestCase
 
         $response = $this->post('/api/v1/vendor/product-categories', [
             'name' => 'عبايات',
+            'name_en' => 'Abayas',
             'description' => 'عبايات كريب وكتان',
+            'description_en' => 'Crepe and linen abayas',
             'image' => UploadedFile::fake()->image('cover.jpg'),
         ], ['Accept' => 'application/json']);
 
         $response->assertCreated()
             ->assertJsonPath('data.name', 'عبايات')
+            ->assertJsonPath('data.name_en', 'Abayas')
+            ->assertJsonPath('data.description_en', 'Crepe and linen abayas')
             ->assertJsonPath('data.slug', 'aabayat')
             ->assertJsonPath('data.position', 5)
             ->assertJsonPath('data.products_count', 0);

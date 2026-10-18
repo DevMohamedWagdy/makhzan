@@ -16,7 +16,7 @@ import { AdminOrdersTable } from '@/features/admin/AdminOrders';
 import { AdminVendorsTable } from '@/features/admin/AdminVendors';
 import { BILLING_METHODS } from '@/features/billing/billing';
 import { ProductStatusBadge } from '@/features/products/ProductBadges';
-import { t } from '@/i18n';
+import { localized, t } from '@/i18n';
 import { formatDate, formatMoney, formatNumber, formatRelative } from '@/lib/format';
 import { findGovernorate } from '@/lib/locations';
 import { adminApi } from '@/services/adminApi';
@@ -262,9 +262,9 @@ function ProductsTab({ storeId }) {
                 {result.data.map((product) => (
                     <li key={product.product_id} className="flex flex-wrap items-center gap-3 px-4 py-3 text-sm">
                         <span className="min-w-0 flex-1">
-                            <span className="block font-medium text-ink">{product.name}</span>
+                            <span className="block font-medium text-ink">{localized(product)}</span>
                             <span className="text-xs text-muted">
-                                {product.category?.name} · {t('المخزون {count}', { count: formatNumber(product.stock_total) })}
+                                {localized(product.category)} · {t('المخزون {count}', { count: formatNumber(product.stock_total) })}
                             </span>
                         </span>
                         <span className="font-semibold text-ink">{formatMoney(product.price)}</span>

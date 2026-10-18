@@ -14,7 +14,7 @@ import { MovementHistoryDrawer } from '@/features/inventory/StockMovements';
 import { ProductThumb } from '@/features/products/ProductBadges';
 import { useCategories } from '@/features/products/useCategories';
 import { useDebouncedValue } from '@/hooks/common';
-import { t } from '@/i18n';
+import { localized, t } from '@/i18n';
 import { cn, formatMoney, formatNumber } from '@/lib/format';
 import { inventoryApi } from '@/services/inventoryApi';
 
@@ -200,7 +200,7 @@ export function InventoryPage() {
                         value={categoryId}
                         onChange={(event) => setQuery({ category_id: event.target.value })}
                         placeholder={t('كل الأقسام')}
-                        options={(categories ?? []).map((category) => ({ value: category.category_id, label: category.name }))}
+                        options={(categories ?? []).map((category) => ({ value: category.category_id, label: localized(category) }))}
                         className="w-44"
                     />
                     <Select aria-label={t('ترتيب المخزون')} value={sort} onChange={(event) => setQuery({ sort: event.target.value })} options={SORTS} icon="filter" className="w-48" />
@@ -251,9 +251,9 @@ export function InventoryPage() {
                                           <tr key={item.variant_id} className="group transition hover:bg-surface-2">
                                               <td className="px-4 py-3">
                                                   <span className="flex items-center gap-3">
-                                                      <ProductThumb src={item.image_url} name={item.product_name} className="size-10" />
+                                                      <ProductThumb src={item.image_url} name={localized(item, 'product_name')} className="size-10" />
                                                       <span className="min-w-0">
-                                                          <span className="block font-medium text-ink">{item.product_name}</span>
+                                                          <span className="block font-medium text-ink">{localized(item, 'product_name')}</span>
                                                           <span className="flex flex-wrap gap-x-2 text-xs text-muted">
                                                               {item.variant_title && <span>{item.variant_title}</span>}
                                                               {item.sku && <span className="ltr font-mono">{item.sku}</span>}

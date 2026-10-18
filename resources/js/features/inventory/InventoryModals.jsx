@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/Button';
 import { Field, Input, OptionCards, Select, Textarea } from '@/components/ui/Form';
 import { Modal } from '@/components/ui/Overlay';
 import { useToast } from '@/context/ToastContext';
-import { t } from '@/i18n';
+import { localized, t } from '@/i18n';
 import { CURRENCY } from '@/lib/constants';
 import { formatMoney, formatNumber } from '@/lib/format';
 import { inventoryApi } from '@/services/inventoryApi';
@@ -16,7 +16,7 @@ const MOVEMENT_OPTIONS = [
 
 /** "فستان — أحمر / L" */
 export function itemLabel(item) {
-    return item.variant_title ? `${item.product_name} — ${item.variant_title}` : item.product_name;
+    return item.variant_title ? `${localized(item, 'product_name')} — ${item.variant_title}` : localized(item, 'product_name');
 }
 
 const numberOrNull = (value) => (value === '' || value == null ? null : Number(value));

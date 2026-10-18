@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\BelongsToStore;
+use App\Models\Concerns\HasEnglishTranslation;
 use App\Models\Concerns\LogsActivity;
 use Database\Factories\ProductCollectionFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -14,11 +15,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 /**
  * A hand-picked group of products (e.g. أحدث العروض) shown as its own section on the store home page.
  */
-#[Fillable(['name', 'position', 'is_active'])]
+#[Fillable(['name', 'name_en', 'position', 'is_active'])]
 class ProductCollection extends Model
 {
     /** @use HasFactory<ProductCollectionFactory> */
-    use BelongsToStore, HasFactory, LogsActivity;
+    use BelongsToStore, HasEnglishTranslation, HasFactory, LogsActivity;
 
     /** @var list<string> Attributes not worth an activity log entry. */
     protected array $activityIgnored = ['position'];

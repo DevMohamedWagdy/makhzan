@@ -9,7 +9,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
 import { CollectionFormModal } from '@/features/products/CollectionFormModal';
 import { CollectionProductsDrawer } from '@/features/products/CollectionProductsDrawer';
-import { t } from '@/i18n';
+import { localized, t } from '@/i18n';
 import { cn, formatNumber } from '@/lib/format';
 import { collectionsApi } from '@/services/productsApi';
 
@@ -115,10 +115,10 @@ export function CollectionsPage() {
                         {collections.map((collection, index) => (
                             <li key={collection.collection_id} className="flex flex-wrap items-center gap-4 p-4">
                                 <div className={cn('flex flex-col', !can('products.update') && 'hidden')}>
-                                    <button type="button" onClick={() => move(index, -1)} disabled={busy || index === 0} className="grid size-6 place-items-center rounded text-muted hover:bg-surface-3 hover:text-ink disabled:opacity-30" aria-label={t('نقل {name} لأعلى', { name: collection.name })}>
+                                    <button type="button" onClick={() => move(index, -1)} disabled={busy || index === 0} className="grid size-6 place-items-center rounded text-muted hover:bg-surface-3 hover:text-ink disabled:opacity-30" aria-label={t('نقل {name} لأعلى', { name: localized(collection) })}>
                                         <Icon name="chevron-down" className="size-4 rotate-180" />
                                     </button>
-                                    <button type="button" onClick={() => move(index, 1)} disabled={busy || index === collections.length - 1} className="grid size-6 place-items-center rounded text-muted hover:bg-surface-3 hover:text-ink disabled:opacity-30" aria-label={t('نقل {name} لأسفل', { name: collection.name })}>
+                                    <button type="button" onClick={() => move(index, 1)} disabled={busy || index === collections.length - 1} className="grid size-6 place-items-center rounded text-muted hover:bg-surface-3 hover:text-ink disabled:opacity-30" aria-label={t('نقل {name} لأسفل', { name: localized(collection) })}>
                                         <Icon name="chevron-down" className="size-4" />
                                     </button>
                                 </div>
@@ -127,7 +127,7 @@ export function CollectionsPage() {
                                 </span>
                                 <div className="min-w-0 flex-1">
                                     <div className="flex flex-wrap items-center gap-2">
-                                        <span className="font-semibold text-ink">{collection.name}</span>
+                                        <span className="font-semibold text-ink">{localized(collection)}</span>
                                         {!collection.is_active && <Badge tone="neutral" icon="eye-off">{t('مخفي من المتجر')}</Badge>}
                                     </div>
                                     <p className="mt-0.5 text-xs text-muted">{t('{value} منتج', { value: formatNumber(collection.products_count) })}</p>
@@ -139,7 +139,7 @@ export function CollectionsPage() {
                                     <Button variant="secondary" size="sm" icon="edit" onClick={() => setDialog({ type: 'form', collection })}>
                                         {t('تعديل')}
                                     </Button>
-                                    <Button variant="danger-soft" size="icon" onClick={() => setDialog({ type: 'delete', collection })} aria-label={t('حذف {name}', { name: collection.name })} title={t('حذف')}>
+                                    <Button variant="danger-soft" size="icon" onClick={() => setDialog({ type: 'delete', collection })} aria-label={t('حذف {name}', { name: localized(collection) })} title={t('حذف')}>
                                         <Icon name="trash" className="size-4" />
                                     </Button>
                                 </div>
@@ -169,7 +169,7 @@ export function CollectionsPage() {
                 onConfirm={remove}
                 loading={busy}
                 icon="trash"
-                title={t('حذف تصنيف «{value}»؟', { value: dialog?.collection?.name ?? '' })}
+                title={t('حذف تصنيف «{value}»؟', { value: localized(dialog?.collection) })}
                 description={t('سيتم حذف التصنيف من متجرك، وتبقى منتجاته كما هي في الكتالوج.')}
                 confirmLabel={t('حذف التصنيف')}
             />

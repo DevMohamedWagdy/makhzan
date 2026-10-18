@@ -21,9 +21,9 @@ class StorefrontCategoryResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'name' => $this->name,
+            'name' => $this->translated('name'),
             'slug' => $this->slug,
-            'description' => $this->description,
+            'description' => $this->translated('description'),
             'image_url' => $this->image_url,
             'products_count' => $this->whenCounted('products'),
         ];

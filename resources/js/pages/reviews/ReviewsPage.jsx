@@ -12,7 +12,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
 import { Stars } from '@/features/reviews/Stars';
 import { useDebouncedValue } from '@/hooks/common';
-import { t } from '@/i18n';
+import { localized, t } from '@/i18n';
 import { REVIEW_STATUSES } from '@/lib/constants';
 import { cn, formatDate, formatNumber } from '@/lib/format';
 import { reviewsApi } from '@/services/reviewsApi';
@@ -74,7 +74,7 @@ function ReviewCard({ review, canUpdate, canDelete, busy, onStatus, onReply, onD
                 <div className="flex min-w-0 items-center gap-3">
                     {review.product?.image_url ? <img src={review.product.image_url} alt="" className="size-12 shrink-0 rounded-lg object-cover" /> : <span className="size-12 shrink-0 rounded-lg bg-surface-3" />}
                     <div className="min-w-0">
-                        <p className="truncate font-semibold text-ink">{review.product?.name}</p>
+                        <p className="truncate font-semibold text-ink">{localized(review.product)}</p>
                         <p className="text-xs text-muted">
                             {review.customer_name}
                             {review.order_number && (

@@ -31,9 +31,10 @@ class ProductCollectionControllerTest extends TestCase
         $vendor = $this->actingAsVendor();
         ProductCollection::factory()->for($vendor->store)->create(['position' => 4]);
 
-        $this->postJson('/api/v1/vendor/collections', ['name' => 'أحدث العروض', 'is_active' => false])
+        $this->postJson('/api/v1/vendor/collections', ['name' => 'أحدث العروض', 'name_en' => 'Latest offers', 'is_active' => false])
             ->assertCreated()
             ->assertJsonPath('data.name', 'أحدث العروض')
+            ->assertJsonPath('data.name_en', 'Latest offers')
             ->assertJsonPath('data.position', 5)
             ->assertJsonPath('data.is_active', false)
             ->assertJsonPath('data.products_count', 0);

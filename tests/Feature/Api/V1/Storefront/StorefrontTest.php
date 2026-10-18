@@ -69,6 +69,39 @@ class StorefrontTest extends TestCase
             ->assertJsonPath('collections.0.products.0.category.slug', 'dresses');
     }
 
+    public function test_english_shoppers_see_english_names_where_the_merchant_entered_them(): void
+    {
+        $this->dresses->update(['name_en' => 'Dresses', 'description_en' => 'Evening and casual']);
+        $translated = $this->product(['name' => 'فستان سهرة', 'name_en' => 'Evening dress', 'description' => 'ستان', 'description_en' => 'Satin']);
+        $untranslated = $this->product(['name' => 'عباية كتان']);
+        ProductCollection::factory()->for($this->store)->create(['name' => 'أحدث العروض', 'name_en' => 'Latest offers'])->products()->attach($translated);
+
+        $this->withHeader('Accept-Language', 'en')
+            ->getJson('/api/v1/storefront/noor-fashion')
+            ->assertOk()
+            ->assertJsonPath('categories.0.name', 'Dresses')
+            ->assertJsonPath('collections.0.name', 'Latest offers')
+            ->assertJsonPath('collections.0.products.0.name', 'Evening dress')
+            ->assertJsonPath('collections.0.products.0.category.name', 'Dresses');
+
+        $this->withHeader('Accept-Language', 'en')
+            ->getJson("/api/v1/storefront/noor-fashion/products/{$translated->slug}")
+            ->assertOk()
+            ->assertJsonPath('product.name', 'Evening dress')
+            ->assertJsonPath('product.description', 'Satin');
+
+        $this->withHeader('Accept-Language', 'en')
+            ->getJson("/api/v1/storefront/noor-fashion/products/{$untranslated->slug}")
+            ->assertOk()
+            ->assertJsonPath('product.name', 'عباية كتان');
+
+        $this->withHeader('Accept-Language', 'ar')
+            ->getJson("/api/v1/storefront/noor-fashion/products/{$translated->slug}")
+            ->assertOk()
+            ->assertJsonPath('product.name', 'فستان سهرة')
+            ->assertJsonPath('product.category.name', 'فساتين');
+    }
+
     public function test_lists_products_by_category_search_and_price(): void
     {
         $bags = ProductCategory::factory()->for($this->store)->create(['slug' => 'bags']);

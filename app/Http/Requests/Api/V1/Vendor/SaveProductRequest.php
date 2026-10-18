@@ -17,7 +17,9 @@ use Illuminate\Validation\Validator;
  *
  * Payload: options = [{name, values[]}] (0–3), variants = [{id?, option_values[], price,
  * compare_at_price?, sku?, stock}]. Without options there must be exactly one variant
- * with empty option_values.
+ * with empty option_values. A variant may send warehouse_stocks = [{warehouse_id, stock}] to
+ * set its quantity per warehouse; otherwise stock is its total and warehouse_id? picks the
+ * warehouse a change goes into (the store's default warehouse when omitted).
  */
 class SaveProductRequest extends FormRequest
 {
@@ -61,9 +63,12 @@ class SaveProductRequest extends FormRequest
         return [
             'category_id' => ['required', 'integer', Rule::exists('product_categories', 'id')->where('store_id', $this->user()->store->id)],
             'name' => ['required', 'string', 'max:150'],
+            'name_en' => ['nullable', 'string', 'max:150'],
             'description' => ['nullable', 'string', 'max:5000'],
+            'description_en' => ['nullable', 'string', 'max:5000'],
             'status' => ['required', Rule::enum(ProductStatus::class)],
             'is_featured' => ['sometimes', 'boolean'],
+            'warehouse_id' => ['nullable', 'integer', Rule::exists('warehouses', 'id')->where('store_id', $this->user()->store->id)],
 
             'options' => ['present', 'array', 'max:3'],
             'options.*' => ['array'],
@@ -81,6 +86,9 @@ class SaveProductRequest extends FormRequest
             'variants.*.cost' => ['nullable', 'numeric', 'min:0', 'max:10000000'],
             'variants.*.sku' => ['nullable', 'string', 'max:60'],
             'variants.*.stock' => ['required', 'integer', 'min:0', 'max:1000000'],
+            'variants.*.warehouse_stocks' => ['sometimes', 'array', 'min:1'],
+            'variants.*.warehouse_stocks.*.warehouse_id' => ['required', 'integer', Rule::exists('warehouses', 'id')->where('store_id', $this->user()->store->id)],
+            'variants.*.warehouse_stocks.*.stock' => ['required', 'integer', 'min:0', 'max:1000000'],
         ];
     }
 
@@ -99,6 +107,7 @@ class SaveProductRequest extends FormRequest
 
                 $this->validateOptions($validator);
                 $this->validateVariants($validator);
+                $this->validateWarehouseStocks($validator);
                 $this->validateSkus($validator);
             },
         ];
@@ -169,6 +178,21 @@ class SaveProductRequest extends FormRequest
     }
 
     /**
+     * A variant lists each warehouse at most once. (A `distinct` rule on the wildcard would compare
+     * across all variants, which legitimately repeat the same warehouses.)
+     */
+    private function validateWarehouseStocks(Validator $validator): void
+    {
+        foreach ($this->input('variants') as $index => $variant) {
+            $warehouseIds = array_column($variant['warehouse_stocks'] ?? [], 'warehouse_id');
+
+            if (count($warehouseIds) !== count(array_unique($warehouseIds))) {
+                $validator->errors()->add("variants.{$index}.warehouse_stocks", __('products.warehouse_stocks_duplicate'));
+            }
+        }
+    }
+
+    /**
      * SKUs are unique across the store's products (soft-deleted ones included).
      */
     private function validateSkus(Validator $validator): void
@@ -208,6 +232,7 @@ class SaveProductRequest extends FormRequest
             'name.required' => __('products.name_required'),
             'name.max' => __('products.name_max'),
             'status.required' => __('products.status_required'),
+            'warehouse_id.exists' => __('inventory.warehouse_not_found'),
             'options.max' => __('products.options_max'),
             'options.*.name.required' => __('products.option_name_required'),
             'options.*.values.required' => __('products.option_values_required'),
@@ -222,6 +247,10 @@ class SaveProductRequest extends FormRequest
             'variants.*.stock.required' => __('products.stock_required'),
             'variants.*.stock.integer' => __('products.stock_integer'),
             'variants.*.stock.min' => __('products.stock_min'),
+            'variants.*.warehouse_stocks.*.warehouse_id.exists' => __('inventory.warehouse_not_found'),
+            'variants.*.warehouse_stocks.*.stock.required' => __('products.stock_required'),
+            'variants.*.warehouse_stocks.*.stock.integer' => __('products.stock_integer'),
+            'variants.*.warehouse_stocks.*.stock.min' => __('products.stock_min'),
         ];
     }
 }

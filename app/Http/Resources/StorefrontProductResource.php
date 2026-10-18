@@ -40,9 +40,9 @@ class StorefrontProductResource extends JsonResource
 
         return [
             'product_id' => $this->id,
-            'name' => $this->name,
+            'name' => $this->translated('name'),
             'slug' => $this->slug,
-            'category' => ['name' => $this->category->name, 'slug' => $this->category->slug],
+            'category' => ['name' => $this->category->translated('name'), 'slug' => $this->category->slug],
             'image_url' => $images->first()?->url,
             'hover_image_url' => $images->get(1)?->url,
             'price' => $cheapest?->price,
@@ -54,7 +54,7 @@ class StorefrontProductResource extends JsonResource
             'rating_average' => $this->rating_average,
             'reviews_count' => $this->reviews_count,
             $this->mergeWhen($this->detailed, fn (): array => [
-                'description' => $this->description,
+                'description' => $this->translated('description'),
                 'options' => $this->options ?? [],
                 'images' => $images->map(fn ($image): array => ['url' => $image->url])->values(),
                 'variants' => $variants->map(fn (ProductVariant $variant): array => [

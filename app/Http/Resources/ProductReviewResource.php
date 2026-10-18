@@ -25,6 +25,7 @@ class ProductReviewResource extends JsonResource
             'product' => $this->whenLoaded('product', fn (): array => [
                 'product_id' => $this->product->id,
                 'name' => $this->product->name,
+                'name_en' => $this->product->name_en,
                 'slug' => $this->product->slug,
                 'image_url' => $this->product->images->first()?->url,
             ]),

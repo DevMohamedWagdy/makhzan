@@ -4,7 +4,7 @@ import { Icon } from '@/components/ui/Icon';
 import { Spinner } from '@/components/ui/Spinner';
 import { ProductThumb } from '@/features/products/ProductBadges';
 import { useClickOutside, useDebouncedValue } from '@/hooks/common';
-import { t } from '@/i18n';
+import { localized, t } from '@/i18n';
 import { formatMoney, formatNumber } from '@/lib/format';
 import { inventoryApi } from '@/services/inventoryApi';
 import { itemLabel } from './InventoryModals';
@@ -70,7 +70,7 @@ export function VariantPicker({ excludedIds, onPick, stockOf = (item) => item.st
                                 }}
                                 className="flex w-full items-center gap-3 rounded-lg p-2 text-start transition hover:bg-surface-3"
                             >
-                                <ProductThumb src={item.image_url} name={item.product_name} className="size-9" />
+                                <ProductThumb src={item.image_url} name={localized(item, 'product_name')} className="size-9" />
                                 <span className="min-w-0 flex-1">
                                     <span className="block truncate text-sm font-medium text-ink">{itemLabel(item)}</span>
                                     <span className="text-xs text-muted">

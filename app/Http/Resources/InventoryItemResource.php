@@ -28,6 +28,7 @@ class InventoryItemResource extends JsonResource
             'variant_id' => $this->id,
             'product_id' => $this->product_id,
             'product_name' => $this->product->name,
+            'product_name_en' => $this->product->name_en,
             'product_status' => $this->product->status,
             'variant_title' => $this->title() ?: null,
             'sku' => $this->sku,

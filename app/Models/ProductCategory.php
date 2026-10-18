@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\BelongsToStore;
+use App\Models\Concerns\HasEnglishTranslation;
 use App\Models\Concerns\LogsActivity;
 use Database\Factories\ProductCategoryFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -17,11 +18,11 @@ use Illuminate\Support\Str;
 /**
  * A section of the vendor's catalog (e.g. فساتين، أحذية). Every product belongs to one.
  */
-#[Fillable(['name', 'slug', 'description', 'image_path', 'position', 'is_active'])]
+#[Fillable(['name', 'name_en', 'slug', 'description', 'description_en', 'image_path', 'position', 'is_active'])]
 class ProductCategory extends Model
 {
     /** @use HasFactory<ProductCategoryFactory> */
-    use BelongsToStore, HasFactory, LogsActivity;
+    use BelongsToStore, HasEnglishTranslation, HasFactory, LogsActivity;
 
     /** @var list<string> Attributes not worth an activity log entry. */
     protected array $activityIgnored = ['position'];

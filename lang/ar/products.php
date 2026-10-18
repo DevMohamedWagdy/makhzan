@@ -43,4 +43,5 @@ return [
     'images_required' => 'اختر صورة واحدة على الأقل',
     'images_max' => 'الحد الأقصى :max صور للمنتج',
 
+    'warehouse_stocks_duplicate' => 'لا يمكن تكرار نفس المخزن في كميات التركيبة',
 ];

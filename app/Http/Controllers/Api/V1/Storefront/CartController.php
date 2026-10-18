@@ -44,7 +44,7 @@ class CartController extends Controller
                 'variant_id' => $variant->id,
                 'product_id' => $variant->product_id,
                 'product_slug' => $variant->product->slug,
-                'name' => $variant->product->name,
+                'name' => $variant->product->translated('name'),
                 'variant_title' => $variant->title(),
                 'image_url' => $variant->product->images->first()?->url,
                 'unit_price' => $variant->price,

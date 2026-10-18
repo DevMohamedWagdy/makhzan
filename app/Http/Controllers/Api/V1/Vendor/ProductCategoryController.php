@@ -32,7 +32,7 @@ class ProductCategoryController extends Controller
         $store = $request->user()->store;
 
         $category = $store->productCategories()->create([
-            ...$request->safe()->only(['name', 'description', 'is_active']),
+            ...$request->safe()->only(['name', 'name_en', 'description', 'description_en', 'is_active']),
             'slug' => ProductCategory::uniqueSlug($store->id, $request->validated('name')),
             'position' => $request->validated('position') ?? (int) $store->productCategories()->max('position') + 1,
             'image_path' => $request->file('image')?->store("stores/{$store->id}/categories", 'public'),
@@ -49,7 +49,7 @@ class ProductCategoryController extends Controller
     public function update(SaveProductCategoryRequest $request, ProductCategory $category): ProductCategoryResource
     {
         $previousImage = $category->image_path;
-        $category->fill($request->safe()->only(['name', 'description', 'is_active', 'position']));
+        $category->fill($request->safe()->only(['name', 'name_en', 'description', 'description_en', 'is_active', 'position']));
 
         if ($request->hasFile('image')) {
             $category->image_path = $request->file('image')->store("stores/{$category->store_id}/categories", 'public');

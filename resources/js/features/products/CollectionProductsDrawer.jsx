@@ -8,7 +8,7 @@ import { Skeleton } from '@/components/ui/Spinner';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
 import { ProductStatusBadge, ProductThumb } from '@/features/products/ProductBadges';
-import { t } from '@/i18n';
+import { localized, t } from '@/i18n';
 import { cn, formatMoney, formatNumber } from '@/lib/format';
 import { collectionsApi, productsApi } from '@/services/productsApi';
 
@@ -66,7 +66,7 @@ function ProductChooser({ addedIds, onAdd, disabled }) {
         return <EmptyState icon="check-circle" title={t('كل منتجاتك مضافة لهذا التصنيف')} description={t('يمكنك ترتيبها أو إزالة ما لا تريده من تبويب «منتجات التصنيف».')} />;
     }
 
-    const categories = [...new Map(available.filter((product) => product.category).map((product) => [product.category.category_id, product.category.name])).entries()];
+    const categories = [...new Map(available.filter((product) => product.category).map((product) => [product.category.category_id, localized(product.category)])).entries()];
     const visible = categoryId === 'all' ? available : available.filter((product) => product.category?.category_id === categoryId);
     const chipClass = (active) => cn('shrink-0 rounded-full border px-3 py-1.5 text-xs font-medium transition', active ? 'border-primary bg-primary-soft text-primary' : 'border-line text-ink-2 hover:border-line-strong');
     const toggle = (productId) => setCheckedIds((current) => (current.includes(productId) ? current.filter((id) => id !== productId) : [...current, productId]));
@@ -108,12 +108,12 @@ function ProductChooser({ addedIds, onAdd, disabled }) {
                                 isChecked ? 'border-primary bg-primary-soft' : 'border-line bg-surface hover:border-line-strong',
                             )}
                         >
-                            <ProductThumb src={product.image_url} name={product.name} className="aspect-square h-auto w-full !rounded-none !border-0" />
+                            <ProductThumb src={product.image_url} name={localized(product)} className="aspect-square h-auto w-full !rounded-none !border-0" />
                             <span className={cn('absolute start-2 top-2 grid size-6 place-items-center rounded-full border-2 transition', isChecked ? 'border-primary bg-primary text-white' : 'border-white bg-black/25')}>
                                 {isChecked && <Icon name="check" strokeWidth={3} className="size-3.5" />}
                             </span>
                             <span className="flex flex-col gap-0.5 p-2.5">
-                                <span className="truncate text-sm font-semibold text-ink">{product.name}</span>
+                                <span className="truncate text-sm font-semibold text-ink">{localized(product)}</span>
                                 {product.price != null && <span className="text-xs text-muted">{formatMoney(product.price)}</span>}
                             </span>
                         </button>
@@ -200,7 +200,7 @@ export function CollectionProductsDrawer({ collection, open, onClose, onChanged 
             open={open}
             onClose={onClose}
             icon="box"
-            title={t('منتجات «{name}»', { name: collection?.name ?? '' })}
+            title={t('منتجات «{name}»', { name: localized(collection) })}
             description={t('اختر المنتجات التي تظهر في هذا التصنيف ورتّبها كما تريد أن يراها عملاؤك.')}
         >
             <div className="flex flex-col gap-4 p-6">
@@ -239,17 +239,17 @@ export function CollectionProductsDrawer({ collection, open, onClose, onChanged 
                             <li key={product.product_id} className="flex items-center gap-3 p-3">
                                 {canEdit && (
                                     <div className="flex flex-col">
-                                        <button type="button" onClick={() => move(index, -1)} disabled={busy || index === 0} className="grid size-6 place-items-center rounded text-muted hover:bg-surface-3 hover:text-ink disabled:opacity-30" aria-label={t('نقل {name} لأعلى', { name: product.name })}>
+                                        <button type="button" onClick={() => move(index, -1)} disabled={busy || index === 0} className="grid size-6 place-items-center rounded text-muted hover:bg-surface-3 hover:text-ink disabled:opacity-30" aria-label={t('نقل {name} لأعلى', { name: localized(product) })}>
                                             <Icon name="chevron-down" className="size-4 rotate-180" />
                                         </button>
-                                        <button type="button" onClick={() => move(index, 1)} disabled={busy || index === products.length - 1} className="grid size-6 place-items-center rounded text-muted hover:bg-surface-3 hover:text-ink disabled:opacity-30" aria-label={t('نقل {name} لأسفل', { name: product.name })}>
+                                        <button type="button" onClick={() => move(index, 1)} disabled={busy || index === products.length - 1} className="grid size-6 place-items-center rounded text-muted hover:bg-surface-3 hover:text-ink disabled:opacity-30" aria-label={t('نقل {name} لأسفل', { name: localized(product) })}>
                                             <Icon name="chevron-down" className="size-4" />
                                         </button>
                                     </div>
                                 )}
-                                <ProductThumb src={product.image_url} name={product.name} className="size-10" />
+                                <ProductThumb src={product.image_url} name={localized(product)} className="size-10" />
                                 <div className="min-w-0 flex-1">
-                                    <p className="truncate text-sm font-semibold text-ink">{product.name}</p>
+                                    <p className="truncate text-sm font-semibold text-ink">{localized(product)}</p>
                                     {product.price != null && <p className="text-xs text-muted">{formatMoney(product.price)}</p>}
                                 </div>
                                 {product.status !== 'active' && <ProductStatusBadge status={product.status} />}
@@ -259,7 +259,7 @@ export function CollectionProductsDrawer({ collection, open, onClose, onChanged 
                                         size="icon"
                                         disabled={busy}
                                         onClick={() => apply(() => collectionsApi.removeProduct(collection.collection_id, product.product_id), t('تعذر إزالة المنتج'))}
-                                        aria-label={t('إزالة {name} من التصنيف', { name: product.name })}
+                                        aria-label={t('إزالة {name} من التصنيف', { name: localized(product) })}
                                         title={t('إزالة')}
                                     >
                                         <Icon name="x" className="size-4" />

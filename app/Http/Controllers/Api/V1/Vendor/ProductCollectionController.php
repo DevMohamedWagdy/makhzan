@@ -30,7 +30,7 @@ class ProductCollectionController extends Controller
         $store = $request->user()->store;
 
         $collection = $store->productCollections()->create([
-            ...$request->safe()->only(['name', 'is_active']),
+            ...$request->safe()->only(['name', 'name_en', 'is_active']),
             'position' => $request->validated('position') ?? (int) $store->productCollections()->max('position') + 1,
         ]);
 
@@ -54,7 +54,7 @@ class ProductCollectionController extends Controller
      */
     public function update(SaveProductCollectionRequest $request, ProductCollection $collection): ProductCollectionResource
     {
-        $collection->update($request->safe()->only(['name', 'is_active', 'position']));
+        $collection->update($request->safe()->only(['name', 'name_en', 'is_active', 'position']));
 
         return new ProductCollectionResource($collection->loadCount('products'));
     }
