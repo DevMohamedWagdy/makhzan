@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { PageHeader } from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/Button';
@@ -65,25 +65,36 @@ export function ProductsPage() {
     const [error, setError] = useState(null);
     const [deleting, setDeleting] = useState(null);
     const [busy, setBusy] = useState(false);
+    const latestRequest = useRef(0);
 
     const query = useMemo(
         () => ({ search, category_id: filters.category_id, status: filters.status, stock: filters.stock, page: filters.page, per_page: filters.per_page }),
         [search, filters.category_id, filters.status, filters.stock, filters.page, filters.per_page],
     );
 
+    // Only the latest request may update the list: an older one (typing, paging) can come back last.
     const load = useCallback(async () => {
+        const requestId = ++latestRequest.current;
+        const isLatest = () => requestId === latestRequest.current;
+
         setLoading(true);
         setError(null);
 
         try {
             const [list, counts] = await Promise.all([productsApi.list(query), productsApi.summary()]);
 
-            setResult(list);
-            setSummary(counts);
+            if (isLatest()) {
+                setResult(list);
+                setSummary(counts);
+            }
         } catch (loadError) {
-            setError(loadError.message);
+            if (isLatest()) {
+                setError(loadError.message);
+            }
         } finally {
-            setLoading(false);
+            if (isLatest()) {
+                setLoading(false);
+            }
         }
     }, [query]);
 
@@ -106,7 +117,7 @@ export function ProductsPage() {
 
         try {
             await productsApi.remove(deleting.product_id);
-            toast.success(t('تم حذف المنتج'), deleting.name);
+            toast.success(t('تم حذف المنتج'), localized(deleting));
             setDeleting(null);
             load();
         } catch (removeError) {
@@ -213,7 +224,7 @@ export function ProductsPage() {
                         {hasActiveFilters || filters.status ? (
                             <EmptyState icon="search" title={t('لا توجد منتجات مطابقة')} description={t('جرّب تغيير البحث أو الفلاتر.')} action={<Button variant="secondary" onClick={resetFilters}>{t('مسح الفلاتر')}</Button>} />
                         ) : (
-                            <EmptyState icon="box" title={t('لا توجد منتجات بعد')} description={t('أضف أول منتج لمتجرك بصوره وأسعاره ومقاساته.')} action={hasCategories && <Button icon="plus" to="/dashboard/products/new">{t('إضافة منتج')}</Button>} />
+                            <EmptyState icon="box" title={t('لا توجد منتجات بعد')} description={t('أضف أول منتج لمتجرك بصوره وأسعاره ومقاساته.')} action={hasCategories && can('products.create') && <Button icon="plus" to="/dashboard/products/new">{t('إضافة منتج')}</Button>} />
                         )}
                     </div>
                 ) : (
@@ -246,7 +257,7 @@ export function ProductsPage() {
                                                       <ProductThumb src={product.image_url} name={localized(product)} />
                                                       <div className="min-w-0">
                                                           <span className="block max-w-64 truncate font-semibold text-ink group-hover:text-primary">{localized(product)}</span>
-                                                          <span className="text-xs text-muted">{product.options.length ? t('{length} تركيبة · {value}', { length: product.variants.length, value: product.options.map((option) => option.name).join('، ') }) : t('بدون خيارات')}</span>
+                                                          <span className="text-xs text-muted">{product.options.length ? t('التركيبات: {length} · {value}', { length: product.variants.length, value: product.options.map((option) => option.name).join('، ') }) : t('بدون خيارات')}</span>
                                                       </div>
                                                   </div>
                                               </td>
@@ -299,7 +310,7 @@ export function ProductsPage() {
                 onConfirm={remove}
                 loading={busy}
                 icon="trash"
-                title={t('حذف «{value}»؟', { value: deleting?.name ?? '' })}
+                title={t('حذف «{value}»؟', { value: localized(deleting) })}
                 description={t('سيختفي المنتج من لوحة التحكم والمتجر. لإيقاف بيعه مؤقتاً استخدم الأرشفة بدلاً من الحذف.')}
                 confirmLabel={t('حذف المنتج')}
             />
@@ -307,7 +318,10 @@ export function ProductsPage() {
     );
 }
 
-/** Rebuilds the save payload from a listed product (used for quick status changes). */
+/**
+ * Rebuilds the save payload from a listed product (used for quick status changes). Quantities
+ * and cost are left out so the server keeps their current values, not the list's stale ones.
+ */
 export function toPayload(product, overrides = {}) {
     return {
         category_id: product.category?.category_id,
@@ -324,7 +338,6 @@ export function toPayload(product, overrides = {}) {
             price: variant.price,
             compare_at_price: variant.compare_at_price,
             sku: variant.sku,
-            stock: variant.stock,
         })),
         ...overrides,
     };

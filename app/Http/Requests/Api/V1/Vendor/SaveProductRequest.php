@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests\Api\V1\Vendor;
 
+use App\Enums\OrderStatus;
 use App\Enums\ProductStatus;
+use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use Illuminate\Auth\Access\Response;
@@ -16,7 +18,8 @@ use Illuminate\Validation\Validator;
  * Creates or updates a product with its options and variants (POST /products, PUT /products/{product}).
  *
  * Payload: options = [{name, values[]}] (0–3), variants = [{id?, option_values[], price,
- * compare_at_price?, sku?, stock}]. Without options there must be exactly one variant
+ * compare_at_price?, sku?, stock}]. An existing variant (sent with its id) may leave out stock
+ * to keep its quantities untouched, as quick status changes do. Without options there must be exactly one variant
  * with empty option_values. A variant may send warehouse_stocks = [{warehouse_id, stock}] to
  * set its quantity per warehouse; otherwise stock is its total and warehouse_id? picks the
  * warehouse a change goes into (the store's default warehouse when omitted).
@@ -85,7 +88,7 @@ class SaveProductRequest extends FormRequest
             'variants.*.compare_at_price' => ['nullable', 'numeric', 'max:10000000'],
             'variants.*.cost' => ['nullable', 'numeric', 'min:0', 'max:10000000'],
             'variants.*.sku' => ['nullable', 'string', 'max:60'],
-            'variants.*.stock' => ['required', 'integer', 'min:0', 'max:1000000'],
+            'variants.*.stock' => ['required_without:variants.*.id', 'integer', 'min:0', 'max:1000000'],
             'variants.*.warehouse_stocks' => ['sometimes', 'array', 'min:1'],
             'variants.*.warehouse_stocks.*.warehouse_id' => ['required', 'integer', Rule::exists('warehouses', 'id')->where('store_id', $this->user()->store->id)],
             'variants.*.warehouse_stocks.*.stock' => ['required', 'integer', 'min:0', 'max:1000000'],
@@ -175,6 +178,26 @@ class SaveProductRequest extends FormRequest
         if ($foreignIds->isNotEmpty()) {
             $validator->errors()->add('variants', __('products.variant_foreign'));
         }
+
+        $removedIds = array_diff($ownIds, collect($variants)->pluck('id')->filter()->all());
+
+        if ($removedIds !== [] && $this->hasOpenOrders($removedIds)) {
+            $validator->errors()->add('variants', __('products.variant_on_open_orders'));
+        }
+    }
+
+    /**
+     * Whether any of these variants is on an order still on its way to the customer, whose
+     * cancellation or refusal would need to put the units back.
+     *
+     * @param  list<int>  $variantIds
+     */
+    private function hasOpenOrders(array $variantIds): bool
+    {
+        return OrderItem::query()
+            ->whereIn('product_variant_id', $variantIds)
+            ->whereHas('order', fn ($query) => $query->whereIn('status', [OrderStatus::Pending, OrderStatus::Confirmed, OrderStatus::Shipped]))
+            ->exists();
     }
 
     /**
@@ -244,7 +267,7 @@ class SaveProductRequest extends FormRequest
             'variants.*.price.min' => __('products.price_min'),
             'variants.*.cost.numeric' => __('products.cost_numeric'),
             'variants.*.cost.min' => __('products.cost_min'),
-            'variants.*.stock.required' => __('products.stock_required'),
+            'variants.*.stock.required_without' => __('products.stock_required'),
             'variants.*.stock.integer' => __('products.stock_integer'),
             'variants.*.stock.min' => __('products.stock_min'),
             'variants.*.warehouse_stocks.*.warehouse_id.exists' => __('inventory.warehouse_not_found'),

@@ -24,7 +24,7 @@ class SaveProduct
      * warehouse's quantity set; otherwise its quantity is the total and the change goes into
      * the chosen warehouse, or the store's default one.
      *
-     * @param  array{category_id: int, name: string, name_en?: string|null, description?: string|null, description_en?: string|null, status: string, is_featured?: bool, warehouse_id?: int|null, options: array<int, array{name: string, values: list<string>}>, variants: array<int, array{id?: int|null, option_values: list<string>, price: float|string, compare_at_price?: float|string|null, cost?: float|string|null, sku?: string|null, stock: int, warehouse_stocks?: list<array{warehouse_id: int, stock: int}>}>}  $data
+     * @param  array{category_id: int, name: string, name_en?: string|null, description?: string|null, description_en?: string|null, status: string, is_featured?: bool, warehouse_id?: int|null, options: array<int, array{name: string, values: list<string>}>, variants: array<int, array{id?: int|null, option_values: list<string>, price: float|string, compare_at_price?: float|string|null, cost?: float|string|null, sku?: string|null, stock?: int, warehouse_stocks?: list<array{warehouse_id: int, stock: int}>}>}  $data
      */
     public function handle(Store $store, array $data, ?Product $product = null): Product
     {
@@ -35,16 +35,14 @@ class SaveProduct
             $product->fill([
                 'category_id' => $data['category_id'],
                 'name' => $data['name'],
-                'name_en' => $data['name_en'] ?? null,
-                'description' => $data['description'] ?? null,
-                'description_en' => $data['description_en'] ?? null,
                 'status' => $data['status'],
-                'is_featured' => $data['is_featured'] ?? false,
                 'options' => array_values($data['options']),
+                ...$this->optionalAttributes($data, $product),
             ])->save();
 
             $keptIds = collect($data['variants'])->pluck('id')->filter()->all();
-            $product->variants()->whereKeyNot($keptIds)->delete();
+            $product->variants()->whereKeyNot($keptIds)->with('warehouseStocks.warehouse')->get()
+                ->each(fn (ProductVariant $removed) => $this->removeVariant($removed));
 
             foreach (array_values($data['variants']) as $position => $variant) {
                 $attributes = [
@@ -72,13 +70,43 @@ class SaveProduct
                     $this->warehouseStocks($store, $model, $variant['warehouse_stocks'], $isNew ? StockMovementType::Initial : StockMovementType::ProductEdit);
                 } elseif ($isNew) {
                     $this->changeStock->by($model, (int) $variant['stock'], StockMovementType::Initial, StockMovement::ACTOR_VENDOR, warehouse: $warehouse);
-                } else {
+                } elseif (array_key_exists('stock', $variant)) {
                     $this->totalStock($model, (int) $variant['stock'], $position, $warehouse);
                 }
             }
 
             return $product->load(['category', 'variants.warehouseStocks', 'images']);
         });
+    }
+
+    /**
+     * Optional fields a request may leave out: on a new product they get their defaults, on an
+     * existing one an omitted field keeps its current value.
+     *
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     */
+    private function optionalAttributes(array $data, Product $product): array
+    {
+        $defaults = ['name_en' => null, 'description' => null, 'description_en' => null, 'is_featured' => false];
+
+        return collect($defaults)
+            ->filter(fn (mixed $default, string $field): bool => array_key_exists($field, $data) || ! $product->exists)
+            ->map(fn (mixed $default, string $field): mixed => $data[$field] ?? $default)
+            ->all();
+    }
+
+    /**
+     * A variant dropped from the form: its remaining units are written off through ChangeStock
+     * (so the stock movements log shows where they went) before it is deleted.
+     */
+    private function removeVariant(ProductVariant $variant): void
+    {
+        foreach ($variant->warehouseStocks as $warehouseStock) {
+            $this->changeStock->to($variant, 0, StockMovementType::ProductEdit, StockMovement::ACTOR_VENDOR, warehouse: $warehouseStock->warehouse);
+        }
+
+        $variant->delete();
     }
 
     /**

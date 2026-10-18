@@ -48,10 +48,11 @@ export function CollectionsPage() {
 
         try {
             await Promise.all(ordered.map((collection, position) => collection.position !== position && collectionsApi.update(collection.collection_id, { name: collection.name, position })).filter(Boolean));
-            await reload();
         } catch (moveError) {
             toast.error(t('تعذر تغيير الترتيب'), moveError.message);
         } finally {
+            // Reload either way: when one update fails, the list shows the order that was actually saved.
+            await reload();
             setBusy(false);
         }
     };
@@ -100,7 +101,7 @@ export function CollectionsPage() {
                 ) : collections.length === 0 ? (
                     <div className="p-6">
                         <EmptyState
-                            icon="award"
+                            icon="nav-collections"
                             title={t('لا توجد تصنيفات بعد')}
                             description={t('أنشئ تصنيفاً مثل «أحدث العروض» أو «أحدث المنتجات»، ثم اختر منتجاته ليظهر قسماً في الصفحة الرئيسية لمتجرك.')}
                             action={
@@ -123,7 +124,7 @@ export function CollectionsPage() {
                                     </button>
                                 </div>
                                 <span className="grid size-12 shrink-0 place-items-center rounded-xl bg-primary-soft text-primary">
-                                    <Icon name="award" className="size-5" />
+                                    <Icon name="nav-collections" className="size-5" />
                                 </span>
                                 <div className="min-w-0 flex-1">
                                     <div className="flex flex-wrap items-center gap-2">
@@ -135,13 +136,17 @@ export function CollectionsPage() {
                                 <Button variant="secondary" size="sm" icon="box" onClick={() => setDialog({ type: 'products', collection })}>
                                     {can('products.update') ? t('إدارة المنتجات') : t('عرض المنتجات')}
                                 </Button>
-                                <div className={cn('flex gap-1', !can('products.update') && 'hidden')}>
-                                    <Button variant="secondary" size="sm" icon="edit" onClick={() => setDialog({ type: 'form', collection })}>
-                                        {t('تعديل')}
-                                    </Button>
-                                    <Button variant="danger-soft" size="icon" onClick={() => setDialog({ type: 'delete', collection })} aria-label={t('حذف {name}', { name: localized(collection) })} title={t('حذف')}>
-                                        <Icon name="trash" className="size-4" />
-                                    </Button>
+                                <div className="flex gap-1">
+                                    {can('products.update') && (
+                                        <Button variant="secondary" size="sm" icon="edit" onClick={() => setDialog({ type: 'form', collection })}>
+                                            {t('تعديل')}
+                                        </Button>
+                                    )}
+                                    {can('products.delete') && (
+                                        <Button variant="danger-soft" size="icon" onClick={() => setDialog({ type: 'delete', collection })} aria-label={t('حذف {name}', { name: localized(collection) })} title={t('حذف')}>
+                                            <Icon name="trash" className="size-4" />
+                                        </Button>
+                                    )}
                                 </div>
                             </li>
                         ))}
@@ -154,7 +159,7 @@ export function CollectionsPage() {
                 open={dialog?.type === 'form'}
                 onClose={() => setDialog(null)}
                 onSaved={(saved) => {
-                    toast.success(dialog.collection ? t('تم حفظ التصنيف') : t('تمت إضافة التصنيف'), saved.name);
+                    toast.success(dialog.collection ? t('تم حفظ التصنيف') : t('تمت إضافة التصنيف'), localized(saved));
                     // A new collection goes straight to picking its products.
                     setDialog(dialog.collection ? null : { type: 'products', collection: saved });
                     reload();

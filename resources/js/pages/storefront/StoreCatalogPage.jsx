@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/Display';
 import { Select } from '@/components/ui/Form';
 import { ProductGrid } from '@/features/storefront/ProductCard';
+import { useToast } from '@/context/ToastContext';
 import { useStorefront } from '@/features/storefront/StorefrontLayout';
 import { t } from '@/i18n';
 import { formatNumber } from '@/lib/format';
@@ -27,6 +28,12 @@ export function StoreCatalogPage({ mode = 'all' }) {
     const [category, setCategory] = useState(null);
     const [error, setError] = useState(null);
     const [loadingMore, setLoadingMore] = useState(false);
+    const toast = useToast();
+    /** Which listing is on screen; a "load more" page for an older one (sort changed meanwhile) is dropped. */
+    const listingKey = `${storeSlug}|${categorySlug}|${search}|${sort}|${mode}`;
+    const currentListing = useRef(listingKey);
+
+    currentListing.current = listingKey;
 
     const query = (page) => ({ category: mode === 'category' ? categorySlug : undefined, search: search || undefined, sort, page });
 
@@ -61,13 +68,19 @@ export function StoreCatalogPage({ mode = 'all' }) {
     }, [store, title]);
 
     const loadMore = async () => {
+        const requestedFor = listingKey;
+
         setLoadingMore(true);
 
         try {
             const response = await storefrontApi.products(storeSlug, query(meta.current_page + 1));
 
-            setProducts((current) => [...current, ...response.data]);
-            setMeta(response.meta);
+            if (currentListing.current === requestedFor) {
+                setProducts((current) => [...current, ...response.data]);
+                setMeta(response.meta);
+            }
+        } catch (loadError) {
+            toast.error(t('تعذر تحميل المزيد من المنتجات'), loadError.message);
         } finally {
             setLoadingMore(false);
         }

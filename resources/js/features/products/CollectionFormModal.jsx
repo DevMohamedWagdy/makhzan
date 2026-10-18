@@ -53,7 +53,7 @@ export function CollectionFormModal({ collection, open, onClose, onSaved }) {
             open={open}
             onClose={onClose}
             dismissible={!saving}
-            icon="award"
+            icon="nav-collections"
             title={collection ? t('تعديل التصنيف') : t('إضافة تصنيف جديد')}
             description={t('كل تصنيف يظهر قسماً مستقلاً في الصفحة الرئيسية لمتجرك، مثل: أحدث العروض، الأكثر مبيعاً.')}
         >
@@ -75,7 +75,7 @@ export function CollectionFormModal({ collection, open, onClose, onSaved }) {
                         />
                     )}
                 </Field>
-                <Field label={t('الاسم بالإنجليزية')} optional error={errors.name_en} hint={t('اختياري. يظهر بدلاً من الاسم عند استخدام المتجر أو لوحة التحكم بالإنجليزية.')}>
+                <Field label={t('الاسم بالإنجليزية')} optional error={errors.name_en} hint={t('يظهر بدلاً من الاسم عند استخدام المتجر أو لوحة التحكم بالإنجليزية.')}>
                     {(props) => <Input {...props} value={nameEn} onChange={(event) => setNameEn(event.target.value)} dir="ltr" placeholder="Latest offers" maxLength={80} />}
                 </Field>
                 <div className="rounded-xl border border-line bg-surface-2 p-4">

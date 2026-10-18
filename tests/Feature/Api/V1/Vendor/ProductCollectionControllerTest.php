@@ -154,6 +154,18 @@ class ProductCollectionControllerTest extends TestCase
             ->assertJsonValidationErrors(['product_ids.0']);
     }
 
+    public function test_reorder_needs_every_product_of_the_collection(): void
+    {
+        $vendor = $this->actingAsVendor();
+        $collection = ProductCollection::factory()->for($vendor->store)->create();
+        [$first, $second, $third] = Product::factory()->count(3)->for($vendor->store)->create();
+        $collection->products()->attach([$first->id => ['position' => 0], $second->id => ['position' => 1], $third->id => ['position' => 2]]);
+
+        $this->putJson("/api/v1/vendor/collections/{$collection->id}/products/order", ['product_ids' => [$third->id, $second->id]])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['product_ids' => 'أعد تحميل الصفحة ثم رتّب كل منتجات التصنيف']);
+    }
+
     public function test_returns_404_for_another_stores_collection(): void
     {
         $vendor = $this->actingAsVendor();

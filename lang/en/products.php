@@ -44,4 +44,6 @@ return [
     'images_max' => 'A product can have at most :max images',
 
     'warehouse_stocks_duplicate' => 'Each warehouse can only be listed once per variant',
+    'variant_on_open_orders' => 'A variant on orders that haven\'t been delivered yet can\'t be removed. Wait until those orders are delivered or cancelled',
+    'collection_order_incomplete' => 'Reload the page, then order all of the collection\'s products',
 ];

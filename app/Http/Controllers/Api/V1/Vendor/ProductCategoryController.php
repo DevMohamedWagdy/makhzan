@@ -67,13 +67,14 @@ class ProductCategoryController extends Controller
     }
 
     /**
-     * Delete an empty category; one that still has products must be emptied first.
+     * Delete an empty category; one that still has products must be emptied first. Deleted
+     * (trashed) products don't count: they just lose their category.
      */
     public function destroy(ProductCategory $category): Response
     {
         Gate::authorize('delete', $category);
 
-        if ($category->products()->withTrashed()->exists()) {
+        if ($category->products()->exists()) {
             throw ValidationException::withMessages(['category' => __('products.category_has_products')]);
         }
 

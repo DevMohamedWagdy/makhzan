@@ -8,6 +8,7 @@ use App\Http\Requests\Api\V1\Vendor\ReorderCollectionProductsRequest;
 use App\Http\Resources\ProductCollectionResource;
 use App\Models\Product;
 use App\Models\ProductCollection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 
 /**
@@ -27,7 +28,7 @@ class CollectionProductController extends Controller
             ->diff($existing)
             ->mapWithKeys(fn (int $productId): array => [$productId => ['position' => ++$position]]);
 
-        $collection->products()->attach($newProducts->all());
+        $collection->products()->syncWithoutDetaching($newProducts->all());
 
         return $this->fresh($collection);
     }
@@ -49,9 +50,11 @@ class CollectionProductController extends Controller
      */
     public function reorder(ReorderCollectionProductsRequest $request, ProductCollection $collection): ProductCollectionResource
     {
-        foreach ($request->validated('product_ids') as $position => $productId) {
-            $collection->products()->updateExistingPivot($productId, ['position' => $position]);
-        }
+        DB::transaction(function () use ($request, $collection): void {
+            foreach ($request->validated('product_ids') as $position => $productId) {
+                $collection->products()->updateExistingPivot($productId, ['position' => $position]);
+            }
+        });
 
         return $this->fresh($collection);
     }

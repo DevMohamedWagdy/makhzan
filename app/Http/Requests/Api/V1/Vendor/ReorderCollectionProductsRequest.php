@@ -7,6 +7,7 @@ use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Validator;
 
 class ReorderCollectionProductsRequest extends FormRequest
 {
@@ -28,6 +29,22 @@ class ReorderCollectionProductsRequest extends FormRequest
         return [
             'product_ids' => ['required', 'array'],
             'product_ids.*' => ['integer', 'distinct', Rule::exists('collection_products', 'product_id')->where('collection_id', $this->route('collection')->id)],
+        ];
+    }
+
+    /**
+     * The list must hold every product of the collection, so no two end up on the same position.
+     *
+     * @return array<int, callable>
+     */
+    public function after(): array
+    {
+        return [
+            function (Validator $validator): void {
+                if ($validator->errors()->isEmpty() && count($this->input('product_ids')) !== $this->route('collection')->products()->count()) {
+                    $validator->errors()->add('product_ids', __('products.collection_order_incomplete'));
+                }
+            },
         ];
     }
 }

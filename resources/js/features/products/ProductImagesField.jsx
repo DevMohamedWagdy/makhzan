@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { Icon } from '@/components/ui/Icon';
 import { Spinner } from '@/components/ui/Spinner';
 import { useToast } from '@/context/ToastContext';
@@ -18,10 +19,12 @@ const ACCEPTED_TYPES = ['image/png', 'image/jpeg', 'image/webp'];
 export function ProductImagesField({ productId, images, onImagesChange, pendingFiles, onPendingChange }) {
     const toast = useToast();
     const inputRef = useRef(null);
+    /** Index of a saved photo waiting for the merchant to confirm its deletion (it can't be undone). */
+    const [confirmIndex, setConfirmIndex] = useState(null);
     const [busy, setBusy] = useState(false);
     const [dragging, setDragging] = useState(false);
 
-    const pendingPreviews = useMemo(() => pendingFiles.map((file) => ({ key: `${file.name}-${file.lastModified}-${file.size}`, url: URL.createObjectURL(file) })), [pendingFiles]);
+    const pendingPreviews = useMemo(() => pendingFiles.map((file, index) => ({ key: `${index}-${file.name}-${file.lastModified}-${file.size}`, url: URL.createObjectURL(file) })), [pendingFiles]);
 
     useEffect(() => () => pendingPreviews.forEach((preview) => URL.revokeObjectURL(preview.url)), [pendingPreviews]);
 
@@ -90,7 +93,7 @@ export function ProductImagesField({ productId, images, onImagesChange, pendingF
                                     <Icon name="chevron-left" className="size-4" />
                                 </button>
                             </div>
-                            <button type="button" onClick={() => remove(index)} disabled={busy} className="grid size-7 place-items-center rounded text-white hover:bg-danger" aria-label={t('حذف الصورة')} title={t('حذف')}>
+                            <button type="button" onClick={() => (productId ? setConfirmIndex(index) : remove(index))} disabled={busy} className="grid size-7 place-items-center rounded text-white hover:bg-danger" aria-label={t('حذف الصورة')} title={t('حذف')}>
                                 <Icon name="trash" className="size-4" />
                             </button>
                         </div>
@@ -135,6 +138,18 @@ export function ProductImagesField({ productId, images, onImagesChange, pendingF
                     add(event.target.files);
                     event.target.value = '';
                 }}
+            />
+            <ConfirmDialog
+                open={confirmIndex !== null}
+                onClose={() => setConfirmIndex(null)}
+                onConfirm={() => {
+                    remove(confirmIndex);
+                    setConfirmIndex(null);
+                }}
+                icon="trash"
+                title={t('حذف الصورة؟')}
+                description={t('ستُحذف الصورة من المنتج والمتجر نهائياً.')}
+                confirmLabel={t('حذف الصورة')}
             />
             <p className="text-xs text-muted">
                 {t('حتى {MAX_IMAGES} صور، PNG أو JPG أو WEBP بحد أقصى {MAX_SIZE_MB} ميجابايت للصورة. الصورة الأولى هي الرئيسية.', { MAX_IMAGES, MAX_SIZE_MB })}

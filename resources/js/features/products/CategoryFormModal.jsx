@@ -44,9 +44,11 @@ export function CategoryFormModal({ category, open, onClose, onSaved }) {
 
         const payload = {
             name: name.trim(),
-            name_en: nameEn.trim() || null,
-            description: description.trim() || null,
-            description_en: descriptionEn.trim() || null,
+            // Empty strings rather than null: with an image the request is multipart, which drops nulls,
+            // and the server turns '' into null anyway, so a cleared field is really cleared.
+            name_en: nameEn.trim(),
+            description: description.trim(),
+            description_en: descriptionEn.trim(),
             is_active: isActive,
             ...(image instanceof File && { image }),
             ...(category?.image_url && !image && { remove_image: true }),
@@ -90,7 +92,7 @@ export function CategoryFormModal({ category, open, onClose, onSaved }) {
                         />
                     )}
                 </Field>
-                <Field label={t('الاسم بالإنجليزية')} optional error={errors.name_en} hint={t('اختياري. يظهر بدلاً من الاسم عند استخدام المتجر أو لوحة التحكم بالإنجليزية.')}>
+                <Field label={t('الاسم بالإنجليزية')} optional error={errors.name_en} hint={t('يظهر بدلاً من الاسم عند استخدام المتجر أو لوحة التحكم بالإنجليزية.')}>
                     {(props) => <Input {...props} value={nameEn} onChange={(event) => setNameEn(event.target.value)} dir="ltr" placeholder="Evening dresses" maxLength={80} />}
                 </Field>
                 <Field label={t('وصف مختصر')} optional error={errors.description} hint={t('يظهر أعلى صفحة القسم في المتجر')}>

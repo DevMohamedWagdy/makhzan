@@ -79,11 +79,24 @@ class ProductCategoryControllerTest extends TestCase
     {
         $vendor = $this->actingAsVendor();
         $category = ProductCategory::factory()->for($vendor->store)->create();
-        Product::factory()->for($vendor->store)->create(['category_id' => $category->id])->delete();
+        Product::factory()->for($vendor->store)->create(['category_id' => $category->id]);
 
         $this->deleteJson("/api/v1/vendor/product-categories/{$category->id}")
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['category' => 'لا يمكن حذف قسم به منتجات، انقل منتجاته لقسم آخر أولاً']);
+    }
+
+    public function test_deleted_products_dont_keep_their_category_from_being_deleted(): void
+    {
+        $vendor = $this->actingAsVendor();
+        $category = ProductCategory::factory()->for($vendor->store)->create();
+        $trashed = Product::factory()->for($vendor->store)->create(['category_id' => $category->id]);
+        $trashed->delete();
+
+        $this->deleteJson("/api/v1/vendor/product-categories/{$category->id}")->assertNoContent();
+
+        $this->assertModelMissing($category);
+        $this->assertNull($trashed->fresh()->category_id);
     }
 
     public function test_deletes_an_empty_category(): void

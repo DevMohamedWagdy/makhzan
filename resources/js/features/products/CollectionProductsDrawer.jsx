@@ -31,30 +31,9 @@ async function fetchAllProducts() {
  * The store's products that are not in the collection yet, as cards that all start unchecked.
  * The merchant checks the ones they want and adds them together with `onAdd(productIds)`.
  */
-function ProductChooser({ addedIds, onAdd, disabled }) {
-    const toast = useToast();
-    const [allProducts, setAllProducts] = useState(null);
+function ProductChooser({ allProducts, addedIds, onAdd, disabled }) {
     const [categoryId, setCategoryId] = useState('all');
     const [checkedIds, setCheckedIds] = useState([]);
-
-    useEffect(() => {
-        fetchAllProducts()
-            .then(setAllProducts)
-            .catch((loadError) => {
-                toast.error(t('تعذر تحميل المنتجات'), loadError.message);
-                setAllProducts([]);
-            });
-    }, [toast]);
-
-    if (allProducts === null) {
-        return (
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                {[0, 1, 2, 3, 4, 5].map((index) => (
-                    <Skeleton key={index} className="h-48 w-full" />
-                ))}
-            </div>
-        );
-    }
 
     if (allProducts.length === 0) {
         return <EmptyState icon="box" title={t('لا توجد منتجات في متجرك بعد')} description={t('أضف منتجاتك أولاً ثم اخترها هنا لتظهر في هذا التصنيف.')} />;
@@ -150,23 +129,49 @@ export function CollectionProductsDrawer({ collection, open, onClose, onChanged 
     const [products, setProducts] = useState(null);
     const [busy, setBusy] = useState(false);
     const [tab, setTab] = useState('choose');
+    const [loadError, setLoadError] = useState(null);
+    const [attempt, setAttempt] = useState(0);
+    /** Every product in the store for the chooser, loaded once each time the drawer opens. */
+    const [storeProducts, setStoreProducts] = useState(null);
     const canEdit = can('products.update');
 
+    // A response that arrives after the drawer moved on to another collection (or closed) is ignored.
     useEffect(() => {
         if (!open || !collection) {
-            return;
+            return undefined;
         }
 
+        let current = true;
+
         setProducts(null);
+        setLoadError(null);
         setTab(canEdit ? 'choose' : 'order');
         collectionsApi
             .get(collection.collection_id)
-            .then((response) => setProducts(response.products))
-            .catch((loadError) => {
-                toast.error(t('تعذر تحميل منتجات التصنيف'), loadError.message);
-                setProducts([]);
-            });
-    }, [open, collection, toast, canEdit]);
+            .then((response) => current && setProducts(response.products))
+            .catch((error) => current && setLoadError(error.message));
+
+        return () => {
+            current = false;
+        };
+    }, [open, collection, canEdit, attempt]);
+
+    useEffect(() => {
+        if (!open || !canEdit) {
+            return undefined;
+        }
+
+        let current = true;
+
+        setStoreProducts(null);
+        fetchAllProducts()
+            .then((loaded) => current && setStoreProducts(loaded))
+            .catch((error) => current && setLoadError(error.message));
+
+        return () => {
+            current = false;
+        };
+    }, [open, canEdit, attempt]);
 
     const apply = async (action, failureTitle) => {
         setBusy(true);
@@ -204,7 +209,20 @@ export function CollectionProductsDrawer({ collection, open, onClose, onChanged 
             description={t('اختر المنتجات التي تظهر في هذا التصنيف ورتّبها كما تريد أن يراها عملاؤك.')}
         >
             <div className="flex flex-col gap-4 p-6">
-                {canEdit && (
+                {loadError && (
+                    <EmptyState
+                        icon="alert-triangle"
+                        title={t('تعذر تحميل منتجات التصنيف')}
+                        description={loadError}
+                        action={
+                            <Button variant="secondary" icon="refresh" onClick={() => setAttempt((count) => count + 1)}>
+                                {t('إعادة المحاولة')}
+                            </Button>
+                        }
+                    />
+                )}
+
+                {!loadError && canEdit && (
                     <Tabs
                         value={tab}
                         onChange={setTab}
@@ -215,11 +233,16 @@ export function CollectionProductsDrawer({ collection, open, onClose, onChanged 
                     />
                 )}
 
-                {tab === 'choose' && canEdit ? (
-                    products === null ? (
-                        <Skeleton className="h-48 w-full" />
+                {loadError ? null : tab === 'choose' && canEdit ? (
+                    products === null || storeProducts === null ? (
+                        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                            {[0, 1, 2, 3, 4, 5].map((index) => (
+                                <Skeleton key={index} className="h-48 w-full" />
+                            ))}
+                        </div>
                     ) : (
                         <ProductChooser
+                            allProducts={storeProducts}
                             disabled={busy}
                             addedIds={products.map((product) => product.product_id)}
                             onAdd={(productIds) => apply(() => collectionsApi.addProducts(collection.collection_id, productIds), t('تعذر إضافة المنتجات'))}

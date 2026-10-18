@@ -2,9 +2,13 @@
 
 namespace Tests\Feature\Api\V1\Vendor;
 
+use App\Enums\OrderStatus;
 use App\Enums\ProductStatus;
+use App\Models\Order;
+use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\ProductCategory;
+use App\Models\ProductVariant;
 use App\Models\Vendor;
 use App\Models\Warehouse;
 use App\Models\WarehouseStock;
@@ -214,6 +218,54 @@ class ProductControllerTest extends TestCase
             'options' => [],
             'variants' => [['option_values' => [], 'price' => 150, 'stock' => 3, 'warehouse_stocks' => [['warehouse_id' => Warehouse::factory()->create()->id, 'stock' => 3]]]],
         ]))->assertUnprocessable()->assertJsonValidationErrors(['variants.0.warehouse_stocks.0.warehouse_id' => 'المخزن غير موجود']);
+    }
+
+    public function test_an_update_that_leaves_out_optional_fields_and_stock_keeps_them(): void
+    {
+        $vendor = $this->actingAsVendor();
+        $payload = $this->payload($this->category($vendor), [
+            'name_en' => 'Evening dress',
+            'is_featured' => true,
+            'options' => [],
+            'variants' => [['option_values' => [], 'price' => 150, 'stock' => 9]],
+        ]);
+        $created = $this->postJson('/api/v1/vendor/products', $payload)->assertCreated();
+        $productId = $created->json('data.product_id');
+        $variantId = $created->json('data.variants.0.variant_id');
+        $variant = ProductVariant::find($variantId);
+        $variant->forceFill(['stock' => 4])->save();
+        $variant->warehouseStocks()->update(['stock' => 4]);
+
+        unset($payload['name_en'], $payload['is_featured'], $payload['description']);
+        $this->putJson("/api/v1/vendor/products/{$productId}", [...$payload, 'status' => 'draft', 'variants' => [['id' => $variantId, 'option_values' => [], 'price' => 150]]])
+            ->assertOk()
+            ->assertJsonPath('data.status', 'draft')
+            ->assertJsonPath('data.name_en', 'Evening dress')
+            ->assertJsonPath('data.description', 'ستان لامع')
+            ->assertJsonPath('data.is_featured', true)
+            ->assertJsonPath('data.stock_total', 4);
+    }
+
+    public function test_cannot_remove_a_variant_on_an_undelivered_order(): void
+    {
+        $vendor = $this->actingAsVendor();
+        $payload = $this->payload($this->category($vendor), ['options' => [['name' => 'المقاس', 'values' => ['M', 'L']]], 'variants' => [
+            ['option_values' => ['M'], 'price' => 150, 'stock' => 5],
+            ['option_values' => ['L'], 'price' => 150, 'stock' => 5],
+        ]]);
+        $created = $this->postJson('/api/v1/vendor/products', $payload)->assertCreated();
+        [$mediumId, $largeId] = $created->json('data.variants.*.variant_id');
+        OrderItem::factory()->for(Order::factory()->for($vendor->store)->create(['status' => OrderStatus::Shipped]))->create(['product_variant_id' => $largeId]);
+        $keepOnlyMedium = [...$payload, 'options' => [['name' => 'المقاس', 'values' => ['M']]], 'variants' => [['id' => $mediumId, 'option_values' => ['M'], 'price' => 150, 'stock' => 5]]];
+
+        $this->putJson("/api/v1/vendor/products/{$created->json('data.product_id')}", $keepOnlyMedium)
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['variants' => 'لا يمكن حذف تركيبة موجودة في طلبات لم تُسلَّم بعد. انتظر حتى تُسلَّم هذه الطلبات أو تُلغى']);
+
+        Order::query()->update(['status' => OrderStatus::Delivered]);
+
+        $this->putJson("/api/v1/vendor/products/{$created->json('data.product_id')}", $keepOnlyMedium)->assertOk()->assertJsonCount(1, 'data.variants');
+        $this->assertDatabaseHas('stock_movements', ['product_variant_id' => null, 'type' => 'product_edit', 'quantity' => -5, 'variant_title' => 'L']);
     }
 
     public function test_rejects_another_stores_warehouse(): void

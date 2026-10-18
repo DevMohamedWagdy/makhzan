@@ -69,7 +69,7 @@ class ProductCategory extends Model
      */
     public static function uniqueSlug(int $storeId, string $name, ?int $ignoreId = null): string
     {
-        $base = Str::slug($name) ?: 'category';
+        $base = Str::limit(Str::slug($name), 90, '') ?: 'category';
         $slug = $base;
 
         for ($suffix = 2; static::query()->where('store_id', $storeId)->where('slug', $slug)->whereKeyNot($ignoreId)->exists(); $suffix++) {

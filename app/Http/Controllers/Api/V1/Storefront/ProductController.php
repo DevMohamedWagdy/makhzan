@@ -25,7 +25,7 @@ class ProductController extends Controller
             ->visibleInStore()
             ->with(['category', 'variants', 'images'])
             ->when($category, fn ($query) => $query->where('category_id', $category->id))
-            ->when($request->validated('search'), fn ($query, string $term) => $query->where('name', 'like', "%{$term}%"))
+            ->when($request->validated('search'), fn ($query, string $term) => $query->where(fn ($query) => $query->where('name', 'like', "%{$term}%")->orWhere('name_en', 'like', "%{$term}%")))
             ->sortForStorefront($request->validated('sort'))
             ->paginate(24)
             ->withQueryString();

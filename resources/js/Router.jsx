@@ -272,7 +272,9 @@ export function App() {
                                         <Route path="categories" element={<CategoriesPage />} />
                                         <Route path="collections" element={<CollectionsPage />} />
                                         <Route path="products" element={<ProductsPage />} />
-                                        <Route path="products/new" element={<ProductFormPage />} />
+                                        <Route element={<RequirePermission permission="products.create" />}>
+                                            <Route path="products/new" element={<ProductFormPage />} />
+                                        </Route>
                                         <Route path="products/:productId" element={<ProductFormPage />} />
                                     </Route>
                                 </Route>

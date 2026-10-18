@@ -102,6 +102,16 @@ class StorefrontTest extends TestCase
             ->assertJsonPath('product.category.name', 'فساتين');
     }
 
+    public function test_search_finds_products_by_their_english_name(): void
+    {
+        $dress = $this->product(['name' => 'فستان سهرة', 'name_en' => 'Evening dress']);
+        $this->product(['name' => 'عباية']);
+
+        $this->getJson('/api/v1/storefront/noor-fashion/products?search=evening')
+            ->assertOk()
+            ->assertJsonPath('data.*.product_id', [$dress->id]);
+    }
+
     public function test_lists_products_by_category_search_and_price(): void
     {
         $bags = ProductCategory::factory()->for($this->store)->create(['slug' => 'bags']);

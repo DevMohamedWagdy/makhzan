@@ -32,10 +32,11 @@ export function CategoriesPage() {
 
         try {
             await Promise.all(ordered.map((category, position) => category.position !== position && categoriesApi.update(category.category_id, { name: category.name, position })).filter(Boolean));
-            await reload();
         } catch (moveError) {
             toast.error(t('تعذر تغيير الترتيب'), moveError.message);
         } finally {
+            // Reload either way: when one update fails, the list shows the order that was actually saved.
+            await reload();
             setBusy(false);
         }
     };
@@ -98,7 +99,7 @@ export function CategoriesPage() {
                     <ul className="divide-y divide-line">
                         {categories.map((category, index) => (
                             <li key={category.category_id} className="flex flex-wrap items-center gap-4 p-4">
-                                <div className="flex flex-col">
+                                <div className={cn('flex flex-col', !can('products.update') && 'hidden')}>
                                     <button type="button" onClick={() => move(index, -1)} disabled={busy || index === 0} className="grid size-6 place-items-center rounded text-muted hover:bg-surface-3 hover:text-ink disabled:opacity-30" aria-label={t('نقل {name} لأعلى', { name: localized(category) })}>
                                         <Icon name="chevron-down" className="size-4 rotate-180" />
                                     </button>
@@ -112,18 +113,22 @@ export function CategoriesPage() {
                                         <span className="font-semibold text-ink">{localized(category)}</span>
                                         {!category.is_active && <Badge tone="neutral" icon="eye-off">{t('مخفي من المتجر')}</Badge>}
                                     </div>
-                                    {category.description && <p className="mt-0.5 truncate text-xs text-muted">{category.description}</p>}
+                                    {category.description && <p className="mt-0.5 truncate text-xs text-muted">{localized(category, 'description')}</p>}
                                 </div>
                                 <Button variant="ghost" size="sm" to={`/dashboard/products?category_id=${category.category_id}`}>
                                     {t('{value} منتج', { value: formatNumber(category.products_count) })}
                                 </Button>
-                                <div className={cn('flex gap-1', !can('products.update') && 'hidden')}>
-                                    <Button variant="secondary" size="sm" icon="edit" onClick={() => setDialog({ type: 'form', category })}>
-                                        {t('تعديل')}
-                                    </Button>
-                                    <Button variant="danger-soft" size="icon" onClick={() => (category.products_count ? toast.error(t('لا يمكن حذف هذا القسم'), t('به {products_count} منتج. انقل منتجاته لقسم آخر أولاً، ثم احذفه.', { products_count: category.products_count })) : setDialog({ type: 'delete', category }))} aria-label={t('حذف {name}', { name: localized(category) })} title={t('حذف')}>
-                                        <Icon name="trash" className="size-4" />
-                                    </Button>
+                                <div className="flex gap-1">
+                                    {can('products.update') && (
+                                        <Button variant="secondary" size="sm" icon="edit" onClick={() => setDialog({ type: 'form', category })}>
+                                            {t('تعديل')}
+                                        </Button>
+                                    )}
+                                    {can('products.delete') && (
+                                        <Button variant="danger-soft" size="icon" onClick={() => (category.products_count ? toast.error(t('لا يمكن حذف هذا القسم'), t('به {products_count} منتج. انقل منتجاته لقسم آخر أولاً، ثم احذفه.', { products_count: category.products_count })) : setDialog({ type: 'delete', category }))} aria-label={t('حذف {name}', { name: localized(category) })} title={t('حذف')}>
+                                            <Icon name="trash" className="size-4" />
+                                        </Button>
+                                    )}
                                 </div>
                             </li>
                         ))}
@@ -136,7 +141,7 @@ export function CategoriesPage() {
                 open={dialog?.type === 'form'}
                 onClose={() => setDialog(null)}
                 onSaved={(saved) => {
-                    toast.success(dialog.category ? t('تم حفظ القسم') : t('تمت إضافة القسم'), saved.name);
+                    toast.success(dialog.category ? t('تم حفظ القسم') : t('تمت إضافة القسم'), localized(saved));
                     setDialog(null);
                     reload();
                 }}

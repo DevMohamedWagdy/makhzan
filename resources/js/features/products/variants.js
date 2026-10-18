@@ -194,8 +194,11 @@ export function validateVariants(state, warehouses = null) {
     return errors;
 }
 
-/** Maps server keys (variants.2.price, options.0.values) onto the form's error keys. */
-export function mapVariantServerErrors(serverErrors, keys) {
+/**
+ * Maps server keys (variants.2.price, options.0.values) onto the form's error keys. With
+ * per-warehouse quantities a quantity error shows under the warehouse inputs.
+ */
+export function mapVariantServerErrors(serverErrors, keys, perWarehouse = false) {
     const mapped = {};
 
     Object.entries(serverErrors).forEach(([key, message]) => {
@@ -203,7 +206,7 @@ export function mapVariantServerErrors(serverErrors, keys) {
 
         if (match) {
             const rowKey = keys[Number(match[1])];
-            const field = match[2] === 'option_values' ? 'price' : match[2];
+            const field = match[2] === 'option_values' ? 'price' : perWarehouse && match[2] === 'stock' ? 'warehouse_stocks' : match[2];
 
             mapped[rowKey === 'simple' ? `simple.${field}` : `rows.${rowKey}.${field}`] = message;
         } else if (key === 'variants') {

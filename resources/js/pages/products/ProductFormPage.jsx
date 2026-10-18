@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { PageHeader } from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/Button';
@@ -6,15 +6,17 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { Alert, Card, EmptyState } from '@/components/ui/Display';
 import { Field, Input, OptionCards, Select, Switch, Textarea } from '@/components/ui/Form';
 import { Skeleton } from '@/components/ui/Spinner';
+import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
 import { useWarehouses } from '@/features/inventory/useWarehouses';
 import { CategoryFormModal } from '@/features/products/CategoryFormModal';
 import { ProductImagesField } from '@/features/products/ProductImagesField';
 import { useCategories } from '@/features/products/useCategories';
 import { VariantsEditor } from '@/features/products/VariantsEditor';
-import { buildVariantsPayload, emptyVariantsState, mapVariantServerErrors, validateVariants, variantsStateFromProduct } from '@/features/products/variants';
+import { buildVariantsPayload, emptyVariantsState, isPerWarehouse, mapVariantServerErrors, validateVariants, variantsStateFromProduct } from '@/features/products/variants';
 import { localized, t } from '@/i18n';
 import { PRODUCT_STATUSES } from '@/lib/constants';
+import { formatNumber } from '@/lib/format';
 import { productsApi } from '@/services/productsApi';
 
 const STATUS_OPTIONS = Object.entries(PRODUCT_STATUSES).map(([value, config]) => ({
@@ -42,7 +44,9 @@ export function ProductFormPage() {
     const isEdit = Boolean(productId);
     const navigate = useNavigate();
     const toast = useToast();
-    const { categories, reload: reloadCategories } = useCategories();
+    const { can } = useAuth();
+    const canSave = can(isEdit ? 'products.update' : 'products.create');
+    const { categories, error: categoriesError, reload: reloadCategories } = useCategories();
     const [product, setProduct] = useState(null);
     const [loadError, setLoadError] = useState(null);
     const [details, setDetails] = useState(detailsFromProduct(null));
@@ -54,7 +58,18 @@ export function ProductFormPage() {
     const [categoryModalOpen, setCategoryModalOpen] = useState(false);
     const [deleteOpen, setDeleteOpen] = useState(false);
     const [deleting, setDeleting] = useState(false);
-    const { warehouses } = useWarehouses();
+    const { warehouses, error: warehousesError } = useWarehouses();
+
+    // Saved variants the current options no longer include: saving deletes them with their stock.
+    const removedVariants = useMemo(() => {
+        if (!product) {
+            return [];
+        }
+
+        const keptIds = buildVariantsPayload(variants, warehouses).variants.map((variant) => variant.id);
+
+        return product.variants.filter((variant) => !keptIds.includes(variant.variant_id));
+    }, [product, variants, warehouses]);
 
     useEffect(() => {
         if (!isEdit) {
@@ -112,19 +127,24 @@ export function ProductFormPage() {
 
                 setProduct(saved);
                 setVariants(variantsStateFromProduct(saved));
-                toast.success(t('تم حفظ المنتج'), saved.name);
+                toast.success(t('تم حفظ المنتج'), localized(saved));
             } else {
                 const saved = await productsApi.create(payload);
 
-                if (pendingFiles.length) {
-                    await productsApi.uploadImages(saved.product_id, pendingFiles).catch((error) => toast.error(t('تم حفظ المنتج لكن تعذر رفع الصور'), error.message));
+                const imagesUploaded = pendingFiles.length === 0 || (await productsApi.uploadImages(saved.product_id, pendingFiles).then(
+                    () => true,
+                    (error) => (toast.error(t('تم حفظ المنتج لكن تعذر رفع الصور'), t('أضف الصور مرة أخرى من صفحة تعديل المنتج.') + ' ' + error.message), false),
+                ));
+
+                if (imagesUploaded) {
+                    toast.success(t('تمت إضافة المنتج'), localized(saved));
                 }
 
-                toast.success(t('تمت إضافة المنتج'), saved.name);
-                navigate('/dashboard/products');
+                // When the photos failed, open the saved product so they can be added again right away.
+                navigate(imagesUploaded ? '/dashboard/products' : `/dashboard/products/${saved.product_id}`);
             }
         } catch (error) {
-            setErrors(mapVariantServerErrors(error.errors ?? {}, keys));
+            setErrors(mapVariantServerErrors(error.errors ?? {}, keys, isPerWarehouse(warehouses)));
             toast.error(t('تعذر حفظ المنتج'), Object.values(error.errors ?? {})[0] ?? error.message);
         } finally {
             setSaving(false);
@@ -156,7 +176,17 @@ export function ProductFormPage() {
         );
     }
 
-    if (categories === null || (isEdit && !product)) {
+    if (categoriesError) {
+        return (
+            <>
+                {header}
+                <EmptyState icon="alert-triangle" title={t('تعذر تحميل الأقسام')} description={categoriesError} action={<Button variant="secondary" icon="refresh" onClick={reloadCategories}>{t('إعادة المحاولة')}</Button>} />
+            </>
+        );
+    }
+
+    // Wait for the warehouses too: with several, quantities are entered per warehouse.
+    if (categories === null || (warehouses === null && !warehousesError) || (isEdit && !product)) {
         return (
             <>
                 {header}
@@ -206,9 +236,11 @@ export function ProductFormPage() {
                             <Button variant="secondary" to="/dashboard/products" disabled={saving}>
                                 {t('إلغاء')}
                             </Button>
-                            <Button type="submit" icon="check" loading={saving}>
-                                {isEdit ? t('حفظ التعديلات') : t('حفظ المنتج')}
-                            </Button>
+                            {canSave && (
+                                <Button type="submit" icon="check" loading={saving}>
+                                    {isEdit ? t('حفظ التعديلات') : t('حفظ المنتج')}
+                                </Button>
+                            )}
                         </>
                     }
                 />
@@ -220,7 +252,7 @@ export function ProductFormPage() {
                                 <Field label={t('اسم المنتج')} required error={errors.name}>
                                     {(props) => <Input {...props} data-autofocus value={details.name} onChange={(event) => setDetail('name', event.target.value)} aria-invalid={errors.name ? 'true' : undefined} placeholder={t('مثال: فستان سهرة ستان')} maxLength={150} />}
                                 </Field>
-                                <Field label={t('الاسم بالإنجليزية')} optional error={errors.name_en} hint={t('اختياري. يظهر بدلاً من الاسم عند استخدام المتجر أو لوحة التحكم بالإنجليزية.')}>
+                                <Field label={t('الاسم بالإنجليزية')} optional error={errors.name_en} hint={t('يظهر بدلاً من الاسم عند استخدام المتجر أو لوحة التحكم بالإنجليزية.')}>
                                     {(props) => <Input {...props} value={details.name_en} onChange={(event) => setDetail('name_en', event.target.value)} dir="ltr" placeholder="Satin evening dress" maxLength={150} />}
                                 </Field>
                                 <Field label={t('الوصف')} optional error={errors.description} hint={t('الخامة، المقاسات، طريقة العناية... يظهر في صفحة المنتج بالمتجر')}>
@@ -237,10 +269,17 @@ export function ProductFormPage() {
                         </Card>
 
                         <Card title={t('السعر والمخزون')}>
+                            {removedVariants.length > 0 && (
+                                <Alert tone="warning" icon="alert-triangle" title={t('سيتم حذف {count} من التركيبات المحفوظة عند الحفظ', { count: formatNumber(removedVariants.length) })} className="mb-5">
+                                    {removedVariants.map((variant) => variant.title || t('المنتج')).join('، ')}
+                                    {' · '}
+                                    {t('مخزونها الحالي ({count} قطعة) سيُسجَّل كخصم في حركة المخزون.', { count: formatNumber(removedVariants.reduce((total, variant) => total + variant.stock, 0)) })}
+                                </Alert>
+                            )}
                             <VariantsEditor value={variants} onChange={setVariants} errors={errors} warehouses={warehouses} />
                         </Card>
 
-                        {isEdit && (
+                        {isEdit && can('products.delete') && (
                             <Alert tone="danger" icon="trash" title={t('حذف المنتج')}>
                                 <p>{t('سيختفي المنتج من لوحة التحكم والمتجر.')}</p>
                                 <Button variant="danger-soft" size="sm" icon="trash" className="mt-3" onClick={() => setDeleteOpen(true)}>
