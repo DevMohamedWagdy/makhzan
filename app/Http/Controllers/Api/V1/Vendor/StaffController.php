@@ -33,6 +33,7 @@ class StaffController extends Controller
         }
 
         $staffMember = $store->staff()->create($request->safe()->only(['full_name', 'job_title', 'phone', 'email', 'password', 'role_id', 'is_active']));
+        $store->notifyPlanUsage('staff');
 
         return new StaffResource($staffMember->refresh()->load('role'));
     }

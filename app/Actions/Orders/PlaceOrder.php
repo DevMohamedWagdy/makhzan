@@ -23,6 +23,7 @@ use App\Models\Store;
 use App\Notifications\AffiliateCommissionNotification;
 use App\Notifications\CustomerOrderUpdateNotification;
 use App\Notifications\OrderPlacedNotification;
+use App\Notifications\StoreAlertNotification;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -124,6 +125,8 @@ class PlaceOrder
             return $order;
         });
 
+        $this->notifyIfCouponUsedUp($order);
+
         if (! $paymentMethod->isOnline()) {
             $store->vendor->notify(new OrderPlacedNotification($order));
             $order->affiliate?->notify(new AffiliateCommissionNotification($order, AffiliateCommissionNotification::ORDER_PLACED));
@@ -223,6 +226,18 @@ class PlaceOrder
 
         if ($errors) {
             throw ValidationException::withMessages($errors);
+        }
+    }
+
+    /**
+     * Tells the owner when this order took the coupon's last allowed use.
+     */
+    private function notifyIfCouponUsedUp(Order $order): void
+    {
+        $coupon = $order->coupon_id ? Coupon::query()->find($order->coupon_id) : null;
+
+        if ($coupon?->usage_limit !== null && $coupon->uses()->count() === $coupon->usage_limit) {
+            $order->store->vendor->notify(new StoreAlertNotification(StoreAlertNotification::COUPON_USED_UP, ['coupon_id' => $coupon->id, 'code' => $coupon->code]));
         }
     }
 

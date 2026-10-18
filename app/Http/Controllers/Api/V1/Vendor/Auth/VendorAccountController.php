@@ -30,6 +30,7 @@ class VendorAccountController extends Controller
         $vendor->forceFill(['password' => $request->validated('password')])->save();
 
         $vendor->tokens()->whereKeyNot($vendor->currentAccessToken()->getKey())->delete();
+        $vendor->notifyPasswordChanged($request);
 
         return response()->json(['message' => __('auth.password_changed')]);
     }

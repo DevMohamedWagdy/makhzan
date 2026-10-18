@@ -168,4 +168,43 @@ return [
     ],
     'ticket_action' => 'View ticket',
 
+    'open_dashboard' => 'Open dashboard',
+    'device' => ':browser on :system',
+    'unknown_device' => 'Unknown device',
+    'plan_resources' => [
+        'products' => 'products',
+        'staff' => 'staff members',
+    ],
+    'store_suspended' => [
+        'subject' => 'Your store has been suspended',
+        'message' => 'The platform has suspended your store, so shoppers can\'t see it and it won\'t take orders until it\'s reactivated. Reason: :reason. Contact support for details.',
+    ],
+    'store_reactivated' => [
+        'subject' => 'Your store is back online',
+        'message' => 'The platform has reactivated your store. Shoppers can see it and it takes orders again.',
+    ],
+    'plan_limit_near' => [
+        'subject' => 'You\'re close to your plan\'s :resource limit',
+        'message' => 'You\'ve used :used of :limit :resource on your current plan. Upgrade before you reach the limit so you can keep adding.',
+    ],
+    'plan_limit_reached' => [
+        'subject' => 'You\'ve reached your plan\'s :resource limit',
+        'message' => 'You\'ve reached your plan\'s limit of :limit :resource and can\'t add more until you upgrade.',
+    ],
+    'coupon_used_up' => [
+        'subject' => 'Coupon :code is used up',
+        'message' => 'Coupon :code has been used as many times as allowed and no longer works in your store.',
+    ],
+    'coupon_expired' => [
+        'subject' => 'Coupon :code has expired',
+        'message' => 'Coupon :code has expired and no longer works in your store.',
+    ],
+    'new_sign_in' => [
+        'subject' => 'New sign-in to your account',
+        'message' => 'Your account was signed in from a new device (:device, IP :ip) on :time. If this wasn\'t you, change your password right away.',
+    ],
+    'password_changed' => [
+        'subject' => 'Your password was changed',
+        'message' => 'Your account password was changed from :device (IP :ip) on :time. If this wasn\'t you, reset your password right away and contact support.',
+    ],
 ];

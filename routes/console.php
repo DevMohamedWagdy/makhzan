@@ -10,3 +10,4 @@ Artisan::command('inspire', function () {
 
 Schedule::command('makhzan:expire-unpaid-orders')->everyMinute()->withoutOverlapping();
 Schedule::command('makhzan:remind-expiring-subscriptions')->dailyAt('10:00')->withoutOverlapping();
+Schedule::command('makhzan:notify-expired-coupons')->hourly()->withoutOverlapping();

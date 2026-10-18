@@ -3,6 +3,7 @@
 namespace App\Http\Resources;
 
 use App\Notifications\AffiliateCouponNotification;
+use App\Notifications\StoreAlertNotification;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Notifications\DatabaseNotification;
@@ -82,6 +83,7 @@ class NotificationResource extends JsonResource
             'trial_ended' => __('notifications.admin.trial_ended', ['store' => $details['store_name']]),
             'ticket_opened', 'ticket_vendor_replied' => __("notifications.admin.{$this->type}", ['store' => $details['store_name'], 'subject' => $details['subject']]),
             'ticket_replied', 'ticket_closed', 'ticket_reopened' => __("notifications.{$this->type}.message", ['subject' => $details['subject']]),
+            'store_suspended', 'store_reactivated', 'plan_limit_near', 'plan_limit_reached', 'coupon_used_up', 'coupon_expired', 'new_sign_in', 'password_changed' => StoreAlertNotification::message($this->type, $details),
             default => $details['message'] ?? '',
         };
     }

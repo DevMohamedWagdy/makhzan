@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\PaymentMethod;
 use App\Enums\PlanFeature;
 use App\Models\Concerns\LogsActivity;
+use App\Notifications\StoreAlertNotification;
 use Database\Factories\StoreFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -287,6 +288,33 @@ class Store extends Model
     public function canAddStaff(): bool
     {
         return $this->withinLimit($this->currentPlan()?->max_staff, fn (): int => $this->staff()->count());
+    }
+
+    /**
+     * Warns the owner once when a plan limit is 80% used and once when it's full, right after
+     * a product or staff member is added (so each threshold is crossed, and announced, once).
+     *
+     * @param  'products'|'staff'  $resource
+     */
+    public function notifyPlanUsage(string $resource): void
+    {
+        $limit = $resource === 'products' ? $this->currentPlan()?->max_products : $this->currentPlan()?->max_staff;
+
+        if ($limit === null || $limit <= 0) {
+            return;
+        }
+
+        $used = $resource === 'products' ? $this->products()->count() : $this->staff()->count();
+        $nearAt = (int) ceil($limit * 0.8);
+        $event = match (true) {
+            $used === $limit => StoreAlertNotification::PLAN_LIMIT_REACHED,
+            $used === $nearAt && $nearAt < $limit => StoreAlertNotification::PLAN_LIMIT_NEAR,
+            default => null,
+        };
+
+        if ($event) {
+            $this->vendor->notify(new StoreAlertNotification($event, ['resource' => $resource, 'used' => $used, 'limit' => $limit]));
+        }
     }
 
     /**

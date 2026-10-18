@@ -36,7 +36,9 @@ class ActivityLogger
 
         try {
             $actor ??= self::currentActor();
-            $request = App::runningInConsole() ? null : request();
+            // Only an HTTP request (one that matched a route) has a meaningful IP and browser;
+            // console commands and queued jobs log without them.
+            $request = request()->route() ? request() : null;
 
             ActivityLog::query()->create([
                 'actor_type' => $actor ? self::typeOf($actor) : 'system',

@@ -25,6 +25,7 @@ class VendorAuthController extends Controller
         $vendor = $request->authenticate();
         $vendor->rememberLocale();
         $vendor->forceFill(['last_login_at' => now()])->saveQuietly();
+        $vendor->notifyIfNewDevice($request);
         ActivityLogger::log('vendor.login', $vendor, actor: $vendor);
 
         return $this->tokenResponse($vendor, $vendor->issueToken($request->boolean('remember')));

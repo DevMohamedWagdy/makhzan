@@ -14,6 +14,7 @@ use App\Http\Resources\VendorResource;
 use App\Models\Plan;
 use App\Models\Store;
 use App\Models\Vendor;
+use App\Notifications\StoreAlertNotification;
 use App\Support\ActivityLogger;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
@@ -127,13 +128,19 @@ class StoreController extends Controller
         $store->forceFill(['suspended_at' => now(), 'suspension_reason' => $reason])->save();
         $store->vendor->tokens()->delete();
         $store->staff()->each(fn ($staffMember) => $staffMember->tokens()->delete());
+        $store->vendor->notify(new StoreAlertNotification(StoreAlertNotification::STORE_SUSPENDED, ['reason' => $reason]));
 
         return $this->show($store);
     }
 
     public function unsuspend(Store $store): AdminStoreResource
     {
+        $wasSuspended = $store->isSuspended();
         $store->forceFill(['suspended_at' => null, 'suspension_reason' => null])->save();
+
+        if ($wasSuspended) {
+            $store->vendor->notify(new StoreAlertNotification(StoreAlertNotification::STORE_REACTIVATED));
+        }
 
         return $this->show($store);
     }

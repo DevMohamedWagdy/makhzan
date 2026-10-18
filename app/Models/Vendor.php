@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\Concerns\HasPreferredLocale;
 use App\Models\Concerns\LogsActivity;
+use App\Notifications\StoreAlertNotification;
 use App\Notifications\VendorResetPasswordNotification;
 use App\Support\StorePermissions;
 use Database\Factories\VendorFactory;
@@ -15,7 +16,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Http\Request;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Str;
 use Laravel\Sanctum\HasApiTokens;
 
 /**
@@ -136,6 +139,42 @@ class Vendor extends Authenticatable implements HasLocalePreference
             ->filter(fn (array $permissions): bool => collect($permissions)->contains(fn (string $permission): bool => $this->hasPermission($permission)))
             ->keys()
             ->all();
+    }
+
+    /**
+     * Tells the owner about a sign-in from a browser this account hasn't signed in from before
+     * (going by earlier sign-ins in the activity log). The very first sign-in isn't announced.
+     */
+    public function notifyIfNewDevice(Request $request): void
+    {
+        if (! $this->isOwner()) {
+            return;
+        }
+
+        $signIns = ActivityLog::query()->where('event', 'vendor.login')->where('actor_type', 'vendor')->where('actor_id', $this->id);
+        $userAgent = Str::limit((string) $request->userAgent(), 250, '');
+
+        if ($signIns->exists() && ! (clone $signIns)->where('user_agent', $userAgent)->exists()) {
+            $this->notify(new StoreAlertNotification(StoreAlertNotification::NEW_SIGN_IN, $this->signInDetails($request)));
+        }
+    }
+
+    /**
+     * Tells the owner their password was changed (from the account page or a reset link).
+     */
+    public function notifyPasswordChanged(Request $request): void
+    {
+        if ($this->isOwner()) {
+            $this->notify(new StoreAlertNotification(StoreAlertNotification::PASSWORD_CHANGED, $this->signInDetails($request)));
+        }
+    }
+
+    /**
+     * @return array{device: string, ip: string|null, at: string}
+     */
+    private function signInDetails(Request $request): array
+    {
+        return ['device' => StoreAlertNotification::deviceLabel($request->userAgent()), 'ip' => $request->ip(), 'at' => now()->toIso8601String()];
     }
 
     /**

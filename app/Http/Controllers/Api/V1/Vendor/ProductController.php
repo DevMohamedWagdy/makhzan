@@ -49,6 +49,7 @@ class ProductController extends Controller
         }
 
         $product = $saveProduct->handle($store, $request->validated());
+        $store->notifyPlanUsage('products');
 
         return (new ProductResource($product))
             ->response()

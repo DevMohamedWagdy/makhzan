@@ -45,9 +45,10 @@ class PasswordResetController extends Controller
     {
         $status = Password::broker('vendors')->reset(
             $request->only('email', 'password', 'password_confirmation', 'token'),
-            function (Vendor $vendor, string $password): void {
+            function (Vendor $vendor, string $password) use ($request): void {
                 $vendor->forceFill(['password' => $password, 'remember_token' => Str::random(60)])->save();
                 $vendor->tokens()->delete();
+                $vendor->notifyPasswordChanged($request);
 
                 event(new PasswordReset($vendor));
             },

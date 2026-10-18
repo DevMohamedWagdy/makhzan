@@ -61,6 +61,8 @@ class StorePermissions
         'ticket_replied' => ['support.view'],
         'ticket_closed' => ['support.view'],
         'ticket_reopened' => ['support.view'],
+        'coupon_used_up' => ['coupons.view'],
+        'coupon_expired' => ['coupons.view'],
     ];
 
     /**
