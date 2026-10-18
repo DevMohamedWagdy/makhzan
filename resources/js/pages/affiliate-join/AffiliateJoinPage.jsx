@@ -164,7 +164,7 @@ export function AffiliateJoinPage() {
                 if (!cancelled) {
                     setLink(data);
                     setLoadState('ready');
-                    document.title = t('انضم لفريق مسوقي {name} | مخزن', { name: data.store.name });
+                    document.title = t('انضم لفريق مسوقي {name} | Sellygrow', { name: data.store.name });
                 }
             })
             .catch(() => !cancelled && setLoadState('invalid'));

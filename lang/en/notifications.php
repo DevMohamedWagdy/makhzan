@@ -28,7 +28,7 @@ return [
     ],
     'subscription_activated' => [
         'subject' => 'Your :plan plan is active',
-        'message' => 'The :plan plan is now active for your store until :date. Thank you for choosing Makhzan!',
+        'message' => 'The :plan plan is now active for your store until :date. Thank you for choosing Sellygrow!',
     ],
     'subscription_rejected' => [
         'subject' => 'We could not activate the :plan plan',
@@ -90,8 +90,8 @@ return [
         'expiry' => 'This link expires in :minutes minutes and can be used only once.',
     ],
     'vendor_reset_password' => [
-        'subject' => 'Reset your password - Makhzan',
-        'intro' => 'We received a request to reset the password of your Makhzan account.',
+        'subject' => 'Reset your password - Sellygrow',
+        'intro' => 'We received a request to reset the password of your Sellygrow account.',
         'action' => 'Reset password',
         'expiry' => 'This link expires in :minutes minutes.',
     ],

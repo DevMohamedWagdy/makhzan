@@ -141,7 +141,7 @@ export function RegisterPage() {
                 },
             });
 
-            toast.success(t('تم إنشاء متجر «{name}» بنجاح 🎉', { name: vendor.store.name }), t('مرحباً بك في مخزن، يمكنك البدء بإضافة مسوقيك الآن.'));
+            toast.success(t('تم إنشاء متجر «{name}» بنجاح 🎉', { name: vendor.store.name }), t('مرحباً بك في Sellygrow، يمكنك البدء بإضافة مسوقيك الآن.'));
             navigate('/dashboard', { replace: true });
         } catch (error) {
             const fieldErrors = Object.fromEntries(Object.entries(error.errors ?? {}).map(([key, message]) => [SERVER_FIELD_MAP[key] ?? key, message]));
@@ -159,7 +159,7 @@ export function RegisterPage() {
 
     return (
         <AuthLayout wide>
-            <AuthHeading title={t('أنشئ متجرك على مخزن')} subtitle={t('خطوتان فقط وتبدأ في إدارة مخزونك ومسوقيك من مكان واحد.')} />
+            <AuthHeading title={t('أنشئ متجرك على Sellygrow')} subtitle={t('خطوتان فقط وتبدأ في إدارة مخزونك ومسوقيك من مكان واحد.')} />
 
             <div>
                 <div className="rounded-xl border border-line bg-surface-2 px-5 py-4">
@@ -284,7 +284,7 @@ export function RegisterPage() {
                                             <a href="/privacy" target="_blank" rel="noopener noreferrer" className="font-medium text-primary hover:underline">
                                                 {t('سياسة الخصوصية')}
                                             </a>{' '}
-                                            {t('الخاصة بمنصة مخزن')}
+                                            {t('الخاصة بمنصة Sellygrow')}
                                         </>
                                     }
                                 />

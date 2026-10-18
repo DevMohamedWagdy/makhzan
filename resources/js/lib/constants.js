@@ -1,7 +1,8 @@
 import { t } from '@/i18n';
 
-export const APP_NAME = t('مخزن');
-export const APP_DOMAIN = 'makhzan.app';
+export const APP_NAME = 'Sellygrow';
+/** The platform host shown before a store slug (the site the merchant is on). */
+export const APP_DOMAIN = typeof window !== 'undefined' ? window.location.host : 'sellygrow.com';
 export const CURRENCY = t('ج.م');
 
 /** @type {Record<import('./schema').AffiliateTier, { label: string, tone: string, default_commission: number, description: string }>} */
@@ -165,7 +166,7 @@ export const AFFILIATE_SOURCES = {
 
 export const PER_PAGE_OPTIONS = [10, 20, 50];
 
-export const RESERVED_SLUGS = ['admin', 'api', 'app', 'makhzan', 'store', 'login', 'register', 'dashboard', 'help', 'affiliate', 'slug-availability'];
+export const RESERVED_SLUGS = ['admin', 'api', 'app', 'makhzan', 'sellygrow', 'store', 'login', 'register', 'dashboard', 'help', 'affiliate', 'slug-availability', 'terms', 'privacy', 'forgot-password', 'reset-password', 'affiliate-portal', 'impersonate'];
 
 export const BULK_IMPORT_COLUMNS = ['full_name', 'phone', 'email', 'tier', 'payout_type', 'payout_account_name', 'payout_account_number'];
 

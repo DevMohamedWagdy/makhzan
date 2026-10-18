@@ -560,7 +560,7 @@ class Store extends Model
     }
 
     /**
-     * Public storefront URL, e.g. https://makhzan.app/noor-fashion (see makhzan.storefront_url),
+     * Public storefront URL, e.g. https://sellygrow.com/noor-fashion (see makhzan.storefront_url),
      * or the store's own verified domain.
      */
     public function storefrontUrl(string $path = ''): string

@@ -56,7 +56,7 @@ function validateRow(row, seenPhones) {
 }
 
 function downloadTemplate() {
-    downloadCsv('makhzan-affiliates-template.csv', [
+    downloadCsv('sellygrow-affiliates-template.csv', [
         BULK_IMPORT_COLUMNS,
         [t('سارة محمود'), '01012345678', 'sara@example.com', 'general', 'vodafone_cash', t('سارة محمود'), '01012345678'],
         [t('أحمد علي'), '01198765432', '', 'vip', 'instapay', t('أحمد علي'), 'ahmed@instapay'],

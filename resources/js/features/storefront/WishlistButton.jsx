@@ -23,8 +23,11 @@ function loadSaved(storeSlug, api) {
     return savedIds.get(storeSlug);
 }
 
-/** Heart toggle that saves a product to the shopper's wishlist (signing in first if needed). */
-export function WishlistButton({ storeSlug, productId, className }) {
+/**
+ * Heart toggle that saves a product to the shopper's wishlist (signing in first if needed).
+ * `compact` is the small round version laid over product card images.
+ */
+export function WishlistButton({ storeSlug, productId, compact = false, className }) {
     const { isAuthenticated, api } = useCustomerAuth();
     const navigate = useNavigate();
     const toast = useToast();
@@ -87,9 +90,14 @@ export function WishlistButton({ storeSlug, productId, className }) {
             aria-pressed={saved}
             aria-label={saved ? t('إزالة من المفضلة') : t('أضف إلى المفضلة')}
             title={saved ? t('إزالة من المفضلة') : t('أضف إلى المفضلة')}
-            className={cn('grid size-12 shrink-0 place-items-center rounded-xl border border-line bg-surface transition hover:border-line-strong disabled:opacity-60', saved ? 'text-danger' : 'text-ink-2 hover:text-danger', className)}
+            className={cn(
+                'grid shrink-0 place-items-center transition disabled:opacity-60',
+                compact ? 'size-9 rounded-full bg-surface/90 shadow-card backdrop-blur hover:bg-surface' : 'size-12 rounded-xl border border-line bg-surface hover:border-line-strong',
+                saved ? 'text-danger' : 'text-ink-2 hover:text-danger',
+                className,
+            )}
         >
-            <Icon name="heart" className={cn('size-5', saved && 'fill-current')} />
+            <Icon name="heart" className={cn(compact ? 'size-[18px]' : 'size-5', saved && 'fill-current')} />
         </button>
     );
 }

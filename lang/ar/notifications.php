@@ -28,7 +28,7 @@ return [
     ],
     'subscription_activated' => [
         'subject' => 'تم تفعيل باقة :plan',
-        'message' => 'تم تفعيل باقة :plan لمتجرك حتى :date. شكراً لثقتك في مخزن!',
+        'message' => 'تم تفعيل باقة :plan لمتجرك حتى :date. شكراً لثقتك في Sellygrow!',
     ],
     'subscription_rejected' => [
         'subject' => 'لم نتمكن من تفعيل باقة :plan',
@@ -90,8 +90,8 @@ return [
         'expiry' => 'ينتهي هذا الرابط خلال :minutes دقيقة ويمكن استخدامه مرة واحدة فقط.',
     ],
     'vendor_reset_password' => [
-        'subject' => 'إعادة تعيين كلمة المرور - مخزن',
-        'intro' => 'وصلنا طلب لإعادة تعيين كلمة مرور حسابك على مخزن.',
+        'subject' => 'إعادة تعيين كلمة المرور - Sellygrow',
+        'intro' => 'وصلنا طلب لإعادة تعيين كلمة مرور حسابك على Sellygrow.',
         'action' => 'إعادة تعيين كلمة المرور',
         'expiry' => 'ينتهي هذا الرابط خلال :minutes دقيقة.',
     ],

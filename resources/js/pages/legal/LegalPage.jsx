@@ -6,6 +6,7 @@ import { LanguageToggle } from '@/components/ui/LanguageToggle';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { useAuth } from '@/context/AuthContext';
 import { t } from '@/i18n';
+import { APP_NAME } from '@/lib/constants';
 import { formatDate } from '@/lib/format';
 import { SiteFooter } from '@/pages/landing/SiteFooter';
 
@@ -19,12 +20,12 @@ const UPDATED_AT = '2026-10-14';
 const DOCUMENTS = {
     terms: {
         title: t('الشروط والأحكام'),
-        intro: t('توضح هذه الشروط العلاقة بين منصة مخزن والتجار الذين يستخدمونها لإدارة تجارتهم وبيع منتجاتهم. باستخدامك للمنصة أو إنشاء حساب عليها فإنك توافق على هذه الشروط.'),
+        intro: t('توضح هذه الشروط العلاقة بين منصة Sellygrow والتجار الذين يستخدمونها لإدارة تجارتهم وبيع منتجاتهم. باستخدامك للمنصة أو إنشاء حساب عليها فإنك توافق على هذه الشروط.'),
         sections: [
             {
                 title: t('التعريفات'),
                 paragraphs: [
-                    t('"المنصة" أو "مخزن": خدمة إدارة المخزون والطلبات والمتجر الإلكتروني المقدمة عبر هذا الموقع.'),
+                    t('"المنصة" أو "Sellygrow": خدمة إدارة المخزون والطلبات والمتجر الإلكتروني المقدمة عبر هذا الموقع.'),
                     t('"التاجر": صاحب الحساب الذي يسجل متجره على المنصة، ويشمل موظفيه الذين يمنحهم صلاحيات.'),
                     t('"العميل": الشخص الذي يشتري من متجر التاجر عبر المتجر الإلكتروني أو من خلال طلب يسجله التاجر.'),
                 ],
@@ -82,7 +83,7 @@ const DOCUMENTS = {
     },
     privacy: {
         title: t('سياسة الخصوصية'),
-        intro: t('نحترم خصوصيتك وخصوصية عملائك. توضح هذه السياسة البيانات التي تجمعها منصة مخزن، ولماذا نجمعها، وكيف نحميها، وما هي حقوقك تجاهها.'),
+        intro: t('نحترم خصوصيتك وخصوصية عملائك. توضح هذه السياسة البيانات التي تجمعها منصة Sellygrow، ولماذا نجمعها، وكيف نحميها، وما هي حقوقك تجاهها.'),
         sections: [
             {
                 title: t('البيانات التي نجمعها'),
@@ -142,14 +143,14 @@ export function LegalPage({ document: name }) {
 
     useEffect(() => {
         window.scrollTo(0, 0);
-        document.title = `${legalDocument.title} | ${t('مخزن')}`;
+        document.title = `${legalDocument.title} | ${APP_NAME}`;
     }, [legalDocument]);
 
     return (
         <div className="min-h-dvh bg-bg">
             <header className="border-b border-line bg-surface">
                 <div className="mx-auto flex h-18 max-w-6xl items-center gap-4 px-4 sm:px-6">
-                    <Link to="/" aria-label={t('الصفحة الرئيسية لمخزن')}>
+                    <Link to="/" aria-label={t('الصفحة الرئيسية لـ Sellygrow')}>
                         <Logo className="h-5" />
                     </Link>
                     <div className="ms-auto flex items-center gap-2">

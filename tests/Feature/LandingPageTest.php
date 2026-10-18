@@ -25,13 +25,14 @@ class LandingPageTest extends TestCase
         $this->get('/privacy')->assertOk()->assertSee('<link rel="canonical" href="'.url('/privacy').'"', false);
     }
 
-    public function test_a_store_domain_does_not_get_the_platform_meta_tags(): void
+    public function test_a_store_domain_gets_the_stores_meta_tags_instead_of_the_platforms(): void
     {
-        Store::factory()->create(['custom_domain' => 'shop.noor.com', 'custom_domain_verified_at' => now()]);
+        Store::factory()->create(['name' => 'نور للأزياء', 'custom_domain' => 'shop.noor.com', 'custom_domain_verified_at' => now()]);
 
         $this->get('http://shop.noor.com/')
             ->assertOk()
             ->assertSee('__MAKHZAN_STORE_DOMAIN__')
-            ->assertDontSee('og:title');
+            ->assertSee('<meta property="og:title" content="نور للأزياء">', false)
+            ->assertDontSee('Sellygrow |');
     }
 }

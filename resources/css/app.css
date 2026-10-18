@@ -158,6 +158,20 @@
         background: var(--mk-border-strong);
         border-radius: 999px;
     }
+
+    /* Horizontal rails (storefront product and category rows): swipeable, no visible scrollbar. */
+    .mk-rail {
+        scrollbar-width: none;
+        scroll-snap-type: x mandatory;
+    }
+
+    .mk-rail::-webkit-scrollbar {
+        display: none;
+    }
+
+    .mk-rail > * {
+        scroll-snap-align: start;
+    }
 }
 
 /* Applied briefly while switching theme so every surface cross-fades together. */

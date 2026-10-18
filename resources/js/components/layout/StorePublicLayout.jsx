@@ -8,7 +8,7 @@ import { cn } from '@/lib/format';
 
 /**
  * Store-branded shell for public pages affiliates see (join, login). The store is the
- * brand here; Makhzan only appears as "powered by". Pass `store={null}` while loading.
+ * brand here; Sellygrow only appears as "powered by". Pass `store={null}` while loading.
  */
 export function StorePublicLayout({ store, children, narrow = false }) {
     return (

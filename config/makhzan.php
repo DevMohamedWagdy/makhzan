@@ -33,7 +33,7 @@ return [
     |--------------------------------------------------------------------------
     */
 
-    'reserved_slugs' => ['admin', 'api', 'app', 'makhzan', 'store', 'login', 'register', 'dashboard', 'help', 'affiliate', 'slug-availability', 'terms', 'privacy'],
+    'reserved_slugs' => ['admin', 'api', 'app', 'makhzan', 'sellygrow', 'store', 'login', 'register', 'dashboard', 'help', 'affiliate', 'slug-availability', 'terms', 'privacy', 'forgot-password', 'reset-password', 'affiliate-portal', 'impersonate'],
 
     /*
     |--------------------------------------------------------------------------

@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
-import { useParams, useSearchParams } from 'react-router-dom';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/Display';
-import { Select } from '@/components/ui/Form';
+import { Icon } from '@/components/ui/Icon';
 import { ProductGrid } from '@/features/storefront/ProductCard';
 import { useToast } from '@/context/ToastContext';
 import { useStorefront } from '@/features/storefront/StorefrontLayout';
 import { t } from '@/i18n';
-import { formatNumber } from '@/lib/format';
+import { cn, formatNumber } from '@/lib/format';
 import { storefrontApi } from '@/services/storefrontApi';
 
 const SORT_OPTIONS = [
@@ -92,19 +92,36 @@ export function StoreCatalogPage({ mode = 'all' }) {
 
     return (
         <div className="flex flex-col gap-6">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-                <div>
-                    <h1 className="text-2xl font-bold text-ink sm:text-3xl">{title ?? ' '}</h1>
-                    {category?.description && <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted">{category.description}</p>}
-                    {meta && <p className="mt-1 text-sm text-muted">{t('{count} منتج', { count: formatNumber(meta.total) })}</p>}
+            <div className="flex flex-col gap-4 rounded-3xl border border-line bg-surface p-5 sm:p-6">
+                <nav aria-label={t('مسار التنقل')} className="flex items-center gap-1.5 text-sm text-muted">
+                    <Link to={`/${storeSlug}`} className="hover:text-primary">
+                        {t('الرئيسية')}
+                    </Link>
+                    <Icon name="chevron-left" className="size-3.5" />
+                    <span className="text-ink-2">{title ?? ' '}</span>
+                </nav>
+                <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+                    <div>
+                        <h1 className="text-2xl font-extrabold text-ink sm:text-3xl">{title ?? ' '}</h1>
+                        {category?.description && <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted">{category.description}</p>}
+                        {meta && <p className="mt-1 text-sm text-muted">{t('{count} منتج', { count: formatNumber(meta.total) })}</p>}
+                    </div>
+                    <div className="mk-rail -mx-1 flex items-center gap-2 overflow-x-auto px-1" role="radiogroup" aria-label={t('ترتيب المنتجات')}>
+                        <span className="shrink-0 text-sm font-semibold text-ink-2">{t('ترتيب:')}</span>
+                        {SORT_OPTIONS.map((option) => (
+                            <button
+                                key={option.value}
+                                type="button"
+                                role="radio"
+                                aria-checked={sort === option.value}
+                                onClick={() => setSearchParams((previous) => ({ ...Object.fromEntries(previous), sort: option.value }), { replace: true })}
+                                className={cn('shrink-0 rounded-full border px-4 py-2 text-sm font-medium whitespace-nowrap transition', sort === option.value ? 'border-primary bg-primary text-white' : 'border-line bg-surface text-ink-2 hover:border-line-strong hover:text-ink')}
+                            >
+                                {option.label}
+                            </button>
+                        ))}
+                    </div>
                 </div>
-                <Select
-                    aria-label={t('ترتيب المنتجات')}
-                    value={sort}
-                    onChange={(event) => setSearchParams((previous) => ({ ...Object.fromEntries(previous), sort: event.target.value }), { replace: true })}
-                    options={SORT_OPTIONS}
-                    className="sm:w-56"
-                />
             </div>
 
             {products && products.length === 0 ? (

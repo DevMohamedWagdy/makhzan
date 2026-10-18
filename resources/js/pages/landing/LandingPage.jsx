@@ -73,7 +73,7 @@ export function LandingPage() {
         <div className="min-h-dvh scroll-smooth bg-bg">
             <header className={cn('sticky top-0 z-30 transition', isScrolled || isMenuOpen ? 'border-b border-line bg-surface/85 backdrop-blur-md' : 'border-b border-transparent')}>
                 <div className="mx-auto flex h-18 max-w-6xl items-center gap-6 px-4 sm:px-6">
-                    <Link to="/" aria-label={t('الصفحة الرئيسية لمخزن')}>
+                    <Link to="/" aria-label={t('الصفحة الرئيسية لـ Sellygrow')}>
                         <Logo className="h-5" />
                     </Link>
                     <nav className="hidden items-center gap-1 md:flex" aria-label={t('القائمة الرئيسية')}>
@@ -144,7 +144,7 @@ export function LandingPage() {
                             {t('منصة واحدة لإدارة تجارتك بالكامل')}
                         </span>
                         <h1 className="mx-auto mt-6 max-w-3xl text-4xl leading-[1.3] font-bold text-ink sm:text-5xl sm:leading-[1.25]">
-                            {t('كل ما يحتاجه متجرك،')} <span className="bg-gradient-to-l from-primary to-accent bg-clip-text text-transparent">{t('في مخزن واحد.')}</span>
+                            {t('كل ما يحتاجه متجرك،')} <span className="bg-gradient-to-l from-primary to-accent bg-clip-text text-transparent">{t('في منصة واحدة.')}</span>
                         </h1>
                         <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-ink-2 sm:text-lg">
                             {t('المخزون، الطلبات، المسوقين والتقارير — نظام متكامل مصمم للتاجر العربي.')}

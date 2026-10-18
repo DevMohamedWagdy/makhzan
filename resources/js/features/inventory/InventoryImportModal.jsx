@@ -50,7 +50,7 @@ export function InventoryImportModal({ open, onClose, onImported }) {
         try {
             const { data } = await inventoryApi.exportAll();
 
-            downloadCsv(`makhzan-inventory-${new Date().toISOString().slice(0, 10)}.csv`, [
+            downloadCsv(`sellygrow-inventory-${new Date().toISOString().slice(0, 10)}.csv`, [
                 HEADER,
                 ...data.map((item) => [item.variant_id, item.sku ?? '', item.product_name, item.variant_title ?? '', selectedWarehouse ? stockIn(item, selectedWarehouse) : item.stock, item.cost ?? '', item.price]),
             ]);

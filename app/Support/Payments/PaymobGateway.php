@@ -146,7 +146,7 @@ class PaymobGateway implements PaymentGateway
                     'currency' => 'EGP',
                     'payment_methods' => [(int) $this->account->integrationIdFor($method)],
                     'items' => [['name' => 'Makhzan connection check', 'amount' => 1000, 'quantity' => 1]],
-                    'billing_data' => ['first_name' => 'Makhzan', 'last_name' => 'Check', 'phone_number' => '+201000000000', 'email' => 'check@makhzan.app'],
+                    'billing_data' => ['first_name' => 'Sellygrow', 'last_name' => 'Check', 'phone_number' => '+201000000000', 'email' => 'check@makhzan.app'],
                 ]);
             } catch (ConnectionException) {
                 throw ValidationException::withMessages(['paymob' => __('payments.paymob_unreachable')]);

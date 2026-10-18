@@ -57,7 +57,7 @@ export function DomainTab() {
 
     return (
         <div className="flex max-w-2xl flex-col gap-5">
-            <p className="text-sm leading-relaxed text-muted">{t('اعرض متجرك على دومينك الخاص (مثل shop.example.com) بدلاً من رابط مخزن. يظل الرابط القديم يعمل.')}</p>
+            <p className="text-sm leading-relaxed text-muted">{t('اعرض متجرك على دومينك الخاص (مثل shop.example.com) بدلاً من رابط Sellygrow. يظل الرابط القديم يعمل.')}</p>
 
             {planRequired && (
                 <Alert tone="warning" title={t('الدومين الخاص غير متاح في باقتك')}>

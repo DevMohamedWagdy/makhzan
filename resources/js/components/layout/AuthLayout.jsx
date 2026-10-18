@@ -24,14 +24,14 @@ export function AuthLayout({ children, wide = false }) {
             </header>
 
             <main className="relative flex flex-1 flex-col items-center justify-center px-4 pb-10">
-                <Link to="/login" aria-label={t('الصفحة الرئيسية لمخزن')} className="mb-8">
+                <Link to="/login" aria-label={t('الصفحة الرئيسية لـ Sellygrow')} className="mb-8">
                     <Logo className="h-7 sm:h-8" />
                 </Link>
                 <div className={cn('w-full rounded-2xl border border-line bg-surface p-6 shadow-card sm:p-8', wide ? 'max-w-2xl' : 'max-w-md')}>{children}</div>
             </main>
 
             <footer className="relative flex flex-wrap items-center justify-center gap-x-5 gap-y-2 px-4 pb-6 text-xs text-muted">
-                <span>{t('© {value} مخزن. جميع الحقوق محفوظة.', { value: new Date().getFullYear() })}</span>
+                <span>{t('© {value} Sellygrow. جميع الحقوق محفوظة.', { value: new Date().getFullYear() })}</span>
                 <Link to="/terms" className="hover:text-primary">
                     {t('الشروط والأحكام')}
                 </Link>

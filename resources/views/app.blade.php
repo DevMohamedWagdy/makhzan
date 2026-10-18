@@ -5,22 +5,26 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title>مخزن | Makhzan</title>
-        <link rel="icon" type="image/svg+xml" href="/makhzan-icon.svg">
+        <title>{{ $meta['title'] }}</title>
+        <link rel="icon" type="image/svg+xml" href="/sellygrow-icon.svg">
+        <link rel="icon" href="/favicon.ico" sizes="48x48">
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 
-        @unless ($storeDomainSlug ?? null)
-            <meta name="description" content="مخزن منصة متكاملة لإدارة تجارتك: المخزون، الطلبات، الشحن، المسوقين والتقارير، مع متجر إلكتروني جاهز متصل بمخزونك.">
-            <meta name="theme-color" content="#b33939">
-            <link rel="canonical" href="{{ url()->current() }}">
-            <meta property="og:type" content="website">
-            <meta property="og:site_name" content="مخزن | Makhzan">
-            <meta property="og:title" content="مخزن | كل ما يحتاجه متجرك في مخزن واحد">
-            <meta property="og:description" content="المخزون، الطلبات، المسوقين والتقارير — نظام متكامل مصمم للتاجر العربي.">
-            <meta property="og:url" content="{{ url()->current() }}">
-            <meta property="og:image" content="{{ asset('makhzan-icon.svg') }}">
-            <meta property="og:locale" content="ar_EG">
-            <meta name="twitter:card" content="summary">
-        @endunless
+        {{-- Filled per page by App\Support\PageMeta, so shared store and product links preview correctly. --}}
+        <meta name="description" content="{{ $meta['description'] }}">
+        <meta name="theme-color" content="#2c2c54">
+        <link rel="canonical" href="{{ $meta['url'] }}">
+        <meta property="og:type" content="{{ $meta['type'] }}">
+        <meta property="og:site_name" content="{{ $meta['site_name'] }}">
+        <meta property="og:title" content="{{ $meta['title'] }}">
+        <meta property="og:description" content="{{ $meta['description'] }}">
+        <meta property="og:url" content="{{ $meta['url'] }}">
+        <meta property="og:image" content="{{ $meta['image'] }}">
+        <meta property="og:locale" content="ar_EG">
+        <meta name="twitter:card" content="summary_large_image">
+        <meta name="twitter:title" content="{{ $meta['title'] }}">
+        <meta name="twitter:description" content="{{ $meta['description'] }}">
+        <meta name="twitter:image" content="{{ $meta['image'] }}">
 
         @if ($storeDomainSlug ?? null)
             <script>window.__MAKHZAN_STORE_DOMAIN__ = @js($storeDomainSlug);</script>

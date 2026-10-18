@@ -8,7 +8,7 @@ import { useToast } from '@/context/ToastContext';
 import { useCart } from '@/features/storefront/CartContext';
 import { Stars } from '@/features/reviews/Stars';
 import { ProductReviews } from '@/features/reviews/ProductReviews';
-import { PriceTag, ProductGrid, ProductImage } from '@/features/storefront/ProductCard';
+import { PriceTag, ProductImage, ProductRail } from '@/features/storefront/ProductCard';
 import { useStorefront } from '@/features/storefront/StorefrontLayout';
 import { trackEvent } from '@/features/storefront/tracking';
 import { WishlistButton } from '@/features/storefront/WishlistButton';
@@ -25,18 +25,23 @@ function Gallery({ images, name }) {
     const current = images[active]?.url;
 
     return (
-        <div className="flex flex-col gap-3">
-            <div className="aspect-[4/5] overflow-hidden rounded-3xl border border-line bg-surface-2">
+        <div className="flex flex-col gap-3 lg:flex-row-reverse">
+            <div className="relative aspect-[4/5] flex-1 overflow-hidden rounded-3xl border border-line bg-surface">
                 <ProductImage src={current} alt={name} />
+                {images.length > 1 && (
+                    <span className="absolute bottom-3 start-3 rounded-full bg-ink/70 px-2.5 py-1 text-xs font-semibold text-surface backdrop-blur">
+                        {active + 1} / {images.length}
+                    </span>
+                )}
             </div>
             {images.length > 1 && (
-                <div className="grid grid-cols-5 gap-2">
+                <div className="mk-rail flex gap-2 overflow-x-auto lg:w-20 lg:flex-col lg:overflow-visible">
                     {images.map((image, index) => (
                         <button
                             key={image.url}
                             type="button"
                             onClick={() => setActive(index)}
-                            className={cn('aspect-square overflow-hidden rounded-xl border-2 transition', index === active ? 'border-primary' : 'border-transparent opacity-70 hover:opacity-100')}
+                            className={cn('aspect-square w-16 shrink-0 overflow-hidden rounded-xl border-2 bg-surface transition lg:w-full', index === active ? 'border-primary' : 'border-line opacity-70 hover:opacity-100')}
                             aria-label={t('صورة {number}', { number: index + 1 })}
                             aria-current={index === active}
                         >
@@ -163,39 +168,60 @@ export function StoreProductPage() {
 
     const price = variant?.price ?? product.price;
     const compareAtPrice = variant ? variant.compare_at_price : product.compare_at_price;
+    const canBuy = Boolean(variant?.available);
+
+    const stockNote = !variant || !variant.available ? (
+        <span className="font-semibold text-danger">{t('نفد المخزون لهذا الاختيار')}</span>
+    ) : variant.stock_left ? (
+        <span className="font-semibold text-warning">{t('باقي {count} قطع فقط — اطلب الآن', { count: variant.stock_left })}</span>
+    ) : (
+        <span className="flex items-center gap-1.5 font-semibold text-success">
+            <Icon name="check-circle" className="size-4" />
+            {t('متوفر')}
+        </span>
+    );
 
     return (
-        <div className="flex flex-col gap-14">
-            <div className="grid items-start gap-8 lg:grid-cols-2 lg:gap-12">
-                <Gallery key={product.product_id} images={product.images} name={product.name} />
+        <div className="flex flex-col gap-12 pb-20 md:pb-0">
+            <nav aria-label={t('مسار التنقل')} className="-mb-6 flex items-center gap-1.5 text-sm text-muted">
+                <Link to={`/${storeSlug}`} className="hover:text-primary">
+                    {t('الرئيسية')}
+                </Link>
+                <Icon name="chevron-left" className="size-3.5" />
+                <Link to={`/${storeSlug}/c/${product.category.slug}`} className="hover:text-primary">
+                    {product.category.name}
+                </Link>
+                <Icon name="chevron-left" className="size-3.5" />
+                <span className="truncate text-ink-2">{product.name}</span>
+            </nav>
 
-                <div className="flex flex-col gap-6 lg:sticky lg:top-36">
+            <div className="grid items-start gap-6 lg:grid-cols-12 lg:gap-8">
+                <div className="lg:col-span-5">
+                    <Gallery key={product.product_id} images={product.images} name={product.name} />
+                </div>
+
+                <div className="flex flex-col gap-6 lg:col-span-4">
                     <div>
-                        <nav aria-label={t('مسار التنقل')} className="flex items-center gap-1.5 text-sm text-muted">
-                            <Link to={`/${storeSlug}`} className="hover:text-primary">
-                                {t('الرئيسية')}
-                            </Link>
-                            <Icon name="chevron-left" className="size-3.5" />
-                            <Link to={`/${storeSlug}/c/${product.category.slug}`} className="hover:text-primary">
-                                {product.category.name}
-                            </Link>
-                        </nav>
-                        <h1 className="mt-3 text-2xl leading-snug font-bold text-ink sm:text-3xl">{product.name}</h1>
+                        <Link to={`/${storeSlug}/c/${product.category.slug}`} className="text-sm font-semibold text-primary hover:underline">
+                            {product.category.name}
+                        </Link>
+                        <h1 className="mt-1.5 text-2xl leading-snug font-extrabold text-ink sm:text-3xl">{product.name}</h1>
                         {product.reviews_count > 0 && (
                             <a href="#reviews" className="mt-2 inline-flex items-center gap-2 text-sm text-muted hover:text-primary">
                                 <Stars rating={product.rating_average} />
                                 {t('{rating} ({count} تقييم)', { rating: formatNumber(product.rating_average), count: formatNumber(product.reviews_count) })}
                             </a>
                         )}
-                        <div className="mt-4 flex items-center gap-3">
-                            <PriceTag price={price} compareAtPrice={compareAtPrice} size="lg" />
-                            {compareAtPrice > price && <span className="rounded-full bg-danger-soft px-2.5 py-1 text-xs font-bold text-danger">{t('وفّر {amount}%', { amount: Math.round((1 - price / compareAtPrice) * 100) })}</span>}
-                        </div>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-3 border-y border-line py-4">
+                        <PriceTag price={price} compareAtPrice={compareAtPrice} size="lg" />
+                        {compareAtPrice > price && <span className="rounded-lg bg-success-soft px-2.5 py-1 text-sm font-bold text-success">{t('وفّر {amount}%', { amount: Math.round((1 - price / compareAtPrice) * 100) })}</span>}
                     </div>
 
                     {product.options.map((option, optionIndex) => (
                         <div key={option.name}>
-                            <p className="mb-2.5 text-sm font-semibold text-ink">
+                            <p className="mb-2.5 text-sm font-bold text-ink">
                                 {option.name}: <span className="font-normal text-ink-2">{selected[optionIndex]}</span>
                             </p>
                             <div className="flex flex-wrap gap-2" role="radiogroup" aria-label={option.name}>
@@ -215,9 +241,9 @@ export function StoreProductPage() {
                                                 setJustAdded(false);
                                             }}
                                             className={cn(
-                                                'min-w-12 rounded-xl border px-4 py-2.5 text-sm font-medium transition',
-                                                isSelected ? 'border-primary bg-primary-soft text-primary ring-4 ring-primary/10' : 'border-line bg-surface text-ink hover:border-line-strong',
-                                                !available && 'text-muted line-through decoration-1',
+                                                'min-w-12 rounded-xl border-2 px-4 py-2.5 text-sm font-semibold transition',
+                                                isSelected ? 'border-primary bg-primary-soft text-primary' : 'border-line bg-surface text-ink hover:border-line-strong',
+                                                !available && 'border-dashed text-muted line-through decoration-1',
                                             )}
                                         >
                                             {value}
@@ -228,68 +254,78 @@ export function StoreProductPage() {
                         </div>
                     ))}
 
-                    <div className="text-sm">
-                        {!variant || !variant.available ? (
-                            <span className="font-semibold text-danger">{t('نفد المخزون لهذا الاختيار')}</span>
-                        ) : variant.stock_left ? (
-                            <span className="font-semibold text-warning">{t('باقي {count} قطع فقط — اطلب الآن', { count: variant.stock_left })}</span>
-                        ) : (
-                            <span className="flex items-center gap-1.5 font-medium text-success">
-                                <Icon name="check-circle" className="size-4" />
-                                {t('متوفر')}
-                            </span>
-                        )}
+                    {product.description && (
+                        <div>
+                            <h2 className="mb-2 text-base font-bold text-ink">{t('تفاصيل المنتج')}</h2>
+                            <p className="text-sm leading-loose whitespace-pre-line text-ink-2">{product.description}</p>
+                        </div>
+                    )}
+                </div>
+
+                <aside className="flex flex-col gap-4 rounded-3xl border border-line bg-surface p-5 shadow-[var(--mk-shadow)] lg:sticky lg:top-40 lg:col-span-3">
+                    <PriceTag price={price} compareAtPrice={compareAtPrice} size="lg" />
+                    <div className="text-sm">{stockNote}</div>
+
+                    <div className="flex items-center gap-3">
+                        <span className="text-sm font-semibold text-ink-2">{t('الكمية')}</span>
+                        <QuantityStepper value={quantity} max={maxQuantity} onChange={setQuantity} />
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-3">
-                        <QuantityStepper value={quantity} max={maxQuantity} onChange={setQuantity} />
-                        <Button size="lg" icon="shopping-bag" className="flex-1" disabled={!variant?.available} onClick={addToCart}>
+                    <div className="flex gap-2">
+                        <Button size="lg" icon="shopping-bag" className="flex-1" disabled={!canBuy} onClick={addToCart}>
                             {t('أضف إلى السلة')}
                         </Button>
                         <WishlistButton storeSlug={storeSlug} productId={product.product_id} />
                     </div>
                     {justAdded && (
-                        <Link to={`/${storeSlug}/cart`} className="animate-pop -mt-2 flex items-center justify-center gap-2 rounded-xl bg-success-soft px-4 py-3 text-sm font-semibold text-success">
+                        <Link to={`/${storeSlug}/cart`} className="animate-pop flex items-center justify-center gap-2 rounded-xl bg-success-soft px-4 py-3 text-sm font-semibold text-success">
                             <Icon name="check-circle" className="size-4" />
                             {t('تمت الإضافة — عرض السلة وإتمام الطلب')}
                         </Link>
                     )}
 
                     {store?.loyalty && price > 0 && (
-                        <p className="flex items-center gap-2 rounded-xl bg-warning-soft px-4 py-3 text-sm text-ink-2">
+                        <p className="flex items-center gap-2 rounded-xl bg-warning-soft px-3.5 py-3 text-sm text-ink-2">
                             <Icon name="star" className="size-4 shrink-0 fill-amber-400 text-amber-400" />
                             {t('اكسب {points} نقطة مع هذا المنتج بعد استلامه', { points: Math.floor((price * quantity * store.loyalty.earn_rate) / 100) })}
                         </p>
                     )}
 
-                    <ul className="grid gap-3 rounded-2xl border border-line bg-surface p-4 text-sm text-ink-2 sm:grid-cols-2">
-                        <li className="flex items-center gap-2">
-                            <Icon name="wallet" className="size-[18px] text-primary" />
+                    <ul className="flex flex-col gap-3 border-t border-line pt-4 text-sm text-ink-2">
+                        <li className="flex items-center gap-2.5">
+                            <Icon name="wallet" className="size-5 text-primary" />
                             {t('الدفع عند الاستلام')}
                         </li>
-                        <li className="flex items-center gap-2">
-                            <Icon name="truck" className="size-[18px] text-primary" />
+                        <li className="flex items-center gap-2.5">
+                            <Icon name="truck" className="size-5 text-primary" />
                             {t('شحن لكل المحافظات')}
                         </li>
+                        <li className="flex items-center gap-2.5">
+                            <Icon name="shield-check" className="size-5 text-primary" />
+                            {t('تسوّق آمن')}
+                        </li>
                     </ul>
-
-                    {product.description && (
-                        <div>
-                            <h2 className="mb-2 text-base font-semibold text-ink">{t('تفاصيل المنتج')}</h2>
-                            <p className="text-sm leading-loose whitespace-pre-line text-ink-2">{product.description}</p>
-                        </div>
-                    )}
-                </div>
+                </aside>
             </div>
 
             <ProductReviews storeSlug={storeSlug} productSlug={product.slug} storeName={store?.name} />
 
             {data.related.length > 0 && (
                 <section>
-                    <h2 className="mb-4 text-xl font-bold text-ink">{t('قد يعجبك أيضاً')}</h2>
-                    <ProductGrid storeSlug={storeSlug} products={data.related} />
+                    <h2 className="mb-4 text-lg font-extrabold text-ink sm:text-2xl">{t('قد يعجبك أيضاً')}</h2>
+                    <ProductRail storeSlug={storeSlug} products={data.related} />
                 </section>
             )}
+
+            {/* Phones: price and the add button stay reachable above the tab bar. */}
+            <div className="fixed inset-x-0 bottom-[57px] z-20 flex items-center gap-3 border-t border-line bg-surface/95 px-4 py-3 backdrop-blur md:hidden">
+                <div className="min-w-0 flex-1">
+                    <PriceTag price={price} compareAtPrice={compareAtPrice} />
+                </div>
+                <Button icon="shopping-bag" disabled={!canBuy} onClick={addToCart}>
+                    {t('أضف إلى السلة')}
+                </Button>
+            </div>
         </div>
     );
 }

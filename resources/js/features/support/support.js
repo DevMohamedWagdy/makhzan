@@ -3,7 +3,7 @@ import { t } from '@/i18n';
 /** Mirrors App\Enums\SupportTicketType. */
 export const TICKET_TYPES = {
     problem: { label: t('مشكلة'), tone: 'danger', icon: 'alert-circle', description: t('شيء لا يعمل كما يجب في متجرك أو لوحة التحكم') },
-    suggestion: { label: t('اقتراح'), tone: 'info', icon: 'sparkles', description: t('فكرة أو ميزة تتمنى أن نضيفها إلى مخزن') },
+    suggestion: { label: t('اقتراح'), tone: 'info', icon: 'sparkles', description: t('فكرة أو ميزة تتمنى أن نضيفها إلى Sellygrow') },
 };
 
 /** Mirrors App\Enums\SupportTicketStatus. */

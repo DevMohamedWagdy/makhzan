@@ -131,7 +131,7 @@ export function SupportTicketsPage() {
         <>
             <PageHeader
                 title={t('الدعم الفني')}
-                description={t('تواصل مع فريق مخزن بخصوص أي مشكلة تواجهك أو اقتراح لتحسين المنصة')}
+                description={t('تواصل مع فريق Sellygrow بخصوص أي مشكلة تواجهك أو اقتراح لتحسين المنصة')}
                 actions={
                     can('support.create') && (
                         <Button icon="plus" onClick={() => setCreating(true)}>

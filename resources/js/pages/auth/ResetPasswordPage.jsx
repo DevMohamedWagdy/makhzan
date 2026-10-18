@@ -112,7 +112,7 @@ export function ResetPasswordPage() {
             <span className="mb-6 grid size-14 place-items-center rounded-2xl bg-primary-soft text-primary">
                 <Icon name="shield-check" className="size-7" />
             </span>
-            <AuthHeading title={t('تعيين كلمة مرور جديدة')} subtitle={t('اختر كلمة مرور قوية لم تستخدمها من قبل لحسابك على مخزن.')} />
+            <AuthHeading title={t('تعيين كلمة مرور جديدة')} subtitle={t('اختر كلمة مرور قوية لم تستخدمها من قبل لحسابك على Sellygrow.')} />
 
             <form onSubmit={onSubmit} noValidate className="flex flex-col gap-5">
                 {linkError && (

@@ -32,15 +32,30 @@ function SearchBox({ storeSlug, className }) {
     return (
         <form
             role="search"
-            className={cn('relative', className)}
+            className={cn('h-11 items-center overflow-hidden rounded-xl border-2 border-primary bg-surface', className)}
             onSubmit={(event) => {
                 event.preventDefault();
                 term.trim() && navigate(`/${storeSlug}/search?q=${encodeURIComponent(term.trim())}`);
             }}
         >
-            <Icon name="search" className="pointer-events-none absolute start-3.5 top-1/2 size-[18px] -translate-y-1/2 text-muted" />
-            <input type="search" value={term} onChange={(event) => setTerm(event.target.value)} placeholder={t('ابحث عن منتج...')} aria-label={t('بحث في المتجر')} className="mk-input h-10 rounded-full bg-surface-2 ps-10" />
+            <input type="search" value={term} onChange={(event) => setTerm(event.target.value)} placeholder={t('ابحث عن منتج...')} aria-label={t('بحث في المتجر')} className="h-full min-w-0 flex-1 bg-transparent px-4 text-sm text-ink outline-none placeholder:text-muted" />
+            <button type="submit" className="grid h-full w-12 shrink-0 place-items-center bg-primary text-white transition hover:bg-primary-hover" aria-label={t('بحث')}>
+                <Icon name="search" className="size-5" />
+            </button>
         </form>
+    );
+}
+
+/** Icon with a caption under it on wide screens (account, wishlist, cart in the header). */
+function HeaderAction({ icon, label, badge, className, ...props }) {
+    return (
+        <span className={cn('relative flex items-center gap-2 rounded-xl px-2 py-1.5 text-ink-2 transition hover:bg-surface-3 hover:text-ink', className)} {...props}>
+            <span className="relative">
+                <Icon name={icon} className="size-6" />
+                {badge > 0 && <span className="absolute -top-2 -end-2 grid h-5 min-w-5 place-items-center rounded-full bg-primary px-1 text-[10px] font-bold text-white ring-2 ring-surface">{badge > 99 ? '99+' : badge}</span>}
+            </span>
+            {label && <span className="hidden max-w-28 truncate text-sm font-semibold lg:block">{label}</span>}
+        </span>
     );
 }
 
@@ -48,9 +63,8 @@ function CartButton({ storeSlug }) {
     const { count } = useCart();
 
     return (
-        <Link to={`/${storeSlug}/cart`} className="relative grid size-10 place-items-center rounded-xl border border-line bg-surface text-ink-2 transition hover:border-line-strong hover:text-ink" aria-label={t('السلة ({count})', { count })} title={t('السلة')}>
-            <Icon name="shopping-bag" />
-            {count > 0 && <span className="absolute -top-1.5 -end-1.5 grid h-5 min-w-5 place-items-center rounded-full bg-primary px-1 text-[10px] font-bold text-white ring-2 ring-surface">{count > 99 ? '99+' : count}</span>}
+        <Link to={`/${storeSlug}/cart`} aria-label={t('السلة ({count})', { count })} title={t('السلة')}>
+            <HeaderAction icon="shopping-bag" label={t('السلة')} badge={count} />
         </Link>
     );
 }
@@ -59,12 +73,11 @@ function AccountButton({ storeSlug }) {
     const { customer, isAuthenticated, logout } = useCustomerAuth();
     const { store } = useStorefront();
     const navigate = useNavigate();
-    const buttonClass = 'grid size-10 place-items-center rounded-xl border border-line bg-surface text-ink-2 transition hover:border-line-strong hover:text-ink';
 
     if (!isAuthenticated) {
         return (
-            <Link to={`/${storeSlug}/account/login`} className={buttonClass} aria-label={t('تسجيل الدخول')} title={t('تسجيل الدخول')}>
-                <Icon name="user" />
+            <Link to={`/${storeSlug}/account/login`} aria-label={t('تسجيل الدخول')} title={t('تسجيل الدخول')}>
+                <HeaderAction icon="user" label={t('تسجيل الدخول')} />
             </Link>
         );
     }
@@ -73,8 +86,8 @@ function AccountButton({ storeSlug }) {
         <Dropdown
             label={t('حسابي')}
             trigger={(props) => (
-                <button type="button" {...props} className={buttonClass} title={customer?.full_name}>
-                    <Avatar name={customer?.full_name} size="sm" className="size-8" />
+                <button type="button" {...props} title={customer?.full_name}>
+                    <HeaderAction icon="user" label={customer?.full_name?.split(' ')[0] ?? t('حسابي')} />
                 </button>
             )}
             items={[
@@ -94,6 +107,46 @@ function AccountButton({ storeSlug }) {
             ]}
         />
     );
+}
+
+/** Phone-only tab bar at the bottom of the screen, like shopping apps. */
+function MobileTabBar({ storeSlug }) {
+    const { count } = useCart();
+    const { isAuthenticated } = useCustomerAuth();
+    const tabs = [
+        { to: `/${storeSlug}`, end: true, icon: 'store', label: t('الرئيسية') },
+        { to: `/${storeSlug}/products`, icon: 'grid', label: t('المنتجات') },
+        { to: `/${storeSlug}/cart`, icon: 'shopping-bag', label: t('السلة'), badge: count },
+        { to: isAuthenticated ? `/${storeSlug}/account/orders` : `/${storeSlug}/account/login`, icon: 'user', label: t('حسابي') },
+    ];
+
+    return (
+        <nav aria-label={t('التنقل السريع')} className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden">
+            <ul className="grid grid-cols-4">
+                {tabs.map((tab) => (
+                    <li key={tab.label}>
+                        <NavLink end={tab.end} to={tab.to} className={({ isActive }) => cn('flex flex-col items-center gap-1 py-2 text-[11px] font-medium transition', isActive ? 'text-primary' : 'text-muted')}>
+                            <span className="relative">
+                                <Icon name={tab.icon} className="size-[22px]" />
+                                {tab.badge > 0 && <span className="absolute -top-1.5 -end-2 grid h-4 min-w-4 place-items-center rounded-full bg-primary px-1 text-[9px] font-bold text-white">{tab.badge > 99 ? '99+' : tab.badge}</span>}
+                            </span>
+                            {tab.label}
+                        </NavLink>
+                    </li>
+                ))}
+            </ul>
+        </nav>
+    );
+}
+
+/** The promises every page repeats: in the top bar and the footer band. */
+function storePerks(store) {
+    return [
+        store?.payment_methods?.includes('cod') !== false && { icon: 'wallet', title: t('الدفع عند الاستلام'), text: t('ادفع لما طلبك يوصلك') },
+        { icon: 'truck', title: t('شحن لكل المحافظات'), text: t('توصيل سريع لباب البيت') },
+        { icon: 'shield-check', title: t('تسوّق آمن'), text: t('بياناتك ومدفوعاتك محمية') },
+        store?.contact?.whatsapp && { icon: 'message-square', title: t('دعم على واتساب'), text: t('نرد على استفساراتك بسرعة') },
+    ].filter(Boolean);
 }
 
 function StoreNotFound() {
@@ -243,47 +296,66 @@ export function StorefrontLayout() {
 
     const store = home?.store;
     const categories = home?.categories ?? [];
+    const perks = storePerks(store);
+    const whatsappNumber = store?.contact?.whatsapp?.replace(/^0/, '20').replace(/^\+/, '');
+    const categoryLinkClass = ({ isActive }) => cn('relative block px-3 py-3 text-sm font-medium whitespace-nowrap transition after:absolute after:inset-x-3 after:bottom-0 after:h-0.5 after:rounded-full after:transition', isActive ? 'text-primary after:bg-primary' : 'text-ink-2 after:bg-transparent hover:text-ink');
 
     return (
         <StorefrontContext.Provider value={{ storeSlug, ...home }}>
             <CustomerAuthProvider storeSlug={storeSlug}>
             <CartProvider storeSlug={storeSlug}>
-                <div className="flex min-h-dvh flex-col bg-surface-2/40">
-                    {store?.announcement && <p className="bg-primary px-4 py-2 text-center text-sm font-medium text-white">{store.announcement}</p>}
+                <div className="flex min-h-dvh flex-col bg-bg pb-16 md:pb-0">
+                    <div className="bg-primary text-white">
+                        <div className="mx-auto flex h-9 max-w-7xl items-center justify-between gap-4 px-4 text-xs sm:px-6">
+                            <p className="truncate font-medium">{store?.announcement || perks.map((perk) => perk.title).join('  •  ')}</p>
+                            {whatsappNumber && (
+                                <a href={`https://wa.me/${whatsappNumber}`} target="_blank" rel="noreferrer" className="hidden shrink-0 items-center gap-1.5 font-medium text-white/90 hover:text-white sm:inline-flex">
+                                    <Icon name="message-square" className="size-3.5" />
+                                    {t('راسلنا على واتساب')}
+                                </a>
+                            )}
+                        </div>
+                    </div>
                     {store && !store.accepting_orders && (
                         <p className="flex items-center justify-center gap-2 bg-warning-soft px-4 py-2 text-center text-sm font-medium text-warning">
                             <Icon name="info" className="size-4 shrink-0" />
                             {store.closed_message}
                         </p>
                     )}
-                    <header className="sticky top-0 z-30 border-b border-line bg-surface/90 backdrop-blur-md">
-                        <div className="mx-auto flex h-16 max-w-7xl items-center gap-3 px-4 sm:px-6">
-                            <Link to={`/${storeSlug}`} className="flex min-w-0 items-center gap-2.5">
+                    <header className="sticky top-0 z-30 border-b border-line bg-surface shadow-[0_1px_0_0_var(--mk-border)]">
+                        <div className="mx-auto flex h-[72px] max-w-7xl items-center gap-3 px-4 sm:gap-6 sm:px-6">
+                            <Link to={`/${storeSlug}`} className="flex min-w-0 shrink-0 items-center gap-2.5">
                                 {store ? <Avatar name={store.name} src={store.logo_url} size="md" /> : <Skeleton className="size-10 rounded-xl" />}
-                                <span className="truncate text-lg font-bold text-ink">{store?.name}</span>
+                                <span className="max-w-40 truncate text-lg font-extrabold text-ink sm:max-w-56">{store?.name}</span>
                             </Link>
-                            <SearchBox storeSlug={storeSlug} className="mx-auto hidden w-full max-w-md md:block" />
-                            <div className="ms-auto flex items-center gap-2 md:ms-0">
+                            <SearchBox storeSlug={storeSlug} className="hidden flex-1 md:flex" />
+                            <div className="ms-auto flex items-center gap-1 md:ms-0">
                                 <LanguageToggle />
                                 <ThemeToggle className="hidden sm:grid" />
-                                <AccountButton storeSlug={storeSlug} />
+                                <span className="hidden md:block">
+                                    <AccountButton storeSlug={storeSlug} />
+                                </span>
+                                <Link to={`/${storeSlug}/account/wishlist`} className="hidden lg:block" aria-label={t('المفضلة')} title={t('المفضلة')}>
+                                    <HeaderAction icon="heart" />
+                                </Link>
                                 <CartButton storeSlug={storeSlug} />
                             </div>
                         </div>
                         <div className="mx-auto max-w-7xl px-4 pb-3 sm:px-6 md:hidden">
-                            <SearchBox storeSlug={storeSlug} />
+                            <SearchBox storeSlug={storeSlug} className="flex" />
                         </div>
                         {categories.length > 0 && (
                             <nav aria-label={t('أقسام المتجر')} className="border-t border-line">
-                                <ul className="mk-scroll mx-auto flex max-w-7xl gap-1 overflow-x-auto px-4 py-2 sm:px-6">
+                                <ul className="mk-rail mx-auto flex max-w-7xl items-center overflow-x-auto px-2 sm:px-4">
                                     <li>
-                                        <NavLink end to={`/${storeSlug}`} className={({ isActive }) => cn('block rounded-full px-4 py-1.5 text-sm whitespace-nowrap transition', isActive ? 'bg-primary text-white' : 'text-ink-2 hover:bg-surface-3')}>
-                                            {t('الرئيسية')}
+                                        <NavLink to={`/${storeSlug}/products`} className={(state) => cn(categoryLinkClass(state), 'flex items-center gap-1.5 font-semibold')}>
+                                            <Icon name="grid" className="size-4" />
+                                            {t('كل المنتجات')}
                                         </NavLink>
                                     </li>
                                     {categories.map((category) => (
                                         <li key={category.slug}>
-                                            <NavLink to={`/${storeSlug}/c/${category.slug}`} className={({ isActive }) => cn('block rounded-full px-4 py-1.5 text-sm whitespace-nowrap transition', isActive ? 'bg-primary text-white' : 'text-ink-2 hover:bg-surface-3')}>
+                                            <NavLink to={`/${storeSlug}/c/${category.slug}`} className={categoryLinkClass}>
                                                 {category.name}
                                             </NavLink>
                                         </li>
@@ -299,17 +371,35 @@ export function StorefrontLayout() {
                         </Suspense>
                     </main>
 
-                    <footer className="border-t border-line bg-surface">
+                    <footer className="mt-8 bg-surface">
+                        <div className="border-y border-line">
+                            <ul className="mx-auto grid max-w-7xl grid-cols-2 gap-6 px-4 py-8 sm:px-6 lg:grid-cols-4">
+                                {perks.map((perk) => (
+                                    <li key={perk.title} className="flex items-center gap-3">
+                                        <span className="grid size-12 shrink-0 place-items-center rounded-full bg-primary-soft text-primary">
+                                            <Icon name={perk.icon} className="size-6" />
+                                        </span>
+                                        <span>
+                                            <span className="block text-sm font-bold text-ink">{perk.title}</span>
+                                            <span className="block text-xs text-muted">{perk.text}</span>
+                                        </span>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
                         <div className="mx-auto grid max-w-7xl gap-8 px-4 py-10 sm:grid-cols-2 sm:px-6 lg:grid-cols-4">
                             <div>
-                                <p className="text-lg font-bold text-ink">{store?.name}</p>
-                                <p className="mt-2 text-sm leading-relaxed text-muted">{store?.description || t('تسوّق بأمان والدفع عند الاستلام.')}</p>
+                                <div className="flex items-center gap-2.5">
+                                    {store && <Avatar name={store.name} src={store.logo_url} size="md" />}
+                                    <p className="text-lg font-extrabold text-ink">{store?.name}</p>
+                                </div>
+                                <p className="mt-3 text-sm leading-relaxed text-muted">{store?.description || t('تسوّق بأمان والدفع عند الاستلام.')}</p>
                                 {store && <StoreContact store={store} />}
                             </div>
                             {categories.length > 0 && (
                                 <div>
-                                    <p className="text-sm font-semibold text-ink">{t('الأقسام')}</p>
-                                    <ul className="mt-3 flex flex-col gap-2 text-sm">
+                                    <p className="text-sm font-bold text-ink">{t('الأقسام')}</p>
+                                    <ul className="mt-3 flex flex-col gap-2.5 text-sm">
                                         {categories.slice(0, 6).map((category) => (
                                             <li key={category.slug}>
                                                 <Link to={`/${storeSlug}/c/${category.slug}`} className="text-muted hover:text-primary">
@@ -321,11 +411,16 @@ export function StorefrontLayout() {
                                 </div>
                             )}
                             <div>
-                                <p className="text-sm font-semibold text-ink">{t('حسابي')}</p>
-                                <ul className="mt-3 flex flex-col gap-2 text-sm">
+                                <p className="text-sm font-bold text-ink">{t('حسابي')}</p>
+                                <ul className="mt-3 flex flex-col gap-2.5 text-sm">
                                     <li>
                                         <Link to={`/${storeSlug}/account/orders`} className="text-muted hover:text-primary">
                                             {t('طلباتي')}
+                                        </Link>
+                                    </li>
+                                    <li>
+                                        <Link to={`/${storeSlug}/account/wishlist`} className="text-muted hover:text-primary">
+                                            {t('المفضلة')}
                                         </Link>
                                     </li>
                                     <li>
@@ -342,8 +437,8 @@ export function StorefrontLayout() {
                             </div>
                             {store?.policies?.length > 0 && (
                                 <div>
-                                    <p className="text-sm font-semibold text-ink">{t('سياسات المتجر')}</p>
-                                    <ul className="mt-3 flex flex-col gap-2 text-sm">
+                                    <p className="text-sm font-bold text-ink">{t('سياسات المتجر')}</p>
+                                    <ul className="mt-3 flex flex-col gap-2.5 text-sm">
                                         {store.policies.map((policy) => (
                                             <li key={policy.key}>
                                                 <Link to={`/${storeSlug}/policies/${policy.key}`} className="text-muted hover:text-primary">
@@ -355,11 +450,17 @@ export function StorefrontLayout() {
                                 </div>
                             )}
                         </div>
-                        <div className="flex items-center justify-center gap-2 border-t border-line py-4 text-xs text-muted">
-                            {t('مدعوم من')}
-                            <Logo className="h-2.5" />
+                        <div className="border-t border-line">
+                            <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 px-4 py-4 text-xs text-muted sm:flex-row sm:px-6">
+                                <span>{t('© {year} {store}. جميع الحقوق محفوظة.', { year: new Date().getFullYear(), store: store?.name ?? '' })}</span>
+                                <span className="flex items-center gap-2">
+                                    {t('مدعوم من')}
+                                    <Logo className="h-2.5" />
+                                </span>
+                            </div>
                         </div>
                     </footer>
+                    <MobileTabBar storeSlug={storeSlug} />
                 </div>
             </CartProvider>
             </CustomerAuthProvider>
