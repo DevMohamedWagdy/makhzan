@@ -8,16 +8,15 @@ import { Skeleton } from '@/components/ui/Spinner';
 import { useAffiliateAuth } from '@/context/AffiliateAuthContext';
 import { useToast } from '@/context/ToastContext';
 import { StoreNotFound } from '@/features/affiliate-portal/StoreStatusScreen';
+import { EmailCodeForm } from '@/features/auth/EmailCodeForm';
 import { useStoreBySlug } from '@/features/affiliate-portal/useStoreBySlug';
 import { useForm } from '@/hooks/useForm';
 import { t } from '@/i18n';
-import { isEmail, isPhone, rules } from '@/lib/validators';
+import { isEmail, rules } from '@/lib/validators';
+import { affiliatePortalApi } from '@/services/affiliatePortalApi';
 
 const schema = {
-    identifier: [
-        rules.required(t('أدخل رقم الهاتف أو البريد الإلكتروني')),
-        (value) => (value && !isEmail(value) && !isPhone(value) ? t('أدخل رقم هاتف أو بريداً إلكترونياً صحيحاً') : null),
-    ],
+    email: [rules.required(t('أدخل البريد الإلكتروني')), (value) => (value && !isEmail(value) ? t('أدخل بريداً إلكترونياً صحيحاً') : null)],
     password: [rules.required(t('أدخل كلمة المرور'))],
 };
 
@@ -29,14 +28,20 @@ export function AffiliateLoginPage() {
     const { storeSlug } = useParams();
     const navigate = useNavigate();
     const toast = useToast();
-    const { login, isAuthenticated, isImpersonating } = useAffiliateAuth();
+    const { login, verifyEmail, isAuthenticated, isImpersonating } = useAffiliateAuth();
+    const [verification, setVerification] = useState(null);
     const location = useLocation();
     const { store, missing } = useStoreBySlug(storeSlug, t('دخول المسوقين'));
     const [submitting, setSubmitting] = useState(false);
     const [formError, setFormError] = useState(null);
-    const { values, errors, bind, setField, validateFields } = useForm({ identifier: location.state?.identifier ?? '', password: '', remember: false }, schema);
+    const { values, errors, bind, setField, validateFields } = useForm({ email: location.state?.email ?? '', password: '', remember: false }, schema);
 
-    if (isAuthenticated && !isImpersonating) {
+    const welcome = (affiliate) => {
+        toast.success(t('أهلاً بك يا {value} 👋', { value: affiliate.full_name.split(' ')[0] }));
+        navigate('/affiliate', { replace: true });
+    };
+
+    if (isAuthenticated && !isImpersonating && !verification) {
         return <Navigate to="/affiliate" replace />;
     }
 
@@ -55,12 +60,15 @@ export function AffiliateLoginPage() {
         setSubmitting(true);
 
         try {
-            const affiliate = await login({ storeSlug, ...values });
+            const result = await login({ storeSlug, ...values });
 
-            toast.success(t('أهلاً بك يا {value} 👋', { value: affiliate.full_name.split(' ')[0] }));
-            navigate('/affiliate', { replace: true });
+            if (result.verification) {
+                setVerification(result.verification);
+            } else {
+                welcome(result.affiliate);
+            }
         } catch (error) {
-            setFormError(error.errors?.identifier ?? error.errors?.store_slug ?? error.message);
+            setFormError(error.errors?.email ?? error.errors?.store_slug ?? error.message);
         } finally {
             setSubmitting(false);
         }
@@ -71,36 +79,58 @@ export function AffiliateLoginPage() {
             <div className="mb-8 text-center">
                 {store ? <Avatar name={store.name} src={store.logo_url} size="lg" className="mx-auto" /> : <Skeleton className="mx-auto size-14 rounded-xl" />}
                 <h1 className="mt-5 text-2xl font-bold text-ink">{t('دخول المسوقين')}</h1>
-                <p className="mt-2 text-sm text-muted">{store ? t('تابع أرباحك وروابط الإحالة الخاصة بك في {name}', { name: store.name }) : ' '}</p>
+                <p className="mt-2 text-sm text-muted">
+                    {store
+                        ? t('تابع أرباحك وروابط الإحالة الخاصة بك في {name}', {
+                              name: store.name,
+                          })
+                        : ' '}
+                </p>
             </div>
 
-            <form onSubmit={onSubmit} noValidate className="mk-card flex flex-col gap-5 p-6">
-                {formError && <Alert tone="danger">{formError}</Alert>}
+            {verification ? (
+                <div className="mk-card p-6">
+                    <EmailCodeForm
+                        verification={verification}
+                        onVerify={async (code) => welcome(await verifyEmail({ storeSlug, challenge: verification.challenge, code, remember: verification.remember }))}
+                        onResend={async () => {
+                            const result = await affiliatePortalApi.resendVerification(verification.challenge);
 
-                <Field label={t('رقم الهاتف أو البريد الإلكتروني')} error={errors.identifier} required>
-                    {(props) => <Input {...props} {...bind('identifier')} icon="phone" dir="ltr" className="text-start" autoComplete="username" placeholder="01012345678" autoFocus />}
-                </Field>
-                <Field
-                    label={t('كلمة المرور')}
-                    error={errors.password}
-                    required
-                    action={
-                        <Link to={`/${storeSlug}/affiliates/forgot-password`} state={{ identifier: values.identifier }} className="text-xs font-medium text-primary hover:underline">
-                            {t('نسيت كلمة المرور؟')}
-                        </Link>
-                    }
-                >
-                    {(props) => <PasswordInput {...props} {...bind('password')} autoComplete="current-password" placeholder="••••••••" />}
-                </Field>
-                <Checkbox label={t('تذكرني على هذا الجهاز')} checked={values.remember} onChange={(event) => setField('remember', event.target.checked)} />
+                            setVerification((current) => ({ ...current, ...result }));
 
-                <Button type="submit" size="lg" loading={submitting} disabled={!store} className="w-full">
-                    {submitting ? t('جارٍ تسجيل الدخول...') : t('تسجيل الدخول')}
-                </Button>
-            </form>
+                            return result;
+                        }}
+                        onBack={() => setVerification(null)}
+                    />
+                </div>
+            ) : (
+                <form onSubmit={onSubmit} noValidate className="mk-card flex flex-col gap-5 p-6">
+                    {formError && <Alert tone="danger">{formError}</Alert>}
+
+                    <Field label={t('البريد الإلكتروني')} error={errors.email} required>
+                        {(props) => <Input {...props} {...bind('email')} type="email" icon="mail" dir="ltr" className="text-start" autoComplete="username" placeholder="name@example.com" autoFocus />}
+                    </Field>
+                    <Field
+                        label={t('كلمة المرور')}
+                        error={errors.password}
+                        required
+                        action={
+                            <Link to={`/${storeSlug}/affiliates/forgot-password`} state={{ email: values.email }} className="text-xs font-medium text-primary hover:underline">
+                                {t('نسيت كلمة المرور؟')}
+                            </Link>
+                        }
+                    >
+                        {(props) => <PasswordInput {...props} {...bind('password')} autoComplete="current-password" placeholder="••••••••" />}
+                    </Field>
+                    <Checkbox label={t('تذكرني على هذا الجهاز')} checked={values.remember} onChange={(event) => setField('remember', event.target.checked)} />
+
+                    <Button type="submit" size="lg" loading={submitting} disabled={!store} className="w-full">
+                        {submitting ? t('جارٍ تسجيل الدخول...') : t('تسجيل الدخول')}
+                    </Button>
+                </form>
+            )}
 
             <div className="mt-6 flex flex-col gap-2 text-center text-xs leading-relaxed text-muted">
-                <p>{t('سجّلت برقم هاتف فقط ونسيت كلمة المرور؟ تواصل مع المتجر لإعادة تعيينها.')}</p>
                 <p>{t('لست مسوقاً بعد؟ اطلب رابط التسجيل من المتجر للانضمام.')}</p>
             </div>
         </StorePublicLayout>

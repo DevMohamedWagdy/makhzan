@@ -68,7 +68,7 @@ return [
         'action' => 'Set a new password',
         'expiry' => 'This link expires in :minutes minutes and can be used only once.',
     ],
-    'vendor_verification_code' => [
+    'email_verification_code' => [
         'subject' => ':code is your Sellygrow verification code',
         'intro' => 'Use this code to confirm your email address:',
         'expiry' => 'This code expires in :minutes minutes.',

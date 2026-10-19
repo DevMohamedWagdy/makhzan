@@ -78,7 +78,7 @@ class AffiliateController extends Controller
         $affiliate->fill([
             'full_name' => $validated['full_name'],
             'phone' => $validated['phone'],
-            'email' => $validated['email'] ?? null,
+            'email' => $validated['email'],
             'tier' => $validated['tier'],
             'payout_type' => $validated['payout_method']['type'],
             'payout_account_name' => $validated['payout_method']['account_name'],
@@ -89,6 +89,11 @@ class AffiliateController extends Controller
 
         if (filled($validated['password'] ?? null)) {
             $affiliate->password = $validated['password'];
+        }
+
+        // A new address has to be confirmed with a code at the affiliate's next sign-in.
+        if ($affiliate->isDirty('email')) {
+            $affiliate->email_verified_at = null;
         }
 
         if ($request->hasFile('avatar')) {

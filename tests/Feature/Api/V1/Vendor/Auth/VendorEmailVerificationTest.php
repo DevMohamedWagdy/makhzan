@@ -3,7 +3,7 @@
 namespace Tests\Feature\Api\V1\Vendor\Auth;
 
 use App\Models\Vendor;
-use App\Notifications\VendorVerificationCodeNotification;
+use App\Notifications\EmailVerificationCodeNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Testing\TestResponse;
@@ -25,12 +25,12 @@ class VendorEmailVerificationTest extends TestCase
 
     private function signIn(Vendor $vendor): TestResponse
     {
-        return $this->postJson('/api/v1/vendor/auth/login', ['identifier' => $vendor->email, 'password' => 'password1']);
+        return $this->postJson('/api/v1/vendor/auth/login', ['email' => $vendor->email, 'password' => 'password1']);
     }
 
     private function lastCode(Vendor $vendor): string
     {
-        return Notification::sent($vendor, VendorVerificationCodeNotification::class)->last()->code;
+        return Notification::sent($vendor, EmailVerificationCodeNotification::class)->last()->code;
     }
 
     public function test_unverified_vendors_get_a_code_instead_of_a_token(): void
@@ -81,7 +81,7 @@ class VendorEmailVerificationTest extends TestCase
         $this->postJson('/api/v1/vendor/auth/verify-email', ['challenge' => $challenge, 'code' => $firstCode])->assertJsonValidationErrors('code');
 
         $this->postJson('/api/v1/vendor/auth/verify-email/resend', ['challenge' => $challenge])->assertOk()->assertJsonPath('challenge', $challenge);
-        Notification::assertSentToTimes($vendor, VendorVerificationCodeNotification::class, 2);
+        Notification::assertSentToTimes($vendor, EmailVerificationCodeNotification::class, 2);
 
         $this->postJson('/api/v1/vendor/auth/verify-email', ['challenge' => $challenge, 'code' => $this->lastCode($vendor)])->assertOk();
     }

@@ -23,25 +23,30 @@ class AffiliateImportControllerTest extends TestCase
         Affiliate::factory()->for($vendor)->for($vendor->store)->create(['phone' => '01077778888']);
 
         $this->postJson(self::URL, ['rows' => [
-            ['line' => 2, 'full_name' => 'علي محمود', 'phone' => '01011112222', 'tier' => 'vip', 'payout_type' => 'vodafone_cash'],
-            ['line' => 3, 'full_name' => 'هدى سمير', 'phone' => '01133334444', 'tier' => 'مسوق عام', 'payout_type' => 'إنستاباي'],
-            ['line' => 4, 'full_name' => '', 'phone' => '0101'],
-            ['line' => 5, 'full_name' => 'موجود سابقاً', 'phone' => '01077778888'],
-            ['line' => 6, 'full_name' => 'مكرر في الملف', 'phone' => '01011112222'],
-            ['line' => 7, 'full_name' => 'شريحة خطأ', 'phone' => '01299990000', 'tier' => 'gold'],
+            ['line' => 2, 'full_name' => 'علي محمود', 'phone' => '01011112222', 'email' => 'ali@example.com', 'tier' => 'vip', 'payout_type' => 'vodafone_cash'],
+            ['line' => 3, 'full_name' => 'هدى سمير', 'phone' => '01133334444', 'email' => 'Huda@Example.com', 'tier' => 'مسوق عام', 'payout_type' => 'إنستاباي'],
+            ['line' => 4, 'full_name' => '', 'phone' => '0101', 'email' => 'x@example.com'],
+            ['line' => 5, 'full_name' => 'موجود سابقاً', 'phone' => '01077778888', 'email' => 'old@example.com'],
+            ['line' => 6, 'full_name' => 'مكرر في الملف', 'phone' => '01011112222', 'email' => 'dup@example.com'],
+            ['line' => 7, 'full_name' => 'شريحة خطأ', 'phone' => '01299990000', 'email' => 'tier@example.com', 'tier' => 'gold'],
+            ['line' => 8, 'full_name' => 'بدون بريد', 'phone' => '01299990001'],
+            ['line' => 9, 'full_name' => 'بريد مكرر', 'phone' => '01299990002', 'email' => 'ALI@example.com'],
         ]])->assertOk()->assertExactJson([
             'status' => 'completed',
             'imported' => 2,
-            'skipped' => 4,
+            'skipped' => 6,
             'errors' => [
                 ['row' => 4, 'message' => 'الاسم مطلوب'],
                 ['row' => 5, 'message' => 'رقم الهاتف مسجل لمسوق آخر بالفعل'],
                 ['row' => 6, 'message' => 'رقم الهاتف مسجل لمسوق آخر بالفعل'],
                 ['row' => 7, 'message' => 'شريحة غير معروفة'],
+                ['row' => 8, 'message' => 'البريد الإلكتروني مطلوب'],
+                ['row' => 9, 'message' => 'البريد الإلكتروني مسجل لمسوق آخر بالفعل'],
             ],
         ]);
 
         $huda = Affiliate::firstWhere('phone', '01133334444');
+        $this->assertSame('huda@example.com', $huda->email);
         $this->assertSame(AffiliateTier::General, $huda->tier);
         $this->assertSame(PayoutMethod::InstaPay, $huda->payout_type);
         $this->assertSame(AffiliateSource::BulkImport, $huda->source);
@@ -56,7 +61,7 @@ class AffiliateImportControllerTest extends TestCase
     {
         $vendor = $this->actingAsVendor();
 
-        $this->postJson(self::URL, ['rows' => [['full_name' => 'مريم عادل', 'phone' => '01255556666', 'payout_type' => $label]]])
+        $this->postJson(self::URL, ['rows' => [['full_name' => 'مريم عادل', 'phone' => '01255556666', 'email' => 'mariam@example.com', 'payout_type' => $label]]])
             ->assertOk()
             ->assertJsonPath('imported', 1);
 

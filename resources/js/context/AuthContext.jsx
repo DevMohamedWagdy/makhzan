@@ -17,8 +17,8 @@ export function AuthProvider({ children }) {
 
     /** Resolves to `{ vendor }`, or `{ verification }` when an emailed code has to be entered first. */
     const login = useCallback(
-        async ({ identifier, password, remember }) => {
-            const result = await authApi.login({ identifier, password, remember });
+        async ({ email, password, remember }) => {
+            const result = await authApi.login({ email, password, remember });
 
             if (result.verification_required) {
                 return { verification: { ...result, remember } };

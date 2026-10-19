@@ -8,13 +8,10 @@ import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
 import { useForm } from '@/hooks/useForm';
 import { t } from '@/i18n';
-import { isEmail, isPhone, rules } from '@/lib/validators';
+import { isEmail, rules } from '@/lib/validators';
 
 const schema = {
-    identifier: [
-        rules.required(t('أدخل البريد الإلكتروني أو رقم الهاتف')),
-        (value) => (value && !isEmail(value) && !isPhone(value) ? t('أدخل بريداً إلكترونياً صحيحاً أو رقم هاتف صحيح') : null),
-    ],
+    email: [rules.required(t('أدخل البريد الإلكتروني')), (value) => (value && !isEmail(value) ? t('أدخل بريداً إلكترونياً صحيحاً') : null)],
     password: [rules.required(t('أدخل كلمة المرور'))],
 };
 
@@ -25,7 +22,7 @@ export function LoginPage() {
     const location = useLocation();
     const [submitting, setSubmitting] = useState(false);
     const [formError, setFormError] = useState(null);
-    const { values, errors, bind, setField, validateFields } = useForm({ identifier: location.state?.identifier ?? '', password: '', remember: false }, schema);
+    const { values, errors, bind, setField, validateFields } = useForm({ email: location.state?.email ?? '', password: '', remember: false }, schema);
 
     const onSubmit = async (event) => {
         event.preventDefault();
@@ -49,7 +46,7 @@ export function LoginPage() {
             toast.success(t('أهلاً بعودتك يا {value} 👋', { value: vendor.full_name.split(' ')[0] }), t('تم تسجيل الدخول بنجاح'));
             navigate(location.state?.from ?? '/dashboard', { replace: true });
         } catch (error) {
-            setFormError(error.errors?.identifier ?? error.message);
+            setFormError(error.errors?.email ?? error.message);
         } finally {
             setSubmitting(false);
         }
@@ -62,8 +59,8 @@ export function LoginPage() {
             <form onSubmit={onSubmit} noValidate className="flex flex-col gap-5">
                 {formError && <Alert tone="danger">{formError}</Alert>}
 
-                <Field label={t('البريد الإلكتروني أو رقم الهاتف')} error={errors.identifier} required>
-                    {(props) => <Input {...props} {...bind('identifier')} icon="user" dir="ltr" className="text-start" autoComplete="username" placeholder="name@example.com" />}
+                <Field label={t('البريد الإلكتروني')} error={errors.email} required>
+                    {(props) => <Input {...props} {...bind('email')} type="email" icon="mail" dir="ltr" className="text-start" autoComplete="username" placeholder="name@example.com" />}
                 </Field>
 
                 <Field
@@ -71,7 +68,7 @@ export function LoginPage() {
                     error={errors.password}
                     required
                     action={
-                        <Link to="/forgot-password" state={{ identifier: values.identifier }} className="text-xs font-medium text-primary hover:underline">
+                        <Link to="/forgot-password" state={{ email: values.email }} className="text-xs font-medium text-primary hover:underline">
                             {t('نسيت كلمة المرور؟')}
                         </Link>
                     }

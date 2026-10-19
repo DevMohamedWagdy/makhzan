@@ -9,14 +9,11 @@ import { StoreNotFound, StoreStatusScreen } from '@/features/affiliate-portal/St
 import { useStoreBySlug } from '@/features/affiliate-portal/useStoreBySlug';
 import { useForm } from '@/hooks/useForm';
 import { t } from '@/i18n';
-import { isEmail, isPhone, rules } from '@/lib/validators';
+import { isEmail, rules } from '@/lib/validators';
 import { affiliatePortalApi } from '@/services/affiliatePortalApi';
 
 const schema = {
-    identifier: [
-        rules.required(t('أدخل رقم الهاتف أو البريد الإلكتروني')),
-        (value) => (value && !isEmail(value) && !isPhone(value) ? t('أدخل رقم هاتف أو بريداً إلكترونياً صحيحاً') : null),
-    ],
+    email: [rules.required(t('أدخل البريد الإلكتروني')), (value) => (value && !isEmail(value) ? t('أدخل بريداً إلكترونياً صحيحاً') : null)],
 };
 
 /**
@@ -30,7 +27,7 @@ export function AffiliateForgotPasswordPage() {
     const [result, setResult] = useState(null);
     const [submitting, setSubmitting] = useState(false);
     const [formError, setFormError] = useState(null);
-    const { values, errors, bind, validateFields } = useForm({ identifier: location.state?.identifier ?? '' }, schema);
+    const { values, errors, bind, validateFields } = useForm({ email: location.state?.email ?? '' }, schema);
     const loginPath = `/${storeSlug}/affiliates/login`;
 
     if (missing) {
@@ -46,7 +43,7 @@ export function AffiliateForgotPasswordPage() {
                 title={t('تحقق من بريدك الإلكتروني')}
                 actions={
                     <>
-                        <Button to={loginPath} state={{ identifier: values.identifier }} size="lg" className="w-full" icon="arrow-right">
+                        <Button to={loginPath} state={{ email: values.email }} size="lg" className="w-full" icon="arrow-right">
                             {t('العودة لتسجيل الدخول')}
                         </Button>
                         <button type="button" onClick={() => setResult(null)} className="text-sm text-primary hover:underline">
@@ -56,9 +53,6 @@ export function AffiliateForgotPasswordPage() {
                 }
             >
                 <p>{result.message}</p>
-                <Alert tone="info" className="mt-5 text-start">
-                    {t('إذا سجّلت برقم هاتف فقط دون بريد إلكتروني، تواصل مع {value} ليعيّن لك كلمة مرور جديدة.', { value: store?.name ?? t('المتجر') })}
-                </Alert>
             </StoreStatusScreen>
         );
     }
@@ -74,9 +68,9 @@ export function AffiliateForgotPasswordPage() {
         setSubmitting(true);
 
         try {
-            setResult(await affiliatePortalApi.forgotPassword({ store_slug: storeSlug, identifier: values.identifier }));
+            setResult(await affiliatePortalApi.forgotPassword({ store_slug: storeSlug, email: values.email }));
         } catch (error) {
-            setFormError(error.status === 429 ? t('محاولات كثيرة، انتظر دقيقة ثم حاول مرة أخرى.') : (error.errors?.identifier ?? error.message));
+            setFormError(error.status === 429 ? t('محاولات كثيرة، انتظر دقيقة ثم حاول مرة أخرى.') : (error.errors?.email ?? error.message));
         } finally {
             setSubmitting(false);
         }
@@ -89,13 +83,13 @@ export function AffiliateForgotPasswordPage() {
                     <Icon name="lock" className="size-7" />
                 </span>
                 <h1 className="mt-5 text-2xl font-bold text-ink">{t('نسيت كلمة المرور؟')}</h1>
-                <p className="mt-2 text-sm leading-relaxed text-muted">{t('أدخل رقم هاتفك أو بريدك الإلكتروني المسجل، وسنرسل رابط إعادة التعيين إلى بريدك.')}</p>
+                <p className="mt-2 text-sm leading-relaxed text-muted">{t('أدخل بريدك الإلكتروني المسجل، وسنرسل لك رابط إعادة التعيين.')}</p>
             </div>
 
             <form onSubmit={onSubmit} noValidate className="mk-card flex flex-col gap-5 p-6">
                 {formError && <Alert tone="danger">{formError}</Alert>}
-                <Field label={t('رقم الهاتف أو البريد الإلكتروني')} error={errors.identifier} required>
-                    {(props) => <Input {...props} {...bind('identifier')} icon="phone" dir="ltr" className="text-start" autoComplete="username" placeholder="01012345678" autoFocus />}
+                <Field label={t('البريد الإلكتروني')} error={errors.email} required>
+                    {(props) => <Input {...props} {...bind('email')} type="email" icon="mail" dir="ltr" className="text-start" autoComplete="username" placeholder="name@example.com" autoFocus />}
                 </Field>
                 <Button type="submit" size="lg" loading={submitting} disabled={!store} className="w-full">
                     {t('إرسال رابط إعادة التعيين')}

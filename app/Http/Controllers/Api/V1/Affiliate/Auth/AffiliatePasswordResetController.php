@@ -8,7 +8,6 @@ use App\Http\Requests\Api\V1\Affiliate\Auth\AffiliateForgotPasswordRequest;
 use App\Http\Requests\Api\V1\Affiliate\Auth\AffiliateResetPasswordRequest;
 use App\Models\Affiliate;
 use App\Models\Store;
-use App\Support\PhoneNumber;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -16,16 +15,14 @@ use Illuminate\Validation\ValidationException;
 class AffiliatePasswordResetController extends Controller
 {
     /**
-     * Emails a reset link to an active affiliate of the store with an email on file.
-     * The response never reveals whether the account exists or has an email.
+     * Emails a reset link to the store's active affiliate with this email. The response
+     * never reveals whether the account exists.
      */
     public function store(AffiliateForgotPasswordRequest $request, AffiliatePasswordReset $passwordReset): JsonResponse
     {
-        $identifier = trim($request->string('identifier')->toString());
-
         $affiliate = Store::query()->where('slug', $request->string('store_slug'))->firstOrFail()
             ->affiliates()
-            ->where(fn ($query) => $query->where('phone', PhoneNumber::normalize($identifier))->orWhere('email', Str::lower($identifier)))
+            ->where('email', Str::lower(trim($request->string('email')->toString())))
             ->first();
 
         if ($affiliate) {

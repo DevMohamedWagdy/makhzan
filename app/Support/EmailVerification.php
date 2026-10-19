@@ -2,19 +2,20 @@
 
 namespace App\Support;
 
+use App\Models\Affiliate;
 use App\Models\Vendor;
-use App\Notifications\VendorVerificationCodeNotification;
+use App\Notifications\EmailVerificationCodeNotification;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Throwable;
 
 /**
- * Emailed 6-digit codes that confirm a vendor's email before they get a dashboard token.
- * Sign-up and sign-in open a "challenge" (an opaque id the browser holds); the code is checked
- * against it, with a few attempts per code and a cooldown between resends.
+ * Emailed 6-digit codes that confirm an account's email (vendors and affiliates) before it gets
+ * a token. Sign-up and sign-in open a "challenge" (an opaque id the browser holds); the code is
+ * checked against it, with a few attempts per code and a cooldown between resends.
  */
-class VendorEmailVerification
+class EmailVerification
 {
     public const CODE_MINUTES = 10;
 
@@ -22,54 +23,61 @@ class VendorEmailVerification
 
     private const MAX_ATTEMPTS = 5;
 
-    /** How long a challenge can be resent before the vendor has to sign in again. */
+    /** How long a challenge can be resent before the account has to sign in again. */
     private const CHALLENGE_MINUTES = 60;
+
+    /** @var array<string, class-string<Vendor|Affiliate>> */
+    private const ACCOUNTS = ['vendor' => Vendor::class, 'affiliate' => Affiliate::class];
 
     /**
      * Opens a challenge and emails the first code.
      *
      * @return array{verification_required: true, challenge: string, email: string, resend_in: int, message: string}
      */
-    public static function start(Vendor $vendor, bool $remember): array
+    public static function start(Vendor|Affiliate $account, bool $remember): array
     {
         $challenge = Str::random(48);
-        self::sendCode($challenge, ['vendor_id' => $vendor->id, 'remember' => $remember], $vendor);
+        $type = array_search($account::class, self::ACCOUNTS, true);
 
-        return self::response($challenge, $vendor);
+        self::sendCode($type, $challenge, ['account_id' => $account->getKey(), 'remember' => $remember], $account);
+
+        return self::response($challenge, $account);
     }
 
     /**
      * Emails a fresh code for an open challenge.
      *
+     * @param  'vendor'|'affiliate'  $type
      * @return array{verification_required: true, challenge: string, email: string, resend_in: int, message: string}
      *
      * @throws ValidationException
      */
-    public static function resend(string $challenge): array
+    public static function resend(string $type, string $challenge): array
     {
-        $state = self::state($challenge);
+        $state = self::state($type, $challenge);
         $wait = self::RESEND_SECONDS - (int) now()->diffInSeconds($state['sent_at'], true);
 
         if ($wait > 0) {
             throw ValidationException::withMessages(['code' => __('auth.verification_resend_wait', ['seconds' => $wait])])->status(429);
         }
 
-        $vendor = Vendor::query()->findOrFail($state['vendor_id']);
-        self::sendCode($challenge, $state, $vendor);
+        $account = self::ACCOUNTS[$type]::query()->findOrFail($state['account_id']);
+        self::sendCode($type, $challenge, $state, $account);
 
-        return self::response($challenge, $vendor);
+        return self::response($challenge, $account);
     }
 
     /**
      * Checks the code and marks the email verified.
      *
-     * @return array{vendor: Vendor, remember: bool}
+     * @param  'vendor'|'affiliate'  $type
+     * @return array{account: Vendor|Affiliate, remember: bool}
      *
      * @throws ValidationException
      */
-    public static function verify(string $challenge, string $code): array
+    public static function verify(string $type, string $challenge, string $code): array
     {
-        $state = self::state($challenge);
+        $state = self::state($type, $challenge);
 
         if (now()->greaterThan($state['code_expires_at']) || $state['attempts'] >= self::MAX_ATTEMPTS) {
             throw ValidationException::withMessages(['code' => __('auth.verification_code_expired')]);
@@ -77,27 +85,27 @@ class VendorEmailVerification
 
         if (! hash_equals($state['code_hash'], self::hash($code))) {
             $state['attempts']++;
-            Cache::put(self::cacheKey($challenge), $state, now()->addMinutes(self::CHALLENGE_MINUTES));
+            Cache::put(self::cacheKey($type, $challenge), $state, now()->addMinutes(self::CHALLENGE_MINUTES));
 
             throw ValidationException::withMessages(['code' => __('auth.verification_code_invalid')]);
         }
 
-        Cache::forget(self::cacheKey($challenge));
+        Cache::forget(self::cacheKey($type, $challenge));
 
-        $vendor = Vendor::query()->findOrFail($state['vendor_id']);
-        $vendor->forceFill(['email_verified_at' => now()])->save();
+        $account = self::ACCOUNTS[$type]::query()->findOrFail($state['account_id']);
+        $account->forceFill(['email_verified_at' => now()])->save();
 
-        return ['vendor' => $vendor, 'remember' => (bool) $state['remember']];
+        return ['account' => $account, 'remember' => (bool) $state['remember']];
     }
 
     /**
      * @param  array<string, mixed>  $state
      */
-    private static function sendCode(string $challenge, array $state, Vendor $vendor): void
+    private static function sendCode(string $type, string $challenge, array $state, Vendor|Affiliate $account): void
     {
         $code = str_pad((string) random_int(0, 999_999), 6, '0', STR_PAD_LEFT);
 
-        Cache::put(self::cacheKey($challenge), [
+        Cache::put(self::cacheKey($type, $challenge), [
             ...$state,
             'code_hash' => self::hash($code),
             'code_expires_at' => now()->addMinutes(self::CODE_MINUTES),
@@ -106,9 +114,9 @@ class VendorEmailVerification
         ], now()->addMinutes(self::CHALLENGE_MINUTES));
 
         try {
-            $vendor->notify(new VendorVerificationCodeNotification($code, self::CODE_MINUTES));
+            $account->notify(new EmailVerificationCodeNotification($code, self::CODE_MINUTES));
         } catch (Throwable $exception) {
-            // The vendor can ask for another code; a mail outage shouldn't fail sign-up.
+            // The account can ask for another code; a mail outage shouldn't fail sign-up.
             report($exception);
         }
     }
@@ -118,17 +126,17 @@ class VendorEmailVerification
      *
      * @throws ValidationException
      */
-    private static function state(string $challenge): array
+    private static function state(string $type, string $challenge): array
     {
-        return Cache::get(self::cacheKey($challenge)) ?? throw ValidationException::withMessages(['code' => __('auth.verification_code_expired')]);
+        return Cache::get(self::cacheKey($type, $challenge)) ?? throw ValidationException::withMessages(['code' => __('auth.verification_code_expired')]);
     }
 
     /**
      * @return array{verification_required: true, challenge: string, email: string, resend_in: int, message: string}
      */
-    private static function response(string $challenge, Vendor $vendor): array
+    private static function response(string $challenge, Vendor|Affiliate $account): array
     {
-        $email = self::maskEmail($vendor->email);
+        $email = self::maskEmail($account->email);
 
         return [
             'verification_required' => true,
@@ -155,8 +163,11 @@ class VendorEmailVerification
         return hash_hmac('sha256', $code, (string) config('app.key'));
     }
 
-    private static function cacheKey(string $challenge): string
+    /**
+     * Keyed by account type too, so a vendor challenge can't be used on the affiliate endpoint.
+     */
+    private static function cacheKey(string $type, string $challenge): string
     {
-        return 'vendor-email-verification:'.hash('sha256', $challenge);
+        return "email-verification:{$type}:".hash('sha256', $challenge);
     }
 }

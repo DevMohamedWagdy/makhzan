@@ -5,7 +5,7 @@ export const authApi = {
      * `{ token, vendor }`, or `{ verification_required, challenge, email, resend_in }` when the
      * email still has to be confirmed with a code.
      *
-     * @param {{ identifier: string, password: string, remember: boolean }} payload
+     * @param {{ email: string, password: string, remember: boolean }} payload
      */
     login: (payload) => request('POST', '/api/v1/vendor/auth/login', { body: payload }),
 
@@ -35,7 +35,7 @@ export const authApi = {
     /** Signs out the vendor's other sessions. @param {{ current_password: string, password: string, password_confirmation: string }} payload */
     updatePassword: (payload) => request('PUT', '/api/v1/vendor/auth/password', { body: payload }),
 
-    forgotPassword: (identifier) => request('POST', '/api/v1/vendor/auth/forgot-password', { body: { identifier } }),
+    forgotPassword: (email) => request('POST', '/api/v1/vendor/auth/forgot-password', { body: { email } }),
 
     /** @param {{ token: string, email: string, password: string, password_confirmation: string }} payload */
     resetPassword: (payload) => request('POST', '/api/v1/vendor/auth/reset-password', { body: payload }),

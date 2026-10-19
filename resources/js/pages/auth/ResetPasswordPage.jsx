@@ -48,7 +48,7 @@ export function ResetPasswordPage() {
     const { errors, setErrors, bind, validateFields, values } = useForm(INITIAL_VALUES, schema);
 
     const requestNewLink = (
-        <Button to="/forgot-password" state={{ identifier: email }} size="lg" className="w-full" icon="refresh">
+        <Button to="/forgot-password" state={{ email }} size="lg" className="w-full" icon="refresh">
             {t('طلب رابط جديد')}
         </Button>
     );
@@ -73,7 +73,7 @@ export function ResetPasswordPage() {
                 tone="success"
                 title={t('تم تغيير كلمة المرور')}
                 actions={
-                    <Button to="/login" state={{ identifier: email }} size="lg" className="w-full" icon="log-in">
+                    <Button to="/login" state={{ email }} size="lg" className="w-full" icon="log-in">
                         {t('تسجيل الدخول')}
                     </Button>
                 }
@@ -117,7 +117,7 @@ export function ResetPasswordPage() {
             <form onSubmit={onSubmit} noValidate className="flex flex-col gap-5">
                 {linkError && (
                     <Alert tone="danger" title={linkError}>
-                        <Link to="/forgot-password" state={{ identifier: email }} className="mt-1 inline-block font-semibold underline underline-offset-4">
+                        <Link to="/forgot-password" state={{ email }} className="mt-1 inline-block font-semibold underline underline-offset-4">
                             {t('اطلب رابطاً جديداً')}
                         </Link>
                     </Alert>

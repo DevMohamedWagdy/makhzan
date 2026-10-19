@@ -34,7 +34,8 @@ class AffiliateFactory extends Factory
             'vendor_id' => fn (array $attributes) => Store::find($attributes['store_id'])->vendor_id,
             'full_name' => $name,
             'phone' => $phone,
-            'email' => fake()->optional(0.75)->safeEmail(),
+            'email' => fake()->unique()->safeEmail(),
+            'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password1'),
             'status' => AffiliateStatus::Active,
             'tier' => AffiliateTier::General,
@@ -43,6 +44,14 @@ class AffiliateFactory extends Factory
             'payout_account_name' => $name,
             'payout_account_number' => $phone,
         ];
+    }
+
+    /**
+     * An affiliate who hasn't confirmed their email yet (asked for a code at sign-in).
+     */
+    public function unverified(): static
+    {
+        return $this->state(fn (): array => ['email_verified_at' => null]);
     }
 
     public function pending(): static

@@ -27,7 +27,7 @@ const INITIAL_VALUES = {
 const schema = (values) => ({
     full_name: [rules.required(t('أدخل اسمك بالكامل')), rules.minLength(5, t('اكتب الاسم الثنائي على الأقل'))],
     phone: [rules.required(t('أدخل رقم هاتفك')), rules.phone()],
-    email: [rules.email()],
+    email: [rules.required(t('أدخل البريد الإلكتروني')), rules.email()],
     password: [rules.required(t('أدخل كلمة المرور')), rules.password()],
     password_confirmation: [rules.required(t('أعد كتابة كلمة المرور')), rules.matches('password')],
     accept_terms: [(value) => (value ? null : t('يجب الموافقة على شروط برنامج المسوقين للمتابعة'))],
@@ -197,7 +197,7 @@ export function AffiliateJoinPage() {
                 await affiliateRegistrationApi.register(token, {
                     full_name: values.full_name.trim(),
                     phone: normalizePhone(values.phone),
-                    email: values.email.trim() || null,
+                    email: values.email.trim().toLowerCase(),
                     password: values.password,
                     password_confirmation: values.password_confirmation,
                     payout_method: buildPayoutPayload(values),
@@ -284,7 +284,7 @@ export function AffiliateJoinPage() {
                         <Field label={t('رقم الهاتف / الواتساب')} error={errors.phone} required>
                             {(props) => <Input {...props} {...bind('phone')} icon="phone" type="tel" dir="ltr" inputMode="tel" className="text-start" autoComplete="tel" placeholder="01012345678" />}
                         </Field>
-                        <Field label={t('البريد الإلكتروني')} optional error={errors.email}>
+                        <Field label={t('البريد الإلكتروني')} hint={t('ستستخدمه لتسجيل الدخول')} required error={errors.email}>
                             {(props) => <Input {...props} {...bind('email')} icon="mail" type="email" dir="ltr" className="text-start" autoComplete="email" placeholder="name@example.com" />}
                         </Field>
                         <Field label={t('كلمة المرور')} error={errors.password} required>

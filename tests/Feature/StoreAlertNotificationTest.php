@@ -84,7 +84,7 @@ class StoreAlertNotificationTest extends TestCase
     {
         Notification::fake();
         $owner = Vendor::factory()->withStore()->create(['email' => 'owner@noor.test']);
-        $signIn = fn (string $userAgent) => $this->withHeader('User-Agent', $userAgent)->postJson('/api/v1/vendor/auth/login', ['identifier' => 'owner@noor.test', 'password' => 'password1'])->assertOk();
+        $signIn = fn (string $userAgent) => $this->withHeader('User-Agent', $userAgent)->postJson('/api/v1/vendor/auth/login', ['email' => 'owner@noor.test', 'password' => 'password1'])->assertOk();
 
         $signIn(self::CHROME_WINDOWS);
         $signIn(self::CHROME_WINDOWS);
@@ -99,7 +99,7 @@ class StoreAlertNotificationTest extends TestCase
     {
         Notification::fake();
         $owner = Vendor::factory()->withStore()->create(['email' => 'owner@noor.test']);
-        $token = $this->postJson('/api/v1/vendor/auth/login', ['identifier' => 'owner@noor.test', 'password' => 'password1'])->json('token');
+        $token = $this->postJson('/api/v1/vendor/auth/login', ['email' => 'owner@noor.test', 'password' => 'password1'])->json('token');
 
         $this->withToken($token)->putJson('/api/v1/vendor/auth/password', ['current_password' => 'password1', 'password' => 'NewPass2026x', 'password_confirmation' => 'NewPass2026x'])->assertOk();
 

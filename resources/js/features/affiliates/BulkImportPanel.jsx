@@ -37,7 +37,10 @@ function validateRow(row, seenPhones) {
         errors.push(t('رقم مكرر في الملف'));
     }
 
-    if (row.email && !isEmail(row.email)) {
+    // Affiliates sign in with their email, so every row needs one.
+    if (!row.email) {
+        errors.push(t('البريد الإلكتروني مطلوب'));
+    } else if (!isEmail(row.email)) {
         errors.push(t('البريد غير صحيح'));
     }
 
@@ -59,7 +62,7 @@ function downloadTemplate() {
     downloadCsv('sellygrow-affiliates-template.csv', [
         BULK_IMPORT_COLUMNS,
         [t('سارة محمود'), '01012345678', 'sara@example.com', 'general', 'vodafone_cash', t('سارة محمود'), '01012345678'],
-        [t('أحمد علي'), '01198765432', '', 'vip', 'instapay', t('أحمد علي'), 'ahmed@instapay'],
+        [t('أحمد علي'), '01198765432', 'ahmed@example.com', 'vip', 'instapay', t('أحمد علي'), 'ahmed@instapay'],
     ]);
 }
 

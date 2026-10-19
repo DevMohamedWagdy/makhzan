@@ -19,14 +19,14 @@ class AffiliateAuthControllerTest extends TestCase
 
     private const ME_URL = '/api/v1/affiliate/auth/me';
 
-    public function test_login_with_phone_returns_affiliate_token_and_records_activity(): void
+    public function test_login_with_email_returns_affiliate_token_and_records_activity(): void
     {
         $this->freezeSecond();
-        $affiliate = Affiliate::factory()->create(['phone' => '01055556666']);
+        $affiliate = Affiliate::factory()->create(['email' => 'sara@example.com']);
 
         $response = $this->postJson(self::LOGIN_URL, [
             'store_slug' => $affiliate->store->slug,
-            'identifier' => '010 5555 6666',
+            'email' => ' SARA@example.com ',
             'password' => 'password1',
         ]);
 
@@ -37,22 +37,22 @@ class AffiliateAuthControllerTest extends TestCase
         $this->assertTrue($affiliate->fresh()->last_active_at->equalTo(now()));
     }
 
-    public function test_login_with_email_succeeds(): void
+    public function test_login_with_a_phone_number_is_rejected(): void
     {
-        $affiliate = Affiliate::factory()->create(['email' => 'sara@example.com']);
+        $affiliate = Affiliate::factory()->create(['phone' => '01055556666']);
 
-        $this->postJson(self::LOGIN_URL, ['store_slug' => $affiliate->store->slug, 'identifier' => 'SARA@example.com', 'password' => 'password1'])
-            ->assertOk();
+        $this->postJson(self::LOGIN_URL, ['store_slug' => $affiliate->store->slug, 'email' => '01055556666', 'password' => 'password1'])
+            ->assertJsonValidationErrors(['email' => 'صيغة البريد الإلكتروني غير صحيحة']);
     }
 
     public function test_login_is_scoped_to_the_given_store(): void
     {
-        $affiliate = Affiliate::factory()->create(['phone' => '01055556666']);
+        $affiliate = Affiliate::factory()->create(['email' => 'sara@example.com']);
         $otherStore = Store::factory()->create();
 
-        $this->postJson(self::LOGIN_URL, ['store_slug' => $otherStore->slug, 'identifier' => '01055556666', 'password' => 'password1'])
+        $this->postJson(self::LOGIN_URL, ['store_slug' => $otherStore->slug, 'email' => 'sara@example.com', 'password' => 'password1'])
             ->assertUnprocessable()
-            ->assertJsonValidationErrors(['identifier' => 'رقم الهاتف / البريد الإلكتروني أو كلمة المرور غير صحيحة']);
+            ->assertJsonValidationErrors(['email' => 'البريد الإلكتروني أو كلمة المرور غير صحيحة']);
         $this->assertSame(0, $affiliate->tokens()->count());
     }
 
@@ -60,9 +60,9 @@ class AffiliateAuthControllerTest extends TestCase
     {
         $affiliate = Affiliate::factory()->create();
 
-        $this->postJson(self::LOGIN_URL, ['store_slug' => $affiliate->store->slug, 'identifier' => $affiliate->phone, 'password' => 'wrong-pass1'])
+        $this->postJson(self::LOGIN_URL, ['store_slug' => $affiliate->store->slug, 'email' => $affiliate->email, 'password' => 'wrong-pass1'])
             ->assertUnprocessable()
-            ->assertJsonValidationErrors(['identifier' => 'رقم الهاتف / البريد الإلكتروني أو كلمة المرور غير صحيحة']);
+            ->assertJsonValidationErrors(['email' => 'البريد الإلكتروني أو كلمة المرور غير صحيحة']);
     }
 
     public function test_pending_and_frozen_status_is_revealed_only_after_the_correct_password(): void
@@ -70,16 +70,16 @@ class AffiliateAuthControllerTest extends TestCase
         $pending = Affiliate::factory()->pending()->create();
         $frozen = Affiliate::factory()->frozen()->create();
 
-        $this->postJson(self::LOGIN_URL, ['store_slug' => $pending->store->slug, 'identifier' => $pending->phone, 'password' => 'wrong-pass1'])
-            ->assertJsonValidationErrors(['identifier' => 'رقم الهاتف / البريد الإلكتروني أو كلمة المرور غير صحيحة']);
+        $this->postJson(self::LOGIN_URL, ['store_slug' => $pending->store->slug, 'email' => $pending->email, 'password' => 'wrong-pass1'])
+            ->assertJsonValidationErrors(['email' => 'البريد الإلكتروني أو كلمة المرور غير صحيحة']);
 
-        $this->postJson(self::LOGIN_URL, ['store_slug' => $pending->store->slug, 'identifier' => $pending->phone, 'password' => 'password1'])
+        $this->postJson(self::LOGIN_URL, ['store_slug' => $pending->store->slug, 'email' => $pending->email, 'password' => 'password1'])
             ->assertUnprocessable()
-            ->assertJsonValidationErrors(['identifier' => 'طلب انضمامك قيد المراجعة، وستتمكن من الدخول فور موافقة صاحب المتجر.']);
+            ->assertJsonValidationErrors(['email' => 'طلب انضمامك قيد المراجعة، وستتمكن من الدخول فور موافقة صاحب المتجر.']);
 
-        $this->postJson(self::LOGIN_URL, ['store_slug' => $frozen->store->slug, 'identifier' => $frozen->phone, 'password' => 'password1'])
+        $this->postJson(self::LOGIN_URL, ['store_slug' => $frozen->store->slug, 'email' => $frozen->email, 'password' => 'password1'])
             ->assertUnprocessable()
-            ->assertJsonValidationErrors(['identifier' => 'حسابك موقوف حالياً، تواصل مع المتجر لمزيد من التفاصيل.']);
+            ->assertJsonValidationErrors(['email' => 'حسابك موقوف حالياً، تواصل مع المتجر لمزيد من التفاصيل.']);
 
         $this->assertSame(0, $pending->tokens()->count() + $frozen->tokens()->count());
     }
@@ -88,17 +88,17 @@ class AffiliateAuthControllerTest extends TestCase
     {
         $affiliate = Affiliate::factory()->create(['password' => null]);
 
-        $this->postJson(self::LOGIN_URL, ['store_slug' => $affiliate->store->slug, 'identifier' => $affiliate->phone, 'password' => ''])
+        $this->postJson(self::LOGIN_URL, ['store_slug' => $affiliate->store->slug, 'email' => $affiliate->email, 'password' => ''])
             ->assertUnprocessable()
             ->assertJsonValidationErrors('password');
-        $this->postJson(self::LOGIN_URL, ['store_slug' => $affiliate->store->slug, 'identifier' => $affiliate->phone, 'password' => 'anything1'])
+        $this->postJson(self::LOGIN_URL, ['store_slug' => $affiliate->store->slug, 'email' => $affiliate->email, 'password' => 'anything1'])
             ->assertUnprocessable()
-            ->assertJsonValidationErrors('identifier');
+            ->assertJsonValidationErrors('email');
     }
 
     public function test_login_rejects_unknown_store(): void
     {
-        $this->postJson(self::LOGIN_URL, ['store_slug' => 'no-such-store', 'identifier' => '01055556666', 'password' => 'password1'])
+        $this->postJson(self::LOGIN_URL, ['store_slug' => 'no-such-store', 'email' => 'sara@example.com', 'password' => 'password1'])
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['store_slug' => 'المتجر غير موجود']);
     }
@@ -106,7 +106,7 @@ class AffiliateAuthControllerTest extends TestCase
     public function test_login_returns_429_after_five_failed_attempts(): void
     {
         $affiliate = Affiliate::factory()->create();
-        $credentials = ['store_slug' => $affiliate->store->slug, 'identifier' => $affiliate->phone];
+        $credentials = ['store_slug' => $affiliate->store->slug, 'email' => $affiliate->email];
 
         foreach (range(1, 5) as $attempt) {
             $this->postJson(self::LOGIN_URL, [...$credentials, 'password' => 'wrong-pass1'])->assertUnprocessable();

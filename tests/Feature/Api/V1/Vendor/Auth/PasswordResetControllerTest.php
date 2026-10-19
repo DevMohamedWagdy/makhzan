@@ -14,12 +14,12 @@ class PasswordResetControllerTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_forgot_password_by_phone_emails_reset_link_to_registered_email(): void
+    public function test_forgot_password_emails_a_reset_link(): void
     {
         Notification::fake();
-        $vendor = Vendor::factory()->withStore()->create(['phone' => '01012345678']);
+        $vendor = Vendor::factory()->withStore()->create(['email' => 'owner@example.com']);
 
-        $this->postJson('/api/v1/vendor/auth/forgot-password', ['identifier' => '01012345678'])
+        $this->postJson('/api/v1/vendor/auth/forgot-password', ['email' => 'OWNER@example.com'])
             ->assertOk()
             ->assertJsonPath('channel', 'email');
 
@@ -33,8 +33,8 @@ class PasswordResetControllerTest extends TestCase
         Notification::fake();
         $known = Vendor::factory()->withStore()->create(['email' => 'known@example.com']);
 
-        $knownResponse = $this->postJson('/api/v1/vendor/auth/forgot-password', ['identifier' => 'known@example.com'])->json();
-        $unknownResponse = $this->postJson('/api/v1/vendor/auth/forgot-password', ['identifier' => 'nobody@example.com'])->json();
+        $knownResponse = $this->postJson('/api/v1/vendor/auth/forgot-password', ['email' => 'known@example.com'])->json();
+        $unknownResponse = $this->postJson('/api/v1/vendor/auth/forgot-password', ['email' => 'nobody@example.com'])->json();
 
         $this->assertSame($knownResponse, $unknownResponse);
         Notification::assertSentTimes(VendorResetPasswordNotification::class, 1);

@@ -68,7 +68,7 @@ return [
         'action' => 'تعيين كلمة مرور جديدة',
         'expiry' => 'ينتهي هذا الرابط خلال :minutes دقيقة ويمكن استخدامه مرة واحدة فقط.',
     ],
-    'vendor_verification_code' => [
+    'email_verification_code' => [
         'subject' => ':code هو كود تفعيل حسابك على Sellygrow',
         'intro' => 'استخدم الكود التالي لتأكيد بريدك الإلكتروني:',
         'expiry' => 'ينتهي هذا الكود خلال :minutes دقائق.',

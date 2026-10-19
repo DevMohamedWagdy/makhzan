@@ -5,10 +5,21 @@ export const affiliatePortalApi = {
     /** Public store identity for store-branded pages. */
     getStore: (slug) => request('GET', `/api/v1/stores/${encodeURIComponent(slug)}`),
 
-    /** @param {{ store_slug: string, identifier: string, password: string, remember: boolean }} payload */
+    /**
+     * `{ token, affiliate }`, or `{ verification_required, challenge, email, resend_in }` when the
+     * email still has to be confirmed with a code.
+     *
+     * @param {{ store_slug: string, email: string, password: string, remember: boolean }} payload
+     */
     login: (payload) => request('POST', '/api/v1/affiliate/auth/login', { body: payload }),
 
-    /** @param {{ store_slug: string, identifier: string }} payload */
+    /** Confirms the emailed 6-digit code; returns `{ token, affiliate }`. */
+    verifyEmail: (challenge, code) => request('POST', '/api/v1/affiliate/auth/verify-email', { body: { challenge, code } }),
+
+    /** Emails a new code for the same challenge. */
+    resendVerification: (challenge) => request('POST', '/api/v1/affiliate/auth/verify-email/resend', { body: { challenge } }),
+
+    /** @param {{ store_slug: string, email: string }} payload */
     forgotPassword: (payload) => request('POST', '/api/v1/affiliate/auth/forgot-password', { body: payload }),
 
     /** @param {{ store_slug: string, affiliate_id: number, token: string, password: string, password_confirmation: string }} payload */

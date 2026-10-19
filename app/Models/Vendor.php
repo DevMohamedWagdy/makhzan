@@ -95,7 +95,7 @@ class Vendor extends Authenticatable implements HasLocalePreference
     }
 
     /**
-     * Whether the account confirmed its email with an emailed code (see VendorEmailVerification).
+     * Whether the account confirmed its email with an emailed code (see EmailVerification).
      */
     public function hasVerifiedEmail(): bool
     {

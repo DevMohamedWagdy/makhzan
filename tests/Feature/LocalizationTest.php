@@ -20,7 +20,7 @@ class LocalizationTest extends TestCase
             ->postJson('/api/v1/vendor/auth/login', [])
             ->assertUnprocessable()
             ->assertHeader('Content-Language', 'ar')
-            ->assertJsonValidationErrors(['identifier' => 'أدخل البريد الإلكتروني أو رقم الهاتف']);
+            ->assertJsonValidationErrors(['email' => 'أدخل البريد الإلكتروني']);
     }
 
     public function test_responds_in_english_when_asked(): void
@@ -29,7 +29,7 @@ class LocalizationTest extends TestCase
             ->postJson('/api/v1/vendor/auth/login', [])
             ->assertUnprocessable()
             ->assertHeader('Content-Language', 'en')
-            ->assertJsonValidationErrors(['identifier' => 'Enter your email address or phone number']);
+            ->assertJsonValidationErrors(['email' => 'Enter your email address']);
     }
 
     public function test_falls_back_to_arabic_for_unsupported_languages(): void

@@ -17,7 +17,7 @@ class ImportAffiliates
 
     /**
      * Imports rows using the CSV template columns. Invalid rows are skipped and reported;
-     * valid rows are imported. Imported affiliates have no password until they set one.
+     * valid rows are imported. Imported affiliates have no password until they set one (by email).
      *
      * @param  iterable<int, array<string, mixed>>  $rows  Each row may carry its original `line` number.
      * @return array{status: string, imported: int, skipped: int, errors: list<array{row: int, message: string}>}
@@ -25,6 +25,7 @@ class ImportAffiliates
     public function handle(Store $store, iterable $rows): array
     {
         $existingPhones = $store->affiliates()->pluck('phone')->flip()->all();
+        $existingEmails = $store->affiliates()->pluck('email')->filter()->map(fn (string $email): string => mb_strtolower($email))->flip()->all();
         $imported = 0;
         $errors = [];
 
@@ -36,6 +37,10 @@ class ImportAffiliates
                 $message = __('affiliates.phone_taken');
             }
 
+            if ($message === null && isset($existingEmails[$attributes['email']])) {
+                $message = __('affiliates.email_taken');
+            }
+
             if ($message !== null) {
                 $errors[] = ['row' => $line, 'message' => $message];
 
@@ -44,6 +49,7 @@ class ImportAffiliates
 
             $this->createAffiliate->handle($store, $attributes, AffiliateSource::BulkImport);
             $existingPhones[$attributes['phone']] = true;
+            $existingEmails[$attributes['email']] = true;
             $imported++;
         }
 
@@ -95,7 +101,7 @@ class ImportAffiliates
         $attributes = [
             'full_name' => $fullName,
             'phone' => $phone,
-            'email' => filled($row['email'] ?? null) ? trim($row['email']) : null,
+            'email' => mb_strtolower(trim((string) ($row['email'] ?? ''))),
             'tier' => $tier?->value,
             'payout_method' => [
                 'type' => $payoutType?->value,
@@ -107,7 +113,7 @@ class ImportAffiliates
         $validator = Validator::make($attributes, [
             'full_name' => ['required', 'string', 'max:255'],
             'phone' => ['required', 'regex:'.PhoneNumber::PATTERN],
-            'email' => ['nullable', 'email', 'max:255'],
+            'email' => ['required', 'email', 'max:255'],
             'tier' => ['required'],
             'payout_method.type' => ['required'],
             'payout_method.account_number' => ['required', 'string', 'max:64'],
@@ -115,6 +121,7 @@ class ImportAffiliates
             'full_name.required' => __('affiliates.import.name_required'),
             'phone.required' => __('affiliates.import.phone_invalid'),
             'phone.regex' => __('affiliates.import.phone_invalid'),
+            'email.required' => __('affiliates.import.email_required'),
             'email.email' => __('affiliates.import.email_invalid'),
             'tier.required' => __('affiliates.tier_unknown'),
             'payout_method.type.required' => __('affiliates.payout_method_unknown'),

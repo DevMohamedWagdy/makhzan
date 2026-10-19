@@ -175,7 +175,7 @@ export function RegisterPage() {
                             <Field label={t('الاسم بالكامل')} error={errors.full_name} required className="sm:col-span-2">
                                 {(props) => <Input {...props} {...bind('full_name')} icon="user" autoComplete="name" placeholder={t('مثال: محمد أحمد علي')} autoFocus />}
                             </Field>
-                            <Field label={t('رقم الهاتف / الواتساب')} error={errors.phone} hint={t('سنستخدمه لإرسال إشعارات الطلبات على الواتساب')} required>
+                            <Field label={t('رقم الهاتف / الواتساب')} error={errors.phone} required>
                                 {(props) => <Input {...props} {...bind('phone')} icon="phone" type="tel" dir="ltr" inputMode="tel" className="text-start" autoComplete="tel" placeholder="01012345678" />}
                             </Field>
                             <Field label={t('البريد الإلكتروني')} error={errors.email} required>

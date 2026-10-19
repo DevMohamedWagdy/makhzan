@@ -13,15 +13,33 @@ export function AffiliateAuthProvider({ children }) {
     const { impersonation, stopImpersonating } = useAuth();
     const [session, setSession] = useState(() => affiliateSessionStore.get());
 
-    const login = useCallback(async ({ storeSlug, identifier, password, remember }) => {
-        const { token, affiliate } = await affiliatePortalApi.login({ store_slug: storeSlug, identifier, password, remember });
-
+    const startSession = useCallback(({ token, affiliate }, storeSlug, remember) => {
         affiliateSessionStore.set({ token, affiliate }, remember);
         lastAffiliateStore.set(storeSlug);
         setSession({ token, affiliate });
 
         return affiliate;
     }, []);
+
+    /** Resolves to `{ affiliate }`, or `{ verification }` when an emailed code has to be entered first. */
+    const login = useCallback(
+        async ({ storeSlug, email, password, remember }) => {
+            const result = await affiliatePortalApi.login({ store_slug: storeSlug, email, password, remember });
+
+            if (result.verification_required) {
+                return { verification: { ...result, remember } };
+            }
+
+            return { affiliate: startSession(result, storeSlug, remember) };
+        },
+        [startSession],
+    );
+
+    /** Signs in with the emailed code. */
+    const verifyEmail = useCallback(
+        async ({ storeSlug, challenge, code, remember }) => startSession(await affiliatePortalApi.verifyEmail(challenge, code), storeSlug, remember),
+        [startSession],
+    );
 
     const clearSession = useCallback(() => {
         affiliateSessionStore.clear();
@@ -58,9 +76,10 @@ export function AffiliateAuthProvider({ children }) {
             isImpersonating: Boolean(impersonation?.token),
             storeSlug: impersonation?.affiliate?.store?.slug ?? session?.affiliate?.store?.slug ?? lastAffiliateStore.get(),
             login,
+            verifyEmail,
             logout,
         }),
-        [impersonation, session, login, logout],
+        [impersonation, session, login, verifyEmail, logout],
     );
 
     return <AffiliateAuthContext.Provider value={value}>{children}</AffiliateAuthContext.Provider>;

@@ -6,21 +6,18 @@ import { Field, Input } from '@/components/ui/Form';
 import { Icon } from '@/components/ui/Icon';
 import { useForm } from '@/hooks/useForm';
 import { t } from '@/i18n';
-import { isEmail, isPhone, rules } from '@/lib/validators';
+import { isEmail, rules } from '@/lib/validators';
 import { authApi } from '@/services/authApi';
 
 const schema = {
-    identifier: [
-        rules.required(t('أدخل البريد الإلكتروني أو رقم الهاتف')),
-        (value) => (value && !isEmail(value) && !isPhone(value) ? t('أدخل بريداً إلكترونياً صحيحاً أو رقم هاتف صحيح') : null),
-    ],
+    email: [rules.required(t('أدخل البريد الإلكتروني')), (value) => (value && !isEmail(value) ? t('أدخل بريداً إلكترونياً صحيحاً') : null)],
 };
 
 export function ForgotPasswordPage() {
     const location = useLocation();
     const [result, setResult] = useState(null);
     const [submitting, setSubmitting] = useState(false);
-    const { values, errors, setErrors, bind, validateFields } = useForm({ identifier: location.state?.identifier ?? '' }, schema);
+    const { values, errors, setErrors, bind, validateFields } = useForm({ email: location.state?.email ?? '' }, schema);
 
     const onSubmit = async (event) => {
         event.preventDefault();
@@ -32,9 +29,9 @@ export function ForgotPasswordPage() {
         setSubmitting(true);
 
         try {
-            setResult(await authApi.forgotPassword(values.identifier));
+            setResult(await authApi.forgotPassword(values.email));
         } catch (error) {
-            setErrors({ identifier: error.errors?.identifier ?? error.message });
+            setErrors({ email: error.errors?.email ?? error.message });
         } finally {
             setSubmitting(false);
         }
@@ -51,7 +48,7 @@ export function ForgotPasswordPage() {
                     <p className="mt-3 text-sm leading-relaxed text-muted">
                         {result.message}
                         <br />
-                        {t('أرسلنا التعليمات إلى')} <span className="ltr font-semibold text-ink">{values.identifier}</span>
+                        {t('أرسلنا التعليمات إلى')} <span className="ltr font-semibold text-ink">{values.email}</span>
                     </p>
                     <div className="mt-8 flex flex-col gap-3">
                         <Button to="/login" size="lg" className="w-full" icon="arrow-right">
@@ -71,11 +68,11 @@ export function ForgotPasswordPage() {
             <span className="mb-6 grid size-14 place-items-center rounded-2xl bg-primary-soft text-primary">
                 <Icon name="lock" className="size-7" />
             </span>
-            <AuthHeading title={t('نسيت كلمة المرور؟')} subtitle={t('لا تقلق، أدخل بريدك الإلكتروني أو رقم هاتفك المسجل وسنرسل لك رابطاً لإعادة تعيين كلمة المرور.')} />
+            <AuthHeading title={t('نسيت كلمة المرور؟')} subtitle={t('لا تقلق، أدخل بريدك الإلكتروني المسجل وسنرسل لك رابطاً لإعادة تعيين كلمة المرور.')} />
 
             <form onSubmit={onSubmit} noValidate className="flex flex-col gap-5">
-                <Field label={t('البريد الإلكتروني أو رقم الهاتف')} error={errors.identifier} required>
-                    {(props) => <Input {...props} {...bind('identifier')} icon="mail" dir="ltr" className="text-start" autoComplete="username" placeholder="name@example.com" autoFocus />}
+                <Field label={t('البريد الإلكتروني')} error={errors.email} required>
+                    {(props) => <Input {...props} {...bind('email')} type="email" icon="mail" dir="ltr" className="text-start" autoComplete="username" placeholder="name@example.com" autoFocus />}
                 </Field>
                 <Button type="submit" size="lg" loading={submitting} className="w-full">
                     {t('إرسال رابط إعادة التعيين')}

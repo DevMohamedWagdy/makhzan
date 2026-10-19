@@ -2,16 +2,15 @@
 
 namespace App\Notifications;
 
-use App\Models\Vendor;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
 /**
- * The 6-digit code a vendor enters to confirm their email before their first sign-in. Sent
+ * The 6-digit code a vendor or affiliate enters to confirm their email before signing in. Sent
  * right away rather than queued: they are waiting on the screen for it.
  */
-class VendorVerificationCodeNotification extends Notification
+class EmailVerificationCodeNotification extends Notification
 {
     use Queueable;
 
@@ -30,14 +29,14 @@ class VendorVerificationCodeNotification extends Notification
     /**
      * Get the mail representation of the notification.
      */
-    public function toMail(Vendor $notifiable): MailMessage
+    public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject(__('notifications.vendor_verification_code.subject', ['code' => $this->code]))
+            ->subject(__('notifications.email_verification_code.subject', ['code' => $this->code]))
             ->greeting(__('notifications.greeting', ['name' => $notifiable->full_name]))
-            ->line(__('notifications.vendor_verification_code.intro'))
+            ->line(__('notifications.email_verification_code.intro'))
             ->line('# '.$this->code)
-            ->line(__('notifications.vendor_verification_code.expiry', ['minutes' => $this->expiresInMinutes]))
-            ->line(__('notifications.vendor_verification_code.ignore'));
+            ->line(__('notifications.email_verification_code.expiry', ['minutes' => $this->expiresInMinutes]))
+            ->line(__('notifications.email_verification_code.ignore'));
     }
 }

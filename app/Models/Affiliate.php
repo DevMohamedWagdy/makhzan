@@ -66,6 +66,7 @@ class Affiliate extends Authenticatable implements HasLocalePreference
     {
         return [
             'password' => 'hashed',
+            'email_verified_at' => 'datetime',
             'status' => AffiliateStatus::class,
             'tier' => AffiliateTier::class,
             'source' => AffiliateSource::class,
@@ -177,6 +178,14 @@ class Affiliate extends Authenticatable implements HasLocalePreference
     protected function avatarUrl(): Attribute
     {
         return Attribute::get(fn (): ?string => $this->avatar_path ? Storage::disk('public')->url($this->avatar_path) : null);
+    }
+
+    /**
+     * Whether the affiliate confirmed their email with an emailed code (see EmailVerification).
+     */
+    public function hasVerifiedEmail(): bool
+    {
+        return $this->email_verified_at !== null;
     }
 
     /**

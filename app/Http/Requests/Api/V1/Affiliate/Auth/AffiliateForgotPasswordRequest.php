@@ -17,7 +17,7 @@ class AffiliateForgotPasswordRequest extends FormRequest
     {
         return [
             'store_slug' => ['required', 'string', Rule::exists('stores', 'slug')],
-            'identifier' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255'],
         ];
     }
 
@@ -29,7 +29,8 @@ class AffiliateForgotPasswordRequest extends FormRequest
         return [
             'store_slug.required' => __('forms.store_missing'),
             'store_slug.exists' => __('forms.store_not_found'),
-            'identifier.required' => __('forms.affiliate_identifier_required'),
+            'email.required' => __('forms.email_required'),
+            'email.email' => __('forms.email_invalid'),
         ];
     }
 }

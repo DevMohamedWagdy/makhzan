@@ -44,6 +44,8 @@ class RegisterAffiliateRequest extends StoreAffiliateRequest
             'full_name.required' => __('forms.full_name_required'),
             'phone.required' => __('forms.phone_required'),
             'phone.unique' => __('affiliates.phone_taken_in_store'),
+            'email.required' => __('forms.email_required'),
+            'email.unique' => __('affiliates.email_taken_in_store'),
             'password.required' => __('forms.password_required'),
         ];
     }

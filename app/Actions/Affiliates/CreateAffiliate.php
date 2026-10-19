@@ -15,7 +15,7 @@ class CreateAffiliate
      * Creates an affiliate under the store's vendor and, if active, its first referral code.
      *
      * @param  array{
-     *     full_name: string, phone: string, email?: string|null, password?: string|null, tier: string,
+     *     full_name: string, phone: string, email: string, password?: string|null, tier: string,
      *     payout_method: array{type: string, account_name: string, account_number: string, bank_name?: string|null, iban?: string|null},
      * }  $attributes
      */
@@ -32,7 +32,7 @@ class CreateAffiliate
             $affiliate = new Affiliate([
                 'full_name' => $attributes['full_name'],
                 'phone' => $attributes['phone'],
-                'email' => $attributes['email'] ?? null,
+                'email' => $attributes['email'],
                 'password' => $attributes['password'] ?? null,
                 'avatar_path' => $avatarPath,
                 'status' => $status,

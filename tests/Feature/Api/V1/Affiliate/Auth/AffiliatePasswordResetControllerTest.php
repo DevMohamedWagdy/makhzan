@@ -19,7 +19,7 @@ class AffiliatePasswordResetControllerTest extends TestCase
 
     private const RESET_URL = '/api/v1/affiliate/auth/reset-password';
 
-    private const GENERIC_MESSAGE = 'إذا كان لحسابك بريد إلكتروني مسجل، ستصلك رسالة بها رابط لتعيين كلمة مرور جديدة خلال دقائق.';
+    private const GENERIC_MESSAGE = 'إذا كان الحساب موجوداً، ستصلك رسالة بها رابط لتعيين كلمة مرور جديدة خلال دقائق.';
 
     /**
      * Requests a link and returns the plain token captured from the notification.
@@ -28,7 +28,7 @@ class AffiliatePasswordResetControllerTest extends TestCase
     {
         Notification::fake();
 
-        $this->postJson(self::FORGOT_URL, ['store_slug' => $affiliate->store->slug, 'identifier' => $affiliate->phone])->assertOk();
+        $this->postJson(self::FORGOT_URL, ['store_slug' => $affiliate->store->slug, 'email' => $affiliate->email])->assertOk();
 
         $token = null;
         Notification::assertSentTo($affiliate, AffiliateResetPasswordNotification::class, function (AffiliateResetPasswordNotification $notification) use (&$token): bool {
@@ -55,12 +55,12 @@ class AffiliatePasswordResetControllerTest extends TestCase
         ];
     }
 
-    public function test_forgot_password_by_phone_emails_a_store_scoped_link(): void
+    public function test_forgot_password_emails_a_store_scoped_link(): void
     {
         Notification::fake();
-        $affiliate = Affiliate::factory()->create(['email' => 'sara@example.com', 'phone' => '01055556666']);
+        $affiliate = Affiliate::factory()->create(['email' => 'sara@example.com']);
 
-        $this->postJson(self::FORGOT_URL, ['store_slug' => $affiliate->store->slug, 'identifier' => '010 5555 6666'])
+        $this->postJson(self::FORGOT_URL, ['store_slug' => $affiliate->store->slug, 'email' => 'sara@example.com'])
             ->assertOk()
             ->assertExactJson(['message' => self::GENERIC_MESSAGE]);
 
@@ -70,12 +70,12 @@ class AffiliatePasswordResetControllerTest extends TestCase
         $this->assertDatabaseHas('affiliate_password_reset_tokens', ['affiliate_id' => $affiliate->id]);
     }
 
-    public function test_forgot_password_by_email_works(): void
+    public function test_forgot_password_ignores_email_case(): void
     {
         Notification::fake();
         $affiliate = Affiliate::factory()->create(['email' => 'sara@example.com']);
 
-        $this->postJson(self::FORGOT_URL, ['store_slug' => $affiliate->store->slug, 'identifier' => 'SARA@example.com'])->assertOk();
+        $this->postJson(self::FORGOT_URL, ['store_slug' => $affiliate->store->slug, 'email' => 'SARA@example.com'])->assertOk();
 
         Notification::assertSentTo($affiliate, AffiliateResetPasswordNotification::class);
     }
@@ -83,17 +83,15 @@ class AffiliatePasswordResetControllerTest extends TestCase
     public function test_sends_nothing_but_responds_identically_for_accounts_that_cannot_reset(): void
     {
         Notification::fake();
-        $noEmail = Affiliate::factory()->create(['email' => null]);
         $pending = Affiliate::factory()->pending()->create(['email' => 'pending@example.com']);
         $frozen = Affiliate::factory()->frozen()->create(['email' => 'frozen@example.com']);
         $otherStore = Store::factory()->create();
 
         $requests = [
-            ['store_slug' => $noEmail->store->slug, 'identifier' => $noEmail->phone],
-            ['store_slug' => $pending->store->slug, 'identifier' => $pending->phone],
-            ['store_slug' => $frozen->store->slug, 'identifier' => $frozen->phone],
-            ['store_slug' => $otherStore->slug, 'identifier' => $frozen->phone],
-            ['store_slug' => $otherStore->slug, 'identifier' => '01099999999'],
+            ['store_slug' => $pending->store->slug, 'email' => $pending->email],
+            ['store_slug' => $frozen->store->slug, 'email' => $frozen->email],
+            ['store_slug' => $otherStore->slug, 'email' => $frozen->email],
+            ['store_slug' => $otherStore->slug, 'email' => 'nobody@example.com'],
         ];
 
         foreach ($requests as $payload) {
@@ -107,7 +105,7 @@ class AffiliatePasswordResetControllerTest extends TestCase
     {
         Notification::fake();
         $affiliate = Affiliate::factory()->create(['email' => 'sara@example.com']);
-        $payload = ['store_slug' => $affiliate->store->slug, 'identifier' => $affiliate->phone];
+        $payload = ['store_slug' => $affiliate->store->slug, 'email' => $affiliate->email];
 
         $this->postJson(self::FORGOT_URL, $payload)->assertOk();
         $this->postJson(self::FORGOT_URL, $payload)->assertOk();
@@ -117,7 +115,7 @@ class AffiliatePasswordResetControllerTest extends TestCase
 
     public function test_forgot_password_rejects_unknown_store(): void
     {
-        $this->postJson(self::FORGOT_URL, ['store_slug' => 'no-such-store', 'identifier' => '01055556666'])
+        $this->postJson(self::FORGOT_URL, ['store_slug' => 'no-such-store', 'email' => 'sara@example.com'])
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['store_slug' => 'المتجر غير موجود']);
     }
@@ -148,7 +146,7 @@ class AffiliatePasswordResetControllerTest extends TestCase
 
         $this->postJson(self::RESET_URL, $this->resetPayload($affiliate, $token))->assertOk();
 
-        $this->postJson('/api/v1/affiliate/auth/login', ['store_slug' => $affiliate->store->slug, 'identifier' => $affiliate->phone, 'password' => 'BrandNew2026'])
+        $this->postJson('/api/v1/affiliate/auth/login', ['store_slug' => $affiliate->store->slug, 'email' => $affiliate->email, 'password' => 'BrandNew2026'])
             ->assertOk();
     }
 
@@ -198,7 +196,7 @@ class AffiliatePasswordResetControllerTest extends TestCase
     public function test_forgot_password_is_rate_limited(): void
     {
         $affiliate = Affiliate::factory()->create();
-        $payload = ['store_slug' => $affiliate->store->slug, 'identifier' => $affiliate->phone];
+        $payload = ['store_slug' => $affiliate->store->slug, 'email' => $affiliate->email];
 
         foreach (range(1, 3) as $attempt) {
             $this->postJson(self::FORGOT_URL, $payload)->assertOk();

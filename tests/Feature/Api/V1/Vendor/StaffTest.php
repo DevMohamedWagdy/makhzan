@@ -151,7 +151,7 @@ class StaffTest extends TestCase
     {
         $this->staff(['orders.view'])->forceFill(['email_verified_at' => now()])->save();
 
-        $this->postJson('/api/v1/vendor/auth/login', ['identifier' => '01077778888', 'password' => 'Staff2026pass'])
+        $this->postJson('/api/v1/vendor/auth/login', ['email' => 'ahmed@noor.test', 'password' => 'Staff2026pass'])
             ->assertOk()
             ->assertJsonPath('vendor.role', 'staff')
             ->assertJsonPath('vendor.permissions', ['orders.view'])
@@ -307,7 +307,7 @@ class StaffTest extends TestCase
         $this->putJson("/api/v1/vendor/staff/{$staff->id}", $this->payload($staff->role, ['is_active' => false]))->assertOk()->assertJsonPath('data.is_active', false);
 
         $this->assertSame(0, $staff->tokens()->count());
-        $this->postJson('/api/v1/vendor/auth/login', ['identifier' => 'ahmed@noor.test', 'password' => 'Staff2026pass'])->assertJsonValidationErrors('identifier');
+        $this->postJson('/api/v1/vendor/auth/login', ['email' => 'ahmed@noor.test', 'password' => 'Staff2026pass'])->assertJsonValidationErrors('email');
     }
 
     public function test_owners_cannot_manage_another_stores_staff_or_roles(): void

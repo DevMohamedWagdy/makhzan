@@ -5,7 +5,6 @@ namespace App\Http\Requests\Api\V1\Affiliate\Auth;
 use App\Enums\AffiliateStatus;
 use App\Models\Affiliate;
 use App\Models\Store;
-use App\Support\PhoneNumber;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -27,9 +26,9 @@ class AffiliateLoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            // Affiliates belong to one store; the same phone may exist in several stores.
+            // Affiliates belong to one store; the same email may exist in several stores.
             'store_slug' => ['required', 'string', Rule::exists('stores', 'slug')],
-            'identifier' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255'],
             'password' => ['required', 'string'],
             'remember' => ['sometimes', 'boolean'],
         ];
@@ -43,14 +42,15 @@ class AffiliateLoginRequest extends FormRequest
         return [
             'store_slug.required' => __('forms.store_missing'),
             'store_slug.exists' => __('forms.store_not_found'),
-            'identifier.required' => __('forms.affiliate_identifier_required'),
+            'email.required' => __('forms.email_required'),
+            'email.email' => __('forms.email_invalid'),
             'password.required' => __('forms.password_required'),
         ];
     }
 
     /**
      * Verifies credentials within the store. The account status is only revealed after the
-     * password matches, so a pending or frozen account can't be probed by phone number.
+     * password matches, so a pending or frozen account can't be probed by email.
      * Imported affiliates without a password get the generic failure until the vendor sets one.
      *
      * @throws ValidationException
@@ -60,11 +60,7 @@ class AffiliateLoginRequest extends FormRequest
         $this->ensureIsNotRateLimited();
 
         $store = Store::query()->where('slug', $this->string('store_slug'))->firstOrFail();
-        $identifier = trim($this->string('identifier')->toString());
-
-        $affiliate = $store->affiliates()
-            ->where(fn ($query) => $query->where('phone', PhoneNumber::normalize($identifier))->orWhere('email', Str::lower($identifier)))
-            ->first();
+        $affiliate = $store->affiliates()->where('email', Str::lower(trim($this->string('email')->toString())))->first();
 
         // Hash::check runs on a miss too, so response time doesn't reveal unknown accounts.
         $passwordMatches = Hash::check($this->string('password')->toString(), $affiliate?->password ?? Hash::make(Str::random()));
@@ -72,7 +68,7 @@ class AffiliateLoginRequest extends FormRequest
         if (! $affiliate || ! $affiliate->password || ! $passwordMatches) {
             RateLimiter::hit($this->throttleKey());
 
-            throw ValidationException::withMessages(['identifier' => __('auth.affiliate_invalid_credentials')]);
+            throw ValidationException::withMessages(['email' => __('auth.affiliate_invalid_credentials')]);
         }
 
         RateLimiter::clear($this->throttleKey());
@@ -84,7 +80,7 @@ class AffiliateLoginRequest extends FormRequest
         };
 
         if ($statusMessage) {
-            throw ValidationException::withMessages(['identifier' => $statusMessage]);
+            throw ValidationException::withMessages(['email' => $statusMessage]);
         }
 
         return $affiliate;
@@ -104,12 +100,12 @@ class AffiliateLoginRequest extends FormRequest
         $minutes = (int) ceil(RateLimiter::availableIn($this->throttleKey()) / 60);
 
         throw ValidationException::withMessages([
-            'identifier' => __('auth.throttle_minutes', ['minutes' => $minutes]),
+            'email' => __('auth.throttle_minutes', ['minutes' => $minutes]),
         ])->status(429);
     }
 
     private function throttleKey(): string
     {
-        return 'affiliate|'.Str::transliterate(Str::lower($this->string('store_slug').'|'.$this->string('identifier')).'|'.$this->ip());
+        return 'affiliate|'.Str::transliterate(Str::lower($this->string('store_slug').'|'.trim($this->string('email'))).'|'.$this->ip());
     }
 }

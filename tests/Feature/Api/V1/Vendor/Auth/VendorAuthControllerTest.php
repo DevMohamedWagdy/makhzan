@@ -4,7 +4,7 @@ namespace Tests\Feature\Api\V1\Vendor\Auth;
 
 use App\Models\Store;
 use App\Models\Vendor;
-use App\Notifications\VendorVerificationCodeNotification;
+use App\Notifications\EmailVerificationCodeNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Notification;
@@ -49,7 +49,7 @@ class VendorAuthControllerTest extends TestCase
     {
         $vendor = Vendor::factory()->withStore()->create(['email' => 'owner@example.com']);
 
-        $response = $this->postJson(self::LOGIN_URL, ['identifier' => 'OWNER@example.com', 'password' => 'password1']);
+        $response = $this->postJson(self::LOGIN_URL, ['email' => 'OWNER@example.com', 'password' => 'password1']);
 
         $response->assertOk()
             ->assertJsonPath('vendor.vendor_id', $vendor->id)
@@ -59,11 +59,12 @@ class VendorAuthControllerTest extends TestCase
         $this->assertTrue(PersonalAccessToken::findToken($response->json('token'))->can(Vendor::TOKEN_ABILITY));
     }
 
-    public function test_login_with_arabic_digit_phone_succeeds(): void
+    public function test_login_with_a_phone_number_is_rejected(): void
     {
         Vendor::factory()->withStore()->create(['phone' => '01012345678']);
 
-        $this->postJson(self::LOGIN_URL, ['identifier' => '٠١٠١٢٣٤٥٦٧٨', 'password' => 'password1'])->assertOk();
+        $this->postJson(self::LOGIN_URL, ['email' => '01012345678', 'password' => 'password1'])
+            ->assertJsonValidationErrors(['email' => 'صيغة البريد الإلكتروني غير صحيحة']);
     }
 
     public function test_remember_me_issues_30_day_token_and_default_issues_12_hour_token(): void
@@ -71,8 +72,8 @@ class VendorAuthControllerTest extends TestCase
         $this->freezeSecond();
         Vendor::factory()->withStore()->create(['email' => 'owner@example.com']);
 
-        $remembered = $this->postJson(self::LOGIN_URL, ['identifier' => 'owner@example.com', 'password' => 'password1', 'remember' => true]);
-        $session = $this->postJson(self::LOGIN_URL, ['identifier' => 'owner@example.com', 'password' => 'password1']);
+        $remembered = $this->postJson(self::LOGIN_URL, ['email' => 'owner@example.com', 'password' => 'password1', 'remember' => true]);
+        $session = $this->postJson(self::LOGIN_URL, ['email' => 'owner@example.com', 'password' => 'password1']);
 
         $this->assertTrue(PersonalAccessToken::findToken($remembered->json('token'))->expires_at->equalTo(now()->addDays(30)));
         $this->assertTrue(PersonalAccessToken::findToken($session->json('token'))->expires_at->equalTo(now()->addHours(12)));
@@ -82,9 +83,9 @@ class VendorAuthControllerTest extends TestCase
     {
         Vendor::factory()->withStore()->create(['email' => 'owner@example.com']);
 
-        $this->postJson(self::LOGIN_URL, ['identifier' => 'owner@example.com', 'password' => 'wrong-pass1'])
+        $this->postJson(self::LOGIN_URL, ['email' => 'owner@example.com', 'password' => 'wrong-pass1'])
             ->assertUnprocessable()
-            ->assertJsonValidationErrors(['identifier' => 'البريد الإلكتروني / رقم الهاتف أو كلمة المرور غير صحيحة']);
+            ->assertJsonValidationErrors(['email' => 'البريد الإلكتروني أو كلمة المرور غير صحيحة']);
     }
 
     public function test_login_returns_429_after_five_failed_attempts(): void
@@ -92,12 +93,12 @@ class VendorAuthControllerTest extends TestCase
         Vendor::factory()->withStore()->create(['email' => 'owner@example.com']);
 
         foreach (range(1, 5) as $attempt) {
-            $this->postJson(self::LOGIN_URL, ['identifier' => 'owner@example.com', 'password' => 'wrong-pass1'])->assertUnprocessable();
+            $this->postJson(self::LOGIN_URL, ['email' => 'owner@example.com', 'password' => 'wrong-pass1'])->assertUnprocessable();
         }
 
-        $this->postJson(self::LOGIN_URL, ['identifier' => 'owner@example.com', 'password' => 'password1'])
+        $this->postJson(self::LOGIN_URL, ['email' => 'owner@example.com', 'password' => 'password1'])
             ->assertTooManyRequests()
-            ->assertJsonValidationErrors('identifier');
+            ->assertJsonValidationErrors('email');
     }
 
     public function test_register_creates_vendor_and_store_and_signs_in_after_the_emailed_code(): void
@@ -121,7 +122,7 @@ class VendorAuthControllerTest extends TestCase
         Storage::disk('public')->assertExists($vendor->store->logo_path);
 
         $code = null;
-        Notification::assertSentTo($vendor, VendorVerificationCodeNotification::class, function (VendorVerificationCodeNotification $notification) use (&$code): bool {
+        Notification::assertSentTo($vendor, EmailVerificationCodeNotification::class, function (EmailVerificationCodeNotification $notification) use (&$code): bool {
             $code = $notification->code;
 
             return true;

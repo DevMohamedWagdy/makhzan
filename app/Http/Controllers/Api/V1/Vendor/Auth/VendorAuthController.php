@@ -10,7 +10,7 @@ use App\Models\Admin;
 use App\Models\Vendor;
 use App\Notifications\AdminAlertNotification;
 use App\Support\ActivityLogger;
-use App\Support\VendorEmailVerification;
+use App\Support\EmailVerification;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -20,7 +20,7 @@ use Illuminate\Validation\ValidationException;
 class VendorAuthController extends Controller
 {
     /**
-     * Log in with email or phone and receive a bearer token. An account whose email isn't
+     * Log in with email and receive a bearer token. An account whose email isn't
      * confirmed yet gets a verification code instead, and the token once it's entered.
      */
     public function login(LoginRequest $request): JsonResponse
@@ -28,7 +28,7 @@ class VendorAuthController extends Controller
         $vendor = $request->authenticate();
 
         if (! $vendor->hasVerifiedEmail()) {
-            return response()->json(VendorEmailVerification::start($vendor, $request->boolean('remember')));
+            return response()->json(EmailVerification::start($vendor, $request->boolean('remember')));
         }
 
         return $this->signIn($request, $vendor, $request->boolean('remember'));
@@ -57,7 +57,7 @@ class VendorAuthController extends Controller
         $store = $vendor->store()->first();
         Admin::notifyTeam(new AdminAlertNotification(AdminAlertNotification::STORE_REGISTERED, ['store_id' => $store->id, 'store_name' => $store->name, 'owner_name' => $vendor->full_name]));
 
-        return response()->json(VendorEmailVerification::start($vendor, remember: true), Response::HTTP_CREATED);
+        return response()->json(EmailVerification::start($vendor, remember: true), Response::HTTP_CREATED);
     }
 
     /**
@@ -70,7 +70,7 @@ class VendorAuthController extends Controller
             'code' => ['required', 'digits:6'],
         ], ['code.required' => __('auth.verification_code_invalid'), 'code.digits' => __('auth.verification_code_invalid')]);
 
-        ['vendor' => $vendor, 'remember' => $remember] = VendorEmailVerification::verify($validated['challenge'], $validated['code']);
+        ['account' => $vendor, 'remember' => $remember] = EmailVerification::verify('vendor', $validated['challenge'], $validated['code']);
 
         if ($vendor->is_active === false) {
             throw ValidationException::withMessages(['code' => __('auth.staff_inactive')]);
@@ -86,7 +86,7 @@ class VendorAuthController extends Controller
     {
         $validated = $request->validate(['challenge' => ['required', 'string', 'max:64']]);
 
-        return response()->json(VendorEmailVerification::resend($validated['challenge']));
+        return response()->json(EmailVerification::resend('vendor', $validated['challenge']));
     }
 
     /**

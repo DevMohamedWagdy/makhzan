@@ -22,7 +22,7 @@ function buildSchema(isEdit) {
     return (values) => ({
         full_name: [rules.required(t('أدخل اسم المسوق بالكامل')), rules.minLength(5, t('اكتب الاسم الثنائي على الأقل'))],
         phone: [rules.required(t('أدخل رقم هاتف المسوق')), rules.phone()],
-        email: [rules.email()],
+        email: [rules.required(t('أدخل البريد الإلكتروني للمسوق')), rules.email()],
         // On edit, password is optional: leaving it blank keeps the current one.
         password: isEdit ? [rules.password()] : [rules.required(t('أدخل كلمة مرور للمسوق')), rules.password()],
         password_confirmation: isEdit && !values.password ? [] : [rules.required(t('أعد كتابة كلمة المرور')), rules.matches('password')],
@@ -83,7 +83,7 @@ export function AffiliateForm({ affiliate, onSaved, onCancel }) {
         const payload = {
             full_name: values.full_name.trim(),
             phone: normalizePhone(values.phone),
-            email: values.email.trim() || null,
+            email: values.email.trim().toLowerCase(),
             tier: values.tier,
             ...(values.password && { password: values.password, password_confirmation: values.password_confirmation }),
             ...(values.avatar instanceof File && { avatar: values.avatar }),
@@ -131,7 +131,7 @@ export function AffiliateForm({ affiliate, onSaved, onCancel }) {
                 <Field label={t('رقم الهاتف')} error={errors.phone} required>
                     {(props) => <Input {...props} {...bind('phone')} icon="phone" type="tel" dir="ltr" className="text-start" placeholder="01012345678" />}
                 </Field>
-                <Field label={t('البريد الإلكتروني')} optional error={errors.email}>
+                <Field label={t('البريد الإلكتروني')} hint={t('يستخدمه المسوق لتسجيل الدخول')} required error={errors.email}>
                     {(props) => <Input {...props} {...bind('email')} icon="mail" type="email" dir="ltr" className="text-start" placeholder="name@example.com" />}
                 </Field>
                 <Field label={isEdit ? t('كلمة مرور جديدة') : t('كلمة المرور')} error={errors.password} hint={isEdit ? t('اتركها فارغة للإبقاء على كلمة المرور الحالية') : undefined} required={!isEdit}>

@@ -14,11 +14,14 @@ use Illuminate\Validation\Rule;
 class StoreAffiliateRequest extends FormRequest
 {
     /**
-     * Normalize the phone before the per-store uniqueness check.
+     * Normalize the phone and email before the per-store uniqueness checks.
      */
     protected function prepareForValidation(): void
     {
-        $this->merge(['phone' => PhoneNumber::normalize($this->input('phone'))]);
+        $this->merge([
+            'phone' => PhoneNumber::normalize($this->input('phone')),
+            'email' => mb_strtolower(trim((string) $this->input('email'))),
+        ]);
     }
 
     /**
@@ -36,7 +39,13 @@ class StoreAffiliateRequest extends FormRequest
                     ->where('store_id', $this->targetStore()->id)
                     ->ignore($this->editedAffiliate()?->id),
             ],
-            'email' => ['nullable', 'email', 'max:255'],
+            // Affiliates sign in with their email, so it's required and unique within the store.
+            'email' => [
+                'required', 'email', 'max:255',
+                Rule::unique('affiliates', 'email')
+                    ->where('store_id', $this->targetStore()->id)
+                    ->ignore($this->editedAffiliate()?->id),
+            ],
             'password' => [$this->passwordPresence(), 'string', 'min:8', 'regex:/[A-Za-z]/', 'regex:/\d/', 'confirmed'],
             'avatar' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
             'tier' => ['required', Rule::enum(AffiliateTier::class)],
@@ -60,7 +69,9 @@ class StoreAffiliateRequest extends FormRequest
             'phone.required' => __('affiliates.phone_required'),
             'phone.regex' => __('forms.phone_invalid'),
             'phone.unique' => __('affiliates.phone_taken'),
+            'email.required' => __('affiliates.email_required'),
             'email.email' => __('forms.email_invalid'),
+            'email.unique' => __('affiliates.email_taken'),
             'password.required' => __('affiliates.password_required'),
             'password.min' => __('forms.password_rules'),
             'password.regex' => __('forms.password_rules'),

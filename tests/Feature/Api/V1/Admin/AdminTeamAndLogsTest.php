@@ -149,7 +149,7 @@ class AdminTeamAndLogsTest extends TestCase
         $this->getJson('/api/v1/admin/vendors?type=owner&search='.urlencode($owner->email))->assertOk()->assertJsonPath('data.0.store.store_id', $owner->store->id);
 
         $this->patchJson("/api/v1/admin/vendors/{$owner->id}", ['password' => 'NewPass2026', 'is_active' => true])->assertOk();
-        $this->postJson('/api/v1/vendor/auth/login', ['identifier' => $owner->email, 'password' => 'NewPass2026'])->assertOk();
+        $this->postJson('/api/v1/vendor/auth/login', ['email' => $owner->email, 'password' => 'NewPass2026'])->assertOk();
 
         $this->actingAsAdmin();
         $this->patchJson("/api/v1/admin/stores/{$owner->store->id}", ['accepting_orders' => false])->assertOk()->assertJsonPath('data.accepting_orders', false);

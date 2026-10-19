@@ -177,6 +177,8 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
     Route::prefix('affiliate')->name('affiliate.')->group(function () {
         // Login is throttled per store + identifier + IP inside AffiliateLoginRequest.
         Route::post('auth/login', [AffiliateAuthController::class, 'login'])->name('auth.login');
+        Route::post('auth/verify-email', [AffiliateAuthController::class, 'verifyEmail'])->middleware('throttle:20,1')->name('auth.verify-email');
+        Route::post('auth/verify-email/resend', [AffiliateAuthController::class, 'resendVerification'])->middleware('throttle:6,1')->name('auth.verify-email.resend');
         Route::post('auth/forgot-password', [AffiliatePasswordResetController::class, 'store'])->middleware('throttle:affiliate-password')->name('auth.forgot-password');
         Route::post('auth/reset-password', [AffiliatePasswordResetController::class, 'update'])->middleware('throttle:affiliate-password')->name('auth.reset-password');
 
