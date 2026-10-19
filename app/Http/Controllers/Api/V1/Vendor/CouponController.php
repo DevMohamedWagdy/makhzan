@@ -9,8 +9,6 @@ use App\Http\Resources\CouponResource;
 use App\Models\Coupon;
 use App\Models\Store;
 use App\Notifications\AffiliateCouponNotification;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -34,7 +32,7 @@ class CouponController extends Controller
         $store = $request->user()->store;
         $search = Coupon::normalize($filters['search'] ?? '');
 
-        $coupons = $this->withStats($store->coupons())
+        $coupons = $store->coupons()->withUsageStats()
             ->with(['affiliate', 'store'])
             ->inState($filters['state'] ?? null)
             ->when($search !== '', fn ($query) => $query->where('code', 'like', "%{$search}%"))
@@ -112,23 +110,6 @@ class CouponController extends Controller
     }
 
     /**
-     * Uses, discount given and sales from orders that weren't cancelled.
-     *
-     * @param  Builder<Coupon>|HasMany<Coupon, Store>  $query
-     * @return Builder<Coupon>|HasMany<Coupon, Store>
-     */
-    private function withStats(Builder|HasMany $query): Builder|HasMany
-    {
-        $notCancelled = fn ($query) => $query->where('status', '!=', OrderStatus::Cancelled);
-
-        return $query
-            ->withCount(['orders as uses_count' => $notCancelled])
-            ->withSum(['orders as discount_total' => $notCancelled], 'discount')
-            ->withSum(['orders as shipping_discount_total' => $notCancelled], 'shipping_discount')
-            ->withSum(['orders as sales_total' => $notCancelled], 'total');
-    }
-
-    /**
      * Tells the affiliate a coupon now credits its orders to them (active coupons only).
      */
     private function notifyAffiliate(Coupon $coupon): void
@@ -140,6 +121,6 @@ class CouponController extends Controller
 
     private function fresh(Coupon $coupon): Coupon
     {
-        return $this->withStats(Coupon::query()->whereKey($coupon->id))->with(['affiliate', 'store'])->firstOrFail();
+        return Coupon::query()->whereKey($coupon->id)->withUsageStats()->with(['affiliate', 'store'])->firstOrFail();
     }
 }

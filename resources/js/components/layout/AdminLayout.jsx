@@ -19,10 +19,37 @@ const NAV_SECTIONS = [
         items: [
             { label: t('نظرة عامة'), icon: 'grid', to: '/admin', end: true, permission: 'overview.view' },
             { label: t('الإشعارات'), icon: 'bell', to: '/admin/notifications', counter: true },
-            { label: t('المتاجر'), icon: 'store', to: '/admin/stores', permission: 'stores.view' },
-            { label: t('الطلبات'), icon: 'shopping-bag', to: '/admin/orders', permission: 'orders.view' },
-            { label: t('التجار والحسابات'), icon: 'users', to: '/admin/vendors', permission: 'vendors.view' },
             { label: t('تذاكر الدعم'), icon: 'message-square', to: '/admin/support', permission: 'tickets.view' },
+        ],
+    },
+    {
+        title: t('التجار'),
+        items: [
+            { label: t('المتاجر'), icon: 'store', to: '/admin/stores', permission: 'stores.view' },
+            { label: t('التجار والحسابات'), icon: 'users', to: '/admin/vendors', permission: 'vendors.view' },
+        ],
+    },
+    {
+        title: t('المبيعات'),
+        items: [
+            { label: t('الطلبات'), icon: 'shopping-bag', to: '/admin/orders', permission: 'orders.view' },
+            { label: t('المدفوعات'), icon: 'credit-card', to: '/admin/payments', permission: 'payments.view' },
+            { label: t('الكوبونات'), icon: 'percent', to: '/admin/coupons', permission: 'coupons.view' },
+        ],
+    },
+    {
+        title: t('العملاء والمسوّقين'),
+        items: [
+            { label: t('العملاء'), icon: 'user', to: '/admin/customers', permission: 'customers.view' },
+            { label: t('المسوّقين'), icon: 'megaphone', to: '/admin/affiliates', permission: 'affiliates.view' },
+            { label: t('تحويلات المسوّقين'), icon: 'wallet', to: '/admin/payouts', permission: 'affiliates.view' },
+        ],
+    },
+    {
+        title: t('الكتالوج'),
+        items: [
+            { label: t('المنتجات'), icon: 'box', to: '/admin/products', permission: 'products.view' },
+            { label: t('التقييمات'), icon: 'star', to: '/admin/reviews', permission: 'reviews.view' },
         ],
     },
     {

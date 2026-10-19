@@ -25,6 +25,13 @@ const AdminVendorsPage = lazy(() => import('@/pages/admin/AdminVendorsPage').the
 const AdminTeamPage = lazy(() => import('@/pages/admin/AdminTeamPage').then((module) => ({ default: module.AdminTeamPage })));
 const AdminStorePage = lazy(() => import('@/pages/admin/AdminStorePage').then((module) => ({ default: module.AdminStorePage })));
 const AdminOrdersPage = lazy(() => import('@/pages/admin/AdminOrdersPage').then((module) => ({ default: module.AdminOrdersPage })));
+const AdminCustomersPage = lazy(() => import('@/pages/admin/AdminCustomersPage').then((module) => ({ default: module.AdminCustomersPage })));
+const AdminAffiliatesPage = lazy(() => import('@/pages/admin/AdminAffiliatesPage').then((module) => ({ default: module.AdminAffiliatesPage })));
+const AdminPayoutsPage = lazy(() => import('@/pages/admin/AdminPayoutsPage').then((module) => ({ default: module.AdminPayoutsPage })));
+const AdminProductsPage = lazy(() => import('@/pages/admin/AdminProductsPage').then((module) => ({ default: module.AdminProductsPage })));
+const AdminReviewsPage = lazy(() => import('@/pages/admin/AdminReviewsPage').then((module) => ({ default: module.AdminReviewsPage })));
+const AdminPaymentsPage = lazy(() => import('@/pages/admin/AdminPaymentsPage').then((module) => ({ default: module.AdminPaymentsPage })));
+const AdminCouponsPage = lazy(() => import('@/pages/admin/AdminCouponsPage').then((module) => ({ default: module.AdminCouponsPage })));
 const AdminNotificationsPage = lazy(() => import('@/pages/admin/AdminNotificationsPage').then((module) => ({ default: module.AdminNotificationsPage })));
 const AdminLogsPage = lazy(() => import('@/pages/admin/AdminLogsPage').then((module) => ({ default: module.AdminLogsPage })));
 const AdminOverviewPage = lazy(() => import('@/pages/admin/AdminOverviewPage').then((module) => ({ default: module.AdminOverviewPage })));
@@ -299,6 +306,27 @@ export function App() {
                                     <Route element={<RequireAdminPermission permission="stores.view" />}>
                                         <Route path="stores" element={<AdminStoresPage />} />
                                         <Route path="stores/:storeId" element={<AdminStorePage />} />
+                                    </Route>
+                                    <Route element={<RequireAdminPermission permission="customers.view" />}>
+                                        <Route path="customers" element={<AdminCustomersPage />} />
+                                    </Route>
+                                    <Route element={<RequireAdminPermission permission="affiliates.view" />}>
+                                        <Route path="affiliates" element={<AdminAffiliatesPage />} />
+                                    </Route>
+                                    <Route element={<RequireAdminPermission permission="affiliates.view" />}>
+                                        <Route path="payouts" element={<AdminPayoutsPage />} />
+                                    </Route>
+                                    <Route element={<RequireAdminPermission permission="products.view" />}>
+                                        <Route path="products" element={<AdminProductsPage />} />
+                                    </Route>
+                                    <Route element={<RequireAdminPermission permission="reviews.view" />}>
+                                        <Route path="reviews" element={<AdminReviewsPage />} />
+                                    </Route>
+                                    <Route element={<RequireAdminPermission permission="payments.view" />}>
+                                        <Route path="payments" element={<AdminPaymentsPage />} />
+                                    </Route>
+                                    <Route element={<RequireAdminPermission permission="coupons.view" />}>
+                                        <Route path="coupons" element={<AdminCouponsPage />} />
                                     </Route>
                                     <Route element={<RequireAdminPermission permission="orders.view" />}>
                                         <Route path="orders" element={<AdminOrdersPage />} />

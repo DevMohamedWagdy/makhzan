@@ -24,6 +24,9 @@ class OrderEvent extends Model
 
     public const ACTOR_SYSTEM = 'system';
 
+    /** A platform admin acting from the admin panel. */
+    public const ACTOR_ADMIN = 'admin';
+
     /**
      * Get the attributes that should be cast.
      *

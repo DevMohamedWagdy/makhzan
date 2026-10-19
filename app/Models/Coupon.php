@@ -125,6 +125,24 @@ class Coupon extends Model
     }
 
     /**
+     * Adds usage numbers from orders that weren't cancelled: uses_count, discount_total,
+     * shipping_discount_total and sales_total.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withUsageStats(Builder $query): void
+    {
+        $notCancelled = fn ($query) => $query->where('status', '!=', OrderStatus::Cancelled);
+
+        $query
+            ->withCount(['orders as uses_count' => $notCancelled])
+            ->withSum(['orders as discount_total' => $notCancelled], 'discount')
+            ->withSum(['orders as shipping_discount_total' => $notCancelled], 'shipping_discount')
+            ->withSum(['orders as sales_total' => $notCancelled], 'total');
+    }
+
+    /**
      * Filter by state (see state()). "expired" includes coupons whose usage limit is reached.
      *
      * @param  Builder<self>  $query

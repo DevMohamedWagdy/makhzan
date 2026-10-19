@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/Button';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { DetailRow, EmptyState } from '@/components/ui/Display';
-import { Input, Select } from '@/components/ui/Form';
+import { Field, Input, Select, Textarea } from '@/components/ui/Form';
 import { Pagination } from '@/components/ui/Navigation';
 import { Drawer } from '@/components/ui/Overlay';
 import { Skeleton } from '@/components/ui/Spinner';
+import { useAdminAuth } from '@/context/AdminAuthContext';
 import { useToast } from '@/context/ToastContext';
 import { OrderStatusBadge, PaymentBadge } from '@/features/orders/OrderBadges';
 import { formatAddress } from '@/features/storefront/AddressFields';
@@ -14,6 +16,8 @@ import { ORDER_STATUSES, PAYMENT_METHODS } from '@/lib/constants';
 import { formatDate, formatMoney, formatRelative } from '@/lib/format';
 import { findGovernorate } from '@/lib/locations';
 import { adminApi } from '@/services/adminApi';
+
+const ORDER_ACTORS = { customer: t('العميل'), vendor: t('المتجر'), system: t('تلقائي'), admin: t('الإدارة') };
 
 const STATUS_OPTIONS = [{ value: '', label: t('كل الحالات') }, ...Object.entries(ORDER_STATUSES).map(([value, config]) => ({ value, label: config.label }))];
 
@@ -110,15 +114,34 @@ export function AdminOrdersTable({ storeId = null }) {
                 </div>
             )}
 
-            <AdminOrderDrawer orderId={openOrderId} onClose={() => setOpenOrderId(null)} />
+            <AdminOrderDrawer orderId={openOrderId} onClose={() => setOpenOrderId(null)} onChanged={load} />
         </>
     );
 }
 
-/** A read-only view of any order on the platform. */
-export function AdminOrderDrawer({ orderId, onClose }) {
+/** Any order on the platform; admins with orders.update can move it to its next status. */
+export function AdminOrderDrawer({ orderId, onClose, onChanged }) {
     const toast = useToast();
+    const { can } = useAdminAuth();
     const [order, setOrder] = useState(null);
+    const [pending, setPending] = useState(null);
+    const [note, setNote] = useState('');
+    const [busy, setBusy] = useState(false);
+
+    const changeStatus = async (status, statusNote = null) => {
+        setBusy(true);
+
+        try {
+            setOrder(await adminApi.updateOrderStatus(order.order_id, { status, note: statusNote }));
+            setPending(null);
+            toast.success(t('تم تحديث حالة الطلب'), ORDER_STATUSES[status]?.label);
+            onChanged?.();
+        } catch (error) {
+            toast.error(t('تعذر تحديث الحالة'), error.errors?.status ?? error.message);
+        } finally {
+            setBusy(false);
+        }
+    };
 
     useEffect(() => {
         setOrder(null);
@@ -148,6 +171,25 @@ export function AdminOrderDrawer({ orderId, onClose }) {
                         <PaymentBadge order={order} />
                         <span className="ms-auto text-xl font-bold text-ink">{formatMoney(order.total)}</span>
                     </div>
+                    {order.next_statuses?.length > 0 && can('orders.update') && (
+                        <div className="flex flex-wrap gap-2 p-6">
+                            {order.next_statuses.map((status) => (
+                                <Button
+                                    key={status}
+                                    size="sm"
+                                    variant={['cancelled', 'returned'].includes(status) ? 'danger-soft' : 'soft'}
+                                    icon={ORDER_STATUSES[status]?.icon}
+                                    disabled={busy}
+                                    onClick={() => {
+                                        setNote('');
+                                        setPending(status);
+                                    }}
+                                >
+                                    {ORDER_STATUSES[status]?.action ?? ORDER_STATUSES[status]?.label}
+                                </Button>
+                            ))}
+                        </div>
+                    )}
                     <section className="p-6">
                         <h3 className="mb-3 text-sm font-semibold text-ink">{t('المنتجات')}</h3>
                         <ul className="flex flex-col gap-2 text-sm">
@@ -185,6 +227,7 @@ export function AdminOrderDrawer({ orderId, onClose }) {
                                     <li key={index} className="flex justify-between gap-3">
                                         <span className="text-ink">
                                             {ORDER_STATUSES[event.status]?.label ?? event.status}
+                                            {ORDER_ACTORS[event.actor] && <span className="text-muted"> · {ORDER_ACTORS[event.actor]}</span>}
                                             {event.note && <span className="text-muted"> · {event.note}</span>}
                                         </span>
                                         <span className="text-xs text-muted">{formatDate(event.created_at)}</span>
@@ -195,6 +238,21 @@ export function AdminOrderDrawer({ orderId, onClose }) {
                     )}
                 </div>
             )}
+            <ConfirmDialog
+                open={Boolean(pending)}
+                onClose={() => setPending(null)}
+                onConfirm={() => changeStatus(pending, note.trim() || null)}
+                loading={busy}
+                tone={['cancelled', 'returned'].includes(pending) ? 'danger' : 'primary'}
+                icon={ORDER_STATUSES[pending]?.icon ?? 'check'}
+                title={t('تغيير حالة الطلب إلى «{status}»؟', { status: ORDER_STATUSES[pending]?.label ?? '' })}
+                description={t('ستُسجَّل في سجل الطلب كإجراء من إدارة المنصة، ويصل العميل إشعار بالتغيير.')}
+                confirmLabel={t('تأكيد')}
+            >
+                <Field label={t('ملاحظة')} optional>
+                    {(props) => <Textarea {...props} value={note} onChange={(event) => setNote(event.target.value)} maxLength={200} rows={2} />}
+                </Field>
+            </ConfirmDialog>
         </Drawer>
     );
 }

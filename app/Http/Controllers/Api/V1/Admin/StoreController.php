@@ -5,8 +5,6 @@ namespace App\Http\Controllers\Api\V1\Admin;
 use App\Enums\OrderStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\AdminStoreResource;
-use App\Http\Resources\ProductResource;
-use App\Http\Resources\StoreCustomerResource;
 use App\Http\Resources\VendorResource;
 use App\Models\Store;
 use App\Models\Vendor;
@@ -33,6 +31,7 @@ class StoreController extends Controller
             'search' => ['nullable', 'string', 'max:100'],
             'status' => ['nullable', Rule::in(['active', 'suspended'])],
             'page' => ['nullable', 'integer', 'min:1'],
+            'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
         ]);
 
         $stores = $this->withActivity(Store::query())
@@ -47,7 +46,7 @@ class StoreController extends Controller
                 'suspended' => $query->whereNotNull('suspended_at'),
             })
             ->latest('id')
-            ->paginate(20)
+            ->paginate($filters['per_page'] ?? 20)
             ->withQueryString();
 
         return AdminStoreResource::collection($stores);
@@ -85,26 +84,6 @@ class StoreController extends Controller
         ActivityLogger::log('store.impersonated', $store, storeId: $store->id);
 
         return response()->json(['token' => $token, 'vendor' => new VendorResource($owner->withStore())]);
-    }
-
-    /**
-     * The store's products, newest first.
-     */
-    public function products(Request $request, Store $store): AnonymousResourceCollection
-    {
-        $search = $request->validate(['search' => ['nullable', 'string', 'max:100']])['search'] ?? null;
-
-        return ProductResource::collection($store->products()->with(['category', 'variants', 'images'])->when($search, fn ($query) => $query->where('name', 'like', "%{$search}%"))->latest('id')->paginate(20)->withQueryString());
-    }
-
-    /**
-     * The store's customers with their order stats.
-     */
-    public function customers(Request $request, Store $store): AnonymousResourceCollection
-    {
-        $search = $request->validate(['search' => ['nullable', 'string', 'max:100']])['search'] ?? null;
-
-        return StoreCustomerResource::collection($store->customers()->withOrderStats()->search($search)->latest('id')->paginate(20)->withQueryString());
     }
 
     /**

@@ -20,6 +20,6 @@ class DemoAdminSeeder extends Seeder
      */
     public function run(): void
     {
-        Admin::query()->firstOrCreate(['email' => self::EMAIL], ['full_name' => 'فريق مخزن', 'password' => self::PASSWORD, 'is_super' => true]);
+        Admin::query()->firstOrCreate(['email' => self::EMAIL], ['full_name' => 'فريق Sellygrow', 'password' => self::PASSWORD, 'is_super' => true]);
     }
 }

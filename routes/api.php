@@ -2,10 +2,17 @@
 
 use App\Http\Controllers\Api\V1\Admin\ActivityLogController as AdminActivityLogController;
 use App\Http\Controllers\Api\V1\Admin\AdminRoleController;
+use App\Http\Controllers\Api\V1\Admin\AffiliateController as AdminAffiliateController;
 use App\Http\Controllers\Api\V1\Admin\AuthController as AdminAuthController;
+use App\Http\Controllers\Api\V1\Admin\CouponController as AdminCouponController;
+use App\Http\Controllers\Api\V1\Admin\CustomerController as AdminCustomerController;
 use App\Http\Controllers\Api\V1\Admin\NotificationController as AdminNotificationController;
 use App\Http\Controllers\Api\V1\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Api\V1\Admin\OverviewController as AdminOverviewController;
+use App\Http\Controllers\Api\V1\Admin\PaymentController as AdminPaymentController;
+use App\Http\Controllers\Api\V1\Admin\PayoutController as AdminPayoutController;
+use App\Http\Controllers\Api\V1\Admin\ProductController as AdminProductController;
+use App\Http\Controllers\Api\V1\Admin\ReviewController as AdminReviewController;
 use App\Http\Controllers\Api\V1\Admin\StoreController as AdminStoreController;
 use App\Http\Controllers\Api\V1\Admin\SupportTicketController as AdminSupportTicketController;
 use App\Http\Controllers\Api\V1\Admin\TeamController as AdminTeamController;
@@ -218,8 +225,6 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
             Route::middleware('admin.can:stores.view')->group(function () {
                 Route::get('stores', [AdminStoreController::class, 'index'])->name('stores.index');
                 Route::get('stores/{store}', [AdminStoreController::class, 'show'])->name('stores.show');
-                Route::get('stores/{store}/products', [AdminStoreController::class, 'products'])->name('stores.products');
-                Route::get('stores/{store}/customers', [AdminStoreController::class, 'customers'])->name('stores.customers');
             });
             Route::patch('stores/{store}', [AdminStoreController::class, 'update'])->middleware('admin.can:stores.update')->name('stores.update');
             Route::post('stores/{store}/suspend', [AdminStoreController::class, 'suspend'])->middleware('admin.can:stores.suspend')->name('stores.suspend');
@@ -232,6 +237,33 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
             Route::middleware('admin.can:orders.view')->group(function () {
                 Route::get('orders', [AdminOrderController::class, 'index'])->name('orders.index');
                 Route::get('orders/{order}', [AdminOrderController::class, 'show'])->name('orders.show');
+            });
+            Route::patch('orders/{order}/status', [AdminOrderController::class, 'updateStatus'])->middleware('admin.can:orders.update')->name('orders.status');
+
+            Route::middleware('admin.can:customers.view')->group(function () {
+                Route::get('customers', [AdminCustomerController::class, 'index'])->name('customers.index');
+                Route::get('customers/{customer}', [AdminCustomerController::class, 'show'])->name('customers.show');
+            });
+
+            Route::middleware('admin.can:affiliates.view')->group(function () {
+                Route::get('affiliates', [AdminAffiliateController::class, 'index'])->name('affiliates.index');
+                Route::get('affiliates/{affiliate}', [AdminAffiliateController::class, 'show'])->name('affiliates.show');
+                Route::get('payouts', [AdminPayoutController::class, 'index'])->name('payouts.index');
+            });
+            Route::patch('affiliates/{affiliate}/status', [AdminAffiliateController::class, 'updateStatus'])->middleware('admin.can:affiliates.update')->name('affiliates.status');
+
+            Route::middleware('admin.can:products.view')->group(function () {
+                Route::get('products', [AdminProductController::class, 'index'])->name('products.index');
+                Route::get('products/{product}', [AdminProductController::class, 'show'])->name('products.show');
+            });
+
+            Route::get('payments', [AdminPaymentController::class, 'index'])->middleware('admin.can:payments.view')->name('payments.index');
+            Route::get('coupons', [AdminCouponController::class, 'index'])->middleware('admin.can:coupons.view')->name('coupons.index');
+
+            Route::get('reviews', [AdminReviewController::class, 'index'])->middleware('admin.can:reviews.view')->name('reviews.index');
+            Route::middleware('admin.can:reviews.update')->group(function () {
+                Route::patch('reviews/{review}', [AdminReviewController::class, 'update'])->name('reviews.update');
+                Route::delete('reviews/{review}', [AdminReviewController::class, 'destroy'])->name('reviews.destroy');
             });
 
             Route::middleware('admin.can:tickets.view')->group(function () {

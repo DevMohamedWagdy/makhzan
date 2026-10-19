@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers\Api\V1\Admin;
 
+use App\Actions\Orders\UpdateOrderStatus;
 use App\Enums\OrderStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\AdminOrderResource;
 use App\Http\Resources\OrderResource;
 use App\Models\Order;
+use App\Models\OrderEvent;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Validation\Rule;
@@ -47,5 +49,21 @@ class OrderController extends Controller
         return (new OrderResource($order->load(['items', 'events', 'customer', 'affiliate', 'latestPayment', 'refunds', 'store'])))->additional([
             'store' => ['store_id' => $order->store->id, 'name' => $order->store->name, 'slug' => $order->store->slug],
         ]);
+    }
+
+    /**
+     * Moves an order to another status on the store's behalf (stock, points and commissions
+     * follow as usual). Logged as the platform admin in the order's history.
+     */
+    public function updateStatus(Request $request, Order $order, UpdateOrderStatus $updateStatus): OrderResource
+    {
+        $validated = $request->validate([
+            'status' => ['required', Rule::enum(OrderStatus::class)],
+            'note' => ['nullable', 'string', 'max:200'],
+        ]);
+
+        $updateStatus->handle($order, OrderStatus::from($validated['status']), OrderEvent::ACTOR_ADMIN, $validated['note'] ?? null);
+
+        return $this->show($order->refresh());
     }
 }

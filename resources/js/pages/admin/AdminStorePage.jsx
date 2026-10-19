@@ -5,16 +5,17 @@ import { Button } from '@/components/ui/Button';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { Avatar, Badge, DetailRow, EmptyState, StatCard } from '@/components/ui/Display';
 import { Field, Input, Switch, Textarea } from '@/components/ui/Form';
-import { Pagination, Tabs } from '@/components/ui/Navigation';
+import { Tabs } from '@/components/ui/Navigation';
 import { Modal } from '@/components/ui/Overlay';
 import { Skeleton } from '@/components/ui/Spinner';
 import { useAdminAuth } from '@/context/AdminAuthContext';
 import { useToast } from '@/context/ToastContext';
 import { ActivityLogList } from '@/features/activity/ActivityLogList';
+import { AdminCouponsTable, AdminPaymentsTable, AdminProductsTable, AdminReviewsTable } from '@/features/admin/AdminCatalog';
 import { AdminOrdersTable } from '@/features/admin/AdminOrders';
+import { AdminAffiliatesTable, AdminCustomersTable, AdminPayoutsTable } from '@/features/admin/AdminPeople';
 import { AdminVendorsTable } from '@/features/admin/AdminVendors';
-import { ProductStatusBadge } from '@/features/products/ProductBadges';
-import { localized, t } from '@/i18n';
+import { t } from '@/i18n';
 import { formatDate, formatMoney, formatNumber, formatRelative } from '@/lib/format';
 import { findGovernorate } from '@/lib/locations';
 import { adminApi } from '@/services/adminApi';
@@ -24,8 +25,13 @@ import { StoreStatus } from './AdminStoresPage';
 const TABS = [
     { value: 'overview', label: t('نظرة عامة'), icon: 'grid' },
     { value: 'orders', label: t('الطلبات'), icon: 'shopping-bag', permission: 'orders.view' },
-    { value: 'products', label: t('المنتجات'), icon: 'box' },
-    { value: 'customers', label: t('العملاء'), icon: 'user' },
+    { value: 'products', label: t('المنتجات'), icon: 'box', permission: 'products.view' },
+    { value: 'customers', label: t('العملاء'), icon: 'user', permission: 'customers.view' },
+    { value: 'affiliates', label: t('المسوّقين'), icon: 'megaphone', permission: 'affiliates.view' },
+    { value: 'payouts', label: t('التحويلات'), icon: 'wallet', permission: 'affiliates.view' },
+    { value: 'payments', label: t('المدفوعات'), icon: 'credit-card', permission: 'payments.view' },
+    { value: 'coupons', label: t('الكوبونات'), icon: 'percent', permission: 'coupons.view' },
+    { value: 'reviews', label: t('التقييمات'), icon: 'star', permission: 'reviews.view' },
     { value: 'team', label: t('الحسابات'), icon: 'users', permission: 'vendors.view' },
     { value: 'activity', label: t('السجل'), icon: 'clock', permission: 'logs.view' },
 ];
@@ -151,8 +157,13 @@ export function AdminStorePage() {
                 <Tabs tabs={tabs} value={tab} onChange={(value) => setSearchParams(value === 'overview' ? {} : { tab: value }, { replace: true })} className="px-3" />
                 {tab === 'overview' && <OverviewTab store={store} />}
                 {tab === 'orders' && <AdminOrdersTable storeId={store.store_id} />}
-                {tab === 'products' && <ProductsTab storeId={store.store_id} />}
-                {tab === 'customers' && <CustomersTab storeId={store.store_id} />}
+                {tab === 'products' && <AdminProductsTable storeId={store.store_id} />}
+                {tab === 'customers' && <AdminCustomersTable storeId={store.store_id} />}
+                {tab === 'affiliates' && <AdminAffiliatesTable storeId={store.store_id} />}
+                {tab === 'payouts' && <AdminPayoutsTable storeId={store.store_id} />}
+                {tab === 'payments' && <AdminPaymentsTable storeId={store.store_id} />}
+                {tab === 'coupons' && <AdminCouponsTable storeId={store.store_id} />}
+                {tab === 'reviews' && <AdminReviewsTable storeId={store.store_id} />}
                 {tab === 'team' && <AdminVendorsTable storeId={store.store_id} />}
                 {tab === 'activity' && <ActivityLogList load={adminApi.logs} fixed={{ store_id: store.store_id }} />}
             </section>
@@ -185,95 +196,6 @@ function OverviewTab({ store }) {
                 </DetailRow>
             </dl>
         </div>
-    );
-}
-
-function usePagedList(fetcher, storeId) {
-    const [page, setPage] = useState(1);
-    const [result, setResult] = useState(null);
-    const [error, setError] = useState(null);
-
-    useEffect(() => {
-        setError(null);
-        fetcher(storeId, { page })
-            .then(setResult)
-            .catch((loadError) => setError(loadError.message));
-    }, [fetcher, storeId, page]);
-
-    return { page, setPage, result, error };
-}
-
-function ProductsTab({ storeId }) {
-    const { setPage, result, error } = usePagedList(adminApi.storeProducts, storeId);
-
-    if (error) {
-        return <EmptyState icon="alert-triangle" title={t('تعذر تحميل المنتجات')} description={error} />;
-    }
-
-    return !result ? (
-        <Skeleton className="m-4 h-40" />
-    ) : result.data.length === 0 ? (
-        <div className="p-6">
-            <EmptyState icon="box" title={t('لا توجد منتجات')} />
-        </div>
-    ) : (
-        <>
-            <ul className="divide-y divide-line">
-                {result.data.map((product) => (
-                    <li key={product.product_id} className="flex flex-wrap items-center gap-3 px-4 py-3 text-sm">
-                        <span className="min-w-0 flex-1">
-                            <span className="block font-medium text-ink">{localized(product)}</span>
-                            <span className="text-xs text-muted">
-                                {localized(product.category)} · {t('المخزون {count}', { count: formatNumber(product.stock_total) })}
-                            </span>
-                        </span>
-                        <span className="font-semibold text-ink">{formatMoney(product.price)}</span>
-                        <ProductStatusBadge status={product.status} />
-                    </li>
-                ))}
-            </ul>
-            {result.meta.total > result.meta.per_page && (
-                <div className="border-t border-line px-4 py-3">
-                    <Pagination meta={result.meta} onPageChange={setPage} />
-                </div>
-            )}
-        </>
-    );
-}
-
-function CustomersTab({ storeId }) {
-    const { setPage, result, error } = usePagedList(adminApi.storeCustomers, storeId);
-
-    if (error) {
-        return <EmptyState icon="alert-triangle" title={t('تعذر تحميل العملاء')} description={error} />;
-    }
-
-    return !result ? (
-        <Skeleton className="m-4 h-40" />
-    ) : result.data.length === 0 ? (
-        <div className="p-6">
-            <EmptyState icon="user" title={t('لا يوجد عملاء')} />
-        </div>
-    ) : (
-        <>
-            <ul className="divide-y divide-line">
-                {result.data.map((customer) => (
-                    <li key={customer.customer_id} className="flex flex-wrap items-center gap-3 px-4 py-3 text-sm">
-                        <span className="min-w-0 flex-1">
-                            <span className="block font-medium text-ink">{customer.full_name}</span>
-                            <span className="ltr block text-start text-xs text-muted">{customer.phone}</span>
-                        </span>
-                        <span className="text-xs text-ink-2">{t('{count} طلب', { count: formatNumber(customer.stats.orders_count) })}</span>
-                        <span className="font-semibold text-ink">{formatMoney(customer.stats.total_spent)}</span>
-                    </li>
-                ))}
-            </ul>
-            {result.meta.total > result.meta.per_page && (
-                <div className="border-t border-line px-4 py-3">
-                    <Pagination meta={result.meta} onPageChange={setPage} />
-                </div>
-            )}
-        </>
     );
 }
 

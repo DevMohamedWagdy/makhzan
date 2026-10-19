@@ -26,7 +26,7 @@ const COMMISSION_STATUSES = {
     cancelled: { label: t('أُلغيت'), tone: 'neutral' },
 };
 
-const ACTORS = { customer: t('العميل'), vendor: t('المتجر'), system: t('تلقائي') };
+const ACTORS = { customer: t('العميل'), vendor: t('المتجر'), system: t('تلقائي'), admin: t('إدارة المنصة') };
 
 /** Statuses that need a confirmation step (and allow a note). */
 const NEEDS_NOTE = ['cancelled', 'returned'];

@@ -48,6 +48,7 @@ class Vendor extends Authenticatable implements HasLocalePreference
         return [
             'password' => 'hashed',
             'is_active' => 'boolean',
+            'last_login_at' => 'datetime',
         ];
     }
 

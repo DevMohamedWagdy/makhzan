@@ -20,8 +20,6 @@ export const adminApi = {
     stores: (filters) => request('GET', `${BASE}/stores`, { query: filters, auth }),
     store: (storeId) => request('GET', `${BASE}/stores/${storeId}`, { auth }),
     updateStore: (storeId, payload) => request('PATCH', `${BASE}/stores/${storeId}`, { body: payload, auth }),
-    storeProducts: (storeId, query = {}) => request('GET', `${BASE}/stores/${storeId}/products`, { query, auth }),
-    storeCustomers: (storeId, query = {}) => request('GET', `${BASE}/stores/${storeId}/customers`, { query, auth }),
     suspend: (storeId, reason) => request('POST', `${BASE}/stores/${storeId}/suspend`, { body: { reason }, auth }),
     unsuspend: (storeId) => request('POST', `${BASE}/stores/${storeId}/unsuspend`, { auth }),
     /** `{ token, vendor }` — a one-hour dashboard session as the store's owner. */
@@ -30,6 +28,32 @@ export const adminApi = {
     /** @param {{ store_id?: number, status?: string, search?: string, from?: string, to?: string, page?: number }} filters */
     orders: (filters) => request('GET', `${BASE}/orders`, { query: filters, auth }),
     order: (orderId) => request('GET', `${BASE}/orders/${orderId}`, { auth }),
+
+    /** @param {{ status: string, note?: string }} payload  Returns the updated order. */
+    updateOrderStatus: (orderId, payload) => request('PATCH', `${BASE}/orders/${orderId}/status`, { body: payload, auth }),
+
+    /** @param {{ search?: string, store_id?: number, buyers?: boolean, page?: number }} filters */
+    customers: (filters) => request('GET', `${BASE}/customers`, { query: filters, auth }),
+    /** `{ data: customer, orders, points }` */
+    customer: (customerId) => request('GET', `${BASE}/customers/${customerId}`, { auth, raw: true }),
+
+    /** @param {{ search?: string, store_id?: number, status?: string, page?: number }} filters */
+    affiliates: (filters) => request('GET', `${BASE}/affiliates`, { query: filters, auth }),
+    /** `{ data: affiliate, orders, payouts }` */
+    affiliate: (affiliateId) => request('GET', `${BASE}/affiliates/${affiliateId}`, { auth, raw: true }),
+    setAffiliateStatus: (affiliateId, status, reason = null) => request('PATCH', `${BASE}/affiliates/${affiliateId}/status`, { body: { status, reason }, auth }),
+    payouts: (filters) => request('GET', `${BASE}/payouts`, { query: filters, auth }),
+
+    /** @param {{ search?: string, store_id?: number, status?: string, stock?: string, page?: number }} filters */
+    products: (filters) => request('GET', `${BASE}/products`, { query: filters, auth }),
+    product: (productId) => request('GET', `${BASE}/products/${productId}`, { auth }),
+
+    payments: (filters) => request('GET', `${BASE}/payments`, { query: filters, auth }),
+    coupons: (filters) => request('GET', `${BASE}/coupons`, { query: filters, auth }),
+
+    reviews: (filters) => request('GET', `${BASE}/reviews`, { query: filters, auth }),
+    updateReview: (reviewId, status) => request('PATCH', `${BASE}/reviews/${reviewId}`, { body: { status }, auth }),
+    deleteReview: (reviewId) => request('DELETE', `${BASE}/reviews/${reviewId}`, { auth }),
 
     /** @param {{ search?: string, type?: 'owner'|'staff', store_id?: number, page?: number }} filters */
     vendors: (filters) => request('GET', `${BASE}/vendors`, { query: filters, auth }),
