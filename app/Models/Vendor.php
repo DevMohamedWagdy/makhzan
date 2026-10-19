@@ -49,6 +49,7 @@ class Vendor extends Authenticatable implements HasLocalePreference
             'password' => 'hashed',
             'is_active' => 'boolean',
             'last_login_at' => 'datetime',
+            'email_verified_at' => 'datetime',
         ];
     }
 
@@ -91,6 +92,14 @@ class Vendor extends Authenticatable implements HasLocalePreference
     public function withStore(): static
     {
         return $this->setRelation('store', $this->store()->first());
+    }
+
+    /**
+     * Whether the account confirmed its email with an emailed code (see VendorEmailVerification).
+     */
+    public function hasVerifiedEmail(): bool
+    {
+        return $this->email_verified_at !== null;
     }
 
     public function isOwner(): bool

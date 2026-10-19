@@ -8,7 +8,6 @@ import { Icon } from '@/components/ui/Icon';
 import { Stepper } from '@/components/ui/Navigation';
 import { ImageUpload } from '@/components/ui/Upload';
 import { useAuth } from '@/context/AuthContext';
-import { useToast } from '@/context/ToastContext';
 import { useSlugAvailability } from '@/features/auth/useSlugAvailability';
 import { useForm } from '@/hooks/useForm';
 import { t } from '@/i18n';
@@ -80,7 +79,6 @@ export function RegisterPage() {
     const [submitting, setSubmitting] = useState(false);
     const [formError, setFormError] = useState(null);
     const { register } = useAuth();
-    const toast = useToast();
     const navigate = useNavigate();
     const { values, errors, setErrors, setField, setValues, bind, validateFields } = useForm(INITIAL_VALUES, schema);
     const slugStatus = useSlugAvailability(values.slug);
@@ -124,7 +122,7 @@ export function RegisterPage() {
         setSubmitting(true);
 
         try {
-            const vendor = await register({
+            const verification = await register({
                 vendor: {
                     full_name: values.full_name.trim(),
                     phone: normalizePhone(values.phone),
@@ -141,8 +139,7 @@ export function RegisterPage() {
                 },
             });
 
-            toast.success(t('تم إنشاء متجر «{name}» بنجاح 🎉', { name: vendor.store.name }), t('مرحباً بك في Sellygrow، يمكنك البدء بإضافة مسوقيك الآن.'));
-            navigate('/dashboard', { replace: true });
+            navigate('/verify-email', { replace: true, state: { verification, isNewStore: true } });
         } catch (error) {
             const fieldErrors = Object.fromEntries(Object.entries(error.errors ?? {}).map(([key, message]) => [SERVER_FIELD_MAP[key] ?? key, message]));
 

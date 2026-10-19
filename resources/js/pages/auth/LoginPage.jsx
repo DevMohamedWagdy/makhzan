@@ -38,7 +38,13 @@ export function LoginPage() {
         setSubmitting(true);
 
         try {
-            const vendor = await login(values);
+            const { vendor, verification } = await login(values);
+
+            if (verification) {
+                navigate('/verify-email', { state: { verification, from: location.state?.from } });
+
+                return;
+            }
 
             toast.success(t('أهلاً بعودتك يا {value} 👋', { value: vendor.full_name.split(' ')[0] }), t('تم تسجيل الدخول بنجاح'));
             navigate(location.state?.from ?? '/dashboard', { replace: true });

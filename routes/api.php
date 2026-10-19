@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\V1\Admin\AffiliateController as AdminAffiliateContr
 use App\Http\Controllers\Api\V1\Admin\AuthController as AdminAuthController;
 use App\Http\Controllers\Api\V1\Admin\CouponController as AdminCouponController;
 use App\Http\Controllers\Api\V1\Admin\CustomerController as AdminCustomerController;
+use App\Http\Controllers\Api\V1\Admin\MailSettingsController as AdminMailSettingsController;
 use App\Http\Controllers\Api\V1\Admin\NotificationController as AdminNotificationController;
 use App\Http\Controllers\Api\V1\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Api\V1\Admin\OverviewController as AdminOverviewController;
@@ -102,6 +103,8 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         // Login is throttled per identifier + IP inside LoginRequest.
         Route::post('login', [VendorAuthController::class, 'login'])->name('login');
         Route::post('register', [VendorAuthController::class, 'register'])->middleware('throttle:vendor-register')->name('register');
+        Route::post('verify-email', [VendorAuthController::class, 'verifyEmail'])->middleware('throttle:20,1')->name('verify-email');
+        Route::post('verify-email/resend', [VendorAuthController::class, 'resendVerification'])->middleware('throttle:6,1')->name('verify-email.resend');
         Route::post('forgot-password', [PasswordResetController::class, 'store'])->middleware('throttle:vendor-password')->name('forgot-password');
         Route::post('reset-password', [PasswordResetController::class, 'update'])->middleware('throttle:vendor-password')->name('reset-password');
     });
@@ -278,6 +281,12 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
             });
 
             Route::get('logs', AdminActivityLogController::class)->middleware('admin.can:logs.view')->name('logs');
+
+            Route::get('settings/mail', [AdminMailSettingsController::class, 'show'])->middleware('admin.can:settings.view')->name('settings.mail.show');
+            Route::middleware('admin.can:settings.update')->group(function () {
+                Route::put('settings/mail', [AdminMailSettingsController::class, 'update'])->name('settings.mail.update');
+                Route::post('settings/mail/test', [AdminMailSettingsController::class, 'test'])->middleware('throttle:10,1')->name('settings.mail.test');
+            });
 
             Route::middleware('admin.can:team.manage')->group(function () {
                 Route::apiResource('team', AdminTeamController::class)->except('show')->parameters(['team' => 'admin']);

@@ -4,8 +4,10 @@ namespace Tests\Feature\Api\V1\Vendor\Auth;
 
 use App\Models\Store;
 use App\Models\Vendor;
+use App\Notifications\VendorVerificationCodeNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 use Laravel\Sanctum\PersonalAccessToken;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -18,6 +20,8 @@ class VendorAuthControllerTest extends TestCase
     private const LOGIN_URL = '/api/v1/vendor/auth/login';
 
     private const REGISTER_URL = '/api/v1/vendor/auth/register';
+
+    private const VERIFY_URL = '/api/v1/vendor/auth/verify-email';
 
     /**
      * @return array<string, mixed>
@@ -96,23 +100,40 @@ class VendorAuthControllerTest extends TestCase
             ->assertJsonValidationErrors('identifier');
     }
 
-    public function test_register_creates_vendor_and_store_and_returns_201_with_token(): void
+    public function test_register_creates_vendor_and_store_and_signs_in_after_the_emailed_code(): void
     {
         Storage::fake('public');
+        Notification::fake();
 
         $response = $this->post(self::REGISTER_URL, $this->registrationPayload([
             'store' => ['logo' => UploadedFile::fake()->image('logo.png', 512, 512)],
         ]), ['Accept' => 'application/json']);
 
         $response->assertCreated()
-            ->assertJsonPath('vendor.email', 'new.vendor@example.com')
-            ->assertJsonPath('vendor.phone', '01012345678')
-            ->assertJsonPath('vendor.store.slug', 'noor-style');
+            ->assertJsonPath('verification_required', true)
+            ->assertJsonPath('email', 'ne********@example.com')
+            ->assertJsonMissingPath('token');
 
         $vendor = Vendor::firstWhere('email', 'new.vendor@example.com');
+        $this->assertSame('01012345678', $vendor->phone);
         $this->assertSame('smouha', $vendor->store->city_id);
+        $this->assertFalse($vendor->hasVerifiedEmail());
         Storage::disk('public')->assertExists($vendor->store->logo_path);
-        $this->assertNotNull(PersonalAccessToken::findToken($response->json('token')));
+
+        $code = null;
+        Notification::assertSentTo($vendor, VendorVerificationCodeNotification::class, function (VendorVerificationCodeNotification $notification) use (&$code): bool {
+            $code = $notification->code;
+
+            return true;
+        });
+
+        $signIn = $this->postJson(self::VERIFY_URL, ['challenge' => $response->json('challenge'), 'code' => $code])
+            ->assertOk()
+            ->assertJsonPath('vendor.email', 'new.vendor@example.com')
+            ->assertJsonPath('vendor.store.slug', 'noor-style');
+
+        $this->assertTrue($vendor->fresh()->hasVerifiedEmail());
+        $this->assertNotNull(PersonalAccessToken::findToken($signIn->json('token')));
     }
 
     public function test_register_with_empty_payload_returns_arabic_errors_for_required_fields(): void

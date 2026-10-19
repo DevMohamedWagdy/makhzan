@@ -15,22 +15,31 @@ export function AuthProvider({ children }) {
         setSession(nextSession);
     }, []);
 
+    /** Resolves to `{ vendor }`, or `{ verification }` when an emailed code has to be entered first. */
     const login = useCallback(
         async ({ identifier, password, remember }) => {
-            const { token, vendor } = await authApi.login({ identifier, password, remember });
+            const result = await authApi.login({ identifier, password, remember });
 
-            persist({ token, vendor }, remember);
+            if (result.verification_required) {
+                return { verification: { ...result, remember } };
+            }
 
-            return vendor;
+            persist({ token: result.token, vendor: result.vendor }, remember);
+
+            return { vendor: result.vendor };
         },
         [persist],
     );
 
-    const register = useCallback(
-        async (payload) => {
-            const { token, vendor } = await authApi.register(payload);
+    /** Creates the account and store; resolves to the verification challenge for the emailed code. */
+    const register = useCallback(async (payload) => ({ ...(await authApi.register(payload)), remember: true }), []);
 
-            persist({ token, vendor }, true);
+    /** Signs in with the emailed code. */
+    const verifyEmail = useCallback(
+        async ({ challenge, code, remember }) => {
+            const { token, vendor } = await authApi.verifyEmail(challenge, code);
+
+            persist({ token, vendor }, remember);
 
             return vendor;
         },
@@ -131,12 +140,13 @@ export function AuthProvider({ children }) {
             impersonation,
             login,
             register,
+            verifyEmail,
             logout,
             impersonate,
             stopImpersonating,
             updateVendor,
         }),
-        [session, impersonation, login, register, logout, impersonate, stopImpersonating, updateVendor],
+        [session, impersonation, login, register, verifyEmail, logout, impersonate, stopImpersonating, updateVendor],
     );
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

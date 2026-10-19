@@ -149,7 +149,7 @@ class StaffTest extends TestCase
 
     public function test_staff_sign_in_and_see_their_store_role_and_permissions(): void
     {
-        $this->staff(['orders.view']);
+        $this->staff(['orders.view'])->forceFill(['email_verified_at' => now()])->save();
 
         $this->postJson('/api/v1/vendor/auth/login', ['identifier' => '01077778888', 'password' => 'Staff2026pass'])
             ->assertOk()

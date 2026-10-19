@@ -1,16 +1,27 @@
 import { request } from './client';
 
 export const authApi = {
-    /** @param {{ identifier: string, password: string, remember: boolean }} payload */
+    /**
+     * `{ token, vendor }`, or `{ verification_required, challenge, email, resend_in }` when the
+     * email still has to be confirmed with a code.
+     *
+     * @param {{ identifier: string, password: string, remember: boolean }} payload
+     */
     login: (payload) => request('POST', '/api/v1/vendor/auth/login', { body: payload }),
 
     /**
      * @param {{
      *   vendor: { full_name: string, phone: string, email: string, password: string, password_confirmation: string },
      *   store: { name: string, slug: string, logo: File|null, governorate_id: string, city_id: string },
-     * }} payload
+     * }} payload  Returns the verification challenge: the code is emailed before any sign-in.
      */
     register: (payload) => request('POST', '/api/v1/vendor/auth/register', { body: payload }),
+
+    /** Confirms the emailed 6-digit code; returns `{ token, vendor }`. */
+    verifyEmail: (challenge, code) => request('POST', '/api/v1/vendor/auth/verify-email', { body: { challenge, code } }),
+
+    /** Emails a new code for the same challenge. */
+    resendVerification: (challenge) => request('POST', '/api/v1/vendor/auth/verify-email/resend', { body: { challenge } }),
 
     checkSlug: (slug) => request('GET', '/api/v1/stores/slug-availability', { query: { slug } }),
 

@@ -3,8 +3,10 @@
 namespace App\Providers;
 
 use App\Support\CurrentStore;
+use App\Support\MailSettings;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Mail\MailManager;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
@@ -33,6 +35,8 @@ class AppServiceProvider extends ServiceProvider
         Route::pattern('ticket', '[0-9]+');
 
         $this->configureRateLimiting();
+
+        $this->app->afterResolving(MailManager::class, fn () => MailSettings::apply());
     }
 
     private function configureRateLimiting(): void

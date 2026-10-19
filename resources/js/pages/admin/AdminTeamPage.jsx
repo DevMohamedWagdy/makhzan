@@ -28,6 +28,7 @@ const SECTIONS = {
     reviews: { label: t('التقييمات'), icon: 'star' },
     tickets: { label: t('تذاكر الدعم'), icon: 'message-square' },
     logs: { label: t('سجل النشاط'), icon: 'clock' },
+    settings: { label: t('إعدادات المنصة'), icon: 'settings' },
     team: { label: t('فريق الإدارة'), icon: 'shield-check' },
 };
 

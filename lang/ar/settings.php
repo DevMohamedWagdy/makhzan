@@ -19,4 +19,11 @@ return [
     'domain_not_pointing' => 'الدومين لا يشير إلينا بعد. أضف سجل CNAME يشير إلى :target ثم انتظر حتى ينتشر (قد يستغرق ساعة).',
     'store_suspended' => 'هذا المتجر متوقف مؤقتاً.',
     'vendor_suspended' => 'تم إيقاف متجرك من إدارة المنصة (:reason). تواصل مع الدعم لإعادة تفعيله.',
+
+    'mail_secret_required' => 'أدخل Secret access key الخاص بـ Amazon SES.',
+    'mail_test_subject' => 'رسالة تجريبية من :app',
+    'mail_test_body' => 'إعدادات البريد في :app تعمل بشكل صحيح.',
+    'mail_test_sent' => 'تم إرسال رسالة تجريبية إلى :email',
+    'mail_test_logged' => 'المزود الحالي «سجل فقط»، لذلك لم تُرسل الرسالة فعلياً إلى :email، بل كُتبت في ملف storage/logs/laravel.log. اختر Amazon SES أو SMTP لإرسال حقيقي.',
+    'mail_test_failed' => 'تعذر إرسال الرسالة: :error',
 ];

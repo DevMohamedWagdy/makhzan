@@ -27,4 +27,9 @@ return [
     'customer_reset_link_sent' => 'إذا كان لحسابك بريد إلكتروني مسجل، ستصلك رسالة بها رابط لتعيين كلمة مرور جديدة خلال دقائق.',
     'customer_password_reset' => 'تم تعيين كلمة المرور الجديدة، يمكنك تسجيل الدخول الآن.',
 
+    'verification_code_invalid' => 'كود التفعيل غير صحيح',
+    'verification_code_expired' => 'انتهت صلاحية الكود. اطلب كوداً جديداً.',
+    'verification_code_sent' => 'أرسلنا كود التفعيل إلى :email',
+    'verification_resend_wait' => 'يمكنك طلب كود جديد بعد :seconds ثانية',
+
 ];

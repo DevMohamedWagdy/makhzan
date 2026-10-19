@@ -33,6 +33,7 @@ const AdminReviewsPage = lazy(() => import('@/pages/admin/AdminReviewsPage').the
 const AdminPaymentsPage = lazy(() => import('@/pages/admin/AdminPaymentsPage').then((module) => ({ default: module.AdminPaymentsPage })));
 const AdminCouponsPage = lazy(() => import('@/pages/admin/AdminCouponsPage').then((module) => ({ default: module.AdminCouponsPage })));
 const AdminNotificationsPage = lazy(() => import('@/pages/admin/AdminNotificationsPage').then((module) => ({ default: module.AdminNotificationsPage })));
+const AdminSettingsPage = lazy(() => import('@/pages/admin/AdminSettingsPage').then((module) => ({ default: module.AdminSettingsPage })));
 const AdminLogsPage = lazy(() => import('@/pages/admin/AdminLogsPage').then((module) => ({ default: module.AdminLogsPage })));
 const AdminOverviewPage = lazy(() => import('@/pages/admin/AdminOverviewPage').then((module) => ({ default: module.AdminOverviewPage })));
 const AdminTicketPage = lazy(() => import('@/pages/admin/AdminTicketPage').then((module) => ({ default: module.AdminTicketPage })));
@@ -93,6 +94,7 @@ const StaffPage = lazy(() => import('@/pages/staff/StaffPage').then((module) => 
 const ForgotPasswordPage = lazy(() => import('@/pages/auth/ForgotPasswordPage').then((module) => ({ default: module.ForgotPasswordPage })));
 const LandingPage = lazy(() => import('@/pages/landing/LandingPage').then((module) => ({ default: module.LandingPage })));
 const LegalPage = lazy(() => import('@/pages/legal/LegalPage').then((module) => ({ default: module.LegalPage })));
+const VerifyEmailPage = lazy(() => import('@/pages/auth/VerifyEmailPage').then((module) => ({ default: module.VerifyEmailPage })));
 const LoginPage = lazy(() => import('@/pages/auth/LoginPage').then((module) => ({ default: module.LoginPage })));
 const RegisterPage = lazy(() => import('@/pages/auth/RegisterPage').then((module) => ({ default: module.RegisterPage })));
 const ResetPasswordPage = lazy(() => import('@/pages/auth/ResetPasswordPage').then((module) => ({ default: module.ResetPasswordPage })));
@@ -205,6 +207,7 @@ export function App() {
                             <Route element={<GuestOnly />}>
                                 <Route path="/login" element={<LoginPage />} />
                                 <Route path="/register" element={<RegisterPage />} />
+                                <Route path="/verify-email" element={<VerifyEmailPage />} />
                                 <Route path="/forgot-password" element={<ForgotPasswordPage />} />
                                 <Route path="/reset-password" element={<ResetPasswordPage />} />
                             </Route>
@@ -340,6 +343,9 @@ export function App() {
                                     </Route>
                                     <Route element={<RequireAdminPermission permission="logs.view" />}>
                                         <Route path="logs" element={<AdminLogsPage />} />
+                                    </Route>
+                                    <Route element={<RequireAdminPermission permission="settings.view" />}>
+                                        <Route path="settings" element={<AdminSettingsPage />} />
                                     </Route>
                                     <Route element={<RequireAdminPermission permission="team.manage" />}>
                                         <Route path="team" element={<AdminTeamPage />} />

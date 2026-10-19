@@ -29,9 +29,18 @@ class VendorFactory extends Factory
             'full_name' => fake()->name(),
             'phone' => '010'.fake()->unique()->numerify('########'),
             'email' => fake()->unique()->safeEmail(),
+            'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password1'),
             'remember_token' => Str::random(10),
         ];
+    }
+
+    /**
+     * An account that hasn't confirmed its email yet (asked for a code at sign-in).
+     */
+    public function unverified(): static
+    {
+        return $this->state(fn (array $attributes) => ['email_verified_at' => null]);
     }
 
     /**

@@ -16,7 +16,14 @@ class VendorAccountController extends Controller
     public function updateProfile(UpdateVendorProfileRequest $request): VendorResource
     {
         $vendor = $request->user();
-        $vendor->update($request->validated());
+        $vendor->fill($request->validated());
+
+        // A new address has to be confirmed with a code at the next sign-in.
+        if ($vendor->isDirty('email')) {
+            $vendor->email_verified_at = null;
+        }
+
+        $vendor->save();
 
         return new VendorResource($vendor->withStore());
     }

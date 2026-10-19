@@ -27,4 +27,9 @@ return [
     'customer_reset_link_sent' => 'If your account has an email address, you will receive a link to set a new password within minutes.',
     'customer_password_reset' => 'Your new password is set. You can sign in now.',
 
+    'verification_code_invalid' => 'The verification code is incorrect',
+    'verification_code_expired' => 'This code has expired. Request a new one.',
+    'verification_code_sent' => 'We sent a verification code to :email',
+    'verification_resend_wait' => 'You can request a new code in :seconds seconds',
+
 ];
