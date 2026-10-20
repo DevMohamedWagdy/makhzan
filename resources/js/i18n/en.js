@@ -2834,4 +2834,5 @@ export default {
     'لا توجد عمولات بعد.': 'No commissions yet.',
     'المبيعات المؤكدة': 'Confirmed sales',
     'العمولات المؤكدة': 'Confirmed commissions',
+    'عام': 'General',
 };

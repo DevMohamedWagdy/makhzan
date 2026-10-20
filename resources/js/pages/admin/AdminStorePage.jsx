@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/Button';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { Avatar, Badge, DetailRow, EmptyState, StatCard } from '@/components/ui/Display';
 import { Field, Input, Switch, Textarea } from '@/components/ui/Form';
-import { Tabs } from '@/components/ui/Navigation';
+import { Icon } from '@/components/ui/Icon';
 import { Modal } from '@/components/ui/Overlay';
 import { Skeleton } from '@/components/ui/Spinner';
 import { useAdminAuth } from '@/context/AdminAuthContext';
@@ -16,25 +16,95 @@ import { AdminOrdersTable } from '@/features/admin/AdminOrders';
 import { AdminAffiliatesTable, AdminCustomersTable, AdminPayoutsTable } from '@/features/admin/AdminPeople';
 import { AdminVendorsTable } from '@/features/admin/AdminVendors';
 import { t } from '@/i18n';
-import { formatDate, formatMoney, formatNumber, formatRelative } from '@/lib/format';
+import { cn, formatDate, formatMoney, formatNumber, formatRelative } from '@/lib/format';
 import { findGovernorate } from '@/lib/locations';
 import { adminApi } from '@/services/adminApi';
 import { sessionStore } from '@/services/session';
 import { StoreStatus } from './AdminStoresPage';
 
-const TABS = [
-    { value: 'overview', label: t('نظرة عامة'), icon: 'grid' },
-    { value: 'orders', label: t('الطلبات'), icon: 'shopping-bag', permission: 'orders.view' },
-    { value: 'products', label: t('المنتجات'), icon: 'box', permission: 'products.view' },
-    { value: 'customers', label: t('العملاء'), icon: 'user', permission: 'customers.view' },
-    { value: 'affiliates', label: t('المسوّقين'), icon: 'megaphone', permission: 'affiliates.view' },
-    { value: 'payouts', label: t('التحويلات'), icon: 'wallet', permission: 'affiliates.view' },
-    { value: 'payments', label: t('المدفوعات'), icon: 'credit-card', permission: 'payments.view' },
-    { value: 'coupons', label: t('الكوبونات'), icon: 'percent', permission: 'coupons.view' },
-    { value: 'reviews', label: t('التقييمات'), icon: 'star', permission: 'reviews.view' },
-    { value: 'team', label: t('الحسابات'), icon: 'users', permission: 'vendors.view' },
-    { value: 'activity', label: t('السجل'), icon: 'clock', permission: 'logs.view' },
+/** The store's sections, grouped for the side menu. */
+const SECTION_GROUPS = [
+    { title: t('عام'), items: [{ value: 'overview', label: t('نظرة عامة'), icon: 'grid' }] },
+    {
+        title: t('المبيعات'),
+        items: [
+            { value: 'orders', label: t('الطلبات'), icon: 'shopping-bag', permission: 'orders.view' },
+            { value: 'payments', label: t('المدفوعات'), icon: 'credit-card', permission: 'payments.view' },
+            { value: 'coupons', label: t('الكوبونات'), icon: 'percent', permission: 'coupons.view' },
+        ],
+    },
+    {
+        title: t('الكتالوج'),
+        items: [
+            { value: 'products', label: t('المنتجات'), icon: 'box', permission: 'products.view' },
+            { value: 'reviews', label: t('التقييمات'), icon: 'star', permission: 'reviews.view' },
+        ],
+    },
+    {
+        title: t('العملاء والمسوّقين'),
+        items: [
+            { value: 'customers', label: t('العملاء'), icon: 'user', permission: 'customers.view' },
+            { value: 'affiliates', label: t('المسوّقين'), icon: 'megaphone', permission: 'affiliates.view' },
+            { value: 'payouts', label: t('التحويلات'), icon: 'wallet', permission: 'affiliates.view' },
+        ],
+    },
+    {
+        title: t('الإدارة'),
+        items: [
+            { value: 'team', label: t('الحسابات'), icon: 'users', permission: 'vendors.view' },
+            { value: 'activity', label: t('السجل'), icon: 'clock', permission: 'logs.view' },
+        ],
+    },
 ];
+
+/**
+ * The store's sections: a grouped side menu on large screens, a grouped dropdown on small ones.
+ *
+ * @param {{ groups: typeof SECTION_GROUPS, value: string, onChange: (value: string) => void }} props
+ */
+function SectionNav({ groups, value, onChange }) {
+    return (
+        <>
+            <select value={value} onChange={(event) => onChange(event.target.value)} aria-label={t('أقسام المتجر')} className="mk-input cursor-pointer lg:hidden">
+                {groups.map((group) => (
+                    <optgroup key={group.title} label={group.title}>
+                        {group.items.map((item) => (
+                            <option key={item.value} value={item.value}>
+                                {item.label}
+                            </option>
+                        ))}
+                    </optgroup>
+                ))}
+            </select>
+
+            <nav aria-label={t('أقسام المتجر')} className="mk-card hidden flex-col gap-4 p-3 lg:sticky lg:top-24 lg:flex">
+                {groups.map((group) => (
+                    <div key={group.title}>
+                        <p className="px-3 pb-1.5 text-[11px] font-semibold text-muted">{group.title}</p>
+                        <ul className="flex flex-col gap-0.5">
+                            {group.items.map((item) => (
+                                <li key={item.value}>
+                                    <button
+                                        type="button"
+                                        onClick={() => onChange(item.value)}
+                                        aria-current={item.value === value ? 'page' : undefined}
+                                        className={cn(
+                                            'flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition',
+                                            item.value === value ? 'bg-primary-soft text-primary' : 'text-ink-2 hover:bg-surface-3 hover:text-ink',
+                                        )}
+                                    >
+                                        <Icon name={item.icon} className="size-[18px]" />
+                                        {item.label}
+                                    </button>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                ))}
+            </nav>
+        </>
+    );
+}
 
 /** Everything about one store, with the platform's controls over it. */
 export function AdminStorePage() {
@@ -42,8 +112,8 @@ export function AdminStorePage() {
     const { can } = useAdminAuth();
     const toast = useToast();
     const [searchParams, setSearchParams] = useSearchParams();
-    const tabs = TABS.filter((tab) => !tab.permission || can(tab.permission));
-    const tab = tabs.some((item) => item.value === searchParams.get('tab')) ? searchParams.get('tab') : 'overview';
+    const groups = SECTION_GROUPS.map((group) => ({ ...group, items: group.items.filter((item) => !item.permission || can(item.permission)) })).filter((group) => group.items.length > 0);
+    const tab = groups.some((group) => group.items.some((item) => item.value === searchParams.get('tab'))) ? searchParams.get('tab') : 'overview';
     const [store, setStore] = useState(null);
     const [error, setError] = useState(null);
     const [dialog, setDialog] = useState(null);
@@ -153,20 +223,22 @@ export function AdminStorePage() {
                 {store.suspended_at && <p className="w-full rounded-xl bg-danger-soft px-4 py-3 text-sm text-danger">{t('موقوف منذ {date}: {reason}', { date: formatDate(store.suspended_at), reason: store.suspension_reason })}</p>}
             </section>
 
-            <section className="mk-card overflow-hidden">
-                <Tabs tabs={tabs} value={tab} onChange={(value) => setSearchParams(value === 'overview' ? {} : { tab: value }, { replace: true })} className="px-3" />
-                {tab === 'overview' && <OverviewTab store={store} />}
-                {tab === 'orders' && <AdminOrdersTable storeId={store.store_id} />}
-                {tab === 'products' && <AdminProductsTable storeId={store.store_id} />}
-                {tab === 'customers' && <AdminCustomersTable storeId={store.store_id} />}
-                {tab === 'affiliates' && <AdminAffiliatesTable storeId={store.store_id} />}
-                {tab === 'payouts' && <AdminPayoutsTable storeId={store.store_id} />}
-                {tab === 'payments' && <AdminPaymentsTable storeId={store.store_id} />}
-                {tab === 'coupons' && <AdminCouponsTable storeId={store.store_id} />}
-                {tab === 'reviews' && <AdminReviewsTable storeId={store.store_id} />}
-                {tab === 'team' && <AdminVendorsTable storeId={store.store_id} />}
-                {tab === 'activity' && <ActivityLogList load={adminApi.logs} fixed={{ store_id: store.store_id }} />}
-            </section>
+            <div className="grid items-start gap-6 lg:grid-cols-[220px_minmax(0,1fr)]">
+                <SectionNav groups={groups} value={tab} onChange={(value) => setSearchParams(value === 'overview' ? {} : { tab: value }, { replace: true })} />
+                <section className="mk-card min-w-0 overflow-hidden">
+                    {tab === 'overview' && <OverviewTab store={store} />}
+                    {tab === 'orders' && <AdminOrdersTable storeId={store.store_id} />}
+                    {tab === 'products' && <AdminProductsTable storeId={store.store_id} />}
+                    {tab === 'customers' && <AdminCustomersTable storeId={store.store_id} />}
+                    {tab === 'affiliates' && <AdminAffiliatesTable storeId={store.store_id} />}
+                    {tab === 'payouts' && <AdminPayoutsTable storeId={store.store_id} />}
+                    {tab === 'payments' && <AdminPaymentsTable storeId={store.store_id} />}
+                    {tab === 'coupons' && <AdminCouponsTable storeId={store.store_id} />}
+                    {tab === 'reviews' && <AdminReviewsTable storeId={store.store_id} />}
+                    {tab === 'team' && <AdminVendorsTable storeId={store.store_id} />}
+                    {tab === 'activity' && <ActivityLogList load={adminApi.logs} fixed={{ store_id: store.store_id }} />}
+                </section>
+            </div>
 
             {dialog === 'edit' && <EditStoreModal store={store} busy={busy} onClose={() => setDialog(null)} onSubmit={(payload) => act(() => adminApi.updateStore(store.store_id, payload), t('تم حفظ المتجر'))} />}
             <SuspendDialog open={dialog === 'suspend'} busy={busy} onClose={() => setDialog(null)} onConfirm={(reason) => act(() => adminApi.suspend(store.store_id, reason), t('تم إيقاف المتجر'))} />
