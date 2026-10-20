@@ -157,7 +157,7 @@ class AdminTeamAndLogsTest extends TestCase
         $this->assertDatabaseHas('activity_logs', ['event' => 'store.impersonated', 'actor_type' => 'admin', 'store_id' => $owner->store->id]);
     }
 
-    public function test_the_overview_has_daily_series_and_attention_lists(): void
+    public function test_the_overview_has_daily_series(): void
     {
         $this->actingAsAdmin();
         Store::factory()->create();
@@ -166,7 +166,7 @@ class AdminTeamAndLogsTest extends TestCase
             ->assertOk()
             ->assertJsonCount(30, 'data.daily')
             ->assertJsonPath('data.daily.29.stores', 1)
-            ->assertJsonCount(1, 'data.latest_stores');
+            ->assertJsonPath('data.daily.29.orders', 0);
     }
 
     public function test_admin_roles_validate_permissions(): void

@@ -17,7 +17,7 @@ const NAV_SECTIONS = [
     {
         title: t('المنصة'),
         items: [
-            { label: t('نظرة عامة'), icon: 'grid', to: '/admin', end: true, permission: 'overview.view' },
+            { label: t('الرئيسية'), icon: 'grid', to: '/admin', end: true, permission: 'overview.view' },
             { label: t('الإشعارات'), icon: 'bell', to: '/admin/notifications', counter: true },
             { label: t('تذاكر الدعم'), icon: 'message-square', to: '/admin/support', permission: 'tickets.view' },
         ],

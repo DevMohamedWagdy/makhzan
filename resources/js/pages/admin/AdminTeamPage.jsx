@@ -16,7 +16,7 @@ import { formatNumber, formatRelative } from '@/lib/format';
 import { adminApi } from '@/services/adminApi';
 
 const SECTIONS = {
-    overview: { label: t('نظرة عامة'), icon: 'grid' },
+    overview: { label: t('الرئيسية'), icon: 'grid' },
     stores: { label: t('المتاجر'), icon: 'store' },
     vendors: { label: t('التجار والحسابات'), icon: 'users' },
     orders: { label: t('الطلبات'), icon: 'shopping-bag' },

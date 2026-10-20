@@ -2,9 +2,14 @@
 
 namespace Tests\Feature\Api\V1\Admin;
 
+use App\Enums\AffiliateStatus;
+use App\Enums\CommissionStatus;
 use App\Enums\OrderStatus;
+use App\Enums\ProductStatus;
 use App\Models\Admin;
+use App\Models\Affiliate;
 use App\Models\Order;
+use App\Models\Product;
 use App\Models\Store;
 use App\Models\Vendor;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -98,7 +103,45 @@ class AdminPanelTest extends TestCase
             ->assertOk()
             ->assertJsonPath('data.stores.total', 2)
             ->assertJsonPath('data.stores.suspended', 1)
+            ->assertJsonPath('data.stores.active', 1)
             ->assertJsonMissingPath('data.billing');
+    }
+
+    public function test_overview_summarizes_orders_affiliates_products_and_top_performers(): void
+    {
+        $this->actingAsAdmin();
+        $store = Store::factory()->create(['name' => 'متجر النجوم']);
+        $affiliate = Affiliate::factory()->for($store)->create(['full_name' => 'سارة']);
+        Affiliate::factory()->for($store)->frozen()->create();
+        Affiliate::factory()->for($store)->pending()->create();
+
+        Order::factory()->for($store)->status(OrderStatus::Delivered)->create(['total' => 1000, 'affiliate_id' => $affiliate->id, 'commission_amount' => 80, 'commission_status' => CommissionStatus::Earned]);
+        Order::factory()->for($store)->status(OrderStatus::Delivered)->create(['total' => 500]);
+        Order::factory()->for($store)->status(OrderStatus::Cancelled)->create(['total' => 300, 'affiliate_id' => $affiliate->id, 'commission_amount' => 20, 'commission_status' => CommissionStatus::Cancelled]);
+        Order::factory()->for($store)->status(OrderStatus::Returned)->create();
+        Product::factory()->for($store)->create(['status' => ProductStatus::Active]);
+        Product::factory()->for($store)->create(['status' => ProductStatus::Draft]);
+
+        $this->getJson('/api/v1/admin/overview')
+            ->assertOk()
+            ->assertJsonPath('data.orders.total', 4)
+            ->assertJsonPath('data.orders.delivered', 2)
+            ->assertJsonPath('data.orders.cancelled', 1)
+            ->assertJsonPath('data.orders.returned', 1)
+            ->assertJsonPath('data.orders.delivered_sales', 1500)
+            ->assertJsonPath('data.affiliates.total', 3)
+            ->assertJsonPath('data.affiliates.'.AffiliateStatus::Active->value, 1)
+            ->assertJsonPath('data.affiliates.frozen', 1)
+            ->assertJsonPath('data.affiliates.pending', 1)
+            ->assertJsonPath('data.affiliates.earned_commission', 80)
+            ->assertJsonPath('data.products.total', 2)
+            ->assertJsonPath('data.products.published', 1)
+            ->assertJsonPath('data.daily.29.orders', 4)
+            ->assertJsonPath('data.top_stores.0', ['store_id' => $store->id, 'name' => 'متجر النجوم', 'delivered_orders' => 2, 'delivered_sales' => 1500])
+            ->assertJsonCount(1, 'data.top_affiliates')
+            ->assertJsonPath('data.top_affiliates.0.name', 'سارة')
+            ->assertJsonPath('data.top_affiliates.0.delivered_orders', 1)
+            ->assertJsonPath('data.top_affiliates.0.earned_commission', 80);
     }
 
     public function test_create_admin_command_creates_and_resets_admins(): void
