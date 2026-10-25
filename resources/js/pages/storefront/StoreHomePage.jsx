@@ -44,7 +44,7 @@ function HeroBanner({ storeSlug, store, products }) {
                     {photos.map((product, index) => (
                         <div
                             key={product.product_id}
-                            className="absolute aspect-[4/5] w-[46%] overflow-hidden rounded-2xl border-[3px] border-white/90 shadow-2xl transition duration-500 group-hover:scale-105"
+                            className="absolute aspect-[4/5] w-[46%] overflow-hidden rounded-2xl border-[3px] border-white/90 shadow-pop transition duration-500 group-hover:scale-105"
                             style={{ transform: `translateX(${(index - 1) * 55}%) rotate(${(index - 1) * 8}deg)`, zIndex: index === 1 ? 2 : 1 }}
                         >
                             <ProductImage src={product.image_url} alt="" />

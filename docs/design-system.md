@@ -137,9 +137,9 @@ Elevation (border first, shadow second):
 | Level | Token | Use |
 |---|---|---|
 | 0 | none | flat panels inside cards |
-| 1 | `shadow-card` — `0 1px 2px rgb(18 26 33/.04)` | cards, secondary buttons |
-| 2 | `shadow-raise` — `+ 0 10px 28px -14px rgb(18 26 33/.16)` | hover on clickable cards, auth card, Ink tiles |
-| 3 | `shadow-pop` — `0 0 0 1px …/.03, 0 28px 56px -18px …/.28` | dropdowns, popovers, modals, drawers, toasts |
+| 1 | `shadow-card` — `0 1px 2px rgb(16 24 40/.03)` | cards |
+| 2 | `shadow-raise` — `+ 0 4px 12px -6px rgb(16 24 40/.08)` | hover on clickable cards, auth card, Ink tiles |
+| 3 | `shadow-pop` — `0 0 0 1px …/.03, 0 12px 32px -12px …/.16` | dropdowns, popovers, modals, drawers, toasts |
 
 Overlays: `#0b1116` at 50–55 % with a 2–3 px backdrop blur.
 
@@ -172,7 +172,7 @@ Two-column grids always declare `grid-cols-1` for phones and use `min-w-0` colum
 
 | Component | File | Specification |
 |---|---|---|
-| `Button` | `ui/Button.jsx` | Variants: primary (deep green, inset highlight), secondary (white, strong hairline, card shadow), soft, ghost, danger, danger-soft, success, brand (logo green with navy text, for navy bands), outline-light (navy bands only). Sizes 32 / 40 / 44 / 52, icon 36. |
+| `Button` | `ui/Button.jsx` | Variants: primary (deep green, faint inset highlight), secondary (white, strong hairline, no shadow), soft, ghost, danger, danger-soft, success, brand (logo green with navy text, for navy bands), outline-light (navy bands only). Sizes 32 / 40 / 44 / 52, icon 36. |
 | `Field`, `Input`, `Select`, `Textarea`, `PasswordInput` | `ui/Form.jsx` + `.mk-input` | 40 px, 8 px radius, `border-line-strong/80`, halo focus, invalid state, disabled tint. Label 13 px / 500. |
 | `Checkbox`, `Switch`, `OptionCards` | `ui/Form.jsx` | 18 px box; 44 × 24 switch with soft knob shadow; option cards with selected halo. |
 | `Badge` | `ui/Display.jsx` | 24 px pill, 11.5 px, tone soft fill + 12 % ring. |

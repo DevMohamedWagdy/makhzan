@@ -5,8 +5,8 @@ import { Icon } from './Icon';
 import { Spinner } from './Spinner';
 
 const VARIANTS = {
-    primary: 'bg-primary text-white shadow-[inset_0_1px_0_rgb(255_255_255/0.12),0_1px_2px_rgb(10_60_35/0.25)] hover:bg-primary-hover active:translate-y-px',
-    secondary: 'border border-line-strong/80 bg-surface text-ink shadow-card hover:border-line-strong hover:bg-surface-2 active:bg-surface-3',
+    primary: 'bg-primary text-white shadow-[inset_0_1px_0_rgb(255_255_255/0.1)] hover:bg-primary-hover active:translate-y-px',
+    secondary: 'border border-line-strong/80 bg-surface text-ink hover:border-line-strong hover:bg-surface-2 active:bg-surface-3',
     soft: 'bg-primary-soft text-primary hover:bg-primary/15',
     ghost: 'text-ink-2 hover:bg-surface-3 hover:text-ink',
     danger: 'bg-danger text-white shadow-[inset_0_1px_0_rgb(255_255_255/0.12)] hover:brightness-95 active:translate-y-px',
