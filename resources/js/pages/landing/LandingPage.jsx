@@ -67,11 +67,11 @@ export function LandingPage() {
     }, []);
 
     const primaryAction = isAuthenticated ? (
-        <Button to="/dashboard" variant="sprout" size="xl" iconEnd={arrow}>
+        <Button to="/dashboard" variant="brand" size="xl" iconEnd={arrow}>
             {t('الذهاب إلى لوحة التحكم')}
         </Button>
     ) : (
-        <Button to="/register" variant="sprout" size="xl" iconEnd={arrow}>
+        <Button to="/register" variant="brand" size="xl" iconEnd={arrow}>
             {t('ابدأ مجاناً')}
         </Button>
     );
@@ -141,7 +141,7 @@ export function LandingPage() {
             </header>
 
             <main>
-                {/* Hero on Ink (design system "Hero"): one Sprout CTA, proof chips, then the product frame overlapping the next section. */}
+                {/* Hero on Ink (design system "Hero"): one logo-green CTA, proof chips, then the product frame overlapping the next section. */}
                 <section className="relative bg-brand text-white">
                     <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
                         <div className="mk-grid-texture absolute inset-0 [mask-image:radial-gradient(ellipse_60%_55%_at_50%_0%,black,transparent)]" />
@@ -150,11 +150,11 @@ export function LandingPage() {
 
                     <div className="relative mx-auto max-w-6xl px-4 pt-16 text-center sm:px-6 sm:pt-24">
                         <span className="inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/[0.04] px-3.5 py-1.5 text-xs font-medium text-white/85 backdrop-blur">
-                            <Icon name="sparkles" className="size-4 text-sprout" />
+                            <Icon name="sparkles" className="size-4 text-brand-green" />
                             {t('منصة واحدة لإدارة تجارتك بالكامل')}
                         </span>
                         <h1 className="mx-auto mt-7 max-w-3xl text-[38px] leading-[1.3] font-bold text-balance sm:text-[56px] sm:leading-[1.2]">
-                            {t('كل ما يحتاجه متجرك،')} <span className="bg-gradient-to-l from-brand-green to-sprout bg-clip-text text-transparent">{t('في منصة واحدة.')}</span>
+                            {t('كل ما يحتاجه متجرك،')} <span className="text-brand-green">{t('في منصة واحدة.')}</span>
                         </h1>
                         <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-white/75 sm:text-lg">
                             {t('المخزون، الطلبات، المسوقين والتقارير — نظام متكامل مصمم للتاجر العربي.')}
@@ -170,7 +170,7 @@ export function LandingPage() {
                         <ul className="mt-10 flex flex-wrap justify-center gap-x-8 gap-y-4">
                             {HERO_PROOF.map((proof) => (
                                 <li key={proof.text} className="flex items-center gap-3 text-sm text-white/85">
-                                    <span className="grid size-9 place-items-center rounded-lg border border-white/10 bg-white/[0.04] text-sprout">
+                                    <span className="grid size-9 place-items-center rounded-lg border border-white/10 bg-white/[0.04] text-brand-green">
                                         <Icon name={proof.icon} className="size-5" />
                                     </span>
                                     {proof.text}
@@ -201,7 +201,7 @@ export function LandingPage() {
                     <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                         {FEATURES.map((feature) => (
                             <article key={feature.title} className="mk-card mk-card-link group p-6">
-                                <span className="grid size-10 place-items-center rounded-xl bg-primary-soft text-primary ring-1 ring-primary/10 ring-inset transition group-hover:bg-primary group-hover:text-white">
+                                <span className="grid size-10 place-items-center rounded-xl bg-primary-soft text-brand-green ring-1 ring-primary/10 ring-inset transition group-hover:bg-brand-green group-hover:text-brand">
                                     <Icon name={feature.icon} />
                                 </span>
                                 <h3 className="mt-5 text-base font-semibold text-ink">{feature.title}</h3>
@@ -217,7 +217,7 @@ export function LandingPage() {
                         <ol className="mt-12 grid gap-6 md:grid-cols-3">
                             {STEPS.map((step, index) => (
                                 <li key={step.title} className="relative rounded-2xl border border-line bg-bg p-6">
-                                    <span className="ltr mk-num grid size-10 place-items-center rounded-xl bg-panel text-sm font-semibold text-sprout">{String(index + 1).padStart(2, '0')}</span>
+                                    <span className="ltr mk-num grid size-10 place-items-center rounded-xl bg-panel text-sm font-semibold text-brand-green">{String(index + 1).padStart(2, '0')}</span>
                                     <h3 className="mt-5 text-lg font-semibold text-ink">{step.title}</h3>
                                     <p className="mt-2 text-sm leading-relaxed text-muted">{step.text}</p>
                                 </li>
@@ -246,14 +246,14 @@ export function LandingPage() {
                 </section>
 
                 <section className="px-4 pb-20 sm:px-6 sm:pb-24">
-                    {/* Closing CTA band (design system "CtaBand"): Ink, the mark as a faint watermark, one Sprout button. */}
+                    {/* Closing CTA band (design system "CtaBand"): Ink, the mark as a faint watermark, one logo-green button. */}
                     <div className="relative mx-auto max-w-6xl overflow-hidden rounded-3xl bg-brand px-6 py-16 text-center sm:px-12 dark:ring-1 dark:ring-line">
                         <div className="mk-grid-texture pointer-events-none absolute inset-0 [mask-image:radial-gradient(ellipse_at_center,black,transparent_70%)]" aria-hidden="true" />
                         <LogoMark className="pointer-events-none absolute -start-8 -bottom-10 size-60 text-white/[0.06]" />
                         <h2 className="relative text-3xl font-bold text-white">{t('جاهز تنظّم تجارتك؟')}</h2>
                         <p className="relative mx-auto mt-3 max-w-xl text-white/75">{t('انضم الآن وابدأ إدارة مخزونك وطلباتك ومسوقيك من مكان واحد.')}</p>
                         <div className="relative mt-8 flex flex-wrap justify-center gap-3">
-                            <Button to={isAuthenticated ? '/dashboard' : '/register'} variant="sprout" size="lg" iconEnd={arrow}>
+                            <Button to={isAuthenticated ? '/dashboard' : '/register'} variant="brand" size="lg" iconEnd={arrow}>
                                 {isAuthenticated ? t('الذهاب إلى لوحة التحكم') : t('أنشئ متجرك مجاناً')}
                             </Button>
                             {!isAuthenticated && (
@@ -309,7 +309,7 @@ function DashboardPreview() {
                             ['users', t('المسوقين')],
                             ['bar-chart', t('التقارير')],
                         ].map(([icon, label], index) => (
-                            <span key={label} className={cn('flex items-center gap-2 rounded-lg px-2.5 py-2 text-xs', index === 0 ? 'bg-white/[0.07] font-semibold text-white [&>svg]:text-sprout' : 'text-panel-text/80')}>
+                            <span key={label} className={cn('flex items-center gap-2 rounded-lg px-2.5 py-2 text-xs', index === 0 ? 'bg-white/[0.07] font-semibold text-white [&>svg]:text-brand-green' : 'text-panel-text/80')}>
                                 <Icon name={icon} className="size-4" />
                                 {label}
                             </span>

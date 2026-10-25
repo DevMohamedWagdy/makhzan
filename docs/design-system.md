@@ -1,4 +1,4 @@
-# SellyGrow Design System — "Ink & Sprout"
+# SellyGrow Design System — "Ink & Leaf"
 
 The visual language for every SellyGrow surface: the merchant dashboard, the platform admin, the affiliate (marketer) portal, the customer storefront, and the public landing / auth pages.
 
@@ -6,12 +6,12 @@ All tokens live in `resources/css/app.css`. Components consume them through Tail
 
 ## 1. Concept
 
-**Paper, ink and one green shoot.**
+**Paper, ink and the logo's leaf.** The palette uses the logo's two colors exactly: navy `#17212B` and Growth Green `#16A35F`.
 
 - **Paper** — a warm off-white canvas with white sheets on top. Structure comes from hairline borders first, shadows second.
-- **Ink** — the brand's near-black (`#121a21`) is used as a solid *material*, not only as text: the navigation rail, hero bands, commission and balance tiles, auth brand panel.
-- **Sprout** — the logo's lime (`#b8f171`) is the single signature accent. It appears **only on Ink** (active nav marker, counters, hero CTAs, key figures). It is never used on light surfaces, where it is unreadable.
-- **Growth Green** (`--mk-primary`) carries action: primary buttons, links, focus, selected states, charts.
+- **Ink** — the logo navy (`#17212b`) is the text color and a solid *material*: the navigation rail, hero bands, commission and balance tiles, auth brand panel.
+- **Leaf** — the logo green (`#16a35f`, `brand-green`) is the signature accent: icons, charts, active tabs and nav icons, counters, focus halo, key figures and CTAs on navy. Navy text on it (and it on navy) reads at 5:1.
+- **Deep green** (`--mk-primary`, `#0e7a46`) is kept only where white or small green text sits on/against light surfaces: primary buttons, links, badges. White on the logo green would only reach 3.2:1.
 
 Restraint rules: no decorative gradients on light surfaces, no glassmorphism beyond the sticky headers' `backdrop-blur`, no neon, no heavy drop shadows. Ink bands may use the hairline grid texture and a soft green glow.
 
@@ -27,14 +27,15 @@ Restraint rules: no decorative gradients on light surfaces, no glassmorphism bey
 | `--mk-surface-3` | `bg-surface-3` | `#f0f0ea` | `#1a242c` | Ghost hover, segmented track, skeletons |
 | `--mk-border` | `border-line` | `#e6e6df` | `#222d36` | Hairlines, dividers |
 | `--mk-border-strong` | `border-line-strong` | `#d4d5cc` | `#2f3c46` | Input borders, hover borders |
-| `--mk-text` | `text-ink` | `#121a21` | `#e9edea` | Primary text |
+| `--mk-text` | `text-ink` | `#17212b` | `#e9edea` | Primary text |
 | `--mk-text-2` | `text-ink-2` | `#434d55` | `#adb7b1` | Secondary text |
 | `--mk-muted` | `text-muted` | `#6c736e` | `#7d8992` | Labels, captions, placeholders |
 | `--mk-primary` | `bg-primary` / `text-primary` | `#0e7a46` | `#1c9459` | Actions, links, focus |
 | `--mk-primary-hover` | `bg-primary-hover` | `#0a6239` | `#23a866` | Primary hover |
 | `--mk-primary-soft` | `bg-primary-soft` | `#e8f3ec` | `#11281d` | Selected / soft tint |
-| `--mk-accent` | `text-accent` | `#16a35f` | `#b8f171` | Brand green accent |
-| `--mk-ring` | `--color-ring` | `rgb(14 122 70 / .28)` | `rgb(184 241 113 / .3)` | Focus halo |
+| `--mk-accent` | `text-accent` | `#16a35f` | `#16a35f` | Brand green accent |
+| `--mk-brand-green` | `bg-brand-green` / `text-brand-green` | `#16a35f` | `#16a35f` | Logo green: icons, charts, highlights |
+| `--mk-ring` | `--color-ring` | `rgb(22 163 95 / .3)` | `rgb(22 163 95 / .4)` | Focus halo |
 
 ### 2.2 Status
 
@@ -47,20 +48,19 @@ Restraint rules: no decorative gradients on light surfaces, no glassmorphism bey
 
 Status tones always pair the soft background with the tone's text color plus a 12–15 % `ring-current` hairline (`Badge`, `Alert`, icon tiles).
 
-### 2.3 Ink rail (navigation and brand bands)
+### 2.3 Navy rail (navigation and brand bands)
 
-Constant across themes, a touch deeper in dark.
+The logo navy in both themes.
 
 | Token | Tailwind | Light | Dark |
 |---|---|---|---|
-| `--mk-panel` | `bg-panel` | `#111920` | `#0d1318` |
-| `--mk-panel-2` | `bg-panel-2` | `#19232c` | `#151e25` |
+| `--mk-panel` | `bg-panel` | `#17212b` | `#17212b` |
+| `--mk-panel-2` | `bg-panel-2` | `#1f2b37` | `#1f2b37` |
 | `--mk-panel-line` | `border-panel-line` | `rgb(255 255 255 / .07)` | `rgb(255 255 255 / .06)` |
-| `--mk-panel-text` | `text-panel-text` | `#c9d1cc` | `#c2cbc6` |
-| `--mk-panel-muted` | `text-panel-muted` | `#7f8b85` | `#75817b` |
-| `--mk-sprout` | `bg-sprout` / `text-sprout` | `#b8f171` | `#b8f171` |
+| `--mk-panel-text` | `text-panel-text` | `#c9d1d9` | `#c9d1d9` |
+| `--mk-panel-muted` | `text-panel-muted` | `#8794a1` | `#8794a1` |
 
-Static brand colors: `brand #121a21`, `brand-light #1f2b36`, `brand-green #16a35f`.
+Static brand colors: `brand #17212b`, `brand-light #223140`.
 
 ### 2.4 Interactive states
 
@@ -70,14 +70,14 @@ Static brand colors: `brand #121a21`, `brand-light #1f2b36`, `brand-green #16a35
 | Hover (primary) | `bg-primary-hover` |
 | Focus (keyboard) | `box-shadow: 0 0 0 3px var(--mk-ring)` — global `:focus-visible` rule; inputs use the same halo on `:focus` |
 | Active / pressed | primary and danger buttons nudge `translate-y-px` |
-| Selected | `bg-primary-soft` + `border-primary` + ring halo (option cards); `text-ink` + 2px primary underline (tabs); white raised pill (segmented) |
-| Selected (Ink rail) | `bg-white/[0.07]`, white text, Sprout icon, 3px Sprout marker on the inline-start edge |
+| Selected | `bg-primary-soft` + `border-primary` + ring halo (option cards); `text-ink` + 2px logo-green underline and icon (tabs); white raised pill (segmented) |
+| Selected (navy rail) | `bg-white/[0.07]`, white text, logo-green icon |
 | Disabled | `opacity-50`, `cursor-not-allowed`, no shadow; inputs `bg-surface-2 text-muted` |
 | Invalid | `border-danger` + danger-tinted halo |
 
 ### 2.5 Chart palette
 
-Single-series charts use `primary`; while one column is hovered the others drop to `primary/35`. Part-to-whole charts use the status tones (`primary`, `success`, `warning`, `danger`, `info`, `muted`) and always carry a text legend.
+Single-series charts and ranked bars use the logo green (`brand-green`); while one column is hovered the others drop to `brand-green/35`. Part-to-whole charts use the status tones (`brand-green`, `success`, `warning`, `danger`, `info`, `muted`) and always carry a text legend.
 
 ## 3. Typography
 
@@ -111,8 +111,8 @@ Figures that must align (KPIs, prices, totals, counters, pagination, all tables)
 | Page gutter | 16 px phone (`px-4`), 32 px from `sm` (`sm:px-8`); storefront 16 / 24 |
 | Page vertical | 24 px phone, 32 px `sm` (dashboard / admin), 40 px portal |
 | Content max width | 1440 px (dashboard, admin), 1152 px (`max-w-6xl`, portal, landing), 1280 px (`max-w-7xl`, storefront) |
-| Page header → content | 28 px (`mb-7`) |
-| Section gap | 24 px (`gap-6`); landing sections 80–96 px |
+| Page header → content | 24 px to the hairline, 32 px after it (`pb-6 mb-8`) |
+| Section gap | 24 px between cards (`gap-6`), 32 px between page zones (`gap-8`), 12 px inside a zone (e.g. attention strip + KPIs); landing sections 80–96 px |
 | Card padding | 20 px (`p-5`); card header 20 × 14 px, min height 60 px |
 | Dialog padding | 24 × 20 px body, 24 × 16 px footer |
 | Component gap | 8 px (buttons, toolbars), 12–16 px (grids) |
@@ -149,8 +149,8 @@ Z-index: sticky headers 20 · mobile sidebar scrim 30 · sidebar / storefront he
 
 | Shell | File | Composition |
 |---|---|---|
-| Merchant dashboard | `components/layout/DashboardLayout.jsx` | 264 px Ink rail (logo, store card with visit / copy, grouped nav with Sprout marker and counters) + translucent 64 px header + 1440 px content |
-| Platform admin | `components/layout/AdminLayout.jsx` | Same Ink rail (248 px) through the shared `SidebarNav`, with an "Admin" Sprout tag |
+| Merchant dashboard | `components/layout/DashboardLayout.jsx` | 264 px navy rail: logo, one compact store row (name, link, visit and copy icon buttons), quiet group labels, highlighted active page with a logo-green icon, logo-green counters; translucent 64 px header; 1440 px content |
+| Platform admin | `components/layout/AdminLayout.jsx` | Same navy rail (248 px) through the shared `SidebarNav`, with a green "Admin" tag |
 | Affiliate portal | `features/affiliate-portal/AffiliatePortalLayout.jsx` | Store-branded top bar with underline tabs; Ink commission tile on the home |
 | Auth (vendor, admin) | `components/layout/AuthLayout.jsx` | Form column on paper + Ink brand panel (≥ lg) with grid texture and product promise |
 | Store public (affiliate join / login) | `components/layout/StorePublicLayout.jsx` | Store-branded header, centered content, "powered by" footer |
@@ -161,13 +161,13 @@ Z-index: sticky headers 20 · mobile sidebar scrim 30 · sidebar / storefront he
 
 | Component | File | Specification |
 |---|---|---|
-| `Button` | `ui/Button.jsx` | Variants: primary (inset highlight + 1 px green shadow), secondary (white, strong hairline, card shadow), soft, ghost, danger, danger-soft, success, sprout (Ink only), outline-light (Ink only). Sizes 32 / 40 / 44 / 52, icon 36. |
+| `Button` | `ui/Button.jsx` | Variants: primary (deep green, inset highlight), secondary (white, strong hairline, card shadow), soft, ghost, danger, danger-soft, success, brand (logo green with navy text, for navy bands), outline-light (navy bands only). Sizes 32 / 40 / 44 / 52, icon 36. |
 | `Field`, `Input`, `Select`, `Textarea`, `PasswordInput` | `ui/Form.jsx` + `.mk-input` | 40 px, 8 px radius, `border-line-strong/80`, halo focus, invalid state, disabled tint. Label 13 px / 500. |
 | `Checkbox`, `Switch`, `OptionCards` | `ui/Form.jsx` | 18 px box; 44 × 24 switch with soft knob shadow; option cards with selected halo. |
 | `Badge` | `ui/Display.jsx` | 24 px pill, 11.5 px, tone soft fill + 12 % ring. |
 | `Avatar` | `ui/Display.jsx` | `shape="rounded"` (stores) or `"circle"` (people). |
 | `Card` | `ui/Display.jsx` | 14 px sheet, header 60 px min with title 15 px / description 12.5 px. |
-| `StatCard` | `ui/Display.jsx` | Label + 32 px icon tile on one line, metric below, optional hint (e.g. `TrendBadge`). |
+| `StatCard` | `ui/Display.jsx` | Label + 32 px icon tile (logo-green icon for the primary tone) on one line, metric below, optional hint (e.g. `TrendBadge`). |
 | KPI ribbon | `.mk-stat-group` | StatCards joined in one sheet with hairline dividers; cells draw their own end/bottom rules so partial rows stay clean. |
 | `EmptyState` | `ui/Display.jsx` | 56 px icon tile inside a dashed halo, 15 px title. |
 | `Alert` | `ui/Display.jsx` | Tone fill + ring, 13.5 px. |
@@ -179,8 +179,8 @@ Z-index: sticky headers 20 · mobile sidebar scrim 30 · sidebar / storefront he
 | `ColumnChart`, `BarList`, `SegmentedBar`, `TrendBadge` | `ui/Charts.jsx` | See §2.5; trend badge is a 20 px pill. |
 | Tables | `.mk-thead` | Tinted header band, 11.5 px semibold labels, `divide-line` rows, `hover:bg-surface-2`. |
 | `SidebarNav` | `layout/DashboardLayout.jsx` | Shared Ink navigation for dashboard and admin. |
-| `PageHeader` | `layout/DashboardLayout.jsx` | Breadcrumbs, page title, 13.5 px description (max 2xl), actions aligned to the bottom. |
-| `Logo` | `brand/Logo.jsx` | `inverse` keeps "Selly" light on Ink. |
+| `PageHeader` | `layout/DashboardLayout.jsx` | Breadcrumbs, page title, 13.5 px description (max 2xl), actions aligned to the bottom; a hairline and 32 px gap separate it from the content. |
+| `Logo` | `brand/Logo.jsx` | `inverse` keeps "Selly" light on navy. |
 
 ## 8. Utility classes
 
@@ -194,7 +194,7 @@ Z-index: sticky headers 20 · mobile sidebar scrim 30 · sidebar / storefront he
 | `.mk-page-title` | Page title type role |
 | `.mk-overline` | Small group label |
 | `.mk-num` | Tabular figures |
-| `.mk-grid-texture` | 32 px hairline grid for Ink bands (mask it with a gradient) |
+| `.mk-grid-texture` | 32 px hairline grid for navy bands (mask it with a gradient) |
 | `.mk-scroll`, `.mk-scroll-dark`, `.mk-rail` | Scrollbars and swipe rails |
 | `.ltr` | Left-to-right runs inside RTL text |
 
@@ -202,5 +202,5 @@ Z-index: sticky headers 20 · mobile sidebar scrim 30 · sidebar / storefront he
 
 - Layouts use logical properties (`ms-`, `pe-`, `start-`, `end-`, `border-s`) so Arabic (RTL, default) and English (LTR) mirror automatically.
 - Arrow and chevron icons are drawn for RTL; `Icon` mirrors them in English, so always request the Arabic drawing (`arrow-left`, `chevron-left`).
-- Breakpoints follow Tailwind (`sm` 640, `md` 768, `lg` 1024, `xl` 1280, `2xl` 1536). The Ink rail becomes an off-canvas drawer below `lg`; KPI ribbons collapse to one column on phones with 16 px cell padding and 22 px figures; the auth brand panel appears from `lg`.
+- Breakpoints follow Tailwind (`sm` 640, `md` 768, `lg` 1024, `xl` 1280, `2xl` 1536). The navy rail becomes an off-canvas drawer below `lg`; KPI ribbons collapse to one column on phones with 16 px cell padding and 22 px figures; the auth brand panel appears from `lg`.
 - Motion: 150–300 ms ease-out; everything is disabled under `prefers-reduced-motion`.

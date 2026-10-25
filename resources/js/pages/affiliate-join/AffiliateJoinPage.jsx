@@ -247,14 +247,14 @@ export function AffiliateJoinPage() {
                     <div className="relative overflow-hidden rounded-2xl bg-panel p-6 text-white shadow-raise">
                         <div className="mk-grid-texture absolute inset-0 [mask-image:linear-gradient(to_bottom,black,transparent)]" aria-hidden="true" />
                         <p className="relative text-sm text-panel-text">{t('عمولتك على كل طلب')}</p>
-                        <p className="mk-num relative mt-1 text-[40px] leading-[48px] font-semibold text-sprout">{link ? `${link.commission_percentage}%` : '—'}</p>
+                        <p className="mk-num relative mt-1 text-[40px] leading-[48px] font-semibold text-brand-green">{link ? `${link.commission_percentage}%` : '—'}</p>
                         <p className="relative mt-2 text-xs text-panel-text/80">{tier ? t('تبدأ كـ «{label}» ويمكن ترقيتك حسب أدائك', { label: tier.label }) : ' '}</p>
                     </div>
 
                     <ol className="flex flex-col gap-4">
                         {STEPS.map((step, index) => (
                             <li key={step.title} className="flex items-start gap-3">
-                                <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary-soft text-primary ring-1 ring-primary/10 ring-inset">
+                                <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary-soft text-brand-green ring-1 ring-primary/10 ring-inset">
                                     <Icon name={step.icon} className="size-5" />
                                 </span>
                                 <span>

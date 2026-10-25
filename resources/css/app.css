@@ -7,9 +7,10 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /*
- * Makhzan design tokens — "Ink & Sprout" (see docs/design-system.md).
- * Warm paper canvas, white sheets with hairline borders, Growth Green for action, and a deep Ink
- * rail where Sprout is the single signature accent. Elevation comes from borders first, shadows second.
+ * Makhzan design tokens — "Ink & Leaf" (see docs/design-system.md).
+ * Exact logo colors: Ink navy #17212b and Growth Green #16a35f. Warm paper canvas, white sheets with
+ * hairline borders, a navy rail where the logo green is the signature accent. A deeper green
+ * (--mk-primary) is kept only where white text sits on green, so it stays readable. Elevation comes from borders first, shadows second.
  * Semantic colors live in CSS variables so Light/Dark switch by toggling `.dark` on <html>.
  */
 :root {
@@ -19,13 +20,13 @@
     --mk-surface-3: #f0f0ea;
     --mk-border: #e6e6df;
     --mk-border-strong: #d4d5cc;
-    --mk-text: #121a21;
+    --mk-text: #17212b;
     --mk-text-2: #434d55;
     --mk-muted: #6c736e;
     --mk-primary: #0e7a46;
     --mk-primary-hover: #0a6239;
     --mk-primary-soft: #e8f3ec;
-    --mk-secondary: #121a21;
+    --mk-secondary: #17212b;
     --mk-accent: #16a35f;
     --mk-success: #157f3c;
     --mk-success-soft: #eaf6ee;
@@ -35,19 +36,21 @@
     --mk-danger-soft: #fcedec;
     --mk-info: #0369a1;
     --mk-info-soft: #e8f2f9;
-    --mk-ring: rgb(14 122 70 / 0.28);
+    --mk-ring: rgb(22 163 95 / 0.3);
 
-    /* The Ink rail (sidebars, brand bands). Same in both themes, a touch deeper in dark. */
-    --mk-panel: #111920;
-    --mk-panel-2: #19232c;
+    /* Logo Growth Green: icons, charts, markers and highlights (never behind white text). */
+    --mk-brand-green: #16a35f;
+
+    /* The navy rail (sidebars, brand bands): the logo's Ink in both themes. */
+    --mk-panel: #17212b;
+    --mk-panel-2: #1f2b37;
     --mk-panel-line: rgb(255 255 255 / 0.07);
-    --mk-panel-text: #c9d1cc;
-    --mk-panel-muted: #7f8b85;
-    --mk-sprout: #b8f171;
+    --mk-panel-text: #c9d1d9;
+    --mk-panel-muted: #8794a1;
 
-    --mk-shadow: 0 1px 2px rgb(18 26 33 / 0.04);
-    --mk-shadow-md: 0 1px 2px rgb(18 26 33 / 0.04), 0 10px 28px -14px rgb(18 26 33 / 0.16);
-    --mk-shadow-lg: 0 0 0 1px rgb(18 26 33 / 0.03), 0 28px 56px -18px rgb(18 26 33 / 0.28);
+    --mk-shadow: 0 1px 2px rgb(23 33 43 / 0.04);
+    --mk-shadow-md: 0 1px 2px rgb(23 33 43 / 0.04), 0 10px 28px -14px rgb(23 33 43 / 0.16);
+    --mk-shadow-lg: 0 0 0 1px rgb(23 33 43 / 0.03), 0 28px 56px -18px rgb(23 33 43 / 0.28);
     color-scheme: light;
 }
 
@@ -65,7 +68,7 @@
     --mk-primary-hover: #23a866;
     --mk-primary-soft: #11281d;
     --mk-secondary: #adb7b1;
-    --mk-accent: #b8f171;
+    --mk-accent: #16a35f;
     --mk-success: #34d399;
     --mk-success-soft: #0f2a21;
     --mk-warning: #fbbf24;
@@ -74,13 +77,13 @@
     --mk-danger-soft: #321819;
     --mk-info: #38bdf8;
     --mk-info-soft: #0c2533;
-    --mk-ring: rgb(184 241 113 / 0.3);
+    --mk-ring: rgb(22 163 95 / 0.4);
 
-    --mk-panel: #0d1318;
-    --mk-panel-2: #151e25;
+    --mk-panel: #17212b;
+    --mk-panel-2: #1f2b37;
     --mk-panel-line: rgb(255 255 255 / 0.06);
-    --mk-panel-text: #c2cbc6;
-    --mk-panel-muted: #75817b;
+    --mk-panel-text: #c9d1d9;
+    --mk-panel-muted: #8794a1;
 
     --mk-shadow: 0 1px 2px rgb(0 0 0 / 0.3);
     --mk-shadow-md: 0 1px 2px rgb(0 0 0 / 0.3), 0 12px 28px -12px rgb(0 0 0 / 0.55);
@@ -110,10 +113,9 @@
     --color-primary-hover: var(--mk-primary-hover);
     --color-primary-soft: var(--mk-primary-soft);
     --color-secondary: var(--mk-secondary);
-    --color-brand: #121a21;
-    --color-brand-light: #1f2b36;
-    --color-brand-green: #16a35f;
-    --color-sprout: var(--mk-sprout);
+    --color-brand: #17212b;
+    --color-brand-light: #223140;
+    --color-brand-green: var(--mk-brand-green);
     --color-accent: var(--mk-accent);
     --color-success: var(--mk-success);
     --color-success-soft: var(--mk-success-soft);

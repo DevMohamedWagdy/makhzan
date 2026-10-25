@@ -19,7 +19,7 @@ import { reportsApi } from '@/services/reportsApi';
 const ATTENTION_TONES = {
     warning: 'bg-warning-soft text-warning',
     danger: 'bg-danger-soft text-danger',
-    primary: 'bg-primary-soft text-primary',
+    primary: 'bg-primary-soft text-brand-green',
     info: 'bg-info-soft text-info',
 };
 
@@ -128,7 +128,7 @@ function TeamMemberHome() {
                 <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                     {shortcuts.map((shortcut) => (
                         <Link key={shortcut.to} to={shortcut.to} className="mk-card mk-card-link group flex items-start gap-4 p-5">
-                            <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary-soft text-primary ring-1 ring-primary/10 ring-inset">
+                            <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary-soft text-brand-green ring-1 ring-primary/10 ring-inset">
                                 <Icon name={shortcut.icon} className="size-5" />
                             </span>
                             <span>
@@ -207,29 +207,31 @@ function OverviewHome() {
                     <Skeleton className="h-80 rounded-xl" />
                 </div>
             ) : (
-                <div className="flex flex-col gap-6">
-                    <NeedsAttention
-                        items={[
-                            data.orders && { key: 'orders', label: t('طلب بانتظار التأكيد'), count: data.orders.pending, icon: 'shopping-bag', tone: 'warning', to: '/dashboard/orders?status=pending' },
-                            data.affiliates && can('payouts') && { key: 'payouts', label: t('طلب تحويل عمولة'), count: data.affiliates.payout_requests, icon: 'send', tone: 'primary', to: '/dashboard/payout-requests' },
-                            data.affiliates && can('affiliates') && { key: 'applicants', label: t('مسوق بانتظار الموافقة'), count: data.affiliates.pending, icon: 'user-plus', tone: 'info', to: '/dashboard/affiliates?status=pending' },
-                            data.products && { key: 'out', label: t('منتج نفد مخزونه'), count: data.products.out_of_stock, icon: 'box', tone: 'danger', to: '/dashboard/products?stock=out' },
-                            data.products && { key: 'low', label: t('منتج مخزونه منخفض'), count: data.products.low_stock, icon: 'warehouse', tone: 'warning', to: '/dashboard/products?stock=low' },
-                        ].filter(Boolean)}
-                    />
+                <div className="flex flex-col gap-8">
+                    <div className="flex flex-col gap-3">
+                        <NeedsAttention
+                            items={[
+                                data.orders && { key: 'orders', label: t('طلب بانتظار التأكيد'), count: data.orders.pending, icon: 'shopping-bag', tone: 'warning', to: '/dashboard/orders?status=pending' },
+                                data.affiliates && can('payouts') && { key: 'payouts', label: t('طلب تحويل عمولة'), count: data.affiliates.payout_requests, icon: 'send', tone: 'primary', to: '/dashboard/payout-requests' },
+                                data.affiliates && can('affiliates') && { key: 'applicants', label: t('مسوق بانتظار الموافقة'), count: data.affiliates.pending, icon: 'user-plus', tone: 'info', to: '/dashboard/affiliates?status=pending' },
+                                data.products && { key: 'out', label: t('منتج نفد مخزونه'), count: data.products.out_of_stock, icon: 'box', tone: 'danger', to: '/dashboard/products?stock=out' },
+                                data.products && { key: 'low', label: t('منتج مخزونه منخفض'), count: data.products.low_stock, icon: 'warehouse', tone: 'warning', to: '/dashboard/products?stock=low' },
+                            ].filter(Boolean)}
+                        />
 
-                    {(data.orders || data.report) && (
-                        <div className="mk-stat-group sm:grid-cols-2 xl:grid-cols-4">
-                            {data.orders && <StatCard label={t('طلبات اليوم')} value={formatNumber(data.orders.today)} icon="shopping-bag" />}
-                            {data.report && (
-                                <>
-                                    <StatCard label={t('مبيعات آخر ٣٠ يوماً')} value={formatMoney(data.report.totals.sales)} icon="bar-chart" tone="info" hint={<TrendBadge current={data.report.totals.sales} previous={data.report.previous.sales} />} />
-                                    <StatCard label={t('إيرادات محصّلة (٣٠ يوماً)')} value={formatMoney(data.report.totals.revenue)} icon="wallet" tone="success" hint={<TrendBadge current={data.report.totals.revenue} previous={data.report.previous.revenue} />} />
-                                    <StatCard label={t('عملاء جدد (٣٠ يوماً)')} value={formatNumber(data.report.totals.new_customers)} icon="users" tone="warning" hint={<TrendBadge current={data.report.totals.new_customers} previous={data.report.previous.new_customers} />} />
-                                </>
-                            )}
-                        </div>
-                    )}
+                        {(data.orders || data.report) && (
+                            <div className="mk-stat-group sm:grid-cols-2 xl:grid-cols-4">
+                                {data.orders && <StatCard label={t('طلبات اليوم')} value={formatNumber(data.orders.today)} icon="shopping-bag" />}
+                                {data.report && (
+                                    <>
+                                        <StatCard label={t('مبيعات آخر ٣٠ يوماً')} value={formatMoney(data.report.totals.sales)} icon="bar-chart" tone="info" hint={<TrendBadge current={data.report.totals.sales} previous={data.report.previous.sales} />} />
+                                        <StatCard label={t('إيرادات محصّلة (٣٠ يوماً)')} value={formatMoney(data.report.totals.revenue)} icon="wallet" tone="success" hint={<TrendBadge current={data.report.totals.revenue} previous={data.report.previous.revenue} />} />
+                                        <StatCard label={t('عملاء جدد (٣٠ يوماً)')} value={formatNumber(data.report.totals.new_customers)} icon="users" tone="warning" hint={<TrendBadge current={data.report.totals.new_customers} previous={data.report.previous.new_customers} />} />
+                                    </>
+                                )}
+                            </div>
+                        )}
+                    </div>
 
                     {data.report && <DailyChartCard daily={data.report.daily} title={t('آخر ٣٠ يوماً')} />}
 

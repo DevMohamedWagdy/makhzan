@@ -309,7 +309,7 @@ export function StorefrontLayout() {
                         <div className="mx-auto flex h-9 max-w-7xl items-center justify-between gap-4 px-4 text-xs sm:px-6">
                             <p className="truncate font-medium">{store?.announcement || perks.map((perk) => perk.title).join('  •  ')}</p>
                             {whatsappNumber && (
-                                <a href={`https://wa.me/${whatsappNumber}`} target="_blank" rel="noreferrer" className="hidden shrink-0 items-center gap-1.5 font-medium text-sprout hover:text-white sm:inline-flex">
+                                <a href={`https://wa.me/${whatsappNumber}`} target="_blank" rel="noreferrer" className="hidden shrink-0 items-center gap-1.5 font-medium text-brand-green hover:text-white sm:inline-flex">
                                     <Icon name="message-square" className="size-3.5" />
                                     {t('راسلنا على واتساب')}
                                 </a>
@@ -376,7 +376,7 @@ export function StorefrontLayout() {
                             <ul className="mx-auto grid max-w-7xl grid-cols-2 gap-6 px-4 py-8 sm:px-6 lg:grid-cols-4">
                                 {perks.map((perk) => (
                                     <li key={perk.title} className="flex items-center gap-3">
-                                        <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-primary-soft text-primary ring-1 ring-primary/10 ring-inset">
+                                        <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-primary-soft text-brand-green ring-1 ring-primary/10 ring-inset">
                                             <Icon name={perk.icon} className="size-5" />
                                         </span>
                                         <span>

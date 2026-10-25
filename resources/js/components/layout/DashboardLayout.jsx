@@ -116,43 +116,36 @@ function Sidebar({ open, onClose }) {
                     </button>
                 </div>
 
-                <div className="px-3 pb-3">
-                    <div className="rounded-xl border border-panel-line bg-panel-2 p-2.5">
-                        <div className="flex items-center gap-2.5 p-0.5">
-                            <Avatar name={store?.name} src={store?.logo_url} size="sm" />
-                            <div className="min-w-0 flex-1">
-                                <p className="truncate text-[13px] leading-5 font-semibold text-white">{store?.name}</p>
-                                <p className="ltr truncate text-start text-[11px] leading-4 text-panel-muted" title={storeUrl}>
-                                    {storeUrl.replace(/^https?:\/\//, '')}
-                                </p>
-                            </div>
-                        </div>
-                        <div className="mt-2.5 grid grid-cols-2 gap-1.5">
-                            <a
-                                href={storeUrl}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-panel-line px-2 text-xs font-medium text-panel-text transition hover:border-white/15 hover:bg-white/5 hover:text-white"
-                            >
-                                <Icon name="eye" className="size-3.5" />
-                                {t('زيارة المتجر')}
-                            </a>
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    copy(storeUrl);
-                                    toast.success(t('تم نسخ رابط المتجر'), t('شاركه مع عملائك ليطلبوا من متجرك مباشرة.'));
-                                }}
-                                className={cn(
-                                    'inline-flex h-8 items-center justify-center gap-1.5 rounded-lg px-2 text-xs font-medium transition',
-                                    copied ? 'bg-sprout text-brand' : 'bg-sprout/10 text-sprout hover:bg-sprout/[0.16]',
-                                )}
-                            >
-                                <Icon name={copied ? 'check' : 'copy'} className="size-3.5" />
-                                {copied ? t('تم النسخ') : t('نسخ الرابط')}
-                            </button>
-                        </div>
+                <div className="mx-3 mb-2 flex items-center gap-2.5 rounded-xl bg-white/[0.04] p-2">
+                    <Avatar name={store?.name} src={store?.logo_url} size="sm" />
+                    <div className="min-w-0 flex-1">
+                        <p className="truncate text-[13px] leading-5 font-semibold text-white">{store?.name}</p>
+                        <p className="ltr truncate text-start text-[11px] leading-4 text-panel-muted" title={storeUrl}>
+                            {storeUrl.replace(/^https?:\/\//, '')}
+                        </p>
                     </div>
+                    <a
+                        href={storeUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        aria-label={t('زيارة المتجر')}
+                        title={t('زيارة المتجر')}
+                        className="grid size-8 shrink-0 place-items-center rounded-lg text-panel-muted transition hover:bg-white/[0.06] hover:text-white"
+                    >
+                        <Icon name="eye" className="size-4" />
+                    </a>
+                    <button
+                        type="button"
+                        onClick={() => {
+                            copy(storeUrl);
+                            toast.success(t('تم نسخ رابط المتجر'), t('شاركه مع عملائك ليطلبوا من متجرك مباشرة.'));
+                        }}
+                        aria-label={copied ? t('تم النسخ') : t('نسخ الرابط')}
+                        title={copied ? t('تم النسخ') : t('نسخ الرابط')}
+                        className={cn('grid size-8 shrink-0 place-items-center rounded-lg transition', copied ? 'text-brand-green' : 'text-panel-muted hover:bg-white/[0.06] hover:text-white')}
+                    >
+                        <Icon name={copied ? 'check' : 'copy'} className="size-4" />
+                    </button>
                 </div>
 
                 <SidebarNav sections={visibleSections} alerts={alerts} onNavigate={onClose} />
@@ -162,15 +155,15 @@ function Sidebar({ open, onClose }) {
 }
 
 /**
- * The Ink rail's grouped links: shared by the vendor dashboard and the admin panel. The active
- * page gets a Sprout marker on its inline-start edge. `counter(item)` returns the badge number.
+ * The navy rail's grouped links: shared by the vendor dashboard and the admin panel. The active
+ * page gets a soft highlight and a logo-green icon. `counter(item)` returns the badge number.
  */
 export function SidebarNav({ sections, alerts = {}, counter, onNavigate }) {
     return (
-        <nav className="mk-scroll-dark flex-1 overflow-y-auto border-t border-panel-line px-3 pt-4 pb-6">
+        <nav className="mk-scroll-dark flex-1 overflow-y-auto px-3 pt-2 pb-6">
             {sections.map((section) => (
-                <div key={section.title} className="mb-5 last:mb-0">
-                    <p className="mk-overline mb-1.5 px-3 text-panel-muted/80">{section.title}</p>
+                <div key={section.title} className="mt-5 first:mt-2">
+                    <p className="mb-1 px-3 text-[11px] leading-5 font-medium text-panel-muted">{section.title}</p>
                     <ul className="flex flex-col gap-px">
                         {section.items.map((item) => {
                             const count = counter ? counter(item) : item.counter ? alerts[item.counter] : 0;
@@ -191,16 +184,15 @@ export function SidebarNav({ sections, alerts = {}, counter, onNavigate }) {
                                         onClick={onNavigate}
                                         className={({ isActive }) =>
                                             cn(
-                                                'relative flex h-9 items-center gap-3 rounded-lg px-3 text-[13.5px] font-medium transition',
-                                                'before:absolute before:inset-y-2 before:-start-3 before:w-[3px] before:rounded-e-full before:transition',
-                                                isActive ? 'bg-white/[0.07] text-white before:bg-sprout [&>svg]:text-sprout' : 'text-panel-text/85 before:bg-transparent hover:bg-white/[0.04] hover:text-white',
+                                                'flex h-9 items-center gap-3 rounded-lg px-3 text-[13.5px] transition',
+                                                isActive ? 'bg-white/[0.07] font-medium text-white [&>svg]:text-brand-green' : 'text-panel-text/80 hover:bg-white/[0.04] hover:text-white',
                                             )
                                         }
                                     >
-                                        <Icon name={item.icon} className="size-[18px] shrink-0 opacity-90" />
+                                        <Icon name={item.icon} className="size-[18px] shrink-0" />
                                         <span className="truncate">{item.label}</span>
                                         {count > 0 && (
-                                            <span className="mk-num ms-auto grid h-5 min-w-5 place-items-center rounded-full bg-sprout px-1.5 text-[11px] font-semibold text-brand">
+                                            <span className="mk-num ms-auto grid h-5 min-w-5 place-items-center rounded-full bg-brand-green px-1.5 text-[11px] font-semibold text-brand">
                                                 {count > 99 ? '99+' : count}
                                             </span>
                                         )}
@@ -330,7 +322,7 @@ function DashboardShell() {
 
 export function PageHeader({ title, description, breadcrumbs = [], actions }) {
     return (
-        <div className="mb-7 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div className="mb-8 flex flex-col gap-4 border-b border-line pb-6 sm:flex-row sm:items-end sm:justify-between">
             <div className="min-w-0">
                 {breadcrumbs.length > 0 && (
                     <nav aria-label={t('مسار التنقل')} className="mb-2 flex items-center gap-1.5 text-xs text-muted">

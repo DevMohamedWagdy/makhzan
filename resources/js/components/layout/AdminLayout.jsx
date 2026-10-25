@@ -125,7 +125,7 @@ export function AdminLayout() {
             >
                 <div className="flex h-16 shrink-0 items-center gap-2.5 px-5">
                     <Logo inverse className="h-6" />
-                    <span className="rounded-md border border-sprout/25 bg-sprout/10 px-1.5 py-0.5 text-[10.5px] font-semibold text-sprout">{t('الإدارة')}</span>
+                    <span className="rounded-md border border-brand-green/25 bg-brand-green/10 px-1.5 py-0.5 text-[10.5px] font-semibold text-brand-green">{t('الإدارة')}</span>
                 </div>
                 <SidebarNav sections={sections} counter={(item) => (item.counter ? unreadCount : 0)} />
             </aside>

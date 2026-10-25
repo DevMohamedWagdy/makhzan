@@ -60,12 +60,15 @@ export function Card({ title, description, actions, className, bodyClassName, ch
     );
 }
 
+/** Icon tiles carry the logo green; badge text keeps the deeper, readable green. */
+const ICON_TONES = { ...BADGE_TONES, primary: 'bg-primary-soft text-brand-green' };
+
 export function StatCard({ label, value, icon, tone = 'primary', hint }) {
     return (
         <div className="mk-card flex min-w-0 flex-col p-4 sm:p-5">
             <div className="flex items-start justify-between gap-3">
                 <p className="text-[13px] leading-5 font-medium text-muted">{label}</p>
-                <span className={cn('grid size-8 shrink-0 place-items-center rounded-lg', BADGE_TONES[tone])}>
+                <span className={cn('grid size-8 shrink-0 place-items-center rounded-lg', ICON_TONES[tone])}>
                     <Icon name={icon} className="size-4" />
                 </span>
             </div>
