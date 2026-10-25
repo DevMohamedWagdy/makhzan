@@ -104,23 +104,23 @@ function Sidebar({ open, onClose }) {
             {open && <div className="animate-fade-in fixed inset-0 z-30 bg-[#0b1116]/55 backdrop-blur-[2px] lg:hidden" onClick={onClose} />}
             <aside
                 className={cn(
-                    'fixed inset-y-0 start-0 z-40 flex w-[264px] flex-col border-e border-panel-line bg-panel text-panel-text transition-transform duration-300 lg:translate-x-0',
+                    'fixed inset-y-0 start-0 z-40 flex w-[264px] flex-col border-e border-line bg-surface transition-transform duration-300 lg:translate-x-0',
                     open ? 'translate-x-0' : isRtl ? 'translate-x-full' : '-translate-x-full',
                 )}
                 aria-label={t('القائمة الرئيسية')}
             >
                 <div className="flex h-16 shrink-0 items-center justify-between px-5">
-                    <Logo inverse className="h-[26px]" />
-                    <button type="button" onClick={onClose} className="grid size-9 place-items-center rounded-lg text-panel-muted hover:bg-white/5 hover:text-white lg:hidden" aria-label={t('إغلاق القائمة')}>
+                    <Logo className="h-[26px]" />
+                    <button type="button" onClick={onClose} className="grid size-9 place-items-center rounded-lg text-muted hover:bg-surface-3 hover:text-ink lg:hidden" aria-label={t('إغلاق القائمة')}>
                         <Icon name="x" />
                     </button>
                 </div>
 
-                <div className="mx-3 mb-2 flex items-center gap-2.5 rounded-xl bg-white/[0.04] p-2">
+                <div className="mx-3 mb-2 flex items-center gap-2.5 rounded-xl border border-line bg-surface-2 p-2">
                     <Avatar name={store?.name} src={store?.logo_url} size="sm" />
                     <div className="min-w-0 flex-1">
-                        <p className="truncate text-[13px] leading-5 font-semibold text-white">{store?.name}</p>
-                        <p className="ltr truncate text-start text-[11px] leading-4 text-panel-muted" title={storeUrl}>
+                        <p className="truncate text-[13px] leading-5 font-semibold text-ink">{store?.name}</p>
+                        <p className="ltr truncate text-start text-[11px] leading-4 text-muted" title={storeUrl}>
                             {storeUrl.replace(/^https?:\/\//, '')}
                         </p>
                     </div>
@@ -130,7 +130,7 @@ function Sidebar({ open, onClose }) {
                         rel="noreferrer"
                         aria-label={t('زيارة المتجر')}
                         title={t('زيارة المتجر')}
-                        className="grid size-8 shrink-0 place-items-center rounded-lg text-panel-muted transition hover:bg-white/[0.06] hover:text-white"
+                        className="grid size-8 shrink-0 place-items-center rounded-lg text-muted transition hover:bg-surface-3 hover:text-ink"
                     >
                         <Icon name="eye" className="size-4" />
                     </a>
@@ -142,7 +142,7 @@ function Sidebar({ open, onClose }) {
                         }}
                         aria-label={copied ? t('تم النسخ') : t('نسخ الرابط')}
                         title={copied ? t('تم النسخ') : t('نسخ الرابط')}
-                        className={cn('grid size-8 shrink-0 place-items-center rounded-lg transition', copied ? 'text-brand-green' : 'text-panel-muted hover:bg-white/[0.06] hover:text-white')}
+                        className={cn('grid size-8 shrink-0 place-items-center rounded-lg transition', copied ? 'text-brand-green' : 'text-muted hover:bg-surface-3 hover:text-ink')}
                     >
                         <Icon name={copied ? 'check' : 'copy'} className="size-4" />
                     </button>
@@ -155,25 +155,25 @@ function Sidebar({ open, onClose }) {
 }
 
 /**
- * The navy rail's grouped links: shared by the vendor dashboard and the admin panel. The active
- * page gets a soft highlight and a logo-green icon. `counter(item)` returns the badge number.
+ * The sidebar's grouped links: shared by the vendor dashboard and the admin panel. The active
+ * page gets a soft green highlight and a logo-green icon. `counter(item)` returns the badge number.
  */
 export function SidebarNav({ sections, alerts = {}, counter, onNavigate }) {
     return (
-        <nav className="mk-scroll-dark flex-1 overflow-y-auto px-3 pt-2 pb-6">
+        <nav className="mk-scroll flex-1 overflow-y-auto px-3 pt-2 pb-6">
             {sections.map((section) => (
                 <div key={section.title} className="mt-5 first:mt-2">
-                    <p className="mb-1 px-3 text-[11px] leading-5 font-medium text-panel-muted">{section.title}</p>
+                    <p className="mb-1 px-3 text-[11px] leading-5 font-medium text-muted">{section.title}</p>
                     <ul className="flex flex-col gap-px">
                         {section.items.map((item) => {
                             const count = counter ? counter(item) : item.counter ? alerts[item.counter] : 0;
 
                             return item.soon ? (
                                 <li key={item.label}>
-                                    <span className="flex h-9 cursor-not-allowed items-center gap-3 rounded-lg px-3 text-[13.5px] text-panel-muted" title={t('هذه الوحدة قيد التطوير')}>
+                                    <span className="flex h-9 cursor-not-allowed items-center gap-3 rounded-lg px-3 text-[13.5px] text-muted" title={t('هذه الوحدة قيد التطوير')}>
                                         <Icon name={item.icon} className="size-[18px]" />
                                         {item.label}
-                                        <span className="ms-auto rounded-md bg-white/5 px-1.5 py-0.5 text-[10px]">{t('قريباً')}</span>
+                                        <span className="ms-auto rounded-md bg-surface-3 px-1.5 py-0.5 text-[10px]">{t('قريباً')}</span>
                                     </span>
                                 </li>
                             ) : (
@@ -185,14 +185,14 @@ export function SidebarNav({ sections, alerts = {}, counter, onNavigate }) {
                                         className={({ isActive }) =>
                                             cn(
                                                 'flex h-9 items-center gap-3 rounded-lg px-3 text-[13.5px] transition',
-                                                isActive ? 'bg-white/[0.07] font-medium text-white [&>svg]:text-brand-green' : 'text-panel-text/80 hover:bg-white/[0.04] hover:text-white',
+                                                isActive ? 'bg-primary-soft font-semibold text-ink [&>svg]:text-brand-green' : 'text-ink-2 hover:bg-surface-2 hover:text-ink [&>svg]:text-muted',
                                             )
                                         }
                                     >
                                         <Icon name={item.icon} className="size-[18px] shrink-0" />
                                         <span className="truncate">{item.label}</span>
                                         {count > 0 && (
-                                            <span className="mk-num ms-auto grid h-5 min-w-5 place-items-center rounded-full bg-brand-green px-1.5 text-[11px] font-semibold text-brand">
+                                            <span className="mk-num ms-auto grid h-5 min-w-5 place-items-center rounded-full bg-primary px-1.5 text-[11px] font-semibold text-white">
                                                 {count > 99 ? '99+' : count}
                                             </span>
                                         )}
@@ -266,7 +266,7 @@ function DashboardShell() {
             <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
             <div className="lg:ps-[264px]">
                 <ImpersonationBanner />
-                <header className="sticky top-0 z-20 flex h-16 items-center gap-3 border-b border-line bg-bg/80 px-4 backdrop-blur-xl backdrop-saturate-150 sm:px-8">
+                <header className="sticky top-0 z-20 flex h-16 items-center gap-3 border-b border-line bg-surface/95 px-4 backdrop-blur-xl sm:px-8">
                     <button type="button" onClick={() => setSidebarOpen(true)} className="grid size-9 place-items-center rounded-lg border border-line-strong/70 bg-surface text-ink-2 shadow-card lg:hidden" aria-label={t('فتح القائمة')}>
                         <Icon name="menu" className="size-[18px]" />
                     </button>
@@ -322,7 +322,7 @@ function DashboardShell() {
 
 export function PageHeader({ title, description, breadcrumbs = [], actions }) {
     return (
-        <div className="mk-page-header mb-8 flex flex-col gap-4 border-b border-line pb-6 sm:flex-row sm:items-end sm:justify-between">
+        <div className="mk-page-header mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div className="min-w-0">
                 {breadcrumbs.length > 0 && (
                     <nav aria-label={t('مسار التنقل')} className="mb-2 flex items-center gap-1.5 text-xs text-muted">

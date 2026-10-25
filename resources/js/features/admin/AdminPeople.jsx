@@ -362,7 +362,7 @@ export function AdminPayoutsTable({ storeId = null }) {
             emptyTitle={t('لا توجد تحويلات مطابقة')}
             renderSummary={(result) =>
                 result.summary && (
-                    <StatStrip className="mb-0 px-5 pt-5 pb-5">
+                    <StatStrip className="mb-0 border-b border-line bg-surface-2 p-4 sm:p-5 [&>*]:shadow-none">
                         {Object.entries(PAYOUT_STATUSES).map(([status, config]) => (
                             <StatCard key={status} label={config.label} value={formatMoney(result.summary[status]?.amount ?? 0)} hint={t('{count} طلب', { count: formatNumber(result.summary[status]?.count ?? 0) })} icon={config.icon} tone={config.tone === 'danger' ? 'danger' : config.tone} />
                         ))}

@@ -120,18 +120,18 @@ export function AdminLayout() {
         <div className="min-h-dvh">
             {open && <div className="animate-fade-in fixed inset-0 z-30 bg-[#0b1116]/55 backdrop-blur-[2px] lg:hidden" onClick={() => setOpen(false)} />}
             <aside
-                className={cn('fixed inset-y-0 start-0 z-40 flex w-[248px] flex-col border-e border-panel-line bg-panel text-panel-text transition-transform duration-300 lg:translate-x-0', open ? 'translate-x-0' : isRtl ? 'translate-x-full' : '-translate-x-full')}
+                className={cn('fixed inset-y-0 start-0 z-40 flex w-[248px] flex-col border-e border-line bg-surface transition-transform duration-300 lg:translate-x-0', open ? 'translate-x-0' : isRtl ? 'translate-x-full' : '-translate-x-full')}
                 aria-label={t('قائمة الإدارة')}
             >
                 <div className="flex h-16 shrink-0 items-center gap-2.5 px-5">
-                    <Logo inverse className="h-6" />
-                    <span className="rounded-md border border-brand-green/25 bg-brand-green/10 px-1.5 py-0.5 text-[10.5px] font-semibold text-brand-green">{t('الإدارة')}</span>
+                    <Logo className="h-6" />
+                    <span className="rounded-md border border-primary/15 bg-primary-soft px-1.5 py-0.5 text-[10.5px] font-semibold text-primary">{t('الإدارة')}</span>
                 </div>
                 <SidebarNav sections={sections} counter={(item) => (item.counter ? unreadCount : 0)} />
             </aside>
 
             <div className="lg:ps-[248px]">
-                <header className="sticky top-0 z-20 flex h-16 items-center gap-3 border-b border-line bg-bg/80 px-4 backdrop-blur-xl backdrop-saturate-150 sm:px-8">
+                <header className="sticky top-0 z-20 flex h-16 items-center gap-3 border-b border-line bg-surface/95 px-4 backdrop-blur-xl sm:px-8">
                     <button type="button" onClick={() => setOpen(true)} className="grid size-9 place-items-center rounded-lg border border-line-strong/70 bg-surface text-ink-2 shadow-card lg:hidden" aria-label={t('فتح القائمة')}>
                         <Icon name="menu" className="size-[18px]" />
                     </button>

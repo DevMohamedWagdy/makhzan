@@ -1,4 +1,3 @@
-import { createContext, useContext } from 'react';
 import { cn, initials } from '@/lib/format';
 import { Icon } from './Icon';
 
@@ -64,51 +63,32 @@ export function Card({ title, description, actions, className, bodyClassName, ch
 /** Icon tiles carry the logo green; badge text keeps the deeper, readable green. */
 const ICON_TONES = { ...BADGE_TONES, primary: 'bg-primary-soft text-brand-green' };
 
-/** Inside a StatStrip, StatCards render as compact inline figures instead of tiles. */
-const StatStripContext = createContext(false);
-
-const ICON_TEXT = { primary: 'text-brand-green', success: 'text-success', warning: 'text-warning', danger: 'text-danger', info: 'text-info', neutral: 'text-muted' };
-
+/**
+ * KPI card: tone icon tile and an optional status pill on top, the figure, then its label.
+ * A plain-text hint renders as a neutral pill; a node (e.g. TrendBadge) renders as given.
+ */
 export function StatCard({ label, value, icon, tone = 'primary', hint }) {
-    const inStrip = useContext(StatStripContext);
-
-    if (inStrip) {
-        return (
-            <div className="flex min-w-0 flex-col gap-1 md:border-s md:border-line md:ps-6 md:first:border-s-0 md:first:ps-0">
-                <p className="flex items-center gap-1.5 text-[12.5px] leading-5 font-medium text-muted">
-                    <Icon name={icon} className={cn('size-3.5 shrink-0', ICON_TEXT[tone])} />
-                    <span className="truncate">{label}</span>
-                </p>
-                <p className="mk-num truncate text-[20px] leading-7 font-semibold text-ink sm:text-[22px] sm:leading-8">{value}</p>
-                {hint && <div className="text-xs text-muted">{hint}</div>}
-            </div>
-        );
-    }
-
     return (
         <div className="mk-card flex min-w-0 flex-col p-4 sm:p-5">
             <div className="flex items-start justify-between gap-3">
-                <p className="text-[12.5px] leading-5 font-medium text-muted sm:text-[13px]">{label}</p>
-                <span className={cn('grid size-8 shrink-0 place-items-center rounded-lg', ICON_TONES[tone])}>
-                    <Icon name={icon} className="size-4" />
+                <span className={cn('grid size-10 shrink-0 place-items-center rounded-xl', ICON_TONES[tone])}>
+                    <Icon name={icon} className="size-5" />
                 </span>
+                {hint && (
+                    <div className="min-w-0 truncate">
+                        {typeof hint === 'string' ? <span className="inline-flex h-6 max-w-full items-center truncate rounded-full bg-surface-3 px-2.5 text-[11px] font-medium text-ink-2">{hint}</span> : hint}
+                    </div>
+                )}
             </div>
-            <p className="mk-num mt-1.5 truncate text-[19px] leading-7 font-semibold text-ink sm:mt-2 sm:text-[26px] sm:leading-9">{value}</p>
-            {hint && <div className="mt-1.5 text-xs text-muted">{hint}</div>}
+            <p className="mk-num mt-4 truncate text-[20px] leading-7 font-bold text-ink sm:text-[24px] sm:leading-8">{value}</p>
+            <p className="mt-0.5 truncate text-[12.5px] leading-5 text-muted sm:text-[13px]">{label}</p>
         </div>
     );
 }
 
-/**
- * The page's key figures as one compact row under the page title (two per row on phones), so
- * the table below starts higher. Placed after a PageHeader, it joins the header zone.
- */
+/** A page's key figures as a row of KPI cards under its header, sharing the width evenly. */
 export function StatStrip({ className, children }) {
-    return (
-        <StatStripContext.Provider value>
-            <div className={cn('mk-stat-strip grid grid-cols-2 gap-x-6 gap-y-5 md:grid-flow-col md:auto-cols-fr', className)}>{children}</div>
-        </StatStripContext.Provider>
-    );
+    return <div className={cn('mk-stat-strip', className)}>{children}</div>;
 }
 
 export function EmptyState({ icon = 'users', title, description, action }) {

@@ -248,7 +248,7 @@ export function AdminPaymentsTable({ storeId = null }) {
             emptyTitle={t('لا توجد مدفوعات أونلاين مطابقة')}
             renderSummary={(result) =>
                 result.summary && (
-                    <StatStrip className="mb-0 px-5 pt-5 pb-5">
+                    <StatStrip className="mb-0 border-b border-line bg-surface-2 p-4 sm:p-5 [&>*]:shadow-none">
                         <StatCard label={t('تم تحصيله أونلاين')} value={formatMoney(result.summary.collected)} icon="wallet" tone="success" />
                         <StatCard label={t('تم استرداده')} value={formatMoney(result.summary.refunded)} icon="refresh" tone="warning" />
                     </StatStrip>

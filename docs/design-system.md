@@ -8,8 +8,8 @@ All tokens live in `resources/css/app.css`. Components consume them through Tail
 
 **White, ink and the logo's leaf.** The palette uses the logo's two colors exactly: navy `#17212B` and Growth Green `#16A35F`.
 
-- **White** — a white canvas with white sheets on top, separated by cool hairline borders (no tinted page background). Structure comes from borders first, shadows second.
-- **Ink** — the logo navy (`#17212b`) is the text color and a solid *material*: the navigation rail, hero bands, commission and balance tiles, auth brand panel.
+- **Canvas** — a light gray app canvas (`#f5f6f8`) with white cards (hairline border + soft shadow), a white sidebar and a white header bar.
+- **Ink** — the logo navy (`#17212b`) is the text color and a solid *material* for brand bands: landing and storefront heroes, commission and balance tiles, auth brand panel.
 - **Leaf** — the logo green (`#16a35f`, `brand-green`) is the signature accent: icons, charts, active tabs and nav icons, counters, focus halo, key figures and CTAs on navy. Navy text on it (and it on navy) reads at 5:1.
 - **Deep green** (`--mk-primary`, `#0e7a46`) is kept only where white or small green text sits on/against light surfaces: primary buttons, links, badges. White on the logo green would only reach 3.2:1.
 
@@ -21,11 +21,11 @@ Restraint rules: no decorative gradients on light surfaces, no glassmorphism bey
 
 | Token (CSS var) | Tailwind | Light | Dark | Use |
 |---|---|---|---|---|
-| `--mk-bg` | `bg-bg` | `#ffffff` | `#0a0f13` | Page canvas |
+| `--mk-bg` | `bg-bg` | `#f5f6f8` | `#0a0f13` | Page canvas |
 | `--mk-surface` | `bg-surface` | `#ffffff` | `#11181e` | Cards, sheets, inputs |
 | `--mk-surface-2` | `bg-surface-2` | `#f8f9fa` | `#141c23` | Table headers, footers of dialogs, row hover |
 | `--mk-surface-3` | `bg-surface-3` | `#f1f3f4` | `#1a242c` | Ghost hover, segmented track, skeletons |
-| `--mk-border` | `border-line` | `#e6e9ec` | `#222d36` | Hairlines, dividers |
+| `--mk-border` | `border-line` | `#e7e9ee` | `#222d36` | Hairlines, dividers |
 | `--mk-border-strong` | `border-line-strong` | `#d3d8dd` | `#2f3c46` | Input borders, hover borders |
 | `--mk-text` | `text-ink` | `#17212b` | `#e9edea` | Primary text |
 | `--mk-text-2` | `text-ink-2` | `#45505b` | `#adb7b1` | Secondary text |
@@ -48,9 +48,9 @@ Restraint rules: no decorative gradients on light surfaces, no glassmorphism bey
 
 Status tones always pair the soft background with the tone's text color plus a 12–15 % `ring-current` hairline (`Badge`, `Alert`, icon tiles).
 
-### 2.3 Navy rail (navigation and brand bands)
+### 2.3 Navy bands (brand surfaces)
 
-The logo navy in both themes.
+The logo navy in both themes; used for brand bands, not for the app sidebars.
 
 | Token | Tailwind | Light | Dark |
 |---|---|---|---|
@@ -71,7 +71,7 @@ Static brand colors: `brand #17212b`, `brand-light #223140`.
 | Focus (keyboard) | `box-shadow: 0 0 0 3px var(--mk-ring)` — global `:focus-visible` rule; inputs use the same halo on `:focus` |
 | Active / pressed | primary and danger buttons nudge `translate-y-px` |
 | Selected | `bg-primary-soft` + `border-primary` + ring halo (option cards); `text-ink` + 2px logo-green underline and icon (tabs); white raised pill (segmented) |
-| Selected (navy rail) | `bg-white/[0.07]`, white text, logo-green icon |
+| Selected (sidebar) | `bg-primary-soft`, semibold ink text, logo-green icon |
 | Disabled | `opacity-50`, `cursor-not-allowed`, no shadow; inputs `bg-surface-2 text-muted` |
 | Invalid | `border-danger` + danger-tinted halo |
 
@@ -111,7 +111,7 @@ Figures that must align (KPIs, prices, totals, counters, pagination, all tables)
 | Page gutter | 16 px phone (`px-4`), 32 px from `sm` (`sm:px-8`); storefront 16 / 24 |
 | Page vertical | 24 px phone, 32 px `sm` (dashboard / admin), 40 px portal |
 | Content max width | 1440 px (dashboard, admin), 1152 px (`max-w-6xl`, portal, landing), 1280 px (`max-w-7xl`, storefront) |
-| Page header → content | 24 px to the hairline, 32 px after it (`pb-6 mb-8`) |
+| Page header → content | 24 px (`mb-6`) |
 | Section gap | 24 px between cards (`gap-6`), 32 px between page zones (`gap-8`), 12 px inside a zone (e.g. attention strip + KPIs); landing sections 80–96 px |
 | Card padding | 20 px (`p-5`); card header 20 × 14 px, min height 60 px |
 | Dialog padding | 24 × 20 px body, 24 × 16 px footer |
@@ -149,8 +149,8 @@ Z-index: sticky headers 20 · mobile sidebar scrim 30 · sidebar / storefront he
 
 | Shell | File | Composition |
 |---|---|---|
-| Merchant dashboard | `components/layout/DashboardLayout.jsx` | 264 px navy rail: logo, one compact store row (name, link, visit and copy icon buttons), quiet group labels, highlighted active page with a logo-green icon, logo-green counters; translucent 64 px header; 1440 px content |
-| Platform admin | `components/layout/AdminLayout.jsx` | Same navy rail (248 px) through the shared `SidebarNav`, with a green "Admin" tag |
+| Merchant dashboard | `components/layout/DashboardLayout.jsx` | 264 px white sidebar: logo, one compact store row (name, link, visit and copy icon buttons), quiet group labels, active page on a soft green highlight with a logo-green icon, green counters; white 64 px header; gray canvas; 1440 px content |
+| Platform admin | `components/layout/AdminLayout.jsx` | Same white sidebar (248 px) through the shared `SidebarNav`, with a green "Admin" tag |
 | Affiliate portal | `features/affiliate-portal/AffiliatePortalLayout.jsx` | Store-branded top bar with underline tabs; Ink commission tile on the home |
 | Auth (vendor, admin) | `components/layout/AuthLayout.jsx` | Form column on paper + Ink brand panel (≥ lg) with grid texture and product promise |
 | Store public (affiliate join / login) | `components/layout/StorePublicLayout.jsx` | Store-branded header, centered content, "powered by" footer |
@@ -162,7 +162,7 @@ Z-index: sticky headers 20 · mobile sidebar scrim 30 · sidebar / storefront he
 | Page type | Layout |
 |---|---|
 | Home (merchant dashboard, admin overview) | Figures first, then two columns from `xl`: a wide main column (chart, latest orders / orders and affiliate figures, charts, top tables) and a sticky side column (needs-attention list and best sellers / stores and catalog figures). On phones the merchant's side column comes first. |
-| List pages (orders, products, customers, inventory, payments, affiliates, coupons, reviews, purchase orders) | Page header, then a compact `StatStrip` of key figures that closes the header zone, then one card holding tabs, the `.mk-toolbar` filter bar and the table. |
+| List pages (orders, products, customers, inventory, payments, affiliates, coupons, reviews, purchase orders) | Page header, then a `StatStrip` row of KPI cards, then one card holding tabs, the `.mk-toolbar` filter bar and the table. Admin payout and payment summaries sit as a tinted band of cards at the top of their table card. |
 | Settings | Side menu of sections (`Tabs variant="vertical"`, sticky from `lg`, a swipeable row of pills on phones) beside one card holding the open section under its icon and title. |
 | Detail and form pages (product, purchase order, manual order, support tickets) | Main content in the wide column, summary / status / actions in a sticky side panel (`lg:sticky lg:top-24`). Ticket pages keep the conversation in the main column and type, status and close / reopen beside it. |
 
@@ -178,9 +178,9 @@ Two-column grids always declare `grid-cols-1` for phones and use `min-w-0` colum
 | `Badge` | `ui/Display.jsx` | 24 px pill, 11.5 px, tone soft fill + 12 % ring. |
 | `Avatar` | `ui/Display.jsx` | `shape="rounded"` (stores) or `"circle"` (people). |
 | `Card` | `ui/Display.jsx` | 14 px sheet, header 60 px min with title 15 px / description 12.5 px. |
-| `StatCard` | `ui/Display.jsx` | Label + 32 px icon tile (logo-green icon for the primary tone) on one line, metric below, optional hint (e.g. `TrendBadge`). |
-| `StatStrip` | `ui/Display.jsx` | Compact figures row: StatCards inside it render as icon + label, 20–22 px figure and hint, split by hairlines from `md`, two per row on phones. After a `PageHeader` it takes over the header's bottom hairline. |
-| KPI ribbon | `.mk-stat-group` | StatCards joined in one sheet with hairline dividers; two per row on phones (an odd last cell spans the row), widened per page with `sm:`/`xl:` columns. |
+| `StatCard` | `ui/Display.jsx` | KPI card: 40 px tone icon tile at the start and an optional status pill at the end (text hints become a neutral pill, `TrendBadge` as is), then the 20–24 px bold figure and its label. |
+| `StatStrip` | `ui/Display.jsx` | A page's key figures as a row of KPI cards under its header: two per row on phones, sharing the row evenly from `md` (min 192 px each). |
+| KPI grid | `.mk-stat-group` | Separate StatCards in a grid (12–16 px gaps); two per row on phones (an odd last card spans the row), widened per page with `sm:`/`xl:` columns. |
 | Filter bar | `.mk-toolbar` | Search takes the free width; other filters 176 px (dates 160 px); phones: search on its own row, filters two per row; a lone search caps at 384 px; a trailing button sits at the far end. |
 | `EmptyState` | `ui/Display.jsx` | 56 px icon tile inside a dashed halo, 15 px title. |
 | `Alert` | `ui/Display.jsx` | Tone fill + ring, 13.5 px. |
@@ -193,7 +193,7 @@ Two-column grids always declare `grid-cols-1` for phones and use `min-w-0` colum
 | Lists | `.mk-list`, `divide-y` | Rows never float as separate boxes inside a card: they share one box (`.mk-list`) or run edge to edge with hairline dividers (notifications, tickets, activity). Unread rows get a soft green tint and a 3 px logo-green edge. |
 | Tables | `.mk-thead` | Tinted header band, 11.5 px semibold labels, `divide-line` rows, `hover:bg-surface-2`. |
 | `SidebarNav` | `layout/DashboardLayout.jsx` | Shared Ink navigation for dashboard and admin. |
-| `PageHeader` | `layout/DashboardLayout.jsx` | Breadcrumbs, page title, 13.5 px description (max 2xl), actions aligned to the bottom; a hairline and 32 px gap separate it from the content. |
+| `PageHeader` | `layout/DashboardLayout.jsx` | Breadcrumbs, page title, 13.5 px description (max 2xl), actions aligned to the bottom; 24 px above the content. |
 | `Logo` | `brand/Logo.jsx` | `inverse` keeps "Selly" light on navy. |
 
 ## 8. Utility classes
@@ -203,7 +203,7 @@ Two-column grids always declare `grid-cols-1` for phones and use `min-w-0` colum
 | `.mk-card` | Standard sheet |
 | `.mk-card-link` | Hover lift for clickable cards |
 | `.mk-input` | Form control |
-| `.mk-stat-group` | KPI ribbon |
+| `.mk-stat-group` | KPI card grid |
 | `.mk-toolbar` | Filter bar above tables and lists |
 | `.mk-list` | Grouped list: rows in one bordered box split by hairlines (portal orders and payouts, drawer address lists) |
 | `.mk-thead` | Table header row |
