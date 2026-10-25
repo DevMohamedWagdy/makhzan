@@ -110,7 +110,7 @@ function Sidebar({ open, onClose }) {
                 aria-label={t('القائمة الرئيسية')}
             >
                 <div className="flex h-[72px] items-center justify-between border-b border-line px-6">
-                    <Logo className="h-4" />
+                    <Logo className="h-7" />
                     <button type="button" onClick={onClose} className="grid size-9 place-items-center rounded-lg text-muted hover:bg-surface-3 lg:hidden" aria-label={t('إغلاق القائمة')}>
                         <Icon name="x" />
                     </button>
