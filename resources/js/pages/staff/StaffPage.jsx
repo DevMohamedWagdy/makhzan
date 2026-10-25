@@ -220,7 +220,7 @@ export function StaffPage() {
                 ) : (
                     <div className="mk-scroll overflow-x-auto">
                         <table className="w-full min-w-[760px] text-sm">
-                            <thead className="border-b border-line bg-surface-2 text-xs text-muted">
+                            <thead className="mk-thead">
                                 <tr>
                                     <th className="px-4 py-3 text-start font-medium">{t('الموظف')}</th>
                                     <th className="px-4 py-3 text-start font-medium">{t('التواصل')}</th>

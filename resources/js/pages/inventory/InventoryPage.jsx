@@ -168,7 +168,7 @@ export function InventoryPage() {
                 }
             />
 
-            <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="mb-6 mk-stat-group sm:grid-cols-2 xl:grid-cols-4">
                 <StatCard label={t('القطع في المخزون')} value={summary ? formatNumber(summary.units) : '—'} icon="box" hint={summary && t('في {count} صنف', { count: formatNumber(summary.variants) })} />
                 <StatCard
                     label={t('قيمة المخزون بالتكلفة')}
@@ -227,7 +227,7 @@ export function InventoryPage() {
                 ) : (
                     <div className="mk-scroll overflow-x-auto">
                         <table className="w-full min-w-[920px] text-sm">
-                            <thead className="border-y border-line bg-surface-2 text-xs text-muted">
+                            <thead className="mk-thead">
                                 <tr>
                                     {COLUMNS.map((column, index) => (
                                         <th key={index} scope="col" className={cn('px-4 py-3 text-start font-medium whitespace-nowrap', index === COLUMNS.length - 1 && 'sticky end-0 bg-surface-2')}>

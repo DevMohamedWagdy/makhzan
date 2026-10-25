@@ -72,7 +72,7 @@ export function AdminOrdersTable({ storeId = null }) {
             ) : (
                 <div className="mk-scroll overflow-x-auto">
                     <table className="w-full min-w-[860px] text-sm">
-                        <thead className="border-y border-line bg-surface-2 text-xs text-muted">
+                        <thead className="mk-thead">
                             <tr>
                                 {[t('الطلب'), !storeId && t('المتجر'), t('العميل'), t('المحافظة'), t('الإجمالي'), t('الدفع'), t('الحالة')].filter(Boolean).map((column) => (
                                     <th key={column} scope="col" className="px-4 py-3 text-start font-medium whitespace-nowrap">
@@ -169,7 +169,7 @@ export function AdminOrderDrawer({ orderId, onClose, onChanged }) {
                     <div className="flex flex-wrap items-center gap-2 p-6">
                         <OrderStatusBadge status={order.status} />
                         <PaymentBadge order={order} />
-                        <span className="ms-auto text-xl font-bold text-ink">{formatMoney(order.total)}</span>
+                        <span className="ms-auto mk-num text-xl font-semibold text-ink">{formatMoney(order.total)}</span>
                     </div>
                     {order.next_statuses?.length > 0 && can('orders.update') && (
                         <div className="flex flex-wrap gap-2 p-6">

@@ -143,7 +143,7 @@ export function AffiliatesPage() {
                 }
             />
 
-            <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="mb-6 mk-stat-group sm:grid-cols-2 xl:grid-cols-4">
                 <StatCard label={t('إجمالي المسوقين')} value={summary ? formatNumber(summary.total) : '—'} icon="users" tone="primary" hint={summary && t('{value} بانتظار المراجعة', { value: formatNumber(summary.pending) })} />
                 <StatCard label={t('المسوقون النشطون')} value={summary ? formatNumber(summary.active) : '—'} icon="check-circle" tone="success" hint={summary && t('{value} حساب مجمد', { value: formatNumber(summary.frozen) })} />
                 <StatCard label={t('مبيعات المسوقين')} value={summary ? formatMoney(summary.sales_total) : '—'} icon="bar-chart" tone="info" hint={t('منذ بداية التعامل')} />

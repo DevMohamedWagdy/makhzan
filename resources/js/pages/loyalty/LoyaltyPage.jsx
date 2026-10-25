@@ -94,7 +94,7 @@ export function LoyaltyPage() {
                 </div>
             ) : (
                 <div className="flex flex-col gap-6">
-                    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                    <div className="mk-stat-group sm:grid-cols-2 xl:grid-cols-4">
                         <StatCard label={t('عملاء لديهم نقاط')} value={formatNumber(stats.members)} icon="users" tone="primary" />
                         <StatCard label={t('نقاط لم تُستخدم بعد')} value={formatNumber(stats.outstanding_points)} icon="star" tone="warning" hint={t('قيمتها {amount} خصومات مستقبلية', { amount: formatMoney(stats.outstanding_value) })} />
                         <StatCard label={t('نقاط مكتسبة')} value={formatNumber(stats.earned_points)} icon="gift" tone="success" />

@@ -46,7 +46,7 @@ export function AffiliateNotificationsPage() {
         <>
             <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold text-ink">{t('الإشعارات')}</h1>
+                    <h1 className="mk-page-title">{t('الإشعارات')}</h1>
                     <p className="mt-1 text-sm text-muted">{t('تحويل الأرباح، حالة حسابك، والعمولات على طلباتك')}</p>
                 </div>
                 {unreadCount > 0 && markAllRead && (

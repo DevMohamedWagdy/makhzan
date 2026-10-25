@@ -26,7 +26,7 @@ function StatusScreen({ icon, tone, title, children, actions }) {
                 <span className={`mx-auto grid size-16 place-items-center rounded-2xl ${tones[tone]}`}>
                     <Icon name={icon} className="size-8" />
                 </span>
-                <h1 className="mt-6 text-2xl font-bold text-ink">{title}</h1>
+                <h1 className="mt-6 mk-page-title">{title}</h1>
                 <p className="mt-3 text-sm leading-relaxed text-muted">{children}</p>
                 <div className="mt-8 flex flex-col gap-3">{actions}</div>
             </div>

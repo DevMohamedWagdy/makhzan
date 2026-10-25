@@ -40,7 +40,7 @@ export function ToastProvider({ children }) {
             {children}
             <div className="pointer-events-none fixed bottom-4 end-4 z-[70] flex w-[calc(100%-2rem)] max-w-sm flex-col gap-2" aria-live="polite">
                 {toasts.map(({ id, tone, title, description }) => (
-                    <div key={id} role="status" className="mk-card animate-pop pointer-events-auto flex items-start gap-3 p-4 shadow-pop">
+                    <div key={id} role="status" className="mk-card animate-pop pointer-events-auto flex items-start gap-3 p-4 ps-3.5 shadow-pop">
                         <Icon name={TONES[tone].icon} className={cn('mt-0.5 size-5 shrink-0', TONES[tone].className)} />
                         <div className="min-w-0 flex-1">
                             <p className="text-sm font-semibold text-ink">{title}</p>

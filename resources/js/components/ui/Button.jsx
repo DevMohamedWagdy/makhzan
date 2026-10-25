@@ -5,23 +5,24 @@ import { Icon } from './Icon';
 import { Spinner } from './Spinner';
 
 const VARIANTS = {
-    primary: 'bg-primary text-white hover:bg-primary-hover',
-    secondary: 'border border-line bg-surface text-ink hover:bg-surface-3',
+    primary: 'bg-primary text-white shadow-[inset_0_1px_0_rgb(255_255_255/0.12),0_1px_2px_rgb(10_60_35/0.25)] hover:bg-primary-hover active:translate-y-px',
+    secondary: 'border border-line-strong/80 bg-surface text-ink shadow-card hover:border-line-strong hover:bg-surface-2 active:bg-surface-3',
     soft: 'bg-primary-soft text-primary hover:bg-primary/15',
     ghost: 'text-ink-2 hover:bg-surface-3 hover:text-ink',
-    danger: 'bg-danger text-white hover:opacity-90',
+    danger: 'bg-danger text-white shadow-[inset_0_1px_0_rgb(255_255_255/0.12)] hover:brightness-95 active:translate-y-px',
     'danger-soft': 'bg-danger-soft text-danger hover:bg-danger/15',
-    success: 'bg-success text-white hover:opacity-90',
+    success: 'bg-success text-white hover:brightness-95',
     // Marketing bands on Ink (bg-brand) only: Sprout is unreadable on light surfaces.
-    sprout: 'bg-sprout font-semibold text-brand hover:bg-sprout/90',
-    'outline-light': 'border border-white/30 text-white hover:bg-white/10',
+    sprout: 'bg-sprout font-semibold text-brand shadow-[inset_0_1px_0_rgb(255_255_255/0.35)] hover:bg-[#c6f58a]',
+    'outline-light': 'border border-white/20 text-white hover:border-white/35 hover:bg-white/[0.06]',
 };
 
+/** Heights sit on the 4px grid: 32 · 40 · 44 · 52, icon buttons 36. */
 const SIZES = {
     sm: 'h-8 px-3 text-xs gap-1.5 rounded-lg',
-    md: 'h-10 px-4 text-sm gap-2 rounded-lg',
-    lg: 'h-12 px-6 text-sm gap-2 rounded-xl',
-    xl: 'h-14 px-7 text-[15px] gap-2 rounded-xl',
+    md: 'h-10 px-4 text-[13.5px] gap-2 rounded-lg',
+    lg: 'h-11 px-5 text-sm gap-2 rounded-xl',
+    xl: 'h-[52px] px-7 text-[15px] gap-2.5 rounded-xl',
     icon: 'size-9 rounded-lg',
 };
 
@@ -30,8 +31,8 @@ export const Button = forwardRef(function Button(
     ref,
 ) {
     const classes = cn(
-        'inline-flex shrink-0 items-center justify-center font-medium whitespace-nowrap transition select-none',
-        'focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-55',
+        'inline-flex shrink-0 items-center justify-center font-medium whitespace-nowrap transition duration-150 select-none',
+        'disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none',
         VARIANTS[variant],
         SIZES[size],
         className,

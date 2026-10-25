@@ -47,7 +47,7 @@ function InvalidLink() {
                 <span className="mx-auto grid size-16 place-items-center rounded-2xl bg-danger-soft text-danger">
                     <Icon name="link" className="size-8" />
                 </span>
-                <h1 className="mt-6 text-2xl font-bold text-ink">{t('رابط التسجيل غير متاح')}</h1>
+                <h1 className="mt-6 mk-page-title">{t('رابط التسجيل غير متاح')}</h1>
                 <p className="mt-3 text-sm leading-relaxed text-muted">
                     {t('قد يكون الرابط منتهياً، أو أوقفه صاحب المتجر مؤقتاً، أو تم نسخه بشكل ناقص. تواصل مع المتجر للحصول على رابط تسجيل جديد.')}
                 </p>
@@ -66,7 +66,7 @@ function SuccessScreen({ store, result }) {
                     <span className="mx-auto grid size-16 place-items-center rounded-2xl bg-warning-soft text-warning">
                         <Icon name="check-circle" className="size-8" />
                     </span>
-                    <h1 className="mt-6 text-2xl font-bold text-ink">{t('تم استلام طلبك يا {value}', { value: result.full_name.split(' ')[0] })}</h1>
+                    <h1 className="mt-6 mk-page-title">{t('تم استلام طلبك يا {value}', { value: result.full_name.split(' ')[0] })}</h1>
                     <p className="mt-3 text-sm leading-relaxed text-muted">{result.message}</p>
                     <div className="mk-card mt-8 p-5 text-start">
                         <p className="text-sm font-semibold text-ink">{t('ماذا بعد؟')}</p>
@@ -101,7 +101,7 @@ function SuccessScreen({ store, result }) {
                 <span className="mx-auto grid size-16 place-items-center rounded-2xl bg-success-soft text-success">
                     <Icon name="sparkles" className="size-8" />
                 </span>
-                <h1 className="mt-6 text-2xl font-bold text-ink">{t('أهلاً بك في فريق {name}!', { name: store.name })}</h1>
+                <h1 className="mt-6 mk-page-title">{t('أهلاً بك في فريق {name}!', { name: store.name })}</h1>
                 <p className="mt-3 text-sm leading-relaxed text-muted">{result.message}</p>
 
                 <div className="mk-card mt-8 p-5 text-start">
@@ -232,7 +232,7 @@ export function AffiliateJoinPage() {
                                 <Badge tone="primary" icon="megaphone">
                                     {t('برنامج المسوقين')}
                                 </Badge>
-                                <h1 className="mt-4 text-3xl leading-tight font-bold text-ink">{t('انضم لفريق مسوقي {name}', { name: store.name })}</h1>
+                                <h1 className="mt-4 text-[30px] leading-tight font-bold text-ink">{t('انضم لفريق مسوقي {name}', { name: store.name })}</h1>
                                 <p className="mt-3 text-sm leading-relaxed text-muted">{t('سوّق منتجات {name} لمتابعيك واربح عمولة على كل طلب يتم توصيله عبر رابطك.', { name: store.name })}</p>
                             </>
                         ) : (
@@ -244,16 +244,17 @@ export function AffiliateJoinPage() {
                         )}
                     </div>
 
-                    <div className="rounded-2xl bg-gradient-to-br from-brand to-primary p-6 text-white shadow-lg shadow-primary/20">
-                        <p className="text-sm text-white/75">{t('عمولتك على كل طلب')}</p>
-                        <p className="mt-1 text-4xl font-bold">{link ? `${link.commission_percentage}%` : '—'}</p>
-                        <p className="mt-2 text-xs text-white/75">{tier ? t('تبدأ كـ «{label}» ويمكن ترقيتك حسب أدائك', { label: tier.label }) : ' '}</p>
+                    <div className="relative overflow-hidden rounded-2xl bg-panel p-6 text-white shadow-raise">
+                        <div className="mk-grid-texture absolute inset-0 [mask-image:linear-gradient(to_bottom,black,transparent)]" aria-hidden="true" />
+                        <p className="relative text-sm text-panel-text">{t('عمولتك على كل طلب')}</p>
+                        <p className="mk-num relative mt-1 text-[40px] leading-[48px] font-semibold text-sprout">{link ? `${link.commission_percentage}%` : '—'}</p>
+                        <p className="relative mt-2 text-xs text-panel-text/80">{tier ? t('تبدأ كـ «{label}» ويمكن ترقيتك حسب أدائك', { label: tier.label }) : ' '}</p>
                     </div>
 
                     <ol className="flex flex-col gap-4">
                         {STEPS.map((step, index) => (
                             <li key={step.title} className="flex items-start gap-3">
-                                <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary-soft text-primary">
+                                <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary-soft text-primary ring-1 ring-primary/10 ring-inset">
                                     <Icon name={step.icon} className="size-5" />
                                 </span>
                                 <span>

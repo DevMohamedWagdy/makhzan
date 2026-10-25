@@ -28,21 +28,21 @@ export function NotificationsMenu({ notifications, unreadCount, markRead, markAl
             <button
                 type="button"
                 onClick={() => setOpen((value) => !value)}
-                className="relative grid size-10 place-items-center rounded-xl border border-line text-ink-2 hover:text-ink"
+                className="relative grid size-9 place-items-center rounded-lg text-ink-2 transition hover:bg-surface-3 hover:text-ink"
                 aria-label={unreadCount ? t('الإشعارات، {unreadCount} غير مقروء', { unreadCount }) : t('الإشعارات')}
                 aria-expanded={open}
                 title={t('الإشعارات')}
             >
-                <Icon name="bell" />
+                <Icon name="bell" className="size-[18px]" />
                 {unreadCount > 0 && (
-                    <span className="absolute -top-1.5 -end-1.5 grid h-5 min-w-5 place-items-center rounded-full bg-danger px-1 text-[10px] font-bold text-white ring-2 ring-surface">
+                    <span className="absolute -top-0.5 -end-0.5 grid h-[18px] min-w-[18px] place-items-center rounded-full bg-danger px-1 text-[10px] font-bold text-white ring-2 ring-surface">
                         {unreadCount > 99 ? '99+' : unreadCount}
                     </span>
                 )}
             </button>
 
             {open && (
-                <div className="mk-card animate-pop fixed inset-x-4 top-[76px] z-50 shadow-pop sm:absolute sm:inset-x-auto sm:end-0 sm:top-12 sm:w-[22rem]">
+                <div className="mk-card animate-pop fixed inset-x-4 top-[76px] z-50 shadow-pop sm:absolute sm:inset-x-auto sm:end-0 sm:top-11 sm:w-[22rem]">
                     <div className="flex items-center justify-between gap-3 border-b border-line px-4 py-3">
                         <p className="text-sm font-semibold text-ink">{t('الإشعارات')}</p>
                         {unreadCount > 0 && markAllRead && (

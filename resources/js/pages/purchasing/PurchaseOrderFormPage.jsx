@@ -238,7 +238,7 @@ export function PurchaseOrderFormPage() {
                         </div>
                         <div className="mt-2 flex items-center justify-between">
                             <span className="font-semibold text-ink">{t('إجمالي الأمر')}</span>
-                            <span className="text-xl font-bold text-ink">{formatMoney(total)}</span>
+                            <span className="mk-num text-xl font-semibold text-ink">{formatMoney(total)}</span>
                         </div>
                         <Button type="submit" loading={submitting} icon="check" className="mt-4 w-full">
                             {isEdit ? t('حفظ التعديلات') : t('حفظ كمسودة')}

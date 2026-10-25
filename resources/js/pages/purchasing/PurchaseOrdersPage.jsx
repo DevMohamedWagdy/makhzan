@@ -105,7 +105,7 @@ export function PurchaseOrdersPage() {
                 }
             />
 
-            <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="mb-6 mk-stat-group sm:grid-cols-2 xl:grid-cols-4">
                 <StatCard label={t('بانتظار الاستلام')} value={summary ? formatNumber(summary.ordered + summary.partial) : '—'} icon="send" tone="info" hint={summary?.partial ? t('منها {count} مستلم جزئياً', { count: formatNumber(summary.partial) }) : undefined} />
                 <StatCard label={t('قطع في الطريق')} value={summary ? formatNumber(summary.units_on_order) : '—'} icon="truck" tone="warning" />
                 <StatCard label={t('قيمة البضاعة في الطريق')} value={summary ? formatMoney(summary.value_on_order) : '—'} icon="wallet" tone="primary" />
@@ -135,7 +135,7 @@ export function PurchaseOrdersPage() {
                 ) : (
                     <div className="mk-scroll overflow-x-auto">
                         <table className="w-full min-w-[760px] text-sm">
-                            <thead className="border-y border-line bg-surface-2 text-xs text-muted">
+                            <thead className="mk-thead">
                                 <tr>
                                     {COLUMNS.map((column) => (
                                         <th key={column} scope="col" className="px-4 py-3 text-start font-medium whitespace-nowrap">

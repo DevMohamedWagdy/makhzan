@@ -8,17 +8,22 @@ import { Skeleton } from '@/components/ui/Spinner';
 import { AdminAffiliateDrawer } from '@/features/admin/AdminPeople';
 import { parseDate } from '@/features/reports/ReportWidgets';
 import { intlLocale, t } from '@/i18n';
-import { formatMoney, formatNumber } from '@/lib/format';
+import { cn, formatMoney, formatNumber } from '@/lib/format';
 import { adminApi } from '@/services/adminApi';
 
 const dayLabel = new Intl.DateTimeFormat(intlLocale, { day: 'numeric', month: 'short' });
 
-/** A titled group of stat cards. */
-function StatSection({ title, children }) {
+/** Ribbon columns by how many figures a section holds, so every row fills its width. */
+const SECTION_COLUMNS = { 2: 'sm:grid-cols-2', 3: 'sm:grid-cols-3', 5: 'sm:grid-cols-3 2xl:grid-cols-5' };
+
+/** A titled ribbon of stat cards. */
+function StatSection({ title, children, className }) {
+    const count = [children].flat().filter(Boolean).length;
+
     return (
-        <section className="flex flex-col gap-3">
-            <h2 className="text-sm font-semibold text-ink-2">{title}</h2>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5">{children}</div>
+        <section className={cn('flex min-w-0 flex-col gap-2.5', className)}>
+            <h2 className="mk-overline px-1">{title}</h2>
+            <div className={cn('mk-stat-group flex-1', SECTION_COLUMNS[count])}>{children}</div>
         </section>
     );
 }
@@ -45,7 +50,7 @@ function TopTable({ title, rows, columns, rowKey, emptyText, actions }) {
             ) : (
                 <div className="overflow-x-auto">
                     <table className="w-full text-sm">
-                        <thead className="border-b border-line bg-surface-2 text-xs text-muted">
+                        <thead className="mk-thead">
                             <tr>
                                 <th scope="col" className="w-10 px-4 py-3 text-start font-medium">#</th>
                                 {columns.map((column) => (
@@ -58,7 +63,7 @@ function TopTable({ title, rows, columns, rowKey, emptyText, actions }) {
                         <tbody className="divide-y divide-line">
                             {rows.map((row, index) => (
                                 <tr key={rowKey(row)}>
-                                    <td className="px-4 py-3 text-muted">{formatNumber(index + 1)}</td>
+                                    <td className="px-4 py-3 text-xs text-muted">{formatNumber(index + 1)}</td>
                                     {columns.map((column) => (
                                         <td key={column.label} className={`px-4 py-3 ${column.className ?? ''}`}>
                                             {column.render(row)}
@@ -99,16 +104,22 @@ export function AdminOverviewPage() {
             ) : !data ? (
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5">
                     {Array.from({ length: 10 }, (_, index) => (
-                        <Skeleton key={index} className="h-24 rounded-xl" />
+                        <Skeleton key={index} className="h-28 rounded-2xl" />
                     ))}
                 </div>
             ) : (
                 <div className="flex flex-col gap-8">
-                    <StatSection title={t('المتاجر')}>
-                        <StatCard label={t('إجمالي المتاجر')} value={formatNumber(data.stores.total)} icon="store" />
-                        <StatCard label={t('المتاجر النشطة')} value={formatNumber(data.stores.active)} icon="check" tone="success" />
-                        <StatCard label={t('المتاجر الموقوفة')} value={formatNumber(data.stores.suspended)} icon="lock" tone="danger" />
-                    </StatSection>
+                    <div className="grid gap-x-6 gap-y-8 xl:grid-cols-5">
+                        <StatSection title={t('المتاجر')} className="xl:col-span-3">
+                            <StatCard label={t('إجمالي المتاجر')} value={formatNumber(data.stores.total)} icon="store" />
+                            <StatCard label={t('المتاجر النشطة')} value={formatNumber(data.stores.active)} icon="check" tone="success" />
+                            <StatCard label={t('المتاجر الموقوفة')} value={formatNumber(data.stores.suspended)} icon="lock" tone="danger" />
+                        </StatSection>
+                        <StatSection title={t('المنتجات')} className="xl:col-span-2">
+                            <StatCard label={t('إجمالي المنتجات')} value={formatNumber(data.products.total)} icon="box" />
+                            <StatCard label={t('المنتجات المنشورة')} value={formatNumber(data.products.published)} icon="check" tone="success" />
+                        </StatSection>
+                    </div>
 
                     <StatSection title={t('الطلبات')}>
                         <StatCard label={t('إجمالي الطلبات')} value={formatNumber(data.orders.total)} icon="shopping-bag" />
@@ -124,11 +135,6 @@ export function AdminOverviewPage() {
                         <StatCard label={t('المسوقين المجمدين')} value={formatNumber(data.affiliates.frozen)} icon="lock" tone="danger" />
                         <StatCard label={t('المسوقين في الانتظار')} value={formatNumber(data.affiliates.pending)} icon="clock" tone="warning" />
                         <StatCard label={t('إجمالي العمولات المؤكدة')} value={formatMoney(data.affiliates.earned_commission)} icon="bar-chart" tone="info" />
-                    </StatSection>
-
-                    <StatSection title={t('المنتجات')}>
-                        <StatCard label={t('إجمالي المنتجات')} value={formatNumber(data.products.total)} icon="box" />
-                        <StatCard label={t('المنتجات المنشورة')} value={formatNumber(data.products.published)} icon="check" tone="success" />
                     </StatSection>
 
                     <div className="grid gap-6 xl:grid-cols-2">

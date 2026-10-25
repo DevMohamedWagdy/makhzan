@@ -31,11 +31,11 @@ export function AffiliatePayoutsPage() {
     return (
         <>
             <div>
-                <h1 className="text-2xl font-bold text-ink">{t('أرباحي وتحويلاتي')}</h1>
+                <h1 className="mk-page-title">{t('أرباحي وتحويلاتي')}</h1>
                 <p className="mt-1 text-sm text-muted">{t('المبالغ التي حوّلها المتجر لك وطلبات التحويل')}</p>
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-3">
+            <div className="mk-stat-group sm:grid-cols-3">
                 <StatCard label={t('إجمالي أرباحي')} value={formatMoney(affiliate.stats.earned_commission)} icon="wallet" tone="success" />
                 <StatCard label={t('إجمالي المحوَّل')} value={result ? formatMoney(result.summary.total_paid) : '—'} icon="send" tone="info" />
                 <StatCard label={t('رصيد مستحق')} value={formatMoney(affiliate.stats.pending_balance)} icon="refresh" tone="warning" />

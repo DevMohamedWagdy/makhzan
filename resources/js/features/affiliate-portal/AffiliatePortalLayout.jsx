@@ -104,16 +104,16 @@ export function AffiliatePortalLayout() {
     return (
         <div className="min-h-dvh">
             <ImpersonationBanner />
-            <header className="sticky top-0 z-20 border-b border-line bg-surface/85 backdrop-blur-md">
+            <header className="sticky top-0 z-20 border-b border-line bg-surface/90 backdrop-blur-xl backdrop-saturate-150">
                 <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-4 sm:px-6">
                     <div className="flex min-w-0 items-center gap-3">
                         {store ? <Avatar name={store.name} src={store.logo_url} size="sm" /> : <Skeleton className="size-8 rounded-xl" />}
                         <div className="min-w-0">
-                            <p className="truncate text-sm font-semibold text-ink">{store?.name}</p>
-                            <p className="text-xs text-muted">{t('بوابة المسوقين')}</p>
+                            <p className="truncate text-[13.5px] leading-5 font-semibold text-ink">{store?.name}</p>
+                            <p className="mk-overline text-primary">{t('بوابة المسوقين')}</p>
                         </div>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1">
                         <LanguageToggle />
                         <ThemeToggle />
                         <NotificationsMenu
@@ -124,13 +124,14 @@ export function AffiliatePortalLayout() {
                             target={affiliateNotificationTarget}
                             allHref="/affiliate/notifications"
                         />
+                        {affiliate && <span className="mx-1.5 h-6 w-px bg-line" aria-hidden="true" />}
                         {affiliate && (
                             <Dropdown
                                 label={t('قائمة الحساب')}
                                 trigger={(props) => (
                                     <button type="button" {...props} className="flex items-center gap-2 rounded-xl p-1 pe-2 transition hover:bg-surface-3">
-                                        <Avatar name={affiliate.full_name} src={affiliate.avatar_url} size="sm" />
-                                        <span className="hidden text-sm font-semibold text-ink sm:block">{affiliate.full_name.split(' ')[0]}</span>
+                                        <Avatar name={affiliate.full_name} src={affiliate.avatar_url} size="sm" shape="circle" />
+                                        <span className="hidden text-[13px] font-semibold text-ink sm:block">{affiliate.full_name.split(' ')[0]}</span>
                                         <Icon name="chevron-down" className="hidden size-4 text-muted sm:block" />
                                     </button>
                                 )}
@@ -144,27 +145,27 @@ export function AffiliatePortalLayout() {
                         )}
                     </div>
                 </div>
-                <nav className="mk-scroll mx-auto flex max-w-6xl gap-1 overflow-x-auto px-2 sm:px-4" aria-label={t('أقسام بوابة المسوق')}>
+                <nav className="mk-rail mx-auto flex max-w-6xl gap-1 overflow-x-auto px-2 sm:px-4" aria-label={t('أقسام بوابة المسوق')}>
                     {NAV.map((item) => (
                         <NavLink
                             key={item.to}
                             to={item.to}
                             end={item.end}
                             className={({ isActive }) =>
-                                cn('-mb-px flex items-center gap-2 border-b-2 px-3 py-3 text-sm font-medium whitespace-nowrap transition', isActive ? 'border-primary text-primary' : 'border-transparent text-muted hover:text-ink')
+                                cn('-mb-px flex h-11 items-center gap-2 border-b-2 px-3 text-[13.5px] font-medium whitespace-nowrap transition', isActive ? 'border-primary text-ink [&>svg]:text-primary' : 'border-transparent text-muted hover:border-line-strong hover:text-ink')
                             }
                         >
                             <Icon name={item.icon} className="size-[18px]" />
                             {item.label}
                             {item.counter && notifications.unreadCount > 0 && (
-                                <span className="grid h-5 min-w-5 place-items-center rounded-full bg-danger px-1.5 text-[11px] font-bold text-white">{notifications.unreadCount > 99 ? '99+' : notifications.unreadCount}</span>
+                                <span className="mk-num grid h-5 min-w-5 place-items-center rounded-full bg-danger px-1.5 text-[11px] font-semibold text-white">{notifications.unreadCount > 99 ? '99+' : notifications.unreadCount}</span>
                             )}
                         </NavLink>
                     ))}
                 </nav>
             </header>
 
-            <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8">
+            <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-10">
                 {loadError && !affiliate ? (
                     <EmptyState icon="alert-triangle" title={t('تعذر تحميل بياناتك')} description={loadError} action={<Button variant="secondary" icon="refresh" onClick={reload}>{t('إعادة المحاولة')}</Button>} />
                 ) : !affiliate ? (
@@ -197,7 +198,7 @@ export function AffiliatePortalLayout() {
                 />
             )}
             <footer className="pb-8 text-center">
-                <Logo className="mx-auto h-4 opacity-60" />
+                <Logo className="mx-auto h-4 opacity-50 grayscale transition hover:opacity-80 hover:grayscale-0" />
             </footer>
         </div>
     );

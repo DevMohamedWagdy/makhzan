@@ -38,7 +38,7 @@ export function StorePolicyPage() {
 
     return (
         <article className="mx-auto max-w-3xl rounded-2xl border border-line bg-surface p-6 sm:p-8">
-            <h1 className="text-2xl font-bold text-ink">{page.title}</h1>
+            <h1 className="mk-page-title">{page.title}</h1>
             <div className="mt-4 text-sm leading-loose whitespace-pre-line text-ink-2">{page.body}</div>
         </article>
     );

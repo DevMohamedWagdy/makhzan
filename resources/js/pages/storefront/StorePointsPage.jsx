@@ -71,15 +71,16 @@ export function StorePointsPage() {
 
     return (
         <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
-            <h1 className="text-2xl font-bold text-ink">{t('نقاطي')}</h1>
+            <h1 className="mk-page-title">{t('نقاطي')}</h1>
 
-            <section className="flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-gradient-to-br from-primary to-primary/70 p-6 text-white">
-                <div>
-                    <p className="text-sm opacity-80">{t('رصيدك')}</p>
-                    <p className="mt-1 text-4xl font-bold">{t('{count} نقطة', { count: formatNumber(summary.balance) })}</p>
-                    <p className="mt-1 text-sm opacity-90">{t('تساوي خصم {amount} على طلبك القادم', { amount: formatMoney(summary.balance_value) })}</p>
+            <section className="relative flex flex-wrap items-center justify-between gap-4 overflow-hidden rounded-2xl bg-panel p-6 text-white shadow-raise">
+                <div className="mk-grid-texture absolute inset-0 [mask-image:linear-gradient(to_bottom,black,transparent)]" aria-hidden="true" />
+                <div className="relative">
+                    <p className="text-sm text-panel-text">{t('رصيدك')}</p>
+                    <p className="mk-num mt-1 text-[34px] leading-[44px] font-semibold text-sprout">{t('{count} نقطة', { count: formatNumber(summary.balance) })}</p>
+                    <p className="mt-1 text-sm text-panel-text">{t('تساوي خصم {amount} على طلبك القادم', { amount: formatMoney(summary.balance_value) })}</p>
                 </div>
-                <Icon name="star" className="size-16 fill-white/20 text-white/60" />
+                <Icon name="star" className="relative size-14 fill-sprout/15 text-sprout/70" />
             </section>
 
             {summary.enabled && summary.tier && (

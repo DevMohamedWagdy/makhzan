@@ -33,11 +33,11 @@ export function AffiliateOrdersPage() {
     return (
         <>
             <div>
-                <h1 className="text-2xl font-bold text-ink">{t('طلباتي')}</h1>
+                <h1 className="mk-page-title">{t('طلباتي')}</h1>
                 <p className="mt-1 text-sm text-muted">{t('الطلبات التي تمت عبر روابطك وعمولة كل طلب')}</p>
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-3">
+            <div className="mk-stat-group sm:grid-cols-3">
                 <StatCard label={t('طلبات مسلّمة')} value={formatNumber(affiliate.stats.orders_count)} icon="check-circle" tone="success" />
                 <StatCard label={t('عمولة متوقعة')} value={result?.summary ? formatMoney(result.summary.expected_commission) : '—'} icon="refresh" tone="warning" hint={result?.summary && t('من {count} طلب لم يُسلَّم بعد', { count: formatNumber(result.summary.expected_orders) })} />
                 <StatCard label={t('إجمالي أرباحي')} value={formatMoney(affiliate.stats.earned_commission)} icon="wallet" tone="primary" />

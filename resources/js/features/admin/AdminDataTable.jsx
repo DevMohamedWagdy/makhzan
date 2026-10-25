@@ -108,7 +108,7 @@ export function AdminDataTable({ load, columns, rowKey, storeId = null, searchPl
             ) : (
                 <div className="mk-scroll overflow-x-auto">
                     <table className="w-full text-sm" style={{ minWidth }}>
-                        <thead className="border-y border-line bg-surface-2 text-xs text-muted">
+                        <thead className="mk-thead">
                             <tr>
                                 {visibleColumns.map((column) => (
                                     <th key={column.label} scope="col" className="px-4 py-3 text-start font-medium whitespace-nowrap">

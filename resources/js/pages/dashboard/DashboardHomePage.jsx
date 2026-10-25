@@ -23,6 +23,9 @@ const ATTENTION_TONES = {
     info: 'bg-info-soft text-info',
 };
 
+/** The strip spreads its cells over one row on wide screens, whatever their count. */
+const ATTENTION_COLUMNS = { 1: '', 2: 'sm:grid-cols-2', 3: 'sm:grid-cols-3', 4: 'sm:grid-cols-2 xl:grid-cols-4', 5: 'sm:grid-cols-3 xl:grid-cols-5' };
+
 /** Things waiting on the vendor, each linking to the page where it's handled. */
 function NeedsAttention({ items }) {
     const open = items.filter((item) => item.count > 0);
@@ -32,17 +35,17 @@ function NeedsAttention({ items }) {
     }
 
     return (
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <div className={cn('mk-stat-group', ATTENTION_COLUMNS[Math.min(open.length, 5)])}>
             {open.map((item) => (
-                <Link key={item.key} to={item.to} className="mk-card group flex items-center gap-3 p-4 transition hover:border-line-strong">
-                    <span className={cn('grid size-10 shrink-0 place-items-center rounded-xl', ATTENTION_TONES[item.tone])}>
-                        <Icon name={item.icon} className="size-5" />
+                <Link key={item.key} to={item.to} className="group flex items-center gap-3.5 px-5 py-4 transition hover:bg-surface-2">
+                    <span className={cn('grid size-9 shrink-0 place-items-center rounded-lg ring-1 ring-current/10 ring-inset', ATTENTION_TONES[item.tone])}>
+                        <Icon name={item.icon} className="size-[18px]" />
                     </span>
                     <span className="min-w-0 flex-1">
-                        <span className="block text-lg leading-tight font-bold text-ink">{formatNumber(item.count)}</span>
+                        <span className="mk-num block text-lg leading-6 font-semibold text-ink">{formatNumber(item.count)}</span>
                         <span className="block truncate text-xs text-muted">{item.label}</span>
                     </span>
-                    <Icon name="chevron-left" className="size-4 text-muted transition group-hover:text-ink" />
+                    <Icon name="arrow-left" className="size-4 text-muted opacity-0 transition group-hover:opacity-100" />
                 </Link>
             ))}
         </div>
@@ -61,13 +64,13 @@ function RecentOrders({ orders }) {
                     <Link to={`/dashboard/orders?order=${order.order_id}`} className="-mx-2 flex items-center gap-3 rounded-lg px-2 py-3 transition hover:bg-surface-2">
                         <span className="min-w-0 flex-1">
                             <span className="flex items-center gap-2">
-                                <span className="font-semibold text-ink">#{order.number}</span>
+                                <span className="mk-num font-semibold text-ink">#{order.number}</span>
                                 <span className="truncate text-sm text-ink-2">{order.address.recipient_name}</span>
                             </span>
                             <span className="text-xs text-muted">{formatRelative(order.created_at)}</span>
                         </span>
                         <span className="flex flex-col items-end gap-1">
-                            <span className="text-sm font-semibold text-ink">{formatMoney(order.total)}</span>
+                            <span className="mk-num text-sm font-semibold text-ink">{formatMoney(order.total)}</span>
                             <OrderStatusBadge status={order.status} />
                         </span>
                     </Link>
@@ -124,8 +127,8 @@ function TeamMemberHome() {
             ) : (
                 <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                     {shortcuts.map((shortcut) => (
-                        <Link key={shortcut.to} to={shortcut.to} className="mk-card group flex items-start gap-4 p-5 transition hover:border-line-strong">
-                            <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-primary-soft text-primary">
+                        <Link key={shortcut.to} to={shortcut.to} className="mk-card mk-card-link group flex items-start gap-4 p-5">
+                            <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary-soft text-primary ring-1 ring-primary/10 ring-inset">
                                 <Icon name={shortcut.icon} className="size-5" />
                             </span>
                             <span>
@@ -216,7 +219,7 @@ function OverviewHome() {
                     />
 
                     {(data.orders || data.report) && (
-                        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                        <div className="mk-stat-group sm:grid-cols-2 xl:grid-cols-4">
                             {data.orders && <StatCard label={t('طلبات اليوم')} value={formatNumber(data.orders.today)} icon="shopping-bag" />}
                             {data.report && (
                                 <>

@@ -121,7 +121,7 @@ export function OrdersPage() {
                 }
             />
 
-            <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="mb-6 mk-stat-group sm:grid-cols-2 xl:grid-cols-4">
                 <StatCard label={t('بانتظار التأكيد')} value={summary ? formatNumber(summary.pending) : '—'} icon="refresh" tone="warning" />
                 <StatCard label={t('طلبات اليوم')} value={summary ? formatNumber(summary.today) : '—'} icon="shopping-bag" tone="primary" />
                 <StatCard label={t('قيد الشحن')} value={summary ? formatNumber(summary.shipped) : '—'} icon="truck" tone="info" />
@@ -176,7 +176,7 @@ export function OrdersPage() {
                 ) : (
                     <div className="mk-scroll overflow-x-auto">
                         <table className="w-full min-w-[940px] text-sm">
-                            <thead className="border-y border-line bg-surface-2 text-xs text-muted">
+                            <thead className="mk-thead">
                                 <tr>
                                     <th scope="col" className="w-10 ps-4 py-3">
                                         <input type="checkbox" className="size-4 accent-primary" checked={allSelected} onChange={() => setSelectedIds(allSelected ? [] : items.map((order) => order.order_id))} aria-label={t('اختيار كل الطلبات')} />

@@ -84,7 +84,7 @@ export function AffiliateResetPasswordPage() {
                 <span className="mx-auto grid size-14 place-items-center rounded-2xl bg-primary-soft text-primary">
                     <Icon name="shield-check" className="size-7" />
                 </span>
-                <h1 className="mt-5 text-2xl font-bold text-ink">{t('تعيين كلمة مرور جديدة')}</h1>
+                <h1 className="mt-5 mk-page-title">{t('تعيين كلمة مرور جديدة')}</h1>
                 <p className="mt-2 text-sm text-muted">{t('{value}', { value: t('اختر كلمة مرور قوية لحسابك كمسوق{value}.', { value: store ? t(' في {name}', { name: store.name }) : '' }) })}</p>
             </div>
 

@@ -77,7 +77,7 @@ export function AdminStoresPage() {
                 ) : (
                     <div className="mk-scroll overflow-x-auto">
                         <table className="w-full min-w-[860px] text-sm">
-                            <thead className="border-y border-line bg-surface-2 text-xs text-muted">
+                            <thead className="mk-thead">
                                 <tr>
                                     {[t('المتجر'), t('المالك'), t('الحالة'), t('المنتجات'), t('الطلبات'), t('المبيعات المسلّمة'), t('تاريخ التسجيل')].map((column) => (
                                         <th key={column} scope="col" className="px-4 py-3 text-start font-medium whitespace-nowrap">

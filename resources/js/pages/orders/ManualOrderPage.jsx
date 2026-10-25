@@ -249,7 +249,7 @@ export function ManualOrderPage() {
                             </div>
                             <div className="mt-1 flex items-center justify-between">
                                 <dt className="font-semibold text-ink">{t('الإجمالي (الدفع عند الاستلام)')}</dt>
-                                <dd className="text-xl font-bold text-ink">{formatMoney(total)}</dd>
+                                <dd className="mk-num text-xl font-semibold text-ink">{formatMoney(total)}</dd>
                             </div>
                         </dl>
 

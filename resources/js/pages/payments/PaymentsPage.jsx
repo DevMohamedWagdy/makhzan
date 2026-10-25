@@ -196,7 +196,7 @@ export function PaymentsPage() {
                 </Alert>
             )}
 
-            <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="mb-6 mk-stat-group sm:grid-cols-2 xl:grid-cols-4">
                 <StatCard label={t('تم تحصيله')} value={summary ? formatMoney(summary.collected) : '—'} icon="wallet" tone="success" hint={summary && t('{count} عملية ناجحة', { count: formatNumber(summary.successful) })} />
                 <StatCard label={t('تم استرداده')} value={summary ? formatMoney(summary.refunded) : '—'} icon="refresh" tone="info" />
                 <StatCard label={t('الصافي')} value={summary ? formatMoney(summary.net) : '—'} icon="sparkles" tone="primary" hint={summary && t('{count} محاولة فاشلة', { count: formatNumber(summary.failed) })} />
@@ -228,7 +228,7 @@ export function PaymentsPage() {
                 ) : (
                     <div className="mk-scroll overflow-x-auto">
                         <table className="w-full min-w-[980px] text-sm">
-                            <thead className="border-y border-line bg-surface-2 text-xs text-muted">
+                            <thead className="mk-thead">
                                 <tr>
                                     {COLUMNS.map((column) => (
                                         <th key={column} scope="col" className="px-4 py-3 text-start font-medium whitespace-nowrap">

@@ -54,7 +54,7 @@ export function MovementsTable({ movements, loading, showProduct = true }) {
     return (
         <div className="mk-scroll overflow-x-auto">
             <table className={cn('w-full text-sm', showProduct ? 'min-w-[820px]' : 'min-w-[560px]')}>
-                <thead className="border-y border-line bg-surface-2 text-xs text-muted">
+                <thead className="mk-thead">
                     <tr>
                         {columns.map((column) => (
                             <th key={column} scope="col" className="px-4 py-3 text-start font-medium whitespace-nowrap">

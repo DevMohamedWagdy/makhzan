@@ -32,15 +32,15 @@ function SearchBox({ storeSlug, className }) {
     return (
         <form
             role="search"
-            className={cn('h-11 items-center overflow-hidden rounded-xl border-2 border-primary bg-surface', className)}
+            className={cn('h-11 items-center overflow-hidden rounded-xl border border-line-strong bg-surface-2 p-1 transition focus-within:border-primary focus-within:bg-surface focus-within:shadow-[0_0_0_3px_var(--mk-ring)]', className)}
             onSubmit={(event) => {
                 event.preventDefault();
                 term.trim() && navigate(`/${storeSlug}/search?q=${encodeURIComponent(term.trim())}`);
             }}
         >
-            <input type="search" value={term} onChange={(event) => setTerm(event.target.value)} placeholder={t('ابحث عن منتج...')} aria-label={t('بحث في المتجر')} className="h-full min-w-0 flex-1 bg-transparent px-4 text-sm text-ink outline-none placeholder:text-muted" />
-            <button type="submit" className="grid h-full w-12 shrink-0 place-items-center bg-primary text-white transition hover:bg-primary-hover" aria-label={t('بحث')}>
-                <Icon name="search" className="size-5" />
+            <input type="search" value={term} onChange={(event) => setTerm(event.target.value)} placeholder={t('ابحث عن منتج...')} aria-label={t('بحث في المتجر')} className="h-full min-w-0 flex-1 bg-transparent px-3 text-sm text-ink outline-none placeholder:text-muted" />
+            <button type="submit" className="grid h-full w-10 shrink-0 place-items-center rounded-lg bg-primary text-white transition hover:bg-primary-hover" aria-label={t('بحث')}>
+                <Icon name="search" className="size-[18px]" />
             </button>
         </form>
     );
@@ -49,10 +49,10 @@ function SearchBox({ storeSlug, className }) {
 /** Icon with a caption under it on wide screens (account, wishlist, cart in the header). */
 function HeaderAction({ icon, label, badge, className, ...props }) {
     return (
-        <span className={cn('relative flex items-center gap-2 rounded-xl px-2 py-1.5 text-ink-2 transition hover:bg-surface-3 hover:text-ink', className)} {...props}>
+        <span className={cn('relative flex items-center gap-2 rounded-lg px-2 py-1.5 text-ink-2 transition hover:bg-surface-3 hover:text-ink', className)} {...props}>
             <span className="relative">
-                <Icon name={icon} className="size-6" />
-                {badge > 0 && <span className="absolute -top-2 -end-2 grid h-5 min-w-5 place-items-center rounded-full bg-primary px-1 text-[10px] font-bold text-white ring-2 ring-surface">{badge > 99 ? '99+' : badge}</span>}
+                <Icon name={icon} className="size-[22px]" />
+                {badge > 0 && <span className="mk-num absolute -top-2 -end-2 grid h-[18px] min-w-[18px] place-items-center rounded-full bg-primary px-1 text-[10px] font-semibold text-white ring-2 ring-surface">{badge > 99 ? '99+' : badge}</span>}
             </span>
             {label && <span className="hidden max-w-28 truncate text-sm font-semibold lg:block">{label}</span>}
         </span>
@@ -156,7 +156,7 @@ function StoreNotFound() {
                 <span className="mx-auto grid size-16 place-items-center rounded-2xl bg-surface-3 text-muted">
                     <Icon name="store" className="size-8" />
                 </span>
-                <h1 className="mt-6 text-2xl font-bold text-ink">{t('المتجر غير موجود')}</h1>
+                <h1 className="mt-6 mk-page-title">{t('المتجر غير موجود')}</h1>
                 <p className="mt-2 text-sm text-muted">{t('تأكد من الرابط، فقد يكون المتجر غير متاح حالياً.')}</p>
             </div>
         </div>
@@ -305,11 +305,11 @@ export function StorefrontLayout() {
             <CustomerAuthProvider storeSlug={storeSlug}>
             <CartProvider storeSlug={storeSlug}>
                 <div className="flex min-h-dvh flex-col bg-bg pb-16 md:pb-0">
-                    <div className="bg-brand text-white">
+                    <div className="bg-panel text-panel-text">
                         <div className="mx-auto flex h-9 max-w-7xl items-center justify-between gap-4 px-4 text-xs sm:px-6">
                             <p className="truncate font-medium">{store?.announcement || perks.map((perk) => perk.title).join('  •  ')}</p>
                             {whatsappNumber && (
-                                <a href={`https://wa.me/${whatsappNumber}`} target="_blank" rel="noreferrer" className="hidden shrink-0 items-center gap-1.5 font-medium text-white/90 hover:text-white sm:inline-flex">
+                                <a href={`https://wa.me/${whatsappNumber}`} target="_blank" rel="noreferrer" className="hidden shrink-0 items-center gap-1.5 font-medium text-sprout hover:text-white sm:inline-flex">
                                     <Icon name="message-square" className="size-3.5" />
                                     {t('راسلنا على واتساب')}
                                 </a>
@@ -322,11 +322,11 @@ export function StorefrontLayout() {
                             {store.closed_message}
                         </p>
                     )}
-                    <header className="sticky top-0 z-30 border-b border-line bg-surface shadow-[0_1px_0_0_var(--mk-border)]">
+                    <header className="sticky top-0 z-30 border-b border-line bg-surface/95 backdrop-blur-xl">
                         <div className="mx-auto flex h-[72px] max-w-7xl items-center gap-3 px-4 sm:gap-6 sm:px-6">
                             <Link to={`/${storeSlug}`} className="flex min-w-0 shrink-0 items-center gap-2.5">
                                 {store ? <Avatar name={store.name} src={store.logo_url} size="md" /> : <Skeleton className="size-10 rounded-xl" />}
-                                <span className="max-w-40 truncate text-lg font-extrabold text-ink sm:max-w-56">{store?.name}</span>
+                                <span className="max-w-40 truncate text-[17px] font-bold text-ink sm:max-w-56">{store?.name}</span>
                             </Link>
                             <SearchBox storeSlug={storeSlug} className="hidden flex-1 md:flex" />
                             <div className="ms-auto flex items-center gap-1 md:ms-0">
@@ -371,13 +371,13 @@ export function StorefrontLayout() {
                         </Suspense>
                     </main>
 
-                    <footer className="mt-8 bg-surface">
+                    <footer className="mt-12 bg-surface">
                         <div className="border-y border-line">
                             <ul className="mx-auto grid max-w-7xl grid-cols-2 gap-6 px-4 py-8 sm:px-6 lg:grid-cols-4">
                                 {perks.map((perk) => (
                                     <li key={perk.title} className="flex items-center gap-3">
-                                        <span className="grid size-12 shrink-0 place-items-center rounded-full bg-primary-soft text-primary">
-                                            <Icon name={perk.icon} className="size-6" />
+                                        <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-primary-soft text-primary ring-1 ring-primary/10 ring-inset">
+                                            <Icon name={perk.icon} className="size-5" />
                                         </span>
                                         <span>
                                             <span className="block text-sm font-bold text-ink">{perk.title}</span>
@@ -391,7 +391,7 @@ export function StorefrontLayout() {
                             <div>
                                 <div className="flex items-center gap-2.5">
                                     {store && <Avatar name={store.name} src={store.logo_url} size="md" />}
-                                    <p className="text-lg font-extrabold text-ink">{store?.name}</p>
+                                    <p className="text-lg font-bold text-ink">{store?.name}</p>
                                 </div>
                                 <p className="mt-3 text-sm leading-relaxed text-muted">{store?.description || t('تسوّق بأمان والدفع عند الاستلام.')}</p>
                                 {store && <StoreContact store={store} />}

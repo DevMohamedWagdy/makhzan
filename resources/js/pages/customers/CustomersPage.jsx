@@ -87,7 +87,7 @@ export function CustomersPage() {
         <>
             <PageHeader title={t('العملاء')} description={t('عملاء متجرك الذين سجّلوا حساباً، وطلباتهم ومشترياتهم')} breadcrumbs={[t('لوحة التحكم'), t('المبيعات'), t('العملاء')]} />
 
-            <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="mb-6 mk-stat-group sm:grid-cols-2 xl:grid-cols-4">
                 <StatCard label={t('كل العملاء')} value={summary ? formatNumber(summary.total) : '—'} icon="users" />
                 <StatCard label={t('سجّلوا هذا الشهر')} value={summary ? formatNumber(summary.new_this_month) : '—'} icon="user-plus" tone="info" />
                 <StatCard label={t('عملاء اشتروا')} value={summary ? formatNumber(summary.buyers) : '—'} icon="shopping-bag" tone="success" />
@@ -120,7 +120,7 @@ export function CustomersPage() {
                 ) : (
                     <div className="mk-scroll overflow-x-auto">
                         <table className="w-full min-w-[760px] text-sm">
-                            <thead className="border-y border-line bg-surface-2 text-xs text-muted">
+                            <thead className="mk-thead">
                                 <tr>
                                     {COLUMNS.map((column) => (
                                         <th key={column} scope="col" className="px-4 py-3 text-start font-medium whitespace-nowrap">

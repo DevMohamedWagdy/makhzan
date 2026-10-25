@@ -201,7 +201,7 @@ export function BulkImportPanel({ onImported }) {
                     </div>
                     <div className="mk-scroll max-h-72 overflow-auto">
                         <table className="w-full text-sm">
-                            <thead className="sticky top-0 bg-surface-2 text-xs text-muted">
+                            <thead className="mk-thead sticky top-0">
                                 <tr>
                                     <th className="px-4 py-2.5 text-start font-medium">#</th>
                                     <th className="px-4 py-2.5 text-start font-medium">{t('الاسم')}</th>

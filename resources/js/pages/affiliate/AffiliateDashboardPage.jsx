@@ -34,12 +34,12 @@ function QuickShare({ codes }) {
     return (
         <div className="mk-card flex flex-col gap-3 p-4 sm:flex-row sm:items-center">
             <span className="flex items-center gap-3 text-sm font-medium text-ink">
-                <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-primary-soft text-primary">
+                <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-primary-soft text-primary ring-1 ring-primary/10 ring-inset">
                     <Icon name="link" className="size-[18px]" />
                 </span>
                 {t('رابطك للمشاركة')}
             </span>
-            <code className="ltr flex min-w-0 flex-1 items-center truncate rounded-lg border border-line bg-surface-2 px-3 py-2 font-mono text-xs text-ink-2">{primary.url}</code>
+            <code className="ltr flex h-8 min-w-0 flex-1 items-center truncate rounded-lg border border-dashed border-line-strong bg-surface-2 px-3 font-mono text-xs text-ink-2">{primary.url}</code>
             <Button size="sm" variant={copiedValue === primary.url ? 'success' : 'primary'} icon={copiedValue === primary.url ? 'check' : 'copy'} onClick={() => copy(primary.url)}>
                 {copiedValue === primary.url ? t('تم النسخ') : t('نسخ الرابط')}
             </Button>
@@ -67,23 +67,26 @@ export function AffiliateDashboardPage() {
         <>
             <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold text-ink">{t('أهلاً {value} 👋', { value: firstName })}</h1>
+                    <h1 className="text-[22px] leading-8 font-semibold text-ink sm:text-[26px] sm:leading-9">{t('أهلاً {value} 👋', { value: firstName })}</h1>
                     <div className="mt-2 flex flex-wrap items-center gap-2">
                         <StatusBadge status={affiliate.status} />
                         <TierBadge tier={affiliate.tier} />
                         <span className="text-xs text-muted">{t('مسوق منذ {value}', { value: formatDate(affiliate.joined_at) })}</span>
                     </div>
                 </div>
-                <div className="flex items-center gap-4 rounded-2xl bg-gradient-to-br from-brand to-primary px-5 py-4 text-white shadow-lg shadow-primary/20">
-                    <Icon name="percent" className="size-8 opacity-80" />
-                    <div>
-                        <p className="text-xs text-white/75">{t('عمولتك على كل طلب')}</p>
-                        <p className="text-2xl font-bold">{formatCommission(affiliate.commission)}</p>
+                <div className="relative flex items-center gap-4 overflow-hidden rounded-2xl bg-panel px-5 py-4 text-white shadow-raise">
+                    <div className="mk-grid-texture absolute inset-0 [mask-image:linear-gradient(to_left,black,transparent)]" aria-hidden="true" />
+                    <span className="relative grid size-10 place-items-center rounded-xl border border-white/10 bg-white/5 text-sprout">
+                        <Icon name="percent" className="size-5" />
+                    </span>
+                    <div className="relative">
+                        <p className="text-xs text-panel-text">{t('عمولتك على كل طلب')}</p>
+                        <p className="mk-num text-[26px] leading-8 font-semibold text-sprout">{formatCommission(affiliate.commission)}</p>
                     </div>
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="mk-stat-group grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
                 <StatCard label={t('طلباتي')} value={formatNumber(affiliate.stats.orders_count)} icon="shopping-bag" />
                 <StatCard label={t('مبيعاتي')} value={formatMoney(affiliate.stats.sales_total)} icon="bar-chart" tone="info" />
                 <StatCard label={t('إجمالي أرباحي')} value={formatMoney(affiliate.stats.earned_commission)} icon="wallet" tone="success" />

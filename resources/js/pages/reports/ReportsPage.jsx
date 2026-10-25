@@ -98,7 +98,7 @@ export function ReportsPage() {
                 <ReportSkeleton />
             ) : (
                 <div className={loading ? 'flex flex-col gap-6 opacity-60 transition-opacity' : 'flex flex-col gap-6 transition-opacity'}>
-                    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                    <div className="mk-stat-group sm:grid-cols-2 xl:grid-cols-4">
                         <StatCard
                             label={t('المبيعات')}
                             value={formatMoney(totals.sales)}
@@ -125,7 +125,7 @@ export function ReportsPage() {
                         />
                     </div>
 
-                    <div className="grid gap-4 sm:grid-cols-3">
+                    <div className="mk-stat-group sm:grid-cols-3">
                         <StatCard label={t('تكلفة البضاعة المباعة')} value={formatMoney(totals.cost_of_goods)} icon="box" tone="neutral" hint={t('للطلبات المسلّمة في الفترة')} />
                         <StatCard
                             label={t('إجمالي الربح')}

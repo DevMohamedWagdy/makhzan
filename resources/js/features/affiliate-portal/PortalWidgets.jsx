@@ -230,7 +230,7 @@ export function PayoutRequestCard({ affiliate, isImpersonating, onRequest }) {
     return (
         <Card title={t('تحويل أرباحي')}>
             <p className="text-xs text-muted">{t('رصيدك المستحق')}</p>
-            <p className="mt-1 text-2xl font-bold text-ink">{formatMoney(balance)}</p>
+            <p className="mk-num mt-1 text-[28px] leading-9 font-semibold text-ink">{formatMoney(balance)}</p>
 
             {request ? (
                 <Alert tone="warning" icon="refresh" title={t('طلبك قيد المراجعة')} className="mt-4">

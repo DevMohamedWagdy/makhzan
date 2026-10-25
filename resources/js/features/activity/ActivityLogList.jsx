@@ -129,7 +129,7 @@ export function ActivityLogList({ load, fixed = {}, showStore = false, compact =
                         {open.changes && (
                             <div className="overflow-hidden rounded-xl border border-line">
                                 <table className="w-full text-xs">
-                                    <thead className="bg-surface-2 text-muted">
+                                    <thead className="mk-thead">
                                         <tr>
                                             <th className="px-3 py-2 text-start font-medium">{t('الحقل')}</th>
                                             {open.changes.old && <th className="px-3 py-2 text-start font-medium">{t('قبل')}</th>}

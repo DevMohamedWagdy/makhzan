@@ -211,7 +211,7 @@ export function PurchaseOrderPage() {
                 <Card title={t('الأصناف')} className="lg:col-span-2" bodyClassName="p-0">
                     <div className="mk-scroll overflow-x-auto">
                         <table className="w-full min-w-[620px] text-sm">
-                            <thead className="border-b border-line bg-surface-2 text-xs text-muted">
+                            <thead className="mk-thead">
                                 <tr>
                                     {[t('المنتج'), t('المطلوب'), t('المستلم'), t('المتبقي'), t('تكلفة القطعة'), t('الإجمالي')].map((column) => (
                                         <th key={column} className="px-4 py-3 text-start font-medium whitespace-nowrap">

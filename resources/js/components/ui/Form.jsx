@@ -13,7 +13,7 @@ export function Field({ label, hint, error, required, optional, className, child
         <div className={cn('flex flex-col gap-1.5', className)}>
             {label && (
                 <div className="flex items-center justify-between gap-2">
-                    <label htmlFor={id} className="text-sm font-medium text-ink">
+                    <label htmlFor={id} className="text-[13px] leading-5 font-medium text-ink">
                         {label}
                         {required && <span className="ms-0.5 text-danger">*</span>}
                         {optional && <span className="ms-1.5 text-xs font-normal text-muted">{t('(اختياري)')}</span>}
@@ -137,11 +137,11 @@ export function Switch({ checked, onChange, label, description, disabled, id }) 
                 disabled={disabled}
                 onClick={() => onChange(!checked)}
                 className={cn(
-                    'relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition focus-visible:outline-none',
+                    'relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition',
                     checked ? 'bg-primary' : 'bg-line-strong',
                 )}
             >
-                <span className={cn('absolute size-5 rounded-full bg-white shadow transition-all', checked ? 'start-[22px]' : 'start-0.5')} />
+                <span className={cn('absolute size-5 rounded-full bg-white shadow-[0_1px_3px_rgb(0_0_0/0.25)] transition-all duration-200', checked ? 'start-[22px]' : 'start-0.5')} />
             </button>
         </label>
     );
@@ -164,7 +164,7 @@ export function OptionCards({ options, value, onChange, columns = 3, name }) {
                         onClick={() => onChange(option.value)}
                         className={cn(
                             'relative flex flex-col items-start gap-1 rounded-xl border p-3 text-start transition',
-                            selected ? 'border-primary bg-primary-soft ring-4 ring-primary/10' : 'border-line bg-surface hover:border-line-strong',
+                            selected ? 'border-primary bg-primary-soft/70 shadow-[0_0_0_3px_var(--mk-ring)]' : 'border-line-strong/70 bg-surface hover:border-line-strong hover:bg-surface-2',
                         )}
                     >
                         <span className="flex w-full items-center gap-2">

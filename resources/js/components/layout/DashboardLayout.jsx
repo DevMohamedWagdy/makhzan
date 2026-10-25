@@ -101,102 +101,117 @@ function Sidebar({ open, onClose }) {
 
     return (
         <>
-            {open && <div className="animate-fade-in fixed inset-0 z-30 bg-slate-950/50 lg:hidden" onClick={onClose} />}
+            {open && <div className="animate-fade-in fixed inset-0 z-30 bg-[#0b1116]/55 backdrop-blur-[2px] lg:hidden" onClick={onClose} />}
             <aside
                 className={cn(
-                    'fixed inset-y-0 start-0 z-40 flex w-[264px] flex-col border-e border-line bg-surface transition-transform duration-300 lg:translate-x-0',
+                    'fixed inset-y-0 start-0 z-40 flex w-[264px] flex-col border-e border-panel-line bg-panel text-panel-text transition-transform duration-300 lg:translate-x-0',
                     open ? 'translate-x-0' : isRtl ? 'translate-x-full' : '-translate-x-full',
                 )}
                 aria-label={t('القائمة الرئيسية')}
             >
-                <div className="flex h-[72px] items-center justify-between border-b border-line px-6">
-                    <Logo className="h-7" />
-                    <button type="button" onClick={onClose} className="grid size-9 place-items-center rounded-lg text-muted hover:bg-surface-3 lg:hidden" aria-label={t('إغلاق القائمة')}>
+                <div className="flex h-16 shrink-0 items-center justify-between px-5">
+                    <Logo inverse className="h-[26px]" />
+                    <button type="button" onClick={onClose} className="grid size-9 place-items-center rounded-lg text-panel-muted hover:bg-white/5 hover:text-white lg:hidden" aria-label={t('إغلاق القائمة')}>
                         <Icon name="x" />
                     </button>
                 </div>
 
-                <div className="border-b border-line p-4">
-                    <div className="flex items-center gap-3 rounded-xl bg-surface-2 p-3">
-                        <Avatar name={store?.name} src={store?.logo_url} size="md" />
-                        <div className="min-w-0">
-                            <p className="truncate text-sm font-semibold text-ink">{store?.name}</p>
-                            <p className="ltr truncate text-start text-xs text-muted" title={storeUrl}>
-                                {storeUrl.replace(/^https?:\/\//, '')}
-                            </p>
+                <div className="px-3 pb-3">
+                    <div className="rounded-xl border border-panel-line bg-panel-2 p-2.5">
+                        <div className="flex items-center gap-2.5 p-0.5">
+                            <Avatar name={store?.name} src={store?.logo_url} size="sm" />
+                            <div className="min-w-0 flex-1">
+                                <p className="truncate text-[13px] leading-5 font-semibold text-white">{store?.name}</p>
+                                <p className="ltr truncate text-start text-[11px] leading-4 text-panel-muted" title={storeUrl}>
+                                    {storeUrl.replace(/^https?:\/\//, '')}
+                                </p>
+                            </div>
                         </div>
-                    </div>
-                    <div className="mt-2 grid grid-cols-2 gap-2">
-                        <a
-                            href={storeUrl}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-line bg-surface px-2 text-xs font-medium text-ink transition hover:bg-surface-3"
-                        >
-                            <Icon name="eye" className="size-3.5" />
-                            {t('زيارة المتجر')}
-                        </a>
-                        <button
-                            type="button"
-                            onClick={() => {
-                                copy(storeUrl);
-                                toast.success(t('تم نسخ رابط المتجر'), t('شاركه مع عملائك ليطلبوا من متجرك مباشرة.'));
-                            }}
-                            className={cn(
-                                'inline-flex h-8 items-center justify-center gap-1.5 rounded-lg px-2 text-xs font-medium transition',
-                                copied ? 'bg-success-soft text-success' : 'bg-primary-soft text-primary hover:bg-primary/15',
-                            )}
-                        >
-                            <Icon name={copied ? 'check' : 'copy'} className="size-3.5" />
-                            {copied ? t('تم النسخ') : t('نسخ الرابط')}
-                        </button>
+                        <div className="mt-2.5 grid grid-cols-2 gap-1.5">
+                            <a
+                                href={storeUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-panel-line px-2 text-xs font-medium text-panel-text transition hover:border-white/15 hover:bg-white/5 hover:text-white"
+                            >
+                                <Icon name="eye" className="size-3.5" />
+                                {t('زيارة المتجر')}
+                            </a>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    copy(storeUrl);
+                                    toast.success(t('تم نسخ رابط المتجر'), t('شاركه مع عملائك ليطلبوا من متجرك مباشرة.'));
+                                }}
+                                className={cn(
+                                    'inline-flex h-8 items-center justify-center gap-1.5 rounded-lg px-2 text-xs font-medium transition',
+                                    copied ? 'bg-sprout text-brand' : 'bg-sprout/10 text-sprout hover:bg-sprout/[0.16]',
+                                )}
+                            >
+                                <Icon name={copied ? 'check' : 'copy'} className="size-3.5" />
+                                {copied ? t('تم النسخ') : t('نسخ الرابط')}
+                            </button>
+                        </div>
                     </div>
                 </div>
 
-                <nav className="mk-scroll flex-1 overflow-y-auto px-3 py-4">
-                    {visibleSections.map((section) => (
-                        <div key={section.title} className="mb-5">
-                            <p className="mb-2 px-3 text-[11px] font-semibold tracking-wide text-muted uppercase">{section.title}</p>
-                            <ul className="flex flex-col gap-0.5">
-                                {section.items.map((item) =>
-                                    item.soon ? (
-                                        <li key={item.label}>
-                                            <span className="flex cursor-not-allowed items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-muted" title={t('هذه الوحدة قيد التطوير')}>
-                                                <Icon name={item.icon} className="size-[18px]" />
-                                                {item.label}
-                                                <span className="ms-auto rounded-md bg-surface-3 px-1.5 py-0.5 text-[10px]">{t('قريباً')}</span>
-                                            </span>
-                                        </li>
-                                    ) : (
-                                        <li key={item.label}>
-                                            <NavLink
-                                                to={item.to}
-                                                end={item.end}
-                                                onClick={onClose}
-                                                className={({ isActive }) =>
-                                                    cn(
-                                                        'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition',
-                                                        isActive ? 'bg-primary-soft text-primary' : 'text-ink-2 hover:bg-surface-3 hover:text-ink',
-                                                    )
-                                                }
-                                            >
-                                                <Icon name={item.icon} className="size-[18px]" />
-                                                {item.label}
-                                                {item.counter && alerts[item.counter] > 0 && (
-                                                    <span className="ms-auto grid h-5 min-w-5 place-items-center rounded-full bg-danger px-1.5 text-[11px] font-bold text-white">
-                                                        {alerts[item.counter] > 99 ? '99+' : alerts[item.counter]}
-                                                    </span>
-                                                )}
-                                            </NavLink>
-                                        </li>
-                                    ),
-                                )}
-                            </ul>
-                        </div>
-                    ))}
-                </nav>
+                <SidebarNav sections={visibleSections} alerts={alerts} onNavigate={onClose} />
             </aside>
         </>
+    );
+}
+
+/**
+ * The Ink rail's grouped links: shared by the vendor dashboard and the admin panel. The active
+ * page gets a Sprout marker on its inline-start edge. `counter(item)` returns the badge number.
+ */
+export function SidebarNav({ sections, alerts = {}, counter, onNavigate }) {
+    return (
+        <nav className="mk-scroll-dark flex-1 overflow-y-auto border-t border-panel-line px-3 pt-4 pb-6">
+            {sections.map((section) => (
+                <div key={section.title} className="mb-5 last:mb-0">
+                    <p className="mk-overline mb-1.5 px-3 text-panel-muted/80">{section.title}</p>
+                    <ul className="flex flex-col gap-px">
+                        {section.items.map((item) => {
+                            const count = counter ? counter(item) : item.counter ? alerts[item.counter] : 0;
+
+                            return item.soon ? (
+                                <li key={item.label}>
+                                    <span className="flex h-9 cursor-not-allowed items-center gap-3 rounded-lg px-3 text-[13.5px] text-panel-muted" title={t('هذه الوحدة قيد التطوير')}>
+                                        <Icon name={item.icon} className="size-[18px]" />
+                                        {item.label}
+                                        <span className="ms-auto rounded-md bg-white/5 px-1.5 py-0.5 text-[10px]">{t('قريباً')}</span>
+                                    </span>
+                                </li>
+                            ) : (
+                                <li key={item.label}>
+                                    <NavLink
+                                        to={item.to}
+                                        end={item.end}
+                                        onClick={onNavigate}
+                                        className={({ isActive }) =>
+                                            cn(
+                                                'relative flex h-9 items-center gap-3 rounded-lg px-3 text-[13.5px] font-medium transition',
+                                                'before:absolute before:inset-y-2 before:-start-3 before:w-[3px] before:rounded-e-full before:transition',
+                                                isActive ? 'bg-white/[0.07] text-white before:bg-sprout [&>svg]:text-sprout' : 'text-panel-text/85 before:bg-transparent hover:bg-white/[0.04] hover:text-white',
+                                            )
+                                        }
+                                    >
+                                        <Icon name={item.icon} className="size-[18px] shrink-0 opacity-90" />
+                                        <span className="truncate">{item.label}</span>
+                                        {count > 0 && (
+                                            <span className="mk-num ms-auto grid h-5 min-w-5 place-items-center rounded-full bg-sprout px-1.5 text-[11px] font-semibold text-brand">
+                                                {count > 99 ? '99+' : count}
+                                            </span>
+                                        )}
+                                    </NavLink>
+                                </li>
+                            );
+                        })}
+                    </ul>
+                </div>
+            ))}
+        </nav>
     );
 }
 
@@ -209,7 +224,7 @@ export function ImpersonationBanner() {
     }
 
     return (
-        <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 bg-warning px-4 py-2.5 text-sm font-medium text-slate-950">
+        <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 bg-warning px-4 py-2.5 text-sm font-medium text-[#1a1204]">
             <Icon name="eye" className="size-[18px]" />
             <span>
                 {t('أنت تتصفح الآن بصفة المسوق {name} — كل الإجراءات تُسجل باسمك.', { name: impersonation.affiliate.full_name })}
@@ -220,7 +235,7 @@ export function ImpersonationBanner() {
                     stopImpersonating();
                     navigate('/dashboard/affiliates');
                 }}
-                className="rounded-lg bg-slate-950 px-3 py-1 text-xs font-semibold text-white hover:bg-slate-800"
+                className="rounded-lg bg-brand px-3 py-1 text-xs font-semibold text-white hover:bg-brand-light"
             >
                 {t('العودة إلى حسابي')}
             </button>
@@ -259,22 +274,24 @@ function DashboardShell() {
             <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
             <div className="lg:ps-[264px]">
                 <ImpersonationBanner />
-                <header className="sticky top-0 z-20 flex h-[72px] items-center gap-3 border-b border-line bg-surface/85 px-4 backdrop-blur-md sm:px-8">
-                    <button type="button" onClick={() => setSidebarOpen(true)} className="grid size-10 place-items-center rounded-xl border border-line text-ink-2 lg:hidden" aria-label={t('فتح القائمة')}>
-                        <Icon name="menu" />
+                <header className="sticky top-0 z-20 flex h-16 items-center gap-3 border-b border-line bg-bg/80 px-4 backdrop-blur-xl backdrop-saturate-150 sm:px-8">
+                    <button type="button" onClick={() => setSidebarOpen(true)} className="grid size-9 place-items-center rounded-lg border border-line-strong/70 bg-surface text-ink-2 shadow-card lg:hidden" aria-label={t('فتح القائمة')}>
+                        <Icon name="menu" className="size-[18px]" />
                     </button>
-                    <div className="ms-auto flex items-center gap-2">
+                    <Logo className="h-[22px] lg:hidden" />
+                    <div className="ms-auto flex items-center gap-1">
                         <LanguageToggle />
                         <ThemeToggle />
                         {can('notifications') && <NotificationsMenu notifications={notifications} unreadCount={unreadCount} markRead={markRead} markAllRead={markAllRead} target={notificationTarget} allHref="/dashboard/notifications" />}
+                        <span className="mx-1.5 h-6 w-px bg-line" aria-hidden="true" />
                         <Dropdown
                             label={t('قائمة الحساب')}
                             trigger={(props) => (
                                 <button type="button" {...props} className="flex items-center gap-2.5 rounded-xl p-1 pe-2 transition hover:bg-surface-3">
-                                    <Avatar name={vendor?.full_name} size="sm" />
-                                    <span className="hidden text-start sm:block">
-                                        <span className="block text-sm font-semibold text-ink">{vendor?.full_name}</span>
-                                        <span className="block text-xs text-muted">{isOwner ? t('صاحب المتجر') : t('عضو فريق العمل')}</span>
+                                    <Avatar name={vendor?.full_name} size="sm" shape="circle" />
+                                    <span className="hidden text-start leading-tight sm:block">
+                                        <span className="block text-[13px] font-semibold text-ink">{vendor?.full_name}</span>
+                                        <span className="block text-[11px] text-muted">{isOwner ? t('صاحب المتجر') : t('عضو فريق العمل')}</span>
                                     </span>
                                     <Icon name="chevron-down" className="hidden size-4 text-muted sm:block" />
                                 </button>
@@ -296,7 +313,7 @@ function DashboardShell() {
                         />
                     </div>
                 </header>
-                <main className="px-4 py-6 sm:px-8 sm:py-8">
+                <main className="mx-auto w-full max-w-[1440px] px-4 py-6 sm:px-8 sm:py-8">
                     {store?.suspended && (
                         <Alert tone="danger" title={t('متجرك موقوف من إدارة المنصة')} className="mb-6">
                             {t('السبب: {reason}. لا يستطيع العملاء الطلب الآن. تواصل مع الدعم لإعادة تفعيله.', { reason: store.suspension_reason ?? '—' })}
@@ -313,20 +330,20 @@ function DashboardShell() {
 
 export function PageHeader({ title, description, breadcrumbs = [], actions }) {
     return (
-        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-            <div>
+        <div className="mb-7 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div className="min-w-0">
                 {breadcrumbs.length > 0 && (
                     <nav aria-label={t('مسار التنقل')} className="mb-2 flex items-center gap-1.5 text-xs text-muted">
                         {breadcrumbs.map((crumb, index) => (
                             <span key={crumb} className="flex items-center gap-1.5">
-                                {index > 0 && <Icon name="chevron-left" className="size-3" />}
-                                <span className={index === breadcrumbs.length - 1 ? 'text-ink-2' : undefined}>{crumb}</span>
+                                {index > 0 && <Icon name="chevron-left" className="size-3 opacity-60" />}
+                                <span className={index === breadcrumbs.length - 1 ? 'font-medium text-ink-2' : undefined}>{crumb}</span>
                             </span>
                         ))}
                     </nav>
                 )}
-                <h1 className="text-2xl font-bold text-ink">{title}</h1>
-                {description && <p className="mt-1 text-sm text-muted">{description}</p>}
+                <h1 className="text-[22px] leading-8 font-semibold text-ink sm:text-[26px] sm:leading-9">{title}</h1>
+                {description && <p className="mt-1 max-w-2xl text-[13.5px] leading-6 text-muted">{description}</p>}
             </div>
             {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
         </div>

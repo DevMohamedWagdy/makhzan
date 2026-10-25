@@ -123,7 +123,7 @@ export function CouponsPage() {
                 }
             />
 
-            <div className="mb-6 grid gap-4 sm:grid-cols-3">
+            <div className="mb-6 mk-stat-group sm:grid-cols-3">
                 <StatCard label={t('كوبونات فعّالة')} value={summary ? formatNumber(summary.active) : '—'} icon="gift" tone="success" hint={summary?.scheduled ? t('و{count} مجدول', { count: formatNumber(summary.scheduled) }) : undefined} />
                 <StatCard label={t('طلبات استخدمت كوبون')} value={summary ? formatNumber(summary.orders) : '—'} icon="shopping-bag" tone="primary" />
                 <StatCard label={t('إجمالي الخصومات')} value={summary ? formatMoney(summary.discounts) : '—'} icon="percent" tone="warning" hint={t('من الطلبات غير الملغاة')} />
@@ -151,7 +151,7 @@ export function CouponsPage() {
                 ) : (
                     <div className="mk-scroll overflow-x-auto">
                         <table className="w-full min-w-[880px] text-sm">
-                            <thead className="border-y border-line bg-surface-2 text-xs text-muted">
+                            <thead className="mk-thead">
                                 <tr>
                                     {COLUMNS.map((column, index) => (
                                         <th key={index} scope="col" className="px-4 py-3 text-start font-medium whitespace-nowrap">

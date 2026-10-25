@@ -14,7 +14,7 @@ export function AffiliateLinksPage() {
     return (
         <>
             <div>
-                <h1 className="text-2xl font-bold text-ink">{t('روابط الإحالة')}</h1>
+                <h1 className="mk-page-title">{t('روابط الإحالة')}</h1>
                 <p className="mt-1 text-sm text-muted">{t('شارك هذه الروابط، وكل طلب يتم عبرها يُحسب لك')}</p>
             </div>
             <Card>

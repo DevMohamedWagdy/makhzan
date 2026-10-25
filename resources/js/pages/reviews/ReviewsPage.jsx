@@ -235,7 +235,7 @@ export function ReviewsPage() {
         <>
             <PageHeader title={t('التقييمات')} description={t('تقييمات العملاء الذين استلموا منتجاتك، لا يظهر أي تقييم قبل موافقتك')} breadcrumbs={[t('لوحة التحكم'), t('المبيعات'), t('التقييمات')]} />
 
-            <div className="mb-6 grid gap-4 sm:grid-cols-3">
+            <div className="mb-6 mk-stat-group sm:grid-cols-3">
                 <StatCard label={t('متوسط تقييم المتجر')} value={summary?.average != null ? t('{rating} من ٥', { rating: formatNumber(summary.average) }) : '—'} icon="star" tone="warning" />
                 <StatCard label={t('تقييمات منشورة')} value={summary ? formatNumber(summary.approved) : '—'} icon="check-circle" tone="success" />
                 <StatCard label={t('بانتظار مراجعتك')} value={summary ? formatNumber(summary.pending) : '—'} icon="clock" tone="info" />

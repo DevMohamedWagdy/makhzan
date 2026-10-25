@@ -200,7 +200,7 @@ export function ProductReviews({ storeSlug, productSlug, storeName }) {
 
     return (
         <section id="reviews" className="scroll-mt-36">
-            <h2 className="mb-4 text-xl font-bold text-ink">{t('تقييمات العملاء')}</h2>
+            <h2 className="mb-4 text-lg font-bold text-ink sm:text-[22px] sm:leading-8">{t('تقييمات العملاء')}</h2>
             {!page ? (
                 <Skeleton className="h-40 rounded-2xl" />
             ) : (

@@ -13,7 +13,7 @@ export function LanguageToggle({ className }) {
             aria-label={label}
             title={label}
             lang={next}
-            className={cn('grid h-10 min-w-10 place-items-center rounded-xl border border-line bg-surface px-2.5 text-sm font-semibold text-ink-2 transition hover:border-line-strong hover:text-ink', className)}
+            className={cn('grid h-9 min-w-9 place-items-center rounded-lg px-2 text-[13px] font-semibold text-ink-2 transition hover:bg-surface-3 hover:text-ink', className)}
         >
             {next === 'en' ? 'EN' : 'ع'}
         </button>

@@ -205,7 +205,7 @@ export function StoreProductPage() {
                         <Link to={`/${storeSlug}/c/${product.category.slug}`} className="text-sm font-semibold text-primary hover:underline">
                             {product.category.name}
                         </Link>
-                        <h1 className="mt-1.5 text-2xl leading-snug font-extrabold text-ink sm:text-3xl">{product.name}</h1>
+                        <h1 className="mt-1.5 text-2xl leading-snug font-bold text-ink sm:text-3xl">{product.name}</h1>
                         {product.reviews_count > 0 && (
                             <a href="#reviews" className="mt-2 inline-flex items-center gap-2 text-sm text-muted hover:text-primary">
                                 <Stars rating={product.rating_average} />
@@ -312,7 +312,7 @@ export function StoreProductPage() {
 
             {data.related.length > 0 && (
                 <section>
-                    <h2 className="mb-4 text-lg font-extrabold text-ink sm:text-2xl">{t('قد يعجبك أيضاً')}</h2>
+                    <h2 className="mb-4 text-lg font-bold text-ink sm:text-2xl">{t('قد يعجبك أيضاً')}</h2>
                     <ProductRail storeSlug={storeSlug} products={data.related} />
                 </section>
             )}

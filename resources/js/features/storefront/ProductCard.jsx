@@ -24,7 +24,7 @@ export function PriceTag({ price, priceMax, compareAtPrice, size = 'md' }) {
 
     return (
         <span className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
-            <span className={size === 'lg' ? 'text-3xl font-extrabold text-ink' : 'text-base font-extrabold text-ink'}>{isRange ? t('من {price}', { price: formatMoney(price) }) : formatMoney(price)}</span>
+            <span className={size === 'lg' ? 'mk-num text-3xl font-bold text-ink' : 'mk-num text-[15px] font-bold text-ink'}>{isRange ? t('من {price}', { price: formatMoney(price) }) : formatMoney(price)}</span>
             {compareAtPrice && <span className={size === 'lg' ? 'text-base text-muted line-through' : 'text-xs text-muted line-through'}>{formatMoney(compareAtPrice)}</span>}
         </span>
     );
@@ -44,17 +44,17 @@ function CardRating({ rating, count }) {
 /** Listing card: image (second image on hover), wishlist heart, badges, name, rating and price. */
 export function ProductCard({ storeSlug, product, className }) {
     return (
-        <Link to={`/${storeSlug}/p/${product.slug}`} className={cn('group flex flex-col overflow-hidden rounded-2xl border border-line bg-surface transition duration-300 hover:-translate-y-0.5 hover:border-line-strong hover:shadow-[var(--mk-shadow-lg)]', className)}>
+        <Link to={`/${storeSlug}/p/${product.slug}`} className={cn('group flex flex-col overflow-hidden rounded-2xl border border-line bg-surface shadow-card transition duration-300 hover:-translate-y-0.5 hover:border-line-strong hover:shadow-raise', className)}>
             <div className="relative aspect-[4/5] overflow-hidden bg-surface-2">
                 <ProductImage src={product.image_url} alt={product.name} className={cn('transition duration-500 group-hover:scale-105', !product.in_stock && 'opacity-60 grayscale')} />
                 {product.hover_image_url && product.in_stock && <img src={product.hover_image_url} alt="" loading="lazy" className="absolute inset-0 size-full object-cover opacity-0 transition duration-500 group-hover:opacity-100" />}
                 <div className="absolute top-2.5 start-2.5 flex flex-col items-start gap-1.5">
-                    {product.discount_percent > 0 && <span className="rounded-lg bg-danger px-2 py-1 text-[11px] font-bold text-white shadow-sm">-{product.discount_percent}%</span>}
+                    {product.discount_percent > 0 && <span className="mk-num rounded-full bg-danger px-2 py-0.5 text-[11px] font-semibold text-white shadow-sm">-{product.discount_percent}%</span>}
                 </div>
                 <WishlistButton storeSlug={storeSlug} productId={product.product_id} compact className="absolute top-2.5 end-2.5" />
                 {!product.in_stock && <span className="absolute inset-x-3 bottom-3 rounded-lg bg-ink/80 py-1.5 text-center text-xs font-semibold text-surface backdrop-blur">{t('نفد المخزون')}</span>}
             </div>
-            <div className="flex flex-1 flex-col gap-2 p-3">
+            <div className="flex flex-1 flex-col gap-2 p-3.5">
                 <span className="line-clamp-2 min-h-10 text-sm leading-5 font-medium text-ink">{product.name}</span>
                 {product.reviews_count > 0 && <CardRating rating={product.rating_average} count={product.reviews_count} />}
                 <span className="mt-auto">

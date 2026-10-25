@@ -12,7 +12,7 @@ const BADGE_TONES = {
 
 export function Badge({ tone = 'neutral', dot = false, icon, className, children }) {
     return (
-        <span className={cn('inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium whitespace-nowrap', BADGE_TONES[tone], className)}>
+        <span className={cn('inline-flex h-6 items-center gap-1.5 rounded-full px-2.5 text-[11.5px] leading-none font-medium whitespace-nowrap ring-1 ring-current/12 ring-inset', BADGE_TONES[tone], className)}>
             {dot && <span className="size-1.5 rounded-full bg-current" />}
             {icon && <Icon name={icon} className="size-3.5" />}
             {children}
@@ -23,13 +23,15 @@ export function Badge({ tone = 'neutral', dot = false, icon, className, children
 const AVATAR_COLORS = ['bg-primary-soft text-primary', 'bg-success-soft text-success', 'bg-warning-soft text-warning', 'bg-info-soft text-info', 'bg-danger-soft text-danger'];
 const AVATAR_SIZES = { sm: 'size-8 text-xs', md: 'size-10 text-sm', lg: 'size-14 text-lg', xl: 'size-20 text-2xl' };
 
-export function Avatar({ name = '', src, size = 'md', className, ring = false }) {
+/** `shape`: 'rounded' for stores and brands, 'circle' for people in compact chrome. */
+export function Avatar({ name = '', src, size = 'md', className, ring = false, shape = 'rounded' }) {
     const colorIndex = [...name].reduce((sum, char) => sum + char.charCodeAt(0), 0) % AVATAR_COLORS.length;
 
     return (
         <span
             className={cn(
-                'inline-grid shrink-0 place-items-center overflow-hidden rounded-xl font-semibold',
+                'inline-grid shrink-0 place-items-center overflow-hidden font-semibold',
+                shape === 'circle' ? 'rounded-full' : size === 'sm' ? 'rounded-lg' : 'rounded-xl',
                 AVATAR_SIZES[size],
                 !src && AVATAR_COLORS[colorIndex],
                 ring && 'ring-4 ring-surface',
@@ -45,10 +47,10 @@ export function Card({ title, description, actions, className, bodyClassName, ch
     return (
         <section className={cn('mk-card', className)}>
             {(title || actions) && (
-                <header className="flex flex-wrap items-center justify-between gap-3 border-b border-line px-5 py-4">
-                    <div>
-                        {title && <h2 className="text-base font-semibold text-ink">{title}</h2>}
-                        {description && <p className="mt-0.5 text-xs text-muted">{description}</p>}
+                <header className="flex min-h-[60px] flex-wrap items-center justify-between gap-3 border-b border-line px-5 py-3.5">
+                    <div className="min-w-0">
+                        {title && <h2 className="text-[15px] leading-6 font-semibold text-ink">{title}</h2>}
+                        {description && <p className="mt-0.5 text-[12.5px] leading-5 text-muted">{description}</p>}
                     </div>
                     {actions && <div className="flex items-center gap-2">{actions}</div>}
                 </header>
@@ -60,27 +62,28 @@ export function Card({ title, description, actions, className, bodyClassName, ch
 
 export function StatCard({ label, value, icon, tone = 'primary', hint }) {
     return (
-        <div className="mk-card flex items-center gap-4 p-5">
-            <span className={cn('grid size-12 shrink-0 place-items-center rounded-xl', BADGE_TONES[tone])}>
-                <Icon name={icon} className="size-6" />
-            </span>
-            <div className="min-w-0">
-                <p className="text-xs text-muted">{label}</p>
-                <p className="mt-1 truncate text-xl font-bold text-ink">{value}</p>
-                {hint && <p className="mt-0.5 text-xs text-muted">{hint}</p>}
+        <div className="mk-card flex min-w-0 flex-col p-4 sm:p-5">
+            <div className="flex items-start justify-between gap-3">
+                <p className="text-[13px] leading-5 font-medium text-muted">{label}</p>
+                <span className={cn('grid size-8 shrink-0 place-items-center rounded-lg', BADGE_TONES[tone])}>
+                    <Icon name={icon} className="size-4" />
+                </span>
             </div>
+            <p className="mk-num mt-1.5 truncate text-[22px] leading-8 font-semibold text-ink sm:mt-2 sm:text-[26px] sm:leading-9">{value}</p>
+            {hint && <div className="mt-1.5 text-xs text-muted">{hint}</div>}
         </div>
     );
 }
 
 export function EmptyState({ icon = 'users', title, description, action }) {
     return (
-        <div className="flex flex-col items-center justify-center gap-3 px-6 py-14 text-center">
-            <span className="grid size-16 place-items-center rounded-2xl bg-surface-3 text-muted">
-                <Icon name={icon} className="size-8" />
+        <div className="flex flex-col items-center justify-center gap-4 px-6 py-14 text-center">
+            <span className="relative grid size-14 place-items-center rounded-2xl border border-line bg-surface-2 text-muted shadow-card">
+                <span aria-hidden="true" className="absolute -inset-2 rounded-[22px] border border-dashed border-line" />
+                <Icon name={icon} className="size-6" />
             </span>
             <div>
-                <p className="text-base font-semibold text-ink">{title}</p>
+                <p className="text-[15px] font-semibold text-ink">{title}</p>
                 {description && <p className="mt-1 max-w-sm text-sm leading-relaxed text-muted">{description}</p>}
             </div>
             {action}
@@ -92,7 +95,7 @@ export function Alert({ tone = 'info', icon, title, children, className }) {
     const icons = { info: 'info', warning: 'alert-triangle', danger: 'alert-circle', success: 'check-circle' };
 
     return (
-        <div role={tone === 'danger' ? 'alert' : undefined} className={cn('flex gap-3 rounded-xl p-3.5 text-sm', BADGE_TONES[tone], className)}>
+        <div role={tone === 'danger' ? 'alert' : undefined} className={cn('flex gap-3 rounded-xl p-3.5 text-[13.5px] ring-1 ring-current/15 ring-inset', BADGE_TONES[tone], className)}>
             <Icon name={icon ?? icons[tone]} className="mt-0.5 size-[18px] shrink-0" />
             <div className="leading-relaxed">
                 {title && <p className="font-semibold">{title}</p>}
