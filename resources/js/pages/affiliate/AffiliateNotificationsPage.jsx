@@ -66,11 +66,11 @@ export function AffiliateNotificationsPage() {
                     onChange={(value) => setQuery({ filter: value, page: 1 })}
                     className="px-3"
                 />
-                <div className="p-3">
+                <div>
                     {error ? (
                         <EmptyState icon="alert-triangle" title={t('تعذر تحميل الإشعارات')} description={error} action={<Button variant="secondary" icon="refresh" onClick={() => setAttempt((value) => value + 1)}>{t('إعادة المحاولة')}</Button>} />
                     ) : !result ? (
-                        <div className="flex flex-col gap-2">
+                        <div className="flex flex-col gap-2 p-4">
                             {[0, 1, 2].map((index) => (
                                 <Skeleton key={index} className="h-16 w-full" />
                             ))}
@@ -78,7 +78,7 @@ export function AffiliateNotificationsPage() {
                     ) : result.data.length === 0 ? (
                         <EmptyState icon="bell" title={filter ? t('لا توجد إشعارات غير مقروءة') : t('لا توجد إشعارات بعد')} description={t('سيصلك هنا إشعار عند تحويل أرباحك، وعند كل طلب جديد أو تغيّر في عمولتك.')} />
                     ) : (
-                        <div className="flex flex-col gap-1">
+                        <div className="flex flex-col divide-y divide-line">
                             {result.data.map((notification) => (
                                 <NotificationItem
                                     key={notification.id}

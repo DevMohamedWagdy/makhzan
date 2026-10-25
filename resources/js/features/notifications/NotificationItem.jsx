@@ -95,16 +95,21 @@ export function NotificationItem({ notification, onOpen, compact = false }) {
         <button
             type="button"
             onClick={() => onOpen(notification)}
-            className={cn('flex w-full items-start gap-3 rounded-xl text-start transition hover:bg-surface-3', compact ? 'p-2.5' : 'p-4', unread && 'bg-primary-soft/40')}
+            className={cn(
+                'relative flex w-full items-start gap-3 text-start transition',
+                // Compact rows sit in the bell menu; full rows fill a divided list edge to edge.
+                compact ? 'rounded-xl p-2.5 hover:bg-surface-3' : 'gap-4 px-5 py-4 hover:bg-surface-2 sm:px-6',
+                unread && (compact ? 'bg-primary-soft/40' : 'bg-primary-soft/35 before:absolute before:inset-y-0 before:start-0 before:w-[3px] before:bg-brand-green'),
+            )}
         >
             <span className={cn('grid size-9 shrink-0 place-items-center rounded-xl', config.className)}>
                 <Icon name={config.icon} className="size-[18px]" />
             </span>
             <span className="min-w-0 flex-1">
-                <span className={cn('block text-sm leading-relaxed', unread ? 'font-semibold text-ink' : 'text-ink-2')}>{notification.message}</span>
+                <span className={cn('block text-sm leading-6', unread ? 'font-semibold text-ink' : 'text-ink-2')}>{notification.message}</span>
                 <span className="mt-0.5 block text-xs text-muted">{formatRelative(notification.created_at)}</span>
             </span>
-            {unread && <span className="mt-2 size-2 shrink-0 rounded-full bg-primary" aria-label={t('غير مقروء')} />}
+            {unread && <span className="mt-2.5 size-2 shrink-0 rounded-full bg-brand-green" aria-label={t('غير مقروء')} />}
         </button>
     );
 }
