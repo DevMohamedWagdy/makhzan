@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { PageHeader } from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/Button';
 import { Alert, Card, EmptyState } from '@/components/ui/Display';
-import { Field, Input, OptionCards, PasswordInput, Select } from '@/components/ui/Form';
+import { Field, Input, PasswordInput, Select } from '@/components/ui/Form';
 import { Skeleton } from '@/components/ui/Spinner';
 import { useAdminAuth } from '@/context/AdminAuthContext';
 import { useToast } from '@/context/ToastContext';
@@ -10,14 +10,7 @@ import { t } from '@/i18n';
 import { formatDate, formatTime } from '@/lib/format';
 import { adminApi } from '@/services/adminApi';
 
-const MAILERS = [
-    { value: 'ses', label: 'Amazon SES', icon: 'send', description: t('للإنتاج: سريع ورخيص وموثوق') },
-    { value: 'smtp', label: 'SMTP', icon: 'mail', description: t('أي مزود بريد آخر (Zoho، Gmail، ...)') },
-];
-
-const SES_REGIONS = ['eu-north-1', 'eu-central-1', 'eu-west-1', 'eu-west-2', 'eu-west-3', 'eu-south-1', 'me-south-1', 'me-central-1', 'us-east-1', 'us-east-2', 'us-west-2', 'ap-south-1'];
-
-const FIELDS = ['mailer', 'from_address', 'from_name', 'ses_key', 'ses_region', 'smtp_host', 'smtp_port', 'smtp_username', 'smtp_encryption'];
+const FIELDS = ['from_address', 'from_name', 'smtp_host', 'smtp_port', 'smtp_username', 'smtp_encryption'];
 
 /** Platform-wide settings the admin controls; for now the outgoing mail provider. */
 export function AdminSettingsPage() {
@@ -39,10 +32,7 @@ export function AdminSettingsPage() {
             .mailSettings()
             .then((result) => {
                 setSettings(result);
-                // Until a provider is saved here the .env one applies (locally often "log"); start the form on SES.
-                const mailer = MAILERS.some((option) => option.value === result.mailer) ? result.mailer : 'ses';
-
-                setValues({ ...Object.fromEntries(FIELDS.map((field) => [field, result[field] ?? ''])), mailer, ses_secret: '', smtp_password: '' });
+                setValues({ ...Object.fromEntries(FIELDS.map((field) => [field, result[field] ?? ''])), smtp_password: '' });
             })
             .catch((error) => setLoadError(error.message));
     };
@@ -60,7 +50,7 @@ export function AdminSettingsPage() {
             const result = await adminApi.updateMailSettings({ ...values, smtp_port: values.smtp_port ? Number(values.smtp_port) : null });
 
             setSettings(result);
-            setValues((current) => ({ ...current, ses_secret: '', smtp_password: '' }));
+            setValues((current) => ({ ...current, smtp_password: '' }));
             toast.success(t('تم حفظ إعدادات البريد'));
         } catch (error) {
             setErrors(error.errors ?? {});
@@ -111,10 +101,6 @@ export function AdminSettingsPage() {
                         bodyClassName="flex flex-col gap-5"
                     >
                         <fieldset disabled={!canUpdate || saving} className="flex flex-col gap-5">
-                            <Field label={t('مزود الإرسال')} error={errors.mailer}>
-                                {() => <OptionCards name="mailer" columns={2} options={MAILERS} value={values.mailer} onChange={set('mailer')} />}
-                            </Field>
-
                             <div className="grid gap-4 sm:grid-cols-2">
                                 <Field label={t('بريد المرسل')} hint={t('يجب أن يكون على دومين موثق في المزود')} error={errors.from_address} required>
                                     {(props) => <Input {...props} value={values.from_address} onChange={set('from_address')} dir="ltr" className="text-start" placeholder="no-reply@sellygrow.com" />}
@@ -124,40 +110,23 @@ export function AdminSettingsPage() {
                                 </Field>
                             </div>
 
-                            {values.mailer === 'ses' && (
-                                <div className="grid gap-4 rounded-xl border border-line bg-surface-2 p-4 sm:grid-cols-2">
-                                    <Field label="Access key ID" error={errors.ses_key} required>
-                                        {(props) => <Input {...props} value={values.ses_key} onChange={set('ses_key')} dir="ltr" className="text-start" autoComplete="off" placeholder="AKIA..." />}
-                                    </Field>
-                                    <Field label="Secret access key" hint={settings.has_ses_secret ? t('محفوظ. اتركه فارغاً للإبقاء عليه') : null} error={errors.ses_secret} required={!settings.has_ses_secret}>
-                                        {(props) => <PasswordInput {...props} value={values.ses_secret} onChange={set('ses_secret')} autoComplete="off" placeholder={settings.has_ses_secret ? '••••••••' : ''} />}
-                                    </Field>
-                                    <Field label={t('المنطقة (Region)')} hint={t('نفس منطقة حساب SES، مثل Stockholm = eu-north-1')} error={errors.ses_region} required>
-                                        {(props) => <Select {...props} value={values.ses_region} onChange={set('ses_region')} dir="ltr" options={[...new Set([values.ses_region, ...SES_REGIONS].filter(Boolean))].map((region) => ({ value: region, label: region }))} />}
-                                    </Field>
-                                </div>
-                            )}
-
-                            {values.mailer === 'smtp' && (
-                                <div className="grid gap-4 rounded-xl border border-line bg-surface-2 p-4 sm:grid-cols-2">
-                                    <Field label={t('الخادم (Host)')} error={errors.smtp_host} required>
-                                        {(props) => <Input {...props} value={values.smtp_host} onChange={set('smtp_host')} dir="ltr" className="text-start" placeholder="smtp.zoho.com" />}
-                                    </Field>
-                                    <Field label={t('المنفذ (Port)')} error={errors.smtp_port} required>
-                                        {(props) => <Input {...props} type="number" value={values.smtp_port} onChange={set('smtp_port')} dir="ltr" className="text-start" placeholder="587" />}
-                                    </Field>
-                                    <Field label={t('اسم المستخدم')} error={errors.smtp_username}>
-                                        {(props) => <Input {...props} value={values.smtp_username} onChange={set('smtp_username')} dir="ltr" className="text-start" autoComplete="off" />}
-                                    </Field>
-                                    <Field label={t('كلمة المرور')} hint={settings.has_smtp_password ? t('محفوظة. اتركها فارغة للإبقاء عليها') : null} error={errors.smtp_password}>
-                                        {(props) => <PasswordInput {...props} value={values.smtp_password} onChange={set('smtp_password')} autoComplete="off" placeholder={settings.has_smtp_password ? '••••••••' : ''} />}
-                                    </Field>
-                                    <Field label={t('التشفير')} error={errors.smtp_encryption}>
-                                        {(props) => <Select {...props} value={values.smtp_encryption} onChange={set('smtp_encryption')} options={[{ value: 'tls', label: 'TLS (587)' }, { value: 'ssl', label: 'SSL (465)' }]} />}
-                                    </Field>
-                                </div>
-                            )}
-
+                            <div className="grid gap-4 rounded-xl border border-line bg-surface-2 p-4 sm:grid-cols-2">
+                                <Field label={t('الخادم (Host)')} hint={t('لـ Amazon SES: email-smtp.eu-north-1.amazonaws.com')} error={errors.smtp_host} required>
+                                    {(props) => <Input {...props} value={values.smtp_host} onChange={set('smtp_host')} dir="ltr" className="text-start" placeholder="smtp.zoho.com" />}
+                                </Field>
+                                <Field label={t('المنفذ (Port)')} error={errors.smtp_port} required>
+                                    {(props) => <Input {...props} type="number" value={values.smtp_port} onChange={set('smtp_port')} dir="ltr" className="text-start" placeholder="587" />}
+                                </Field>
+                                <Field label={t('اسم المستخدم')} error={errors.smtp_username}>
+                                    {(props) => <Input {...props} value={values.smtp_username} onChange={set('smtp_username')} dir="ltr" className="text-start" autoComplete="off" />}
+                                </Field>
+                                <Field label={t('كلمة المرور')} hint={settings.has_smtp_password ? t('محفوظة. اتركها فارغة للإبقاء عليها') : null} error={errors.smtp_password}>
+                                    {(props) => <PasswordInput {...props} value={values.smtp_password} onChange={set('smtp_password')} placeholder={settings.has_smtp_password ? '••••••••' : ''} />}
+                                </Field>
+                                <Field label={t('التشفير')} error={errors.smtp_encryption}>
+                                    {(props) => <Select {...props} value={values.smtp_encryption} onChange={set('smtp_encryption')} options={[{ value: 'tls', label: 'TLS (587)' }, { value: 'ssl', label: 'SSL (465)' }]} />}
+                                </Field>
+                            </div>
                         </fieldset>
 
                         {canUpdate && (

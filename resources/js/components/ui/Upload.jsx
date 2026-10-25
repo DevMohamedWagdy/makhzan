@@ -2,7 +2,11 @@ import { useId, useRef, useState } from 'react';
 import { useObjectUrl } from '@/hooks/common';
 import { t } from '@/i18n';
 import { cn, formatFileSize } from '@/lib/format';
+import { compressImage } from '@/lib/image';
 import { Icon } from './Icon';
+
+/** Originals larger than this aren't even decoded; what's uploaded is the compressed copy. */
+const MAX_ORIGINAL_IMAGE_MB = 20;
 
 function validateFile(file, { accept, maxSizeMb }) {
     const extension = `.${file.name.split('.').pop().toLowerCase()}`;
@@ -45,13 +49,15 @@ function useDropTarget(onFile) {
 }
 
 /** Square image picker with preview (store logo, affiliate avatar). */
-export function ImageUpload({ value, onChange, onError, label = t('رفع صورة'), hint, maxSizeMb = 2, shape = 'rounded', accept = 'image/png,image/jpeg,image/webp' }) {
+export function ImageUpload({ value, onChange, onError, label = t('رفع صورة'), hint, maxSizeMb = 2, shape = 'rounded', accept = 'image/png,image/jpeg,.png,.jpg,.jpeg' }) {
     const inputId = useId();
     const inputRef = useRef(null);
     const preview = useObjectUrl(value);
 
-    const pick = (file) => {
-        const error = validateFile(file, { accept, maxSizeMb });
+    const pick = async (file) => {
+        // The size limit applies to the compressed image; this only keeps huge originals from
+        // being decoded at all.
+        const error = validateFile(file, { accept, maxSizeMb: MAX_ORIGINAL_IMAGE_MB });
 
         if (error) {
             onError?.(error);
@@ -59,8 +65,28 @@ export function ImageUpload({ value, onChange, onError, label = t('رفع صور
             return;
         }
 
+        // Read, decode and compress now: a file that can't be read (e.g. an iCloud file that isn't
+        // downloaded) would otherwise only fail at submit, as a bare "Failed to fetch".
+        let compressed;
+
+        try {
+            compressed = await compressImage(file);
+        } catch (prepareError) {
+            inputRef.current.value = '';
+            onError?.(prepareError.reason === 'unreadable' ? t('تعذر فتح الملف. لو الصورة على iCloud نزّلها على جهازك أولاً، أو اختر صورة أخرى') : t('الملف ليس صورة PNG أو JPG صالحة'));
+
+            return;
+        }
+
+        if (compressed.size > maxSizeMb * 1024 * 1024) {
+            inputRef.current.value = '';
+            onError?.(t('حجم الملف يتجاوز {maxSizeMb} ميجابايت', { maxSizeMb }));
+
+            return;
+        }
+
         onError?.(null);
-        onChange(file);
+        onChange(compressed);
     };
 
     const { dragging, handlers } = useDropTarget(pick);
@@ -106,7 +132,7 @@ export function ImageUpload({ value, onChange, onError, label = t('رفع صور
                         </button>
                     )}
                 </div>
-                <p className="text-xs leading-relaxed text-muted">{hint ?? t('PNG أو JPG أو WEBP، بحد أقصى {maxSizeMb} ميجابايت', { maxSizeMb })}</p>
+                <p className="text-xs leading-relaxed text-muted">{hint ?? t('PNG أو JPG، بحد أقصى {maxSizeMb} ميجابايت', { maxSizeMb })}</p>
                 {value instanceof File && <p className="ltr text-xs text-ink-2">{value.name}</p>}
             </div>
         </div>

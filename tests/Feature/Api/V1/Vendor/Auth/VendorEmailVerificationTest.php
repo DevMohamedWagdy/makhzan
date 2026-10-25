@@ -5,6 +5,7 @@ namespace Tests\Feature\Api\V1\Vendor\Auth;
 use App\Models\Vendor;
 use App\Notifications\EmailVerificationCodeNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
@@ -21,6 +22,10 @@ class VendorEmailVerificationTest extends TestCase
         parent::setUp();
 
         Notification::fake();
+
+        // Serialize like the real cache stores, which refuse to unserialize objects (cache.serializable_classes).
+        config(['cache.stores.array.serialize' => true]);
+        Cache::forgetDriver('array');
     }
 
     private function signIn(Vendor $vendor): TestResponse
@@ -83,6 +88,26 @@ class VendorEmailVerificationTest extends TestCase
         $this->postJson('/api/v1/vendor/auth/verify-email/resend', ['challenge' => $challenge])->assertOk()->assertJsonPath('challenge', $challenge);
         Notification::assertSentToTimes($vendor, EmailVerificationCodeNotification::class, 2);
 
+        $this->postJson('/api/v1/vendor/auth/verify-email', ['challenge' => $challenge, 'code' => $this->lastCode($vendor)])->assertOk();
+    }
+
+    public function test_a_code_cached_with_carbon_dates_counts_as_expired_and_can_be_resent_at_once(): void
+    {
+        $vendor = Vendor::factory()->unverified()->withStore()->create();
+        $challenge = 'legacy-challenge';
+        Cache::put('email-verification:vendor:'.hash('sha256', $challenge), [
+            'account_id' => $vendor->id,
+            'remember' => false,
+            'code_hash' => 'unknown',
+            'code_expires_at' => now()->addMinutes(10),
+            'sent_at' => now(),
+            'attempts' => 0,
+        ], now()->addHour());
+
+        $this->postJson('/api/v1/vendor/auth/verify-email', ['challenge' => $challenge, 'code' => '123456'])
+            ->assertJsonValidationErrors(['code' => 'انتهت صلاحية الكود. اطلب كوداً جديداً.']);
+
+        $this->postJson('/api/v1/vendor/auth/verify-email/resend', ['challenge' => $challenge])->assertOk();
         $this->postJson('/api/v1/vendor/auth/verify-email', ['challenge' => $challenge, 'code' => $this->lastCode($vendor)])->assertOk();
     }
 

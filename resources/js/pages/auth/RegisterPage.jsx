@@ -202,7 +202,7 @@ export function RegisterPage() {
                                         onError={(message) => setErrors((previous) => ({ ...previous, store_logo: message ?? undefined }))}
                                         label={t('رفع لوجو المتجر')}
                                         maxSizeMb={MAX_LOGO_SIZE_MB}
-                                        hint={t('يفضّل صورة مربعة ٥١٢×٥١٢ بكسل — PNG أو JPG أو WEBP، بحد أقصى {MAX_LOGO_SIZE_MB} ميجابايت', { MAX_LOGO_SIZE_MB })}
+                                        hint={t('يفضّل صورة مربعة ٥١٢×٥١٢ بكسل — PNG أو JPG، بحد أقصى {MAX_LOGO_SIZE_MB} ميجابايت', { MAX_LOGO_SIZE_MB })}
                                     />
                                 )}
                             </Field>

@@ -80,7 +80,7 @@ export const adminApi = {
     saveRole: (payload, roleId = null) => request(roleId ? 'PUT' : 'POST', `${BASE}/roles${roleId ? `/${roleId}` : ''}`, { body: payload, auth }),
     removeRole: (roleId) => request('DELETE', `${BASE}/roles/${roleId}`, { auth }),
 
-    /** Outgoing mail settings; secrets come back only as has_ses_secret / has_smtp_password. */
+    /** Outgoing mail settings; the SMTP password comes back only as has_smtp_password. */
     mailSettings: () => request('GET', `${BASE}/settings/mail`, { auth }),
     /** Blank secrets keep the saved ones. */
     updateMailSettings: (payload) => request('PUT', `${BASE}/settings/mail`, { body: payload, auth }),

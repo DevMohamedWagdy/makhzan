@@ -20,7 +20,6 @@ return [
     'store_suspended' => 'هذا المتجر متوقف مؤقتاً.',
     'vendor_suspended' => 'تم إيقاف متجرك من إدارة المنصة (:reason). تواصل مع الدعم لإعادة تفعيله.',
 
-    'mail_secret_required' => 'أدخل Secret access key الخاص بـ Amazon SES.',
     'mail_test_subject' => 'رسالة تجريبية من :app',
     'mail_test_body' => 'إعدادات البريد في :app تعمل بشكل صحيح.',
     'mail_test_sent' => 'تم إرسال رسالة تجريبية إلى :email',

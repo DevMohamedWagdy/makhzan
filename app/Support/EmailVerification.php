@@ -55,7 +55,7 @@ class EmailVerification
     public static function resend(string $type, string $challenge): array
     {
         $state = self::state($type, $challenge);
-        $wait = self::RESEND_SECONDS - (int) now()->diffInSeconds($state['sent_at'], true);
+        $wait = self::RESEND_SECONDS - (now()->getTimestamp() - $state['sent_at']);
 
         if ($wait > 0) {
             throw ValidationException::withMessages(['code' => __('auth.verification_resend_wait', ['seconds' => $wait])])->status(429);
@@ -79,7 +79,7 @@ class EmailVerification
     {
         $state = self::state($type, $challenge);
 
-        if (now()->greaterThan($state['code_expires_at']) || $state['attempts'] >= self::MAX_ATTEMPTS) {
+        if (now()->getTimestamp() > $state['code_expires_at'] || $state['attempts'] >= self::MAX_ATTEMPTS) {
             throw ValidationException::withMessages(['code' => __('auth.verification_code_expired')]);
         }
 
@@ -108,8 +108,9 @@ class EmailVerification
         Cache::put(self::cacheKey($type, $challenge), [
             ...$state,
             'code_hash' => self::hash($code),
-            'code_expires_at' => now()->addMinutes(self::CODE_MINUTES),
-            'sent_at' => now(),
+            // Unix timestamps, not Carbon: the cache refuses to unserialize objects (serializable_classes).
+            'code_expires_at' => now()->addMinutes(self::CODE_MINUTES)->getTimestamp(),
+            'sent_at' => now()->getTimestamp(),
             'attempts' => 0,
         ], now()->addMinutes(self::CHALLENGE_MINUTES));
 
@@ -128,7 +129,19 @@ class EmailVerification
      */
     private static function state(string $type, string $challenge): array
     {
-        return Cache::get(self::cacheKey($type, $challenge)) ?? throw ValidationException::withMessages(['code' => __('auth.verification_code_expired')]);
+        $state = Cache::get(self::cacheKey($type, $challenge));
+
+        if (! is_array($state) || ! isset($state['account_id'])) {
+            throw ValidationException::withMessages(['code' => __('auth.verification_code_expired')]);
+        }
+
+        // Challenges cached before the times became timestamps hold unreadable objects: treat the
+        // code as expired but let a new one be sent right away.
+        if (! is_int($state['sent_at'] ?? null) || ! is_int($state['code_expires_at'] ?? null)) {
+            $state = [...$state, 'sent_at' => 0, 'code_expires_at' => 0];
+        }
+
+        return $state;
     }
 
     /**

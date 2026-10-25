@@ -14,7 +14,7 @@ use Illuminate\Validation\ValidationException;
 use Throwable;
 
 /**
- * The platform's outgoing mail: which provider sends it, the sender, and the credentials.
+ * The platform's outgoing mail: the sender and the SMTP server that sends it.
  */
 class MailSettingsController extends Controller
 {
@@ -29,25 +29,17 @@ class MailSettingsController extends Controller
     public function update(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'mailer' => ['required', Rule::in(MailSettings::MAILERS)],
             'from_address' => ['required', 'email', 'max:255'],
             'from_name' => ['required', 'string', 'max:100'],
-            'ses_key' => ['nullable', 'required_if:mailer,ses', 'string', 'max:128'],
-            'ses_secret' => ['nullable', 'string', 'max:128'],
-            'ses_region' => ['nullable', 'required_if:mailer,ses', 'string', 'regex:/^[a-z]{2}(-[a-z]+)+-\d$/'],
-            'smtp_host' => ['nullable', 'required_if:mailer,smtp', 'string', 'max:255'],
-            'smtp_port' => ['nullable', 'required_if:mailer,smtp', 'integer', 'between:1,65535'],
+            'smtp_host' => ['required', 'string', 'max:255'],
+            'smtp_port' => ['required', 'integer', 'between:1,65535'],
             'smtp_username' => ['nullable', 'string', 'max:255'],
             'smtp_password' => ['nullable', 'string', 'max:255'],
             'smtp_encryption' => ['nullable', Rule::in(['tls', 'ssl'])],
         ]);
 
-        if ($validated['mailer'] === 'ses' && blank($validated['ses_secret'] ?? null) && ! MailSettings::forDisplay()['has_ses_secret']) {
-            throw ValidationException::withMessages(['ses_secret' => __('settings.mail_secret_required')]);
-        }
-
         MailSettings::update($validated);
-        ActivityLogger::log('admin.mail_settings.updated', changes: ['mailer' => $validated['mailer']], actor: $request->user());
+        ActivityLogger::log('admin.mail_settings.updated', changes: ['smtp_host' => $validated['smtp_host']], actor: $request->user());
 
         return response()->json(['data' => MailSettings::forDisplay()]);
     }

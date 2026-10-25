@@ -28,14 +28,7 @@ function NeedsAttention({ items }) {
     const open = items.filter((item) => item.count > 0);
 
     if (open.length === 0) {
-        return (
-            <div className="mk-card flex items-center gap-3 p-4 text-sm text-ink-2">
-                <span className="grid size-9 place-items-center rounded-xl bg-success-soft text-success">
-                    <Icon name="check-circle" className="size-5" />
-                </span>
-                {t('لا يوجد ما ينتظرك الآن، كل شيء تحت السيطرة.')}
-            </div>
-        );
+        return null;
     }
 
     return (
@@ -224,7 +217,7 @@ function OverviewHome() {
 
                     {(data.orders || data.report) && (
                         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                            {data.orders && <StatCard label={t('طلبات اليوم')} value={formatNumber(data.orders.today)} icon="shopping-bag" hint={t('{count} قيد الشحن الآن', { count: formatNumber(data.orders.shipped) })} />}
+                            {data.orders && <StatCard label={t('طلبات اليوم')} value={formatNumber(data.orders.today)} icon="shopping-bag" />}
                             {data.report && (
                                 <>
                                     <StatCard label={t('مبيعات آخر ٣٠ يوماً')} value={formatMoney(data.report.totals.sales)} icon="bar-chart" tone="info" hint={<TrendBadge current={data.report.totals.sales} previous={data.report.previous.sales} />} />

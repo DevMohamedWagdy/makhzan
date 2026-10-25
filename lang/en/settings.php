@@ -20,7 +20,6 @@ return [
     'store_suspended' => 'This store is temporarily unavailable.',
     'vendor_suspended' => 'Your store has been suspended by the platform (:reason). Contact support to reactivate it.',
 
-    'mail_secret_required' => 'Enter the Amazon SES secret access key.',
     'mail_test_subject' => 'Test message from :app',
     'mail_test_body' => 'The mail settings for :app are working.',
     'mail_test_sent' => 'A test message was sent to :email',
