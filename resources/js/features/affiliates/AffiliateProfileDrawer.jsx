@@ -73,14 +73,14 @@ export function AffiliateProfileDrawer({ affiliate, open, onClose, actions, crea
 
     const header = (
         <div className="relative">
-            <div className="h-24 bg-gradient-to-l from-brand to-primary dark:from-surface-3 dark:to-primary-soft" />
+            <div className="mk-grid-texture relative h-24 bg-panel"><div className="absolute -top-16 end-10 size-48 rounded-full bg-brand-green/25 blur-3xl" /></div>
             <button type="button" onClick={onClose} className="absolute top-4 end-4 grid size-9 place-items-center rounded-lg bg-white/15 text-white backdrop-blur hover:bg-white/25" aria-label={t('إغلاق')} title={t('إغلاق')}>
                 <Icon name="x" />
             </button>
             <div className="-mt-10 flex flex-col gap-4 px-6 pb-5 sm:flex-row sm:items-end">
                 <Avatar name={affiliate.full_name} src={affiliate.avatar_url} size="xl" ring />
                 <div className="min-w-0 flex-1">
-                    <h2 className="truncate text-xl font-bold text-ink">{affiliate.full_name}</h2>
+                    <h2 className="truncate text-xl font-semibold text-ink">{affiliate.full_name}</h2>
                     <div className="mt-2 flex flex-wrap items-center gap-2">
                         <StatusBadge status={affiliate.status} />
                         <TierBadge tier={affiliate.tier} />

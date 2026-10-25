@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { PageHeader } from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/Button';
-import { Badge, EmptyState, StatCard } from '@/components/ui/Display';
+import { Badge, EmptyState, StatCard, StatStrip } from '@/components/ui/Display';
 import { Dropdown } from '@/components/ui/Dropdown';
 import { Input, Select } from '@/components/ui/Form';
 import { Icon } from '@/components/ui/Icon';
@@ -168,7 +168,7 @@ export function InventoryPage() {
                 }
             />
 
-            <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <StatStrip>
                 <StatCard label={t('القطع في المخزون')} value={summary ? formatNumber(summary.units) : '—'} icon="box" hint={summary && t('في {count} صنف', { count: formatNumber(summary.variants) })} />
                 <StatCard
                     label={t('قيمة المخزون بالتكلفة')}
@@ -179,7 +179,7 @@ export function InventoryPage() {
                 />
                 <StatCard label={t('قيمة المخزون بسعر البيع')} value={summary ? formatMoney(summary.retail_value) : '—'} icon="bar-chart" tone="primary" />
                 <StatCard label={t('الربح المتوقع عند البيع')} value={summary ? formatMoney(summary.expected_profit) : '—'} icon="sparkles" tone="success" hint={t('للأصناف المسجلة تكلفتها')} />
-            </div>
+            </StatStrip>
 
             <section className="mk-card overflow-hidden">
                 <Tabs
@@ -193,7 +193,7 @@ export function InventoryPage() {
                     onChange={(value) => setQuery({ level: value })}
                     className="px-3"
                 />
-                <div className="flex flex-wrap items-center gap-3 p-4">
+                <div className="mk-toolbar">
                     <Input type="search" icon="search" value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder={t('ابحث باسم المنتج أو SKU...')} aria-label={t('بحث في المخزون')} className="lg:w-80" />
                     <Select
                         aria-label={t('فلترة حسب القسم')}
@@ -227,7 +227,7 @@ export function InventoryPage() {
                 ) : (
                     <div className="mk-scroll overflow-x-auto">
                         <table className="w-full min-w-[920px] text-sm">
-                            <thead className="border-y border-line bg-surface-2 text-xs text-muted">
+                            <thead className="mk-thead">
                                 <tr>
                                     {COLUMNS.map((column, index) => (
                                         <th key={index} scope="col" className={cn('px-4 py-3 text-start font-medium whitespace-nowrap', index === COLUMNS.length - 1 && 'sticky end-0 bg-surface-2')}>

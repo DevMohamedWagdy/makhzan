@@ -63,9 +63,8 @@ export function DailyChartCard({ daily, title = t('أداء المبيعات ا�
     const config = METRICS[metric];
 
     return (
-        <Card title={title} description={description} bodyClassName="p-0">
-            <Tabs tabs={Object.entries(METRICS).map(([value, { label }]) => ({ value, label }))} value={metric} onChange={setMetric} className="px-3" />
-            <div className="p-5">
+        <Card title={title} description={description} actions={<Tabs variant="segmented" tabs={Object.entries(METRICS).map(([value, { label }]) => ({ value, label }))} value={metric} onChange={setMetric} />} bodyClassName="px-5 pt-6 pb-5">
+            <div>
                 <ColumnChart
                     caption={config.label}
                     formatValue={config.format}

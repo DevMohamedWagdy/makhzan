@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { PageHeader } from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/Button';
-import { StatCard } from '@/components/ui/Display';
+import { StatCard, StatStrip } from '@/components/ui/Display';
 import { Pagination } from '@/components/ui/Navigation';
 import { Drawer } from '@/components/ui/Overlay';
 import { useAuth } from '@/context/AuthContext';
@@ -143,12 +143,12 @@ export function AffiliatesPage() {
                 }
             />
 
-            <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <StatStrip>
                 <StatCard label={t('إجمالي المسوقين')} value={summary ? formatNumber(summary.total) : '—'} icon="users" tone="primary" hint={summary && t('{value} بانتظار المراجعة', { value: formatNumber(summary.pending) })} />
                 <StatCard label={t('المسوقون النشطون')} value={summary ? formatNumber(summary.active) : '—'} icon="check-circle" tone="success" hint={summary && t('{value} حساب مجمد', { value: formatNumber(summary.frozen) })} />
                 <StatCard label={t('مبيعات المسوقين')} value={summary ? formatMoney(summary.sales_total) : '—'} icon="bar-chart" tone="info" hint={t('منذ بداية التعامل')} />
                 <StatCard label={t('العمولات المكتسبة')} value={summary ? formatMoney(summary.earned_commission) : '—'} icon="wallet" tone="warning" hint={summary?.payout_requests ? t('{value} طلب تحويل بانتظارك', { value: formatNumber(summary.payout_requests) }) : t('إجمالي المستحق للمسوقين')} />
-            </div>
+            </StatStrip>
 
             <section className="mk-card overflow-hidden">
                 <div className="pt-1">

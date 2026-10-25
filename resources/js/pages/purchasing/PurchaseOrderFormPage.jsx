@@ -132,7 +132,7 @@ export function PurchaseOrderFormPage() {
         <>
             <PageHeader title={isEdit ? t('تعديل أمر الشراء') : t('أمر شراء جديد')} breadcrumbs={[t('لوحة التحكم'), t('أوامر الشراء'), isEdit ? t('تعديل') : t('جديد')]} />
 
-            <form onSubmit={submit} noValidate className="grid gap-6 lg:grid-cols-3">
+            <form onSubmit={submit} noValidate className="grid grid-cols-1 items-start gap-6 lg:grid-cols-3">
                 <Card title={t('الأصناف')} description={t('الكمية المطلوبة وتكلفة القطعة المتفق عليها مع المورد')} className="lg:col-span-2">
                     <div className="flex flex-col gap-4">
                         <VariantPicker
@@ -187,7 +187,7 @@ export function PurchaseOrderFormPage() {
                     </div>
                 </Card>
 
-                <div className="flex flex-col gap-6">
+                <div className="flex flex-col gap-6 lg:sticky lg:top-24">
                     <Card title={t('بيانات الأمر')}>
                         <div className="flex flex-col gap-4">
                             <Field
@@ -238,7 +238,7 @@ export function PurchaseOrderFormPage() {
                         </div>
                         <div className="mt-2 flex items-center justify-between">
                             <span className="font-semibold text-ink">{t('إجمالي الأمر')}</span>
-                            <span className="text-xl font-bold text-ink">{formatMoney(total)}</span>
+                            <span className="mk-num text-xl font-semibold text-ink">{formatMoney(total)}</span>
                         </div>
                         <Button type="submit" loading={submitting} icon="check" className="mt-4 w-full">
                             {isEdit ? t('حفظ التعديلات') : t('حفظ كمسودة')}

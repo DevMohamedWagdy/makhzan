@@ -102,7 +102,7 @@ export function StoreCatalogPage({ mode = 'all' }) {
                 </nav>
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
                     <div>
-                        <h1 className="text-2xl font-extrabold text-ink sm:text-3xl">{title ?? ' '}</h1>
+                        <h1 className="mk-page-title">{title ?? ' '}</h1>
                         {category?.description && <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted">{category.description}</p>}
                         {meta && <p className="mt-1 text-sm text-muted">{t('{count} منتج', { count: formatNumber(meta.total) })}</p>}
                     </div>

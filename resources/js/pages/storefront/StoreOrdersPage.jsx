@@ -58,7 +58,7 @@ export function StoreOrdersPage() {
 
     return (
         <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
-            <h1 className="text-2xl font-bold text-ink sm:text-3xl">{t('طلباتي')}</h1>
+            <h1 className="mk-page-title">{t('طلباتي')}</h1>
 
             {error ? (
                 <EmptyState icon="alert-triangle" title={t('تعذر تحميل طلباتك')} description={error} />
@@ -83,7 +83,7 @@ export function StoreOrdersPage() {
                 <ul className="flex flex-col gap-3">
                     {result.data.map((order) => (
                         <li key={order.order_id}>
-                            <Link to={`/${storeSlug}/account/orders/${order.number}`} className="flex flex-wrap items-center gap-4 rounded-2xl border border-line bg-surface p-4 transition hover:border-primary hover:shadow-md">
+                            <Link to={`/${storeSlug}/account/orders/${order.number}`} className="flex flex-wrap items-center gap-4 rounded-2xl border border-line bg-surface p-4 shadow-card transition hover:border-line-strong hover:shadow-raise">
                                 <div className="min-w-0 flex-1">
                                     <p className="font-semibold text-ink">{t('طلب #{number}', { number: order.number })}</p>
                                     <p className="mt-1 text-sm text-muted">

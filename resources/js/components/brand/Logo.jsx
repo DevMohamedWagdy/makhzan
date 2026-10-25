@@ -44,9 +44,10 @@ export function LogoMark({ className }) {
 
 /**
  * SellyGrow primary lockup: the mark beside the wordmark.
- * "Selly" reads the theme's text token, so the logo follows light and dark mode.
+ * "Selly" reads the theme's text token, so the logo follows light and dark mode; `inverse` keeps it
+ * light for the Ink rail and brand bands, which stay dark in both themes.
  */
-export function Logo({ className }) {
+export function Logo({ className, inverse = false }) {
     const id = useId().replace(/:/g, '');
 
     return (
@@ -63,7 +64,7 @@ export function Logo({ className }) {
                 <MarkShapes />
             </g>
             <g transform="translate(108.5,-23)">
-                <g {...STROKE} style={{ stroke: 'var(--mk-text)' }}>
+                <g {...STROKE} style={{ stroke: inverse ? '#f1f4f2' : 'var(--mk-text)' }}>
                     <path d={SELLY_PATH} />
                     <path clipPath={`url(#${id}-y)`} d={SELLY_Y_PATH} />
                 </g>

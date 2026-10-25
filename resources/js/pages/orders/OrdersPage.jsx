@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { PageHeader } from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/Button';
-import { EmptyState, StatCard } from '@/components/ui/Display';
+import { EmptyState, StatCard, StatStrip } from '@/components/ui/Display';
 import { Input, Select } from '@/components/ui/Form';
 import { Pagination, Tabs } from '@/components/ui/Navigation';
 import { Skeleton } from '@/components/ui/Spinner';
@@ -121,16 +121,16 @@ export function OrdersPage() {
                 }
             />
 
-            <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <StatStrip>
                 <StatCard label={t('بانتظار التأكيد')} value={summary ? formatNumber(summary.pending) : '—'} icon="refresh" tone="warning" />
                 <StatCard label={t('طلبات اليوم')} value={summary ? formatNumber(summary.today) : '—'} icon="shopping-bag" tone="primary" />
                 <StatCard label={t('قيد الشحن')} value={summary ? formatNumber(summary.shipped) : '—'} icon="truck" tone="info" />
                 <StatCard label={t('إيرادات الطلبات المسلّمة')} value={summary ? formatMoney(summary.delivered_revenue) : '—'} icon="wallet" tone="success" hint={summary && t('{count} طلب تم توصيله', { count: formatNumber(summary.delivered) })} />
-            </div>
+            </StatStrip>
 
             <section className="mk-card overflow-hidden">
                 <Tabs tabs={tabs} value={status} onChange={(value) => setQuery({ status: value })} className="px-3" />
-                <div className="flex flex-wrap items-center gap-3 p-4">
+                <div className="mk-toolbar">
                     <Input type="search" icon="search" value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder={t('ابحث برقم الطلب أو اسم العميل أو هاتفه...')} aria-label={t('بحث في الطلبات')} className="lg:w-96" />
                     <Select value={payment} onChange={(event) => setQuery({ payment: event.target.value })} icon="credit-card" aria-label={t('الدفع')} className="sm:w-56" options={[{ value: '', label: t('كل طرق الدفع') }, ...PAYMENT_FILTERS]} />
                     <Select value={source} onChange={(event) => setQuery({ source: event.target.value })} icon="filter" aria-label={t('مصدر الطلب')} className="sm:w-48" options={[{ value: '', label: t('كل المصادر') }, ...Object.entries(ORDER_SOURCES).map(([value, config]) => ({ value, label: config.label }))]} />
@@ -176,7 +176,7 @@ export function OrdersPage() {
                 ) : (
                     <div className="mk-scroll overflow-x-auto">
                         <table className="w-full min-w-[940px] text-sm">
-                            <thead className="border-y border-line bg-surface-2 text-xs text-muted">
+                            <thead className="mk-thead">
                                 <tr>
                                     <th scope="col" className="w-10 ps-4 py-3">
                                         <input type="checkbox" className="size-4 accent-primary" checked={allSelected} onChange={() => setSelectedIds(allSelected ? [] : items.map((order) => order.order_id))} aria-label={t('اختيار كل الطلبات')} />
@@ -215,7 +215,7 @@ export function OrdersPage() {
                                                   )}
                                               </td>
                                               <td className="px-4 py-3.5">
-                                                  <span className="block font-medium text-ink">{order.address.recipient_name}</span>
+                                                  <span className="block font-medium whitespace-nowrap text-ink">{order.address.recipient_name}</span>
                                                   <span className="ltr block text-start text-xs text-muted">{order.address.phone}</span>
                                               </td>
                                               <td className="px-4 py-3.5 whitespace-nowrap text-ink-2">{findGovernorate(order.address.governorate_id)?.name}</td>

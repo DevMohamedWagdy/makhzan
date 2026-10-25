@@ -10,9 +10,9 @@ import { t } from '@/i18n';
 function SectionHeader({ title, to }) {
     return (
         <div className="mb-4 flex items-center justify-between gap-3">
-            <h2 className="text-lg font-extrabold text-ink sm:text-2xl">{title}</h2>
+            <h2 className="text-lg font-bold text-ink sm:text-[22px] sm:leading-8">{title}</h2>
             {to && (
-                <Link to={to} className="inline-flex items-center gap-1 rounded-full border border-line bg-surface px-3.5 py-1.5 text-xs font-semibold text-ink-2 transition hover:border-primary hover:text-primary sm:text-sm">
+                <Link to={to} className="inline-flex h-8 items-center gap-1 rounded-full border border-line-strong/70 bg-surface px-3.5 text-xs font-medium text-ink-2 transition hover:border-primary hover:text-primary sm:text-[13px]">
                     {t('عرض الكل')}
                     <Icon name="chevron-left" className="size-4" />
                 </Link>
@@ -26,14 +26,15 @@ function HeroBanner({ storeSlug, store, products }) {
     const photos = products.filter((product) => product.image_url).slice(0, 3);
 
     return (
-        <Link to={`/${storeSlug}/products`} className="group relative flex min-h-64 overflow-hidden rounded-3xl bg-gradient-to-br from-brand via-brand to-primary p-6 text-white sm:min-h-80 sm:p-10 lg:col-span-2">
-            <div className="absolute -top-24 -end-24 size-80 rounded-full bg-white/10" aria-hidden="true" />
-            <div className="absolute -bottom-32 end-1/3 size-72 rounded-full bg-white/5" aria-hidden="true" />
+        <Link to={`/${storeSlug}/products`} className="group relative flex min-h-64 overflow-hidden rounded-3xl bg-panel p-6 text-white sm:min-h-80 sm:p-10 lg:col-span-2">
+            <div className="mk-grid-texture absolute inset-0 [mask-image:linear-gradient(to_bottom,black,transparent)]" aria-hidden="true" />
+            <div className="absolute -top-32 -end-20 size-96 rounded-full bg-brand-green/25 blur-3xl" aria-hidden="true" />
+            <div className="absolute -bottom-40 start-1/4 size-80 rounded-full bg-brand-green/10 blur-3xl" aria-hidden="true" />
             <div className="relative flex max-w-md flex-col justify-center">
-                <span className="w-fit rounded-full bg-white/15 px-3 py-1 text-xs font-semibold backdrop-blur">{t('أهلاً بك في')}</span>
-                <h1 className="mt-3 text-3xl leading-tight font-extrabold sm:text-5xl">{store.name}</h1>
-                <p className="mt-3 text-sm leading-relaxed text-white/85 sm:text-base">{store.description || t('تسوّق أحدث التشكيلات بأفضل الأسعار، والدفع عند الاستلام.')}</p>
-                <span className="mt-6 inline-flex h-12 w-fit items-center gap-2 rounded-xl bg-white px-6 text-sm font-bold text-brand shadow-lg transition group-hover:gap-3">
+                <span className="mk-overline w-fit text-brand-green">{t('أهلاً بك في')}</span>
+                <h1 className="mt-3 text-[32px] leading-tight font-bold sm:text-[52px] sm:leading-[1.1]">{store.name}</h1>
+                <p className="mt-4 text-sm leading-relaxed text-panel-text sm:text-base">{store.description || t('تسوّق أحدث التشكيلات بأفضل الأسعار، والدفع عند الاستلام.')}</p>
+                <span className="mt-7 inline-flex h-12 w-fit items-center gap-2 rounded-xl bg-brand-green px-6 text-sm font-semibold text-brand shadow-[inset_0_1px_0_rgb(255_255_255/0.35)] transition group-hover:gap-3">
                     {t('تسوّق الآن')}
                     <Icon name="arrow-left" className="size-4" />
                 </span>
@@ -43,7 +44,7 @@ function HeroBanner({ storeSlug, store, products }) {
                     {photos.map((product, index) => (
                         <div
                             key={product.product_id}
-                            className="absolute aspect-[4/5] w-[46%] overflow-hidden rounded-2xl border-4 border-white/90 shadow-2xl transition duration-500 group-hover:scale-105"
+                            className="absolute aspect-[4/5] w-[46%] overflow-hidden rounded-2xl border-[3px] border-white/90 shadow-pop transition duration-500 group-hover:scale-105"
                             style={{ transform: `translateX(${(index - 1) * 55}%) rotate(${(index - 1) * 8}deg)`, zIndex: index === 1 ? 2 : 1 }}
                         >
                             <ProductImage src={product.image_url} alt="" />
@@ -60,14 +61,14 @@ function PromoCard({ to, eyebrow, title, product, tone }) {
     return (
         <Link to={to} className={`group relative flex min-h-28 items-center justify-between gap-4 overflow-hidden rounded-3xl p-4 sm:p-6 ${tone}`}>
             <div className="relative">
-                <p className="text-xs font-bold tracking-wide opacity-80">{eyebrow}</p>
-                <p className="mt-1 text-base leading-snug font-extrabold sm:text-xl">{title}</p>
+                <p className="mk-overline text-primary">{eyebrow}</p>
+                <p className="mt-1.5 text-base leading-snug font-bold sm:text-xl">{title}</p>
                 <span className="mt-3 inline-flex items-center gap-1 text-sm font-semibold underline-offset-4 group-hover:underline">
                     {t('تسوّق الآن')}
                     <Icon name="chevron-left" className="size-4" />
                 </span>
             </div>
-            <div className="hidden size-28 shrink-0 overflow-hidden rounded-2xl bg-white/60 shadow-md transition duration-500 group-hover:scale-105 sm:block">
+            <div className="hidden size-28 shrink-0 overflow-hidden rounded-2xl bg-surface shadow-raise ring-1 ring-line transition duration-500 group-hover:scale-105 sm:block">
                 <ProductImage src={product?.image_url} alt="" />
             </div>
         </Link>
@@ -79,16 +80,16 @@ function CategoryCircles({ storeSlug, categories }) {
         <div className="mk-rail -mx-4 flex gap-4 overflow-x-auto px-4 pb-1 sm:mx-0 sm:gap-6 sm:px-0">
             {categories.map((category) => (
                 <Link key={category.slug} to={`/${storeSlug}/c/${category.slug}`} className="group flex w-20 shrink-0 flex-col items-center gap-2 text-center sm:w-24">
-                    <span className="size-20 overflow-hidden rounded-full border-2 border-line bg-surface p-0.5 transition group-hover:border-primary sm:size-24">
+                    <span className="size-20 overflow-hidden rounded-full border border-line-strong/70 bg-surface p-1 shadow-card transition group-hover:border-primary group-hover:shadow-[0_0_0_3px_var(--mk-ring)] sm:size-24">
                         {category.image_url ? (
                             <span className="block size-full overflow-hidden rounded-full">
                                 <ProductImage src={category.image_url} alt={category.name} className="transition duration-500 group-hover:scale-110" />
                             </span>
                         ) : (
-                            <span className="grid size-full place-items-center rounded-full bg-primary-soft text-2xl font-extrabold text-primary">{category.name.charAt(0)}</span>
+                            <span className="grid size-full place-items-center rounded-full bg-primary-soft text-2xl font-semibold text-primary">{category.name.charAt(0)}</span>
                         )}
                     </span>
-                    <span className="line-clamp-2 text-xs font-semibold text-ink group-hover:text-primary sm:text-sm">{category.name}</span>
+                    <span className="line-clamp-2 text-xs font-medium text-ink group-hover:text-primary sm:text-[13px]">{category.name}</span>
                 </Link>
             ))}
         </div>
@@ -144,8 +145,8 @@ export function StoreHomePage() {
             <section className="grid gap-4 lg:grid-cols-3">
                 <HeroBanner storeSlug={storeSlug} store={store} products={featured.length ? featured : latest} />
                 <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-1">
-                    <PromoCard to={`/${storeSlug}/products`} {...firstPromo} tone="bg-primary-soft text-ink" />
-                    <PromoCard to={`/${storeSlug}/products?sort=newest`} eyebrow={t('جديد')} title={t('وصل حديثاً')} product={latest[0]} tone="bg-info-soft text-ink" />
+                    <PromoCard to={`/${storeSlug}/products`} {...firstPromo} tone="bg-primary-soft text-ink ring-1 ring-primary/10 ring-inset" />
+                    <PromoCard to={`/${storeSlug}/products?sort=newest`} eyebrow={t('جديد')} title={t('وصل حديثاً')} product={latest[0]} tone="border border-line bg-surface text-ink shadow-card" />
                 </div>
             </section>
 

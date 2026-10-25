@@ -44,7 +44,7 @@ export function ForgotPasswordPage() {
                     <span className="mx-auto grid size-16 place-items-center rounded-2xl bg-success-soft text-success">
                         <Icon name={result.channel === 'email' ? 'mail' : 'phone'} className="size-8" />
                     </span>
-                    <h1 className="mt-6 text-2xl font-bold text-ink">{t('تحقق من {value}', { value: result.channel === 'email' ? t('بريدك الإلكتروني') : t('رسائل الواتساب') })}</h1>
+                    <h1 className="mt-6 mk-page-title">{t('تحقق من {value}', { value: result.channel === 'email' ? t('بريدك الإلكتروني') : t('رسائل الواتساب') })}</h1>
                     <p className="mt-3 text-sm leading-relaxed text-muted">
                         {result.message}
                         <br />

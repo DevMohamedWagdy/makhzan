@@ -48,7 +48,7 @@ export function AdminOrdersTable({ storeId = null }) {
 
     return (
         <>
-            <div className="flex flex-wrap items-center gap-3 p-4">
+            <div className="mk-toolbar">
                 <Input type="search" icon="search" value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder={t('رقم الطلب أو اسم العميل أو هاتفه...')} aria-label={t('بحث في الطلبات')} className="lg:w-80" />
                 <Select value={filters.status} onChange={(event) => setFilter('status', event.target.value)} aria-label={t('الحالة')} className="sm:w-44" options={STATUS_OPTIONS} />
                 <Input type="date" value={filters.from} onChange={(event) => setFilter('from', event.target.value)} aria-label={t('من تاريخ')} className="sm:w-40" />
@@ -72,7 +72,7 @@ export function AdminOrdersTable({ storeId = null }) {
             ) : (
                 <div className="mk-scroll overflow-x-auto">
                     <table className="w-full min-w-[860px] text-sm">
-                        <thead className="border-y border-line bg-surface-2 text-xs text-muted">
+                        <thead className="mk-thead">
                             <tr>
                                 {[t('الطلب'), !storeId && t('المتجر'), t('العميل'), t('المحافظة'), t('الإجمالي'), t('الدفع'), t('الحالة')].filter(Boolean).map((column) => (
                                     <th key={column} scope="col" className="px-4 py-3 text-start font-medium whitespace-nowrap">
@@ -169,7 +169,7 @@ export function AdminOrderDrawer({ orderId, onClose, onChanged }) {
                     <div className="flex flex-wrap items-center gap-2 p-6">
                         <OrderStatusBadge status={order.status} />
                         <PaymentBadge order={order} />
-                        <span className="ms-auto text-xl font-bold text-ink">{formatMoney(order.total)}</span>
+                        <span className="ms-auto mk-num text-xl font-semibold text-ink">{formatMoney(order.total)}</span>
                     </div>
                     {order.next_statuses?.length > 0 && can('orders.update') && (
                         <div className="flex flex-wrap gap-2 p-6">
@@ -192,9 +192,9 @@ export function AdminOrderDrawer({ orderId, onClose, onChanged }) {
                     )}
                     <section className="p-6">
                         <h3 className="mb-3 text-sm font-semibold text-ink">{t('المنتجات')}</h3>
-                        <ul className="flex flex-col gap-2 text-sm">
+                        <ul className="flex flex-col divide-y divide-line text-sm">
                             {order.items.map((item) => (
-                                <li key={item.item_id} className="flex justify-between gap-3">
+                                <li key={item.item_id} className="flex justify-between gap-3 py-2.5 first:pt-0 last:pb-0">
                                     <span className="text-ink">
                                         {item.product_name}
                                         {item.variant_title && <span className="text-muted"> · {item.variant_title}</span>} × {item.quantity}

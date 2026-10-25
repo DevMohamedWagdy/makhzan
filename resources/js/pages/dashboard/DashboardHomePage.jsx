@@ -3,7 +3,7 @@ import { Link, Navigate } from 'react-router-dom';
 import { PageHeader, allowedPages } from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/Button';
 import { TrendBadge } from '@/components/ui/Charts';
-import { Card, EmptyState, StatCard } from '@/components/ui/Display';
+import { Card, EmptyState, StatCard, StatStrip } from '@/components/ui/Display';
 import { Icon } from '@/components/ui/Icon';
 import { Skeleton } from '@/components/ui/Spinner';
 import { useAuth } from '@/context/AuthContext';
@@ -19,11 +19,11 @@ import { reportsApi } from '@/services/reportsApi';
 const ATTENTION_TONES = {
     warning: 'bg-warning-soft text-warning',
     danger: 'bg-danger-soft text-danger',
-    primary: 'bg-primary-soft text-primary',
+    primary: 'bg-primary-soft text-brand-green',
     info: 'bg-info-soft text-info',
 };
 
-/** Things waiting on the vendor, each linking to the page where it's handled. */
+/** Things waiting on the vendor, each linking to the page where it's handled (the side column's first block). */
 function NeedsAttention({ items }) {
     const open = items.filter((item) => item.count > 0);
 
@@ -32,20 +32,22 @@ function NeedsAttention({ items }) {
     }
 
     return (
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <ul className="mk-list shadow-card">
             {open.map((item) => (
-                <Link key={item.key} to={item.to} className="mk-card group flex items-center gap-3 p-4 transition hover:border-line-strong">
-                    <span className={cn('grid size-10 shrink-0 place-items-center rounded-xl', ATTENTION_TONES[item.tone])}>
-                        <Icon name={item.icon} className="size-5" />
-                    </span>
-                    <span className="min-w-0 flex-1">
-                        <span className="block text-lg leading-tight font-bold text-ink">{formatNumber(item.count)}</span>
-                        <span className="block truncate text-xs text-muted">{item.label}</span>
-                    </span>
-                    <Icon name="chevron-left" className="size-4 text-muted transition group-hover:text-ink" />
-                </Link>
+                <li key={item.key}>
+                    <Link to={item.to} className="group flex items-center gap-3.5 px-4 py-3.5 transition hover:bg-surface-2">
+                        <span className={cn('grid size-9 shrink-0 place-items-center rounded-lg ring-1 ring-current/10 ring-inset', ATTENTION_TONES[item.tone])}>
+                            <Icon name={item.icon} className="size-[18px]" />
+                        </span>
+                        <span className="min-w-0 flex-1">
+                            <span className="mk-num block text-lg leading-6 font-semibold text-ink">{formatNumber(item.count)}</span>
+                            <span className="block truncate text-xs text-muted">{item.label}</span>
+                        </span>
+                        <Icon name="chevron-left" className="size-4 text-muted transition group-hover:text-ink" />
+                    </Link>
+                </li>
             ))}
-        </div>
+        </ul>
     );
 }
 
@@ -61,13 +63,13 @@ function RecentOrders({ orders }) {
                     <Link to={`/dashboard/orders?order=${order.order_id}`} className="-mx-2 flex items-center gap-3 rounded-lg px-2 py-3 transition hover:bg-surface-2">
                         <span className="min-w-0 flex-1">
                             <span className="flex items-center gap-2">
-                                <span className="font-semibold text-ink">#{order.number}</span>
+                                <span className="mk-num font-semibold text-ink">#{order.number}</span>
                                 <span className="truncate text-sm text-ink-2">{order.address.recipient_name}</span>
                             </span>
                             <span className="text-xs text-muted">{formatRelative(order.created_at)}</span>
                         </span>
                         <span className="flex flex-col items-end gap-1">
-                            <span className="text-sm font-semibold text-ink">{formatMoney(order.total)}</span>
+                            <span className="mk-num text-sm font-semibold text-ink">{formatMoney(order.total)}</span>
                             <OrderStatusBadge status={order.status} />
                         </span>
                     </Link>
@@ -124,8 +126,8 @@ function TeamMemberHome() {
             ) : (
                 <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                     {shortcuts.map((shortcut) => (
-                        <Link key={shortcut.to} to={shortcut.to} className="mk-card group flex items-start gap-4 p-5 transition hover:border-line-strong">
-                            <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-primary-soft text-primary">
+                        <Link key={shortcut.to} to={shortcut.to} className="mk-card mk-card-link group flex items-start gap-4 p-5">
+                            <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary-soft text-brand-green ring-1 ring-primary/10 ring-inset">
                                 <Icon name={shortcut.icon} className="size-5" />
                             </span>
                             <span>
@@ -204,19 +206,9 @@ function OverviewHome() {
                     <Skeleton className="h-80 rounded-xl" />
                 </div>
             ) : (
-                <div className="flex flex-col gap-6">
-                    <NeedsAttention
-                        items={[
-                            data.orders && { key: 'orders', label: t('طلب بانتظار التأكيد'), count: data.orders.pending, icon: 'shopping-bag', tone: 'warning', to: '/dashboard/orders?status=pending' },
-                            data.affiliates && can('payouts') && { key: 'payouts', label: t('طلب تحويل عمولة'), count: data.affiliates.payout_requests, icon: 'send', tone: 'primary', to: '/dashboard/payout-requests' },
-                            data.affiliates && can('affiliates') && { key: 'applicants', label: t('مسوق بانتظار الموافقة'), count: data.affiliates.pending, icon: 'user-plus', tone: 'info', to: '/dashboard/affiliates?status=pending' },
-                            data.products && { key: 'out', label: t('منتج نفد مخزونه'), count: data.products.out_of_stock, icon: 'box', tone: 'danger', to: '/dashboard/products?stock=out' },
-                            data.products && { key: 'low', label: t('منتج مخزونه منخفض'), count: data.products.low_stock, icon: 'warehouse', tone: 'warning', to: '/dashboard/products?stock=low' },
-                        ].filter(Boolean)}
-                    />
-
+                <>
                     {(data.orders || data.report) && (
-                        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                        <StatStrip>
                             {data.orders && <StatCard label={t('طلبات اليوم')} value={formatNumber(data.orders.today)} icon="shopping-bag" />}
                             {data.report && (
                                 <>
@@ -225,17 +217,16 @@ function OverviewHome() {
                                     <StatCard label={t('عملاء جدد (٣٠ يوماً)')} value={formatNumber(data.report.totals.new_customers)} icon="users" tone="warning" hint={<TrendBadge current={data.report.totals.new_customers} previous={data.report.previous.new_customers} />} />
                                 </>
                             )}
-                        </div>
+                        </StatStrip>
                     )}
 
-                    {data.report && <DailyChartCard daily={data.report.daily} title={t('آخر ٣٠ يوماً')} />}
-
-                    {(data.recent || data.report) && (
-                        <div className="grid gap-6 lg:grid-cols-5">
+                    {/* Two columns from xl: the chart and latest orders lead; what needs attention and the best sellers sit beside them. */}
+                    <div className="grid grid-cols-1 items-start gap-6 xl:grid-cols-3">
+                        <div className="flex min-w-0 flex-col gap-6 xl:col-span-2">
+                            {data.report && <DailyChartCard daily={data.report.daily} title={t('آخر ٣٠ يوماً')} />}
                             {data.recent && (
                                 <Card
                                     title={t('أحدث الطلبات')}
-                                    className={data.report ? 'lg:col-span-3' : 'lg:col-span-5'}
                                     actions={
                                         <Link to="/dashboard/orders" className="text-sm font-medium text-primary hover:underline">
                                             {t('كل الطلبات')}
@@ -245,14 +236,21 @@ function OverviewHome() {
                                     <RecentOrders orders={data.recent} />
                                 </Card>
                             )}
-                            {data.report && (
-                                <div className={data.recent ? 'lg:col-span-2' : 'lg:col-span-5'}>
-                                    <TopProductsCard products={data.report.top_products} limit={5} />
-                                </div>
-                            )}
                         </div>
-                    )}
-                </div>
+                        <aside className="order-first flex min-w-0 flex-col gap-6 xl:sticky xl:top-24 xl:order-none">
+                            <NeedsAttention
+                                items={[
+                                    data.orders && { key: 'orders', label: t('طلب بانتظار التأكيد'), count: data.orders.pending, icon: 'shopping-bag', tone: 'warning', to: '/dashboard/orders?status=pending' },
+                                    data.affiliates && can('payouts') && { key: 'payouts', label: t('طلب تحويل عمولة'), count: data.affiliates.payout_requests, icon: 'send', tone: 'primary', to: '/dashboard/payout-requests' },
+                                    data.affiliates && can('affiliates') && { key: 'applicants', label: t('مسوق بانتظار الموافقة'), count: data.affiliates.pending, icon: 'user-plus', tone: 'info', to: '/dashboard/affiliates?status=pending' },
+                                    data.products && { key: 'out', label: t('منتج نفد مخزونه'), count: data.products.out_of_stock, icon: 'box', tone: 'danger', to: '/dashboard/products?stock=out' },
+                                    data.products && { key: 'low', label: t('منتج مخزونه منخفض'), count: data.products.low_stock, icon: 'warehouse', tone: 'warning', to: '/dashboard/products?stock=low' },
+                                ].filter(Boolean)}
+                            />
+                            {data.report && <TopProductsCard products={data.report.top_products} limit={5} />}
+                        </aside>
+                    </div>
+                </>
             )}
         </>
     );

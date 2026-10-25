@@ -11,8 +11,8 @@ export function AffiliateAccountPage() {
 
     return (
         <>
-            <div>
-                <h1 className="text-2xl font-bold text-ink">{t('حسابي')}</h1>
+            <div className="border-b border-line pb-6">
+                <h1 className="mk-page-title">{t('حسابي')}</h1>
                 <p className="mt-1 text-sm text-muted">{t('بياناتك ووسيلة استلام أرباحك')}</p>
             </div>
 

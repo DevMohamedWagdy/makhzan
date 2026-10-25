@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { PageHeader } from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/Button';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
-import { EmptyState, StatCard } from '@/components/ui/Display';
+import { EmptyState, StatCard, StatStrip } from '@/components/ui/Display';
 import { Dropdown } from '@/components/ui/Dropdown';
 import { Input, Select } from '@/components/ui/Form';
 import { Icon } from '@/components/ui/Icon';
@@ -166,12 +166,12 @@ export function ProductsPage() {
                 </div>
             )}
 
-            <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <StatStrip>
                 <StatCard label={t('إجمالي المنتجات')} value={summary ? formatNumber(summary.total) : '—'} icon="box" tone="primary" />
                 <StatCard label={t('منشور في المتجر')} value={summary ? formatNumber(summary.active) : '—'} icon="store" tone="success" />
                 <StatCard label={t('مخزون منخفض')} value={summary ? formatNumber(summary.low_stock) : '—'} icon="alert-triangle" tone="warning" />
                 <StatCard label={t('نفد المخزون')} value={summary ? formatNumber(summary.out_of_stock) : '—'} icon="x" tone="danger" />
-            </div>
+            </StatStrip>
 
             <section className="mk-card overflow-hidden">
                 <div className="border-b border-line">
@@ -186,28 +186,26 @@ export function ProductsPage() {
                     />
                 </div>
 
-                <div className="flex flex-col gap-3 p-4 lg:flex-row lg:items-center">
-                    <div className="lg:w-80">
+                <div className="mk-toolbar">
+                    <div>
                         <Input type="search" icon="search" value={filters.search} onChange={(event) => setFilters({ search: event.target.value })} placeholder={t('ابحث باسم المنتج أو SKU...')} aria-label={t('بحث في المنتجات')} />
                     </div>
-                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:flex lg:flex-1">
-                        <Select
-                            aria-label={t('فلترة حسب القسم')}
-                            value={filters.category_id}
-                            onChange={(event) => setFilters({ category_id: event.target.value })}
-                            placeholder={t('كل الأقسام')}
-                            options={(categories ?? []).map((category) => ({ value: category.category_id, label: localized(category) }))}
-                            className="lg:w-44"
-                        />
-                        <Select aria-label={t('فلترة حسب المخزون')} value={filters.stock} onChange={(event) => setFilters({ stock: event.target.value })} placeholder={t('كل حالات المخزون')} options={Object.entries(STOCK_LEVELS).map(([value, label]) => ({ value, label }))} className="lg:w-44" />
-                        <Select
-                            aria-label={t('عدد النتائج في الصفحة')}
-                            value={filters.per_page}
-                            onChange={(event) => setFilters({ per_page: Number(event.target.value) })}
-                            options={PER_PAGE_OPTIONS.map((count) => ({ value: count, label: t('{count} في الصفحة', { count }) }))}
-                            className="lg:w-36"
-                        />
-                    </div>
+                    <Select
+                        aria-label={t('فلترة حسب القسم')}
+                        value={filters.category_id}
+                        onChange={(event) => setFilters({ category_id: event.target.value })}
+                        placeholder={t('كل الأقسام')}
+                        options={(categories ?? []).map((category) => ({ value: category.category_id, label: localized(category) }))}
+                        className="lg:w-44"
+                    />
+                    <Select aria-label={t('فلترة حسب المخزون')} value={filters.stock} onChange={(event) => setFilters({ stock: event.target.value })} placeholder={t('كل حالات المخزون')} options={Object.entries(STOCK_LEVELS).map(([value, label]) => ({ value, label }))} className="lg:w-44" />
+                    <Select
+                        aria-label={t('عدد النتائج في الصفحة')}
+                        value={filters.per_page}
+                        onChange={(event) => setFilters({ per_page: Number(event.target.value) })}
+                        options={PER_PAGE_OPTIONS.map((count) => ({ value: count, label: t('{count} في الصفحة', { count }) }))}
+                        className="lg:w-36"
+                    />
                     {hasActiveFilters && (
                         <Button variant="ghost" icon="x" onClick={resetFilters} className="lg:ms-auto">
                             {t('مسح الفلاتر')}
@@ -230,7 +228,7 @@ export function ProductsPage() {
                 ) : (
                     <div className="mk-scroll overflow-x-auto">
                         <table className="w-full min-w-[860px] text-sm">
-                            <thead className="border-y border-line bg-surface-2 text-xs text-muted">
+                            <thead className="mk-thead">
                                 <tr>
                                     {COLUMNS.map((column) => (
                                         <th key={column} scope="col" className="px-4 py-3 text-start font-medium whitespace-nowrap">

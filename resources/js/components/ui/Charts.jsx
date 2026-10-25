@@ -3,7 +3,7 @@ import { t } from '@/i18n';
 import { cn, formatNumber } from '@/lib/format';
 
 const TONE_FILLS = {
-    primary: 'bg-primary',
+    primary: 'bg-brand-green',
     success: 'bg-success',
     warning: 'bg-warning',
     danger: 'bg-danger',
@@ -40,9 +40,10 @@ export function ColumnChart({ data, formatValue = formatNumber, caption, height 
         <figure className="flex flex-col gap-2">
             <div className="flex gap-3">
                 <div className="flex shrink-0 flex-col justify-between text-end text-[11px] text-muted" style={{ height }} aria-hidden="true">
-                    {ticks.map((tick) => (
+                    {ticks.map((tick, index) => (
                         <span key={tick} className="leading-none">
-                            {formatValue(tick)}
+                            {/* A tick that rounds to its neighbor's label (e.g. 0.5 shown as 1 on an empty period) stays unlabeled. */}
+                            {index > 0 && formatValue(tick) === formatValue(ticks[index - 1]) ? '' : formatValue(tick)}
                         </span>
                     ))}
                 </div>
@@ -56,7 +57,7 @@ export function ColumnChart({ data, formatValue = formatNumber, caption, height 
                         {data.map((point, index) => (
                             <div key={point.key} className="group flex h-full min-w-0 flex-1 cursor-default items-end" onMouseEnter={() => setActive(index)}>
                                 <span
-                                    className={cn('w-full rounded-t-[4px] transition-colors', active === index ? 'bg-primary-hover' : 'bg-primary', point.value === 0 && 'opacity-0')}
+                                    className={cn('mx-auto w-full max-w-7 rounded-t-[3px] transition-colors', active === null || active === index ? 'bg-brand-green' : 'bg-brand-green/35', point.value === 0 && 'opacity-0')}
                                     style={{ height: `${Math.max((point.value / max) * 100, point.value > 0 ? 1.5 : 0)}%` }}
                                 />
                             </div>
@@ -68,7 +69,7 @@ export function ColumnChart({ data, formatValue = formatNumber, caption, height 
                             style={{ insetInlineStart: `${((active + 0.5) / data.length) * 100}%` }}
                         >
                             <p className="text-muted">{hovered.label}</p>
-                            <p className="mt-0.5 text-sm font-bold text-ink">{formatValue(hovered.value)}</p>
+                            <p className="mk-num mt-0.5 text-sm font-semibold text-ink">{formatValue(hovered.value)}</p>
                             {hovered.detail && <p className="mt-0.5 text-muted">{hovered.detail}</p>}
                         </div>
                     )}
@@ -118,11 +119,11 @@ export function BarList({ items, emptyText = t('لا توجد بيانات في 
                             <span className="w-4 shrink-0 text-xs text-muted">{formatNumber(index + 1)}</span>
                             <span className="truncate font-medium text-ink">{item.label}</span>
                         </span>
-                        <span className="shrink-0 font-semibold text-ink">{item.display}</span>
+                        <span className="mk-num shrink-0 font-semibold text-ink">{item.display}</span>
                     </div>
                     {item.detail && <p className="ms-6 mt-0.5 text-xs text-muted">{item.detail}</p>}
                     <div className="ms-6 mt-1.5 h-1.5 overflow-hidden rounded-full bg-surface-3">
-                        <div className="h-full rounded-full bg-primary" style={{ width: `${(item.value / max) * 100}%` }} />
+                        <div className="h-full rounded-full bg-brand-green" style={{ width: `${(item.value / max) * 100}%` }} />
                     </div>
                 </li>
             ))}
@@ -152,7 +153,7 @@ export function SegmentedBar({ segments }) {
                     <li key={segment.key} className="flex items-center gap-2 text-sm">
                         <span className={cn('size-2.5 shrink-0 rounded-full', TONE_FILLS[segment.tone])} />
                         <span className="truncate text-ink-2">{segment.label}</span>
-                        <span className="ms-auto font-semibold text-ink">{formatNumber(segment.value)}</span>
+                        <span className="mk-num ms-auto font-semibold text-ink">{formatNumber(segment.value)}</span>
                     </li>
                 ))}
             </ul>
@@ -179,8 +180,8 @@ export function TrendBadge({ current, previous, inverse = false }) {
     const good = change > 0 !== inverse;
 
     return (
-        <span className={cn('inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-xs font-semibold', good ? 'bg-success-soft text-success' : 'bg-danger-soft text-danger')}>
-            <span aria-hidden="true">{change > 0 ? '▲' : '▼'}</span>
+        <span className={cn('inline-flex h-5 items-center gap-1 rounded-full px-1.5 text-[11px] font-semibold', good ? 'bg-success-soft text-success' : 'bg-danger-soft text-danger')}>
+            <span aria-hidden="true" className="text-[8px]">{change > 0 ? '▲' : '▼'}</span>
             <span className="ltr">{`${change > 0 ? '+' : '-'}${formatNumber(rounded)}%`}</span>
             <span className="sr-only">{t('مقارنة بالفترة السابقة')}</span>
         </span>

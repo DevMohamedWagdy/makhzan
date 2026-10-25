@@ -131,7 +131,7 @@ function RequireAffiliate() {
                 <span className="mx-auto grid size-16 place-items-center rounded-2xl bg-primary-soft text-primary">
                     <Icon name="log-in" className="size-8" />
                 </span>
-                <h1 className="mt-6 text-2xl font-bold text-ink">{t('سجّل دخولك من رابط متجرك')}</h1>
+                <h1 className="mt-6 mk-page-title">{t('سجّل دخولك من رابط متجرك')}</h1>
                 <p className="mt-3 text-sm leading-relaxed text-muted">{t('لكل متجر صفحة دخول خاصة بمسوقيه. استخدم رابط الدخول الذي أرسله لك المتجر.')}</p>
             </div>
         </StorePublicLayout>

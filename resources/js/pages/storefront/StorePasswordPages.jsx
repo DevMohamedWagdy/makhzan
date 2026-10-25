@@ -39,7 +39,7 @@ function PasswordCard({ icon, title, subtitle, children }) {
                 <span className="grid size-12 place-items-center rounded-2xl bg-primary-soft text-primary">
                     <Icon name={icon} className="size-6" />
                 </span>
-                <h1 className="mt-5 text-2xl font-bold text-ink">{title}</h1>
+                <h1 className="mt-5 mk-page-title">{title}</h1>
                 {subtitle && <p className="mt-2 text-sm leading-relaxed text-muted">{subtitle}</p>}
                 {children}
             </div>

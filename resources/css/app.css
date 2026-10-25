@@ -7,63 +7,94 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /*
- * Makhzan design tokens, taken from the SellyGrow logo palette (Growth Green, Ink, Sprout, Mist).
+ * Makhzan design tokens — "Ink & Leaf" (see docs/design-system.md).
+ * Exact logo colors: Ink navy #17212b and Growth Green #16a35f. A light gray canvas, white cards with
+ * hairline borders and a soft shadow, a white sidebar, a navy rail where the logo green is the signature accent. A deeper green
+ * (--mk-primary) is kept only where white text sits on green, so it stays readable. Elevation comes from borders first, shadows second.
  * Semantic colors live in CSS variables so Light/Dark switch by toggling `.dark` on <html>.
  */
 :root {
-    --mk-bg: #f4f6f5;
+    --mk-bg: #f5f6f8;
     --mk-surface: #ffffff;
-    --mk-surface-2: #f8faf9;
-    --mk-surface-3: #eef2f0;
-    --mk-border: #e3e8e5;
-    --mk-border-strong: #d0d8d4;
+    --mk-surface-2: #f8f9fa;
+    --mk-surface-3: #f1f3f4;
+    --mk-border: #e7e9ee;
+    --mk-border-strong: #d3d8dd;
     --mk-text: #17212b;
-    --mk-text-2: #4b5761;
-    --mk-muted: #6b7671;
-    --mk-primary: #107a48;
-    --mk-primary-hover: #0c6239;
-    --mk-primary-soft: #e7f6ee;
+    --mk-text-2: #45505b;
+    --mk-muted: #6b7480;
+    --mk-primary: #0e7a46;
+    --mk-primary-hover: #0a6239;
+    --mk-primary-soft: #e8f3ec;
     --mk-secondary: #17212b;
     --mk-accent: #16a35f;
-    --mk-success: #16a34a;
-    --mk-success-soft: #e9f9ef;
-    --mk-warning: #d97706;
-    --mk-warning-soft: #fff6e6;
-    --mk-danger: #dc2626;
-    --mk-danger-soft: #feeeee;
-    --mk-info: #0284c7;
-    --mk-info-soft: #e8f6fd;
-    --mk-shadow: 0 1px 2px rgb(16 24 40 / 0.04), 0 6px 20px -8px rgb(16 24 40 / 0.08);
-    --mk-shadow-lg: 0 24px 60px -16px rgb(16 24 40 / 0.22);
+    --mk-success: #157f3c;
+    --mk-success-soft: #eaf6ee;
+    --mk-warning: #b45309;
+    --mk-warning-soft: #fdf3e3;
+    --mk-danger: #c8302b;
+    --mk-danger-soft: #fcedec;
+    --mk-info: #0369a1;
+    --mk-info-soft: #e8f2f9;
+    --mk-ring: rgb(22 163 95 / 0.3);
+
+    /* Logo Growth Green: icons, charts, markers and highlights (never behind white text). */
+    --mk-brand-green: #16a35f;
+
+    /* The navy rail (sidebars, brand bands): the logo's Ink in both themes. */
+    --mk-panel: #17212b;
+    --mk-panel-2: #1f2b37;
+    --mk-panel-line: rgb(255 255 255 / 0.07);
+    --mk-panel-text: #c9d1d9;
+    --mk-panel-muted: #8794a1;
+
+    --mk-shadow: 0 1px 2px rgb(16 24 40 / 0.03);
+    --mk-shadow-md: 0 1px 2px rgb(16 24 40 / 0.03), 0 4px 12px -6px rgb(16 24 40 / 0.08);
+    --mk-shadow-lg: 0 0 0 1px rgb(16 24 40 / 0.03), 0 12px 32px -12px rgb(16 24 40 / 0.16);
     color-scheme: light;
 }
 
 .dark {
-    --mk-bg: #0b1117;
-    --mk-surface: #121a21;
-    --mk-surface-2: #16202a;
-    --mk-surface-3: #1c2732;
-    --mk-border: #24303b;
-    --mk-border-strong: #31404c;
-    --mk-text: #e8ecea;
-    --mk-text-2: #aeb8b3;
-    --mk-muted: #7c8892;
+    --mk-bg: #0a0f13;
+    --mk-surface: #11181e;
+    --mk-surface-2: #141c23;
+    --mk-surface-3: #1a242c;
+    --mk-border: #222d36;
+    --mk-border-strong: #2f3c46;
+    --mk-text: #e9edea;
+    --mk-text-2: #adb7b1;
+    --mk-muted: #7d8992;
     --mk-primary: #1c9459;
-    --mk-primary-hover: #22a866;
-    --mk-primary-soft: #12291e;
-    --mk-secondary: #aeb8b3;
-    --mk-accent: #b8f171;
+    --mk-primary-hover: #23a866;
+    --mk-primary-soft: #11281d;
+    --mk-secondary: #adb7b1;
+    --mk-accent: #16a35f;
     --mk-success: #34d399;
-    --mk-success-soft: #0f2a22;
+    --mk-success-soft: #0f2a21;
     --mk-warning: #fbbf24;
-    --mk-warning-soft: #2c2410;
+    --mk-warning-soft: #2b230f;
     --mk-danger: #f87171;
-    --mk-danger-soft: #331718;
+    --mk-danger-soft: #321819;
     --mk-info: #38bdf8;
     --mk-info-soft: #0c2533;
-    --mk-shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 8px 24px -10px rgb(0 0 0 / 0.5);
-    --mk-shadow-lg: 0 24px 60px -16px rgb(0 0 0 / 0.7);
+    --mk-ring: rgb(22 163 95 / 0.4);
+
+    --mk-panel: #17212b;
+    --mk-panel-2: #1f2b37;
+    --mk-panel-line: rgb(255 255 255 / 0.06);
+    --mk-panel-text: #c9d1d9;
+    --mk-panel-muted: #8794a1;
+
+    --mk-shadow: 0 1px 2px rgb(0 0 0 / 0.2);
+    --mk-shadow-md: 0 1px 2px rgb(0 0 0 / 0.2), 0 6px 16px -8px rgb(0 0 0 / 0.4);
+    --mk-shadow-lg: 0 0 0 1px rgb(255 255 255 / 0.04), 0 16px 40px -14px rgb(0 0 0 / 0.6);
     color-scheme: dark;
+}
+
+/* Geometry: 8px controls, 12px tiles, 14px cards and sheets, 18px hero blocks. */
+@theme {
+    --radius-2xl: 0.875rem;
+    --radius-3xl: 1.125rem;
 }
 
 @theme inline {
@@ -83,9 +114,8 @@
     --color-primary-soft: var(--mk-primary-soft);
     --color-secondary: var(--mk-secondary);
     --color-brand: #17212b;
-    --color-brand-light: #233140;
-    --color-brand-green: #16a35f;
-    --color-sprout: #b8f171;
+    --color-brand-light: #223140;
+    --color-brand-green: var(--mk-brand-green);
     --color-accent: var(--mk-accent);
     --color-success: var(--mk-success);
     --color-success-soft: var(--mk-success-soft);
@@ -95,19 +125,30 @@
     --color-danger-soft: var(--mk-danger-soft);
     --color-info: var(--mk-info);
     --color-info-soft: var(--mk-info-soft);
+    --color-panel: var(--mk-panel);
+    --color-panel-2: var(--mk-panel-2);
+    --color-panel-line: var(--mk-panel-line);
+    --color-panel-text: var(--mk-panel-text);
+    --color-panel-muted: var(--mk-panel-muted);
+    --color-ring: var(--mk-ring);
 
     --shadow-card: var(--mk-shadow);
+    --shadow-raise: var(--mk-shadow-md);
     --shadow-pop: var(--mk-shadow-lg);
 }
 
 @layer base {
     html {
         font-family: var(--font-sans);
+        -webkit-text-size-adjust: 100%;
+        text-rendering: optimizeLegibility;
     }
 
     body {
         background-color: var(--mk-bg);
         color: var(--mk-text);
+        font-size: 0.875rem;
+        line-height: 1.6;
         transition:
             background-color 0.25s ease,
             color 0.25s ease;
@@ -120,7 +161,7 @@
     }
 
     ::selection {
-        background: color-mix(in srgb, var(--mk-primary) 25%, transparent);
+        background: color-mix(in srgb, var(--mk-primary) 22%, transparent);
     }
 
     input,
@@ -128,6 +169,27 @@
     textarea,
     button {
         font-family: inherit;
+    }
+
+    h1,
+    h2,
+    h3 {
+        text-wrap: balance;
+    }
+
+    /* Latin headings get a slightly tighter set; Arabic letterforms must never be tracked. */
+    :lang(en) :is(h1, h2) {
+        letter-spacing: -0.012em;
+    }
+
+    /* One keyboard focus treatment everywhere: a soft green halo, never on mouse clicks. */
+    :where(a, button, [role='tab'], [role='switch'], [role='radio'], [role='menuitem'], summary, [tabindex]):focus-visible {
+        outline: 2px solid transparent;
+        box-shadow: 0 0 0 3px var(--mk-ring);
+    }
+
+    table {
+        font-variant-numeric: tabular-nums;
     }
 
     /* Numbers, phones, emails and URLs read left-to-right inside RTL layouts. */
@@ -139,16 +201,84 @@
 
 @layer components {
     .mk-card {
-        @apply rounded-xl border border-line bg-surface shadow-card;
+        @apply rounded-2xl border border-line bg-surface shadow-card;
+    }
+
+    /* A card that is also a link or button: lifts its border and shadow on hover. */
+    .mk-card-link {
+        @apply transition duration-200 hover:border-line-strong hover:shadow-raise;
+    }
+
+    /* KPI cards: separate StatCards in a grid, two per row on phones; pages widen it with sm:/xl: columns. */
+    .mk-stat-group {
+        @apply grid grid-cols-2 gap-3 sm:gap-4;
+    }
+
+    /* On phones an odd last card spans the row instead of leaving an empty cell. */
+    @media (width < 40rem) {
+        .mk-stat-group:not(.grid-cols-1) > :last-child:nth-child(odd) {
+            grid-column: span 2;
+        }
+    }
+
+    /* Grouped list: rows share one bordered box and are split by hairlines instead of floating apart. */
+    .mk-list {
+        @apply flex flex-col divide-y divide-line overflow-hidden rounded-xl border border-line bg-surface;
+    }
+
+    /* A page's key figures under its header (StatStrip): cards that share the row evenly. */
+    .mk-stat-strip {
+        @apply mb-6 grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-[repeat(auto-fit,minmax(12rem,1fr))];
     }
 
     .mk-input {
-        @apply h-11 w-full rounded-lg border border-line bg-surface px-3.5 text-sm text-ink placeholder:text-muted transition outline-none;
-        @apply focus:border-primary;
+        @apply h-10 w-full rounded-lg border border-line-strong/80 bg-surface px-3.5 text-sm text-ink placeholder:text-muted/80 transition outline-none;
+        @apply hover:border-line-strong focus:border-primary focus:shadow-[0_0_0_3px_var(--mk-ring)];
+        @apply disabled:cursor-not-allowed disabled:bg-surface-2 disabled:text-muted;
     }
 
     .mk-input[aria-invalid='true'] {
-        @apply border-danger;
+        @apply border-danger focus:shadow-[0_0_0_3px_color-mix(in_srgb,var(--mk-danger)_22%,transparent)];
+    }
+
+    /* Table header row: quiet overline labels on a tinted band. */
+    .mk-thead {
+        @apply border-y border-line bg-surface-2 text-[11.5px] text-muted;
+    }
+
+    .mk-thead th {
+        @apply h-10 font-semibold;
+    }
+
+    :lang(en) .mk-thead th {
+        @apply tracking-[0.04em] uppercase;
+    }
+
+    /* Type scale — page title: 22/32 on phones, 26/36 from sm, semibold. */
+    .mk-page-title {
+        @apply text-[22px] leading-8 font-semibold text-ink sm:text-[26px] sm:leading-9;
+    }
+
+    /* Small uppercase label above a heading or a group (sidebar sections, card overlines). */
+    .mk-overline {
+        @apply text-[11px] leading-4 font-semibold text-muted;
+    }
+
+    :lang(en) .mk-overline {
+        @apply tracking-[0.08em] uppercase;
+    }
+
+    /* Figures that should line up: KPIs, prices, counters. */
+    .mk-num {
+        font-variant-numeric: tabular-nums;
+    }
+
+    /* Hairline grid texture for hero bands (landing, auth, portal headers). */
+    .mk-grid-texture {
+        background-image:
+            linear-gradient(to right, var(--mk-panel-line) 1px, transparent 1px),
+            linear-gradient(to bottom, var(--mk-panel-line) 1px, transparent 1px);
+        background-size: 32px 32px;
     }
 
     .mk-scroll::-webkit-scrollbar {
@@ -159,6 +289,11 @@
     .mk-scroll::-webkit-scrollbar-thumb {
         background: var(--mk-border-strong);
         border-radius: 999px;
+    }
+
+    .mk-scroll-dark {
+        scrollbar-color: rgb(255 255 255 / 0.12) transparent;
+        scrollbar-width: thin;
     }
 
     /* Horizontal rails (storefront product and category rows): swipeable, no visible scrollbar. */
@@ -266,3 +401,56 @@
         transition-duration: 0.01ms !important;
     }
 }
+
+/*
+ * Filter bar above a table or list: the first control (usually search) takes the free width,
+ * every other control keeps a steady 176px (dates 160px). On phones search takes its own row and the
+ * filters pair up two per row.
+ * Unlayered on purpose so it wins over per-page width utilities on the inputs inside.
+ */
+.mk-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem;
+}
+
+.mk-toolbar > div {
+    flex: 1 1 8rem;
+    min-width: 0;
+}
+
+.mk-toolbar > div:first-child {
+    flex: 999 1 100%;
+    max-width: none;
+}
+
+.mk-toolbar > div .mk-input {
+    width: 100%;
+}
+
+@media (min-width: 640px) {
+    .mk-toolbar > div:first-child {
+        flex-basis: 12rem;
+    }
+
+    .mk-toolbar > div:not(:first-child) {
+        flex: 0 1 11rem;
+    }
+
+    .mk-toolbar > div:not(:first-child):has(input[type='date']) {
+        flex-basis: 10rem;
+    }
+}
+
+/* A lone search box keeps a readable width instead of spanning the whole card. */
+.mk-toolbar > div:only-child {
+    flex: 0 1 24rem;
+}
+
+/* Trailing actions (clear filters, bulk actions) sit at the far end of the bar. */
+.mk-toolbar > button:last-child {
+    margin-inline-start: auto;
+}
+

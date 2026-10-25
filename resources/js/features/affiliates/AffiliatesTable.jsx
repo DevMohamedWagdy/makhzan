@@ -75,8 +75,8 @@ export function AffiliatesTable({ items, loading, error, perPage, actions, hasAc
     return (
         <div className="mk-scroll relative overflow-x-auto">
             <table className="w-full min-w-[980px] text-sm">
-                <thead>
-                    <tr className="border-y border-line bg-surface-2 text-xs text-muted">
+                <thead className="mk-thead">
+                    <tr>
                         {COLUMNS.map((column, index) => (
                             <th key={index} scope="col" className={cn('px-4 py-3 text-start font-medium whitespace-nowrap', !column && 'sticky end-0 bg-surface-2')}>
                                 {column || <span className="sr-only">{t('الإجراءات')}</span>}

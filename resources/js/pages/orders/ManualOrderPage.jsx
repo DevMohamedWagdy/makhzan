@@ -105,7 +105,7 @@ export function ManualOrderPage() {
         <>
             <PageHeader title={t('طلب يدوي جديد')} description={t('سجّل طلباً وصلك على واتساب أو ماسنجر أو بالتليفون، وسيُخصم من المخزون مثل طلبات المتجر.')} breadcrumbs={[t('لوحة التحكم'), t('الطلبات'), t('طلب يدوي')]} />
 
-            <form onSubmit={submit} noValidate className="grid gap-6 lg:grid-cols-3">
+            <form onSubmit={submit} noValidate className="grid grid-cols-1 items-start gap-6 lg:grid-cols-3">
                 <div className="flex flex-col gap-6 lg:col-span-2">
                     <Card title={t('مصدر الطلب')}>
                         <OptionCards options={SOURCE_OPTIONS} value={source} onChange={setSource} name="order-source" />
@@ -205,7 +205,7 @@ export function ManualOrderPage() {
                     </Card>
                 </div>
 
-                <div className="flex flex-col gap-6">
+                <div className="flex flex-col gap-6 lg:sticky lg:top-24">
                     <Card title={t('ملخص الطلب')}>
                         <div className="flex flex-col gap-4">
                             <Field label={t('مصاريف الشحن')} optional hint={t('اتركه فارغاً لاستخدام سعر الشحن للمحافظة.')} error={errors.shipping_fee}>
@@ -249,7 +249,7 @@ export function ManualOrderPage() {
                             </div>
                             <div className="mt-1 flex items-center justify-between">
                                 <dt className="font-semibold text-ink">{t('الإجمالي (الدفع عند الاستلام)')}</dt>
-                                <dd className="text-xl font-bold text-ink">{formatMoney(total)}</dd>
+                                <dd className="mk-num text-xl font-semibold text-ink">{formatMoney(total)}</dd>
                             </div>
                         </dl>
 

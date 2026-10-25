@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { PageHeader } from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/Button';
-import { Alert, Badge, EmptyState, StatCard } from '@/components/ui/Display';
+import { Alert, Badge, EmptyState, StatCard, StatStrip } from '@/components/ui/Display';
 import { Input, Select } from '@/components/ui/Form';
 import { Icon } from '@/components/ui/Icon';
 import { Pagination } from '@/components/ui/Navigation';
@@ -196,7 +196,7 @@ export function PaymentsPage() {
                 </Alert>
             )}
 
-            <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <StatStrip>
                 <StatCard label={t('تم تحصيله')} value={summary ? formatMoney(summary.collected) : '—'} icon="wallet" tone="success" hint={summary && t('{count} عملية ناجحة', { count: formatNumber(summary.successful) })} />
                 <StatCard label={t('تم استرداده')} value={summary ? formatMoney(summary.refunded) : '—'} icon="refresh" tone="info" />
                 <StatCard label={t('الصافي')} value={summary ? formatMoney(summary.net) : '—'} icon="sparkles" tone="primary" hint={summary && t('{count} محاولة فاشلة', { count: formatNumber(summary.failed) })} />
@@ -207,10 +207,10 @@ export function PaymentsPage() {
                     tone="warning"
                     hint={summary && (summary.awaiting.count > 0 ? <button type="button" className="text-primary hover:underline" onClick={() => setQuery({ status: 'pending', kind: '' })}>{t('{count} طلب لم يُدفع بعد', { count: formatNumber(summary.awaiting.count) })}</button> : t('لا يوجد'))}
                 />
-            </div>
+            </StatStrip>
 
             <section className="mk-card overflow-hidden">
-                <div className="flex flex-wrap items-center gap-3 p-4">
+                <div className="mk-toolbar">
                     <Input type="search" icon="search" value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder={t('ابحث برقم الطلب أو رقم العملية...')} aria-label={t('بحث في المدفوعات')} className="lg:w-80" />
                     {Object.entries(FILTERS).map(([key, options]) => (
                         <Select key={key} value={filters[key]} onChange={(event) => setQuery({ [key]: event.target.value })} options={options} aria-label={options[0].label} className="sm:w-44" />
@@ -228,7 +228,7 @@ export function PaymentsPage() {
                 ) : (
                     <div className="mk-scroll overflow-x-auto">
                         <table className="w-full min-w-[980px] text-sm">
-                            <thead className="border-y border-line bg-surface-2 text-xs text-muted">
+                            <thead className="mk-thead">
                                 <tr>
                                     {COLUMNS.map((column) => (
                                         <th key={column} scope="col" className="px-4 py-3 text-start font-medium whitespace-nowrap">

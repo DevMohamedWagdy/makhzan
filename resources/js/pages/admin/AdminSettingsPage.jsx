@@ -139,7 +139,7 @@ export function AdminSettingsPage() {
                     </Card>
                 </form>
 
-                <form onSubmit={sendTest} noValidate className="self-start">
+                <form onSubmit={sendTest} noValidate className="self-start xl:sticky xl:top-24">
                     <Card title={t('رسالة تجريبية')} description={t('احفظ الإعدادات أولاً، ثم أرسل رسالة للتأكد أنها تعمل')} bodyClassName="flex flex-col gap-4">
                         {testResult && <Alert tone={testResult.tone}>{testResult.message}</Alert>}
                         <Field label={t('أرسل إلى')}>

@@ -32,12 +32,12 @@ export function AffiliateOrdersPage() {
 
     return (
         <>
-            <div>
-                <h1 className="text-2xl font-bold text-ink">{t('طلباتي')}</h1>
+            <div className="border-b border-line pb-6">
+                <h1 className="mk-page-title">{t('طلباتي')}</h1>
                 <p className="mt-1 text-sm text-muted">{t('الطلبات التي تمت عبر روابطك وعمولة كل طلب')}</p>
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-3">
+            <div className="mk-stat-group sm:grid-cols-3">
                 <StatCard label={t('طلبات مسلّمة')} value={formatNumber(affiliate.stats.orders_count)} icon="check-circle" tone="success" />
                 <StatCard label={t('عمولة متوقعة')} value={result?.summary ? formatMoney(result.summary.expected_commission) : '—'} icon="refresh" tone="warning" hint={result?.summary && t('من {count} طلب لم يُسلَّم بعد', { count: formatNumber(result.summary.expected_orders) })} />
                 <StatCard label={t('إجمالي أرباحي')} value={formatMoney(affiliate.stats.earned_commission)} icon="wallet" tone="primary" />
@@ -62,7 +62,7 @@ export function AffiliateOrdersPage() {
                     ) : result.data.length === 0 ? (
                         <EmptyState icon="shopping-bag" title={status ? t('لا توجد طلبات بهذه الحالة') : t('لا توجد طلبات من روابطك بعد')} description={t('شارك روابط الإحالة الخاصة بك، وكل طلب يتم عبرها يظهر هنا.')} />
                     ) : (
-                        <ul className="flex flex-col gap-3">
+                        <ul className="mk-list">
                             {result.data.map((order) => (
                                 <AffiliateOrderRow key={order.order_id} order={order} />
                             ))}

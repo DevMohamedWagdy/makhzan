@@ -171,7 +171,7 @@ export function LegalPage({ document: name }) {
                 </nav>
 
                 <article className="mk-card p-6 sm:p-10">
-                    <h1 className="text-3xl font-bold text-ink">{legalDocument.title}</h1>
+                    <h1 className="mk-page-title">{legalDocument.title}</h1>
                     <p className="mt-2 text-sm text-muted">
                         {t('آخر تحديث: {date}', {
                             date: formatDate(UPDATED_AT),

@@ -59,7 +59,7 @@ export function StoreAuthPage({ mode }) {
     return (
         <div className="mx-auto w-full max-w-md">
             <div className="rounded-3xl border border-line bg-surface p-6 sm:p-8">
-                <h1 className="text-2xl font-bold text-ink">{isRegister ? t('إنشاء حساب جديد') : t('تسجيل الدخول')}</h1>
+                <h1 className="mk-page-title">{isRegister ? t('إنشاء حساب جديد') : t('تسجيل الدخول')}</h1>
                 <p className="mt-2 text-sm text-muted">{isRegister ? t('أنشئ حسابك في {name} لإتمام طلبك ومتابعته.', { name: store?.name ?? '' }) : t('سجّل دخولك لإتمام طلبك ومتابعة طلباتك.')}</p>
 
                 <form onSubmit={submit} noValidate className="mt-6 flex flex-col gap-4">

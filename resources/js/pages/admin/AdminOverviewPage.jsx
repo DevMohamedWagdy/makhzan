@@ -8,17 +8,22 @@ import { Skeleton } from '@/components/ui/Spinner';
 import { AdminAffiliateDrawer } from '@/features/admin/AdminPeople';
 import { parseDate } from '@/features/reports/ReportWidgets';
 import { intlLocale, t } from '@/i18n';
-import { formatMoney, formatNumber } from '@/lib/format';
+import { cn, formatMoney, formatNumber } from '@/lib/format';
 import { adminApi } from '@/services/adminApi';
 
 const dayLabel = new Intl.DateTimeFormat(intlLocale, { day: 'numeric', month: 'short' });
 
-/** A titled group of stat cards. */
-function StatSection({ title, children }) {
+/** Ribbon columns by how many figures a section holds, so every row fills its width. */
+const SECTION_COLUMNS = { 2: 'sm:grid-cols-2', 3: 'sm:grid-cols-3', 5: 'sm:grid-cols-3 sm:[&>:last-child]:col-span-2' };
+
+/** A titled ribbon of stat cards; `columns` overrides the count-based grid (e.g. in the side column). */
+function StatSection({ title, children, className, columns }) {
+    const count = [children].flat().filter(Boolean).length;
+
     return (
-        <section className="flex flex-col gap-3">
-            <h2 className="text-sm font-semibold text-ink-2">{title}</h2>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5">{children}</div>
+        <section className={cn('flex min-w-0 flex-col gap-2.5', className)}>
+            <h2 className="mk-overline px-1">{title}</h2>
+            <div className={cn('mk-stat-group flex-1', columns ?? SECTION_COLUMNS[count])}>{children}</div>
         </section>
     );
 }
@@ -45,7 +50,7 @@ function TopTable({ title, rows, columns, rowKey, emptyText, actions }) {
             ) : (
                 <div className="overflow-x-auto">
                     <table className="w-full text-sm">
-                        <thead className="border-b border-line bg-surface-2 text-xs text-muted">
+                        <thead className="mk-thead">
                             <tr>
                                 <th scope="col" className="w-10 px-4 py-3 text-start font-medium">#</th>
                                 {columns.map((column) => (
@@ -58,7 +63,7 @@ function TopTable({ title, rows, columns, rowKey, emptyText, actions }) {
                         <tbody className="divide-y divide-line">
                             {rows.map((row, index) => (
                                 <tr key={rowKey(row)}>
-                                    <td className="px-4 py-3 text-muted">{formatNumber(index + 1)}</td>
+                                    <td className="px-4 py-3 text-xs text-muted">{formatNumber(index + 1)}</td>
                                     {columns.map((column) => (
                                         <td key={column.label} className={`px-4 py-3 ${column.className ?? ''}`}>
                                             {column.render(row)}
@@ -99,83 +104,88 @@ export function AdminOverviewPage() {
             ) : !data ? (
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5">
                     {Array.from({ length: 10 }, (_, index) => (
-                        <Skeleton key={index} className="h-24 rounded-xl" />
+                        <Skeleton key={index} className="h-28 rounded-2xl" />
                     ))}
                 </div>
             ) : (
-                <div className="flex flex-col gap-8">
-                    <StatSection title={t('المتاجر')}>
-                        <StatCard label={t('إجمالي المتاجر')} value={formatNumber(data.stores.total)} icon="store" />
-                        <StatCard label={t('المتاجر النشطة')} value={formatNumber(data.stores.active)} icon="check" tone="success" />
-                        <StatCard label={t('المتاجر الموقوفة')} value={formatNumber(data.stores.suspended)} icon="lock" tone="danger" />
-                    </StatSection>
+                <div className="grid grid-cols-1 items-start gap-6 xl:grid-cols-3">
+                    {/* Main column: orders and affiliates, the daily charts and the top performers. */}
+                    <div className="flex min-w-0 flex-col gap-8 xl:col-span-2">
+                        <StatSection title={t('الطلبات')}>
+                            <StatCard label={t('إجمالي الطلبات')} value={formatNumber(data.orders.total)} icon="shopping-bag" />
+                            <StatCard label={t('الطلبات المكتملة')} value={formatNumber(data.orders.delivered)} icon="check" tone="success" />
+                            <StatCard label={t('الطلبات الملغية')} value={formatNumber(data.orders.cancelled)} icon="x" tone="danger" />
+                            <StatCard label={t('الطلبات المرتجعة')} value={formatNumber(data.orders.returned)} icon="refresh" tone="warning" />
+                            <StatCard label={t('إجمالي المبيعات المؤكدة')} value={formatMoney(data.orders.delivered_sales)} icon="bar-chart" tone="info" />
+                        </StatSection>
 
-                    <StatSection title={t('الطلبات')}>
-                        <StatCard label={t('إجمالي الطلبات')} value={formatNumber(data.orders.total)} icon="shopping-bag" />
-                        <StatCard label={t('الطلبات المكتملة')} value={formatNumber(data.orders.delivered)} icon="check" tone="success" />
-                        <StatCard label={t('الطلبات الملغية')} value={formatNumber(data.orders.cancelled)} icon="x" tone="danger" />
-                        <StatCard label={t('الطلبات المرتجعة')} value={formatNumber(data.orders.returned)} icon="refresh" tone="warning" />
-                        <StatCard label={t('إجمالي المبيعات المؤكدة')} value={formatMoney(data.orders.delivered_sales)} icon="bar-chart" tone="info" />
-                    </StatSection>
+                        <StatSection title={t('المسوقين')}>
+                            <StatCard label={t('إجمالي المسوقين')} value={formatNumber(data.affiliates.total)} icon="users" />
+                            <StatCard label={t('المسوقين النشطين')} value={formatNumber(data.affiliates.active)} icon="check" tone="success" />
+                            <StatCard label={t('المسوقين المجمدين')} value={formatNumber(data.affiliates.frozen)} icon="lock" tone="danger" />
+                            <StatCard label={t('المسوقين في الانتظار')} value={formatNumber(data.affiliates.pending)} icon="clock" tone="warning" />
+                            <StatCard label={t('إجمالي العمولات المؤكدة')} value={formatMoney(data.affiliates.earned_commission)} icon="bar-chart" tone="info" />
+                        </StatSection>
 
-                    <StatSection title={t('المسوقين')}>
-                        <StatCard label={t('إجمالي المسوقين')} value={formatNumber(data.affiliates.total)} icon="users" />
-                        <StatCard label={t('المسوقين النشطين')} value={formatNumber(data.affiliates.active)} icon="check" tone="success" />
-                        <StatCard label={t('المسوقين المجمدين')} value={formatNumber(data.affiliates.frozen)} icon="lock" tone="danger" />
-                        <StatCard label={t('المسوقين في الانتظار')} value={formatNumber(data.affiliates.pending)} icon="clock" tone="warning" />
-                        <StatCard label={t('إجمالي العمولات المؤكدة')} value={formatMoney(data.affiliates.earned_commission)} icon="bar-chart" tone="info" />
-                    </StatSection>
+                        <div className="grid gap-6 lg:grid-cols-2">
+                            <DailyChart title={t('المتاجر المسجلة يومياً')} daily={data.daily} field="stores" />
+                            <DailyChart title={t('الطلبات المسجلة يومياً')} daily={data.daily} field="orders" />
+                        </div>
 
-                    <StatSection title={t('المنتجات')}>
-                        <StatCard label={t('إجمالي المنتجات')} value={formatNumber(data.products.total)} icon="box" />
-                        <StatCard label={t('المنتجات المنشورة')} value={formatNumber(data.products.published)} icon="check" tone="success" />
-                    </StatSection>
-
-                    <div className="grid gap-6 xl:grid-cols-2">
-                        <DailyChart title={t('المتاجر المسجلة يومياً')} daily={data.daily} field="stores" />
-                        <DailyChart title={t('الطلبات المسجلة يومياً')} daily={data.daily} field="orders" />
+                        <div className="flex flex-col gap-6">
+                            <TopTable
+                                title={t('أعلى ٥ متاجر مبيعاً')}
+                                rows={data.top_stores}
+                                rowKey={(store) => store.store_id}
+                                emptyText={t('لا توجد مبيعات بعد.')}
+                                actions={<Link to="/admin/stores" className="text-sm font-medium text-primary hover:underline">{t('الكل')}</Link>}
+                                columns={[
+                                    { label: t('المتجر'), render: (store) => <Link to={`/admin/stores/${store.store_id}`} className="font-medium text-ink hover:text-primary">{store.name}</Link> },
+                                    { label: t('طلبات مسلّمة'), render: (store) => formatNumber(store.delivered_orders) },
+                                    { label: t('المبيعات المؤكدة'), render: (store) => formatMoney(store.delivered_sales), className: 'font-semibold text-ink whitespace-nowrap' },
+                                ]}
+                            />
+                            <TopTable
+                                title={t('أعلى ٥ مسوقين مبيعاً')}
+                                rows={data.top_affiliates}
+                                rowKey={(affiliate) => affiliate.affiliate_id}
+                                emptyText={t('لا توجد عمولات بعد.')}
+                                actions={<Link to="/admin/affiliates" className="text-sm font-medium text-primary hover:underline">{t('الكل')}</Link>}
+                                columns={[
+                                    {
+                                        label: t('المسوق'),
+                                        render: (affiliate) => (
+                                            <span>
+                                                <button type="button" onClick={() => setOpenAffiliateId(affiliate.affiliate_id)} className="block text-start font-medium text-ink hover:text-primary">
+                                                    {affiliate.name}
+                                                </button>
+                                                {affiliate.store && (
+                                                    <Link to={`/admin/stores/${affiliate.store.store_id}`} className="text-xs text-muted hover:text-primary">
+                                                        {affiliate.store.name}
+                                                    </Link>
+                                                )}
+                                            </span>
+                                        ),
+                                    },
+                                    { label: t('طلبات مسلّمة'), render: (affiliate) => formatNumber(affiliate.delivered_orders) },
+                                    { label: t('العمولات المؤكدة'), render: (affiliate) => formatMoney(affiliate.earned_commission), className: 'font-semibold text-ink whitespace-nowrap' },
+                                ]}
+                            />
+                        </div>
                     </div>
 
-                    <div className="grid gap-6 xl:grid-cols-2">
-                        <TopTable
-                            title={t('أعلى ٥ متاجر مبيعاً')}
-                            rows={data.top_stores}
-                            rowKey={(store) => store.store_id}
-                            emptyText={t('لا توجد مبيعات بعد.')}
-                            actions={<Link to="/admin/stores" className="text-sm font-medium text-primary hover:underline">{t('الكل')}</Link>}
-                            columns={[
-                                { label: t('المتجر'), render: (store) => <Link to={`/admin/stores/${store.store_id}`} className="font-medium text-ink hover:text-primary">{store.name}</Link> },
-                                { label: t('طلبات مسلّمة'), render: (store) => formatNumber(store.delivered_orders) },
-                                { label: t('المبيعات المؤكدة'), render: (store) => formatMoney(store.delivered_sales), className: 'font-semibold text-ink whitespace-nowrap' },
-                            ]}
-                        />
-                        <TopTable
-                            title={t('أعلى ٥ مسوقين مبيعاً')}
-                            rows={data.top_affiliates}
-                            rowKey={(affiliate) => affiliate.affiliate_id}
-                            emptyText={t('لا توجد عمولات بعد.')}
-                            actions={<Link to="/admin/affiliates" className="text-sm font-medium text-primary hover:underline">{t('الكل')}</Link>}
-                            columns={[
-                                {
-                                    label: t('المسوق'),
-                                    render: (affiliate) => (
-                                        <span>
-                                            <button type="button" onClick={() => setOpenAffiliateId(affiliate.affiliate_id)} className="block text-start font-medium text-ink hover:text-primary">
-                                                {affiliate.name}
-                                            </button>
-                                            {affiliate.store && (
-                                                <Link to={`/admin/stores/${affiliate.store.store_id}`} className="text-xs text-muted hover:text-primary">
-                                                    {affiliate.store.name}
-                                                </Link>
-                                            )}
-                                        </span>
-                                    ),
-                                },
-                                { label: t('طلبات مسلّمة'), render: (affiliate) => formatNumber(affiliate.delivered_orders) },
-                                { label: t('العمولات المؤكدة'), render: (affiliate) => formatMoney(affiliate.earned_commission), className: 'font-semibold text-ink whitespace-nowrap' },
-                            ]}
-                        />
-                    </div>
+                    {/* Side column: the platform's stores and catalog at a glance. */}
+                    <aside className="flex min-w-0 flex-col gap-8 xl:sticky xl:top-24">
+                        <StatSection title={t('المتاجر')} columns="sm:grid-cols-3 xl:grid-cols-2 xl:[&>:last-child]:col-span-2">
+                                <StatCard label={t('إجمالي المتاجر')} value={formatNumber(data.stores.total)} icon="store" />
+                                <StatCard label={t('المتاجر النشطة')} value={formatNumber(data.stores.active)} icon="check" tone="success" />
+                                <StatCard label={t('المتاجر الموقوفة')} value={formatNumber(data.stores.suspended)} icon="lock" tone="danger" />
+                            </StatSection>
+                        <StatSection title={t('المنتجات')}>
+                                <StatCard label={t('إجمالي المنتجات')} value={formatNumber(data.products.total)} icon="box" />
+                                <StatCard label={t('المنتجات المنشورة')} value={formatNumber(data.products.published)} icon="check" tone="success" />
+                            </StatSection>
+                    </aside>
                 </div>
             )}
 

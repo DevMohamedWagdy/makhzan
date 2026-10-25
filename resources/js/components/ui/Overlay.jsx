@@ -77,12 +77,12 @@ function DialogHeader({ titleId, title, description, icon, iconTone = 'primary',
     return (
         <header className="flex items-start gap-3.5 border-b border-line px-6 py-5">
             {icon && (
-                <span className={cn('grid size-10 shrink-0 place-items-center rounded-xl', tones[iconTone])}>
+                <span className={cn('grid size-10 shrink-0 place-items-center rounded-xl ring-1 ring-current/10 ring-inset', tones[iconTone])}>
                     <Icon name={icon} className="size-5" />
                 </span>
             )}
             <div className="min-w-0 flex-1">
-                <h2 id={titleId} className="text-lg font-semibold text-ink">
+                <h2 id={titleId} className="text-[17px] leading-7 font-semibold text-ink">
                     {title}
                 </h2>
                 {description && <p className="mt-1 text-sm leading-relaxed text-muted">{description}</p>}
@@ -110,17 +110,17 @@ export function Modal({ open, onClose, title, description, icon, iconTone, size 
 
     return createPortal(
         <div className="fixed inset-0 z-50 flex items-end justify-center p-0 sm:items-center sm:p-4">
-            <div className="animate-fade-in absolute inset-0 bg-slate-950/50 backdrop-blur-[2px]" onClick={close} />
+            <div className="animate-fade-in absolute inset-0 bg-[#0b1116]/50 backdrop-blur-[3px]" onClick={close} />
             <div
                 ref={panelRef}
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby={titleId}
-                className={cn('mk-card animate-pop relative flex max-h-[92vh] w-full flex-col rounded-b-none shadow-pop sm:rounded-xl', widths[size])}
+                className={cn('mk-card animate-pop relative flex max-h-[92vh] w-full flex-col rounded-b-none shadow-pop sm:rounded-2xl', widths[size])}
             >
                 <DialogHeader titleId={titleId} title={title} description={description} icon={icon} iconTone={iconTone} onClose={close} />
                 <div className="mk-scroll flex-1 overflow-y-auto px-6 py-5">{children}</div>
-                {footer && <footer className="flex flex-wrap items-center justify-end gap-2 border-t border-line bg-surface-2 px-6 py-4 sm:rounded-b-xl">{footer}</footer>}
+                {footer && <footer className="flex flex-wrap items-center justify-end gap-2 border-t border-line bg-surface-2 px-6 py-4 sm:rounded-b-2xl">{footer}</footer>}
             </div>
         </div>,
         document.body,
@@ -143,7 +143,7 @@ export function Drawer({ open, onClose, title, description, icon, size = 'md', f
 
     return createPortal(
         <div className="fixed inset-0 z-50">
-            <div className="animate-fade-in absolute inset-0 bg-slate-950/50 backdrop-blur-[2px]" onClick={onClose} />
+            <div className="animate-fade-in absolute inset-0 bg-[#0b1116]/50 backdrop-blur-[3px]" onClick={onClose} />
             <aside
                 ref={panelRef}
                 role="dialog"

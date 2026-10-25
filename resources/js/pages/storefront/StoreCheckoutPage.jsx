@@ -217,7 +217,7 @@ export function StoreCheckoutPage() {
 
     return (
         <div className="flex flex-col gap-6">
-            <h1 className="text-2xl font-bold text-ink sm:text-3xl">{t('إتمام الطلب')}</h1>
+            <h1 className="mk-page-title">{t('إتمام الطلب')}</h1>
 
             <div className="grid items-start gap-6 lg:grid-cols-[1fr_380px]">
                 <div className="flex flex-col gap-6">

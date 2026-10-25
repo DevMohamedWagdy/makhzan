@@ -82,7 +82,7 @@ export function AffiliateForgotPasswordPage() {
                 <span className="mx-auto grid size-14 place-items-center rounded-2xl bg-primary-soft text-primary">
                     <Icon name="lock" className="size-7" />
                 </span>
-                <h1 className="mt-5 text-2xl font-bold text-ink">{t('نسيت كلمة المرور؟')}</h1>
+                <h1 className="mt-5 mk-page-title">{t('نسيت كلمة المرور؟')}</h1>
                 <p className="mt-2 text-sm leading-relaxed text-muted">{t('أدخل بريدك الإلكتروني المسجل، وسنرسل لك رابط إعادة التعيين.')}</p>
             </div>
 

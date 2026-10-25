@@ -6,7 +6,7 @@ import { Icon } from '@/components/ui/Icon';
 import { LanguageToggle } from '@/components/ui/LanguageToggle';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { useAuth } from '@/context/AuthContext';
-import { isRtl, t } from '@/i18n';
+import { t } from '@/i18n';
 import { cn } from '@/lib/format';
 import { SiteFooter } from '@/pages/landing/SiteFooter';
 
@@ -54,7 +54,8 @@ export function LandingPage() {
     const { isAuthenticated } = useAuth();
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const arrow = isRtl ? 'arrow-left' : 'arrow-right';
+    // Icon mirrors arrows in English itself, so the Arabic drawing is always the one to ask for.
+    const arrow = 'arrow-left';
 
     useEffect(() => {
         const onScroll = () => setIsScrolled(window.scrollY > 8);
@@ -66,11 +67,11 @@ export function LandingPage() {
     }, []);
 
     const primaryAction = isAuthenticated ? (
-        <Button to="/dashboard" variant="sprout" size="xl" iconEnd={arrow}>
+        <Button to="/dashboard" variant="brand" size="xl" iconEnd={arrow}>
             {t('الذهاب إلى لوحة التحكم')}
         </Button>
     ) : (
-        <Button to="/register" variant="sprout" size="xl" iconEnd={arrow}>
+        <Button to="/register" variant="brand" size="xl" iconEnd={arrow}>
             {t('ابدأ مجاناً')}
         </Button>
     );
@@ -140,19 +141,20 @@ export function LandingPage() {
             </header>
 
             <main>
-                {/* Hero on Ink (design system "Hero"): one Sprout CTA, proof chips, then the product frame overlapping the next section. */}
+                {/* Hero on Ink (design system "Hero"): one logo-green CTA, proof chips, then the product frame overlapping the next section. */}
                 <section className="relative bg-brand text-white">
                     <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
+                        <div className="mk-grid-texture absolute inset-0 [mask-image:radial-gradient(ellipse_60%_55%_at_50%_0%,black,transparent)]" />
                         <div className="absolute -top-40 start-1/2 h-[420px] w-[640px] -translate-x-1/2 rounded-full bg-primary/40 blur-3xl rtl:translate-x-1/2" />
                     </div>
 
                     <div className="relative mx-auto max-w-6xl px-4 pt-16 text-center sm:px-6 sm:pt-24">
-                        <span className="inline-flex items-center gap-2 rounded-full border border-white/15 px-3.5 py-1.5 text-xs font-medium text-white/85">
-                            <Icon name="sparkles" className="size-4 text-sprout" />
+                        <span className="inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/[0.04] px-3.5 py-1.5 text-xs font-medium text-white/85 backdrop-blur">
+                            <Icon name="sparkles" className="size-4 text-brand-green" />
                             {t('منصة واحدة لإدارة تجارتك بالكامل')}
                         </span>
-                        <h1 className="mx-auto mt-6 max-w-3xl text-4xl leading-[1.3] font-bold text-balance sm:text-5xl sm:leading-[1.25]">
-                            {t('كل ما يحتاجه متجرك،')} <span className="bg-gradient-to-l from-brand-green to-sprout bg-clip-text text-transparent">{t('في منصة واحدة.')}</span>
+                        <h1 className="mx-auto mt-7 max-w-3xl text-[38px] leading-[1.3] font-bold text-balance sm:text-[56px] sm:leading-[1.2]">
+                            {t('كل ما يحتاجه متجرك،')} <span className="text-brand-green">{t('في منصة واحدة.')}</span>
                         </h1>
                         <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-white/75 sm:text-lg">
                             {t('المخزون، الطلبات، المسوقين والتقارير — نظام متكامل مصمم للتاجر العربي.')}
@@ -168,7 +170,7 @@ export function LandingPage() {
                         <ul className="mt-10 flex flex-wrap justify-center gap-x-8 gap-y-4">
                             {HERO_PROOF.map((proof) => (
                                 <li key={proof.text} className="flex items-center gap-3 text-sm text-white/85">
-                                    <span className="grid size-10 place-items-center rounded-lg bg-brand-light text-sprout">
+                                    <span className="grid size-9 place-items-center rounded-lg border border-white/10 bg-white/[0.04] text-brand-green">
                                         <Icon name={proof.icon} className="size-5" />
                                     </span>
                                     {proof.text}
@@ -183,11 +185,11 @@ export function LandingPage() {
                 </section>
 
                 <section className="border-b border-line bg-surface">
-                    <dl className="mx-auto grid max-w-6xl grid-cols-2 gap-y-8 px-4 pt-36 pb-10 sm:px-6 sm:pt-48 md:grid-cols-4">
+                    <dl className="mx-auto grid max-w-6xl grid-cols-2 gap-y-8 px-4 pt-36 pb-12 sm:px-6 sm:pt-48 md:grid-cols-4 md:divide-x md:divide-line">
                         {STATS.map((stat) => (
                             <div key={stat.label} className="text-center">
                                 <dt className="sr-only">{stat.label}</dt>
-                                <dd className="ltr text-3xl font-bold text-ink">{stat.value}</dd>
+                                <dd className="ltr mk-num text-[32px] leading-10 font-semibold text-ink">{stat.value}</dd>
                                 <dd className="mt-1 text-sm text-muted">{stat.label}</dd>
                             </div>
                         ))}
@@ -198,8 +200,8 @@ export function LandingPage() {
                     <SectionHeading eyebrow={t('المميزات')} title={t('أدوات حقيقية لتاجر حقيقي')} subtitle={t('كل وحدة مصممة لتوفر وقتك وتقلل الأخطاء، وكلها مترابطة في نظام واحد.')} />
                     <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                         {FEATURES.map((feature) => (
-                            <article key={feature.title} className="mk-card group p-6 transition hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-pop">
-                                <span className="grid size-11 place-items-center rounded-xl bg-primary-soft text-primary transition group-hover:bg-primary group-hover:text-white">
+                            <article key={feature.title} className="mk-card mk-card-link group p-6">
+                                <span className="grid size-10 place-items-center rounded-xl bg-primary-soft text-brand-green ring-1 ring-primary/10 ring-inset transition group-hover:bg-brand-green group-hover:text-brand">
                                     <Icon name={feature.icon} />
                                 </span>
                                 <h3 className="mt-5 text-base font-semibold text-ink">{feature.title}</h3>
@@ -215,7 +217,7 @@ export function LandingPage() {
                         <ol className="mt-12 grid gap-6 md:grid-cols-3">
                             {STEPS.map((step, index) => (
                                 <li key={step.title} className="relative rounded-2xl border border-line bg-bg p-6">
-                                    <span className="ltr grid size-10 place-items-center rounded-full bg-primary text-sm font-bold text-white">{index + 1}</span>
+                                    <span className="ltr mk-num grid size-10 place-items-center rounded-xl bg-panel text-sm font-semibold text-brand-green">{String(index + 1).padStart(2, '0')}</span>
                                     <h3 className="mt-5 text-lg font-semibold text-ink">{step.title}</h3>
                                     <p className="mt-2 text-sm leading-relaxed text-muted">{step.text}</p>
                                 </li>
@@ -226,8 +228,8 @@ export function LandingPage() {
 
                 <section id="storefront" className="mx-auto grid max-w-6xl scroll-mt-20 items-center gap-12 px-4 py-20 sm:px-6 sm:py-24 lg:grid-cols-2">
                     <div>
-                        <span className="text-sm font-semibold text-primary">{t('المتجر الإلكتروني')}</span>
-                        <h2 className="mt-3 text-3xl leading-snug font-bold text-ink">{t('متجر أونلاين جاهز، متصل بمخزونك مباشرة')}</h2>
+                        <span className="mk-overline text-primary">{t('المتجر الإلكتروني')}</span>
+                        <h2 className="mt-3 text-[30px] leading-snug font-bold text-ink">{t('متجر أونلاين جاهز، متصل بمخزونك مباشرة')}</h2>
                         <p className="mt-4 leading-relaxed text-ink-2">{t('كل طلب من متجرك يخصم من المخزون تلقائياً ويظهر في لوحة التحكم فوراً — بدون أي ربط أو برامج إضافية.')}</p>
                         <ul className="mt-6 flex flex-col gap-3">
                             {STOREFRONT_POINTS.map((point) => (
@@ -244,13 +246,14 @@ export function LandingPage() {
                 </section>
 
                 <section className="px-4 pb-20 sm:px-6 sm:pb-24">
-                    {/* Closing CTA band (design system "CtaBand"): Ink, the mark as a faint watermark, one Sprout button. */}
-                    <div className="relative mx-auto max-w-6xl overflow-hidden rounded-3xl bg-brand px-6 py-14 text-center sm:px-12 dark:ring-1 dark:ring-line">
+                    {/* Closing CTA band (design system "CtaBand"): Ink, the mark as a faint watermark, one logo-green button. */}
+                    <div className="relative mx-auto max-w-6xl overflow-hidden rounded-3xl bg-brand px-6 py-16 text-center sm:px-12 dark:ring-1 dark:ring-line">
+                        <div className="mk-grid-texture pointer-events-none absolute inset-0 [mask-image:radial-gradient(ellipse_at_center,black,transparent_70%)]" aria-hidden="true" />
                         <LogoMark className="pointer-events-none absolute -start-8 -bottom-10 size-60 text-white/[0.06]" />
                         <h2 className="relative text-3xl font-bold text-white">{t('جاهز تنظّم تجارتك؟')}</h2>
                         <p className="relative mx-auto mt-3 max-w-xl text-white/75">{t('انضم الآن وابدأ إدارة مخزونك وطلباتك ومسوقيك من مكان واحد.')}</p>
                         <div className="relative mt-8 flex flex-wrap justify-center gap-3">
-                            <Button to={isAuthenticated ? '/dashboard' : '/register'} variant="sprout" size="lg" iconEnd={arrow}>
+                            <Button to={isAuthenticated ? '/dashboard' : '/register'} variant="brand" size="lg" iconEnd={arrow}>
                                 {isAuthenticated ? t('الذهاب إلى لوحة التحكم') : t('أنشئ متجرك مجاناً')}
                             </Button>
                             {!isAuthenticated && (
@@ -279,8 +282,8 @@ function scrollToHash(hash) {
 function SectionHeading({ eyebrow, title, subtitle }) {
     return (
         <div className="mx-auto max-w-2xl text-center">
-            <span className="text-sm font-semibold text-primary">{eyebrow}</span>
-            <h2 className="mt-3 text-3xl leading-snug font-bold text-ink">{title}</h2>
+            <span className="mk-overline text-primary">{eyebrow}</span>
+            <h2 className="mt-3 text-[30px] leading-snug font-bold text-ink sm:text-[34px]">{title}</h2>
             {subtitle && <p className="mt-3 leading-relaxed text-ink-2">{subtitle}</p>}
         </div>
     );
@@ -297,7 +300,7 @@ function DashboardPreview() {
                     <span className="size-2.5 rounded-full bg-success/70" />
                 </div>
                 <div className="grid gap-3 rounded-xl bg-bg p-3 text-start sm:p-5 md:grid-cols-[180px_1fr]">
-                    <div className="hidden flex-col gap-1.5 rounded-xl border border-line bg-surface p-3 md:flex">
+                    <div className="hidden flex-col gap-1 rounded-xl bg-panel p-3 md:flex">
                         {[
                             ['grid', t('الرئيسية')],
                             ['shopping-bag', t('الطلبات')],
@@ -306,7 +309,7 @@ function DashboardPreview() {
                             ['users', t('المسوقين')],
                             ['bar-chart', t('التقارير')],
                         ].map(([icon, label], index) => (
-                            <span key={label} className={cn('flex items-center gap-2 rounded-lg px-2.5 py-2 text-xs', index === 0 ? 'bg-primary-soft font-semibold text-primary' : 'text-ink-2')}>
+                            <span key={label} className={cn('flex items-center gap-2 rounded-lg px-2.5 py-2 text-xs', index === 0 ? 'bg-white/[0.07] font-semibold text-white [&>svg]:text-brand-green' : 'text-panel-text/80')}>
                                 <Icon name={icon} className="size-4" />
                                 {label}
                             </span>
@@ -370,10 +373,10 @@ function StorefrontPreview() {
                     </span>
                 </div>
                 <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
-                    {['from-indigo-200 to-sky-100', 'from-amber-100 to-rose-100', 'from-emerald-100 to-teal-50', 'from-sky-100 to-indigo-100', 'from-rose-100 to-orange-50', 'from-violet-100 to-fuchsia-50'].map((tone, index) => (
+                    {['bg-primary-soft', 'bg-surface-3', 'bg-warning-soft', 'bg-info-soft', 'bg-surface-3', 'bg-primary-soft'].map((tone, index) => (
                         <div key={tone} className={cn('rounded-xl border border-line p-2', index > 3 && 'hidden sm:block')}>
-                            <div className={cn('grid aspect-square place-items-center rounded-lg bg-gradient-to-br dark:opacity-80', tone)}>
-                                <Icon name="box" className="size-8 text-slate-500/60" />
+                            <div className={cn('grid aspect-square place-items-center rounded-lg', tone)}>
+                                <Icon name="box" className="size-8 text-muted/60" />
                             </div>
                             <span className="mt-2 block h-2 w-3/4 rounded-full bg-surface-3" />
                             <span className="mt-1.5 block h-2 w-1/3 rounded-full bg-primary/30" />

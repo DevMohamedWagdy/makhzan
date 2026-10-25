@@ -3,7 +3,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { PageHeader } from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/Button';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
-import { Badge, EmptyState, StatCard } from '@/components/ui/Display';
+import { Badge, EmptyState, StatCard, StatStrip } from '@/components/ui/Display';
 import { Dropdown } from '@/components/ui/Dropdown';
 import { Input } from '@/components/ui/Form';
 import { Icon } from '@/components/ui/Icon';
@@ -123,15 +123,15 @@ export function CouponsPage() {
                 }
             />
 
-            <div className="mb-6 grid gap-4 sm:grid-cols-3">
+            <StatStrip>
                 <StatCard label={t('كوبونات فعّالة')} value={summary ? formatNumber(summary.active) : '—'} icon="gift" tone="success" hint={summary?.scheduled ? t('و{count} مجدول', { count: formatNumber(summary.scheduled) }) : undefined} />
                 <StatCard label={t('طلبات استخدمت كوبون')} value={summary ? formatNumber(summary.orders) : '—'} icon="shopping-bag" tone="primary" />
                 <StatCard label={t('إجمالي الخصومات')} value={summary ? formatMoney(summary.discounts) : '—'} icon="percent" tone="warning" hint={t('من الطلبات غير الملغاة')} />
-            </div>
+            </StatStrip>
 
             <section className="mk-card overflow-hidden">
                 <Tabs tabs={tabs} value={state} onChange={(value) => setQuery({ state: value })} className="px-3" />
-                <div className="p-4">
+                <div className="mk-toolbar">
                     <Input type="search" icon="search" value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder={t('ابحث بالكود...')} aria-label={t('بحث في الكوبونات')} className="lg:w-72" dir="ltr" />
                 </div>
 
@@ -151,7 +151,7 @@ export function CouponsPage() {
                 ) : (
                     <div className="mk-scroll overflow-x-auto">
                         <table className="w-full min-w-[880px] text-sm">
-                            <thead className="border-y border-line bg-surface-2 text-xs text-muted">
+                            <thead className="mk-thead">
                                 <tr>
                                     {COLUMNS.map((column, index) => (
                                         <th key={index} scope="col" className="px-4 py-3 text-start font-medium whitespace-nowrap">

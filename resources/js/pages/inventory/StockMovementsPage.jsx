@@ -84,7 +84,7 @@ export function StockMovementsPage() {
             />
 
             <section className="mk-card overflow-hidden">
-                <div className="flex flex-wrap items-center gap-3 p-4">
+                <div className="mk-toolbar">
                     <Input type="search" icon="search" value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder={t('ابحث باسم المنتج...')} aria-label={t('بحث في الحركات')} className="lg:w-72" />
                     <Select aria-label={t('نوع الحركة')} value={filters.type} onChange={(event) => setQuery({ type: event.target.value })} placeholder={t('كل الحركات')} options={Object.entries(STOCK_MOVEMENT_TYPES).map(([value, config]) => ({ value, label: config.label }))} className="w-48" />
                     {warehouses?.length > 1 && (

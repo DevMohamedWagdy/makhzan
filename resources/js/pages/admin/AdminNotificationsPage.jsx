@@ -62,7 +62,7 @@ export function AdminNotificationsPage() {
                         <EmptyState icon="bell" title={t('لا توجد إشعارات')} />
                     </div>
                 ) : (
-                    <div className="flex flex-col p-2">
+                    <div className="flex flex-col divide-y divide-line">
                         {result.data.map((notification) => (
                             <NotificationItem key={notification.id} notification={notification} onOpen={open} />
                         ))}

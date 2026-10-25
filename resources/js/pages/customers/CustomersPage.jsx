@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { PageHeader } from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/Button';
-import { Avatar, EmptyState, StatCard } from '@/components/ui/Display';
+import { Avatar, EmptyState, StatCard, StatStrip } from '@/components/ui/Display';
 import { Input, Select } from '@/components/ui/Form';
 import { Pagination, Tabs } from '@/components/ui/Navigation';
 import { Skeleton } from '@/components/ui/Spinner';
@@ -87,12 +87,12 @@ export function CustomersPage() {
         <>
             <PageHeader title={t('العملاء')} description={t('عملاء متجرك الذين سجّلوا حساباً، وطلباتهم ومشترياتهم')} breadcrumbs={[t('لوحة التحكم'), t('المبيعات'), t('العملاء')]} />
 
-            <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <StatStrip>
                 <StatCard label={t('كل العملاء')} value={summary ? formatNumber(summary.total) : '—'} icon="users" />
                 <StatCard label={t('سجّلوا هذا الشهر')} value={summary ? formatNumber(summary.new_this_month) : '—'} icon="user-plus" tone="info" />
                 <StatCard label={t('عملاء اشتروا')} value={summary ? formatNumber(summary.buyers) : '—'} icon="shopping-bag" tone="success" />
                 <StatCard label={t('عملاء متكررون')} value={summary ? formatNumber(summary.repeat_buyers) : '—'} icon="refresh" tone="warning" hint={summary && t('{value}% من المشترين طلبوا أكثر من مرة', { value: formatNumber(repeatRate) })} />
-            </div>
+            </StatStrip>
 
             <section className="mk-card overflow-hidden">
                 <Tabs
@@ -104,7 +104,7 @@ export function CustomersPage() {
                     onChange={(value) => setQuery({ buyers: value })}
                     className="px-3"
                 />
-                <div className="flex flex-wrap items-center gap-3 p-4">
+                <div className="mk-toolbar">
                     <Input type="search" icon="search" value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder={t('ابحث بالاسم أو الهاتف أو البريد...')} aria-label={t('بحث في العملاء')} className="lg:w-96" />
                     <Select value={sort} onChange={(event) => setQuery({ sort: event.target.value })} options={SORTS} icon="filter" aria-label={t('ترتيب العملاء')} className="w-52" />
                 </div>
@@ -120,7 +120,7 @@ export function CustomersPage() {
                 ) : (
                     <div className="mk-scroll overflow-x-auto">
                         <table className="w-full min-w-[760px] text-sm">
-                            <thead className="border-y border-line bg-surface-2 text-xs text-muted">
+                            <thead className="mk-thead">
                                 <tr>
                                     {COLUMNS.map((column) => (
                                         <th key={column} scope="col" className="px-4 py-3 text-start font-medium whitespace-nowrap">

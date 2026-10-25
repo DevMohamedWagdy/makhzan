@@ -75,11 +75,11 @@ export function NotificationsPage() {
                     className="px-3"
                 />
 
-                <div className="p-3">
+                <div>
                     {error ? (
                         <EmptyState icon="alert-triangle" title={t('تعذر تحميل الإشعارات')} description={error} action={<Button variant="secondary" icon="refresh" onClick={load}>{t('إعادة المحاولة')}</Button>} />
                     ) : !result ? (
-                        <div className="flex flex-col gap-2">
+                        <div className="flex flex-col gap-2 p-4">
                             {[0, 1, 2].map((index) => (
                                 <Skeleton key={index} className="h-16 w-full" />
                             ))}
@@ -87,7 +87,7 @@ export function NotificationsPage() {
                     ) : result.data.length === 0 ? (
                         <EmptyState icon="bell" title={filter ? t('لا توجد إشعارات غير مقروءة') : t('لا توجد إشعارات بعد')} description={t('ستصلك هنا طلبات الانضمام وطلبات تحويل العمولة من المسوقين.')} />
                     ) : (
-                        <div className="flex flex-col gap-1">
+                        <div className="flex flex-col divide-y divide-line">
                             {result.data.map((notification) => (
                                 <NotificationItem key={notification.id} notification={notification} onOpen={openNotification} />
                             ))}

@@ -154,7 +154,7 @@ export function StoreOrderPage() {
                     <Link to={`/${storeSlug}/account/orders`} className="text-sm text-muted hover:text-primary">
                         {t('طلباتي')}
                     </Link>
-                    <h1 className="mt-1 text-2xl font-bold text-ink">{t('طلب #{number}', { number: order.number })}</h1>
+                    <h1 className="mt-1 mk-page-title">{t('طلب #{number}', { number: order.number })}</h1>
                     <p className="mt-1 text-sm text-muted">{t('بتاريخ {date}', { date: formatDate(order.created_at) })}</p>
                 </div>
                 <OrderStatusBadge status={order.status} />

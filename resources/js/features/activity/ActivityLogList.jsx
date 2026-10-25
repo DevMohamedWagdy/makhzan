@@ -49,7 +49,7 @@ export function ActivityLogList({ load, fixed = {}, showStore = false, compact =
     return (
         <>
             {!compact && (
-                <div className="flex flex-wrap items-center gap-3 p-4">
+                <div className="mk-toolbar">
                     <Input type="search" icon="search" value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder={t('ابحث باسم المنفذ أو العنصر...')} aria-label={t('بحث في السجل')} className="lg:w-72" />
                     <Select value={filters.event} onChange={(event) => setFilter('event', event.target.value)} aria-label={t('الحدث')} className="sm:w-44" options={EVENT_FILTERS} />
                     <Select value={filters.actor_type} onChange={(event) => setFilter('actor_type', event.target.value)} aria-label={t('المنفذ')} className="sm:w-44" options={ACTOR_TYPES} />
@@ -129,7 +129,7 @@ export function ActivityLogList({ load, fixed = {}, showStore = false, compact =
                         {open.changes && (
                             <div className="overflow-hidden rounded-xl border border-line">
                                 <table className="w-full text-xs">
-                                    <thead className="bg-surface-2 text-muted">
+                                    <thead className="mk-thead">
                                         <tr>
                                             <th className="px-3 py-2 text-start font-medium">{t('الحقل')}</th>
                                             {open.changes.old && <th className="px-3 py-2 text-start font-medium">{t('قبل')}</th>}

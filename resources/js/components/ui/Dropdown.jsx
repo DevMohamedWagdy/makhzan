@@ -90,7 +90,7 @@ export function Dropdown({ trigger, items, label = t('الإجراءات') }) {
                     >
                         {visibleItems.map((item, index) =>
                             item.divider ? (
-                                <div key={`divider-${index}`} className="my-1.5 h-px bg-line" />
+                                <div key={`divider-${index}`} className="-mx-1.5 my-1.5 h-px bg-line" />
                             ) : (
                                 <button
                                     key={item.label}
@@ -103,7 +103,7 @@ export function Dropdown({ trigger, items, label = t('الإجراءات') }) {
                                         item.onClick?.();
                                     }}
                                     className={cn(
-                                        'flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-start text-sm transition focus:outline-none disabled:cursor-not-allowed disabled:opacity-50',
+                                        'flex h-9 w-full items-center gap-2.5 rounded-lg px-2.5 text-start text-[13.5px] transition focus:shadow-none focus:outline-none disabled:cursor-not-allowed disabled:opacity-50',
                                         item.tone === 'danger'
                                             ? 'text-danger hover:bg-danger-soft focus:bg-danger-soft'
                                             : item.tone === 'success'

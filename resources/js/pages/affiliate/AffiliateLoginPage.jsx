@@ -78,7 +78,7 @@ export function AffiliateLoginPage() {
         <StorePublicLayout store={store} narrow>
             <div className="mb-8 text-center">
                 {store ? <Avatar name={store.name} src={store.logo_url} size="lg" className="mx-auto" /> : <Skeleton className="mx-auto size-14 rounded-xl" />}
-                <h1 className="mt-5 text-2xl font-bold text-ink">{t('دخول المسوقين')}</h1>
+                <h1 className="mt-5 mk-page-title">{t('دخول المسوقين')}</h1>
                 <p className="mt-2 text-sm text-muted">
                     {store
                         ? t('تابع أرباحك وروابط الإحالة الخاصة بك في {name}', {

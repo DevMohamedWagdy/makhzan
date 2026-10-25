@@ -72,8 +72,8 @@ export function AdminTicketsPage() {
 
             <section className="mk-card overflow-hidden">
                 <Tabs tabs={tabs} value={tab} onChange={(value) => setFilter('tab', value === 'awaiting' ? '' : value)} className="px-3" />
-                <div className="flex flex-col gap-3 p-4 lg:flex-row">
-                    <div className="w-full lg:max-w-sm">
+                <div className="mk-toolbar">
+                    <div>
                         <Input
                             icon="search"
                             value={search}
@@ -85,10 +85,10 @@ export function AdminTicketsPage() {
                             aria-label={t('بحث')}
                         />
                     </div>
-                    <div className="w-full lg:w-44">
+                    <div>
                         <Select options={TYPE_OPTIONS} value={type} onChange={(event) => setFilter('type', event.target.value)} aria-label={t('نوع التذكرة')} />
                     </div>
-                    <div className="w-full lg:w-56">
+                    <div>
                         <Select options={storeOptions} value={storeId} onChange={(event) => setFilter('store_id', event.target.value)} aria-label={t('المتجر')} />
                     </div>
                 </div>

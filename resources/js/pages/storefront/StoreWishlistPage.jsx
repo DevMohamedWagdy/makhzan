@@ -33,7 +33,7 @@ export function StoreWishlistPage() {
 
     return (
         <div className="flex flex-col gap-6">
-            <h1 className="text-2xl font-bold text-ink">{t('المفضلة')}</h1>
+            <h1 className="mk-page-title">{t('المفضلة')}</h1>
             {error ? (
                 <EmptyState icon="alert-triangle" title={t('تعذر تحميل المفضلة')} description={error} />
             ) : products && products.length === 0 ? (

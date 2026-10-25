@@ -1,7 +1,8 @@
 import { Suspense, useCallback, useEffect, useState } from 'react';
-import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Logo } from '@/components/brand/Logo';
-import { Avatar, Badge } from '@/components/ui/Display';
+import { SidebarNav } from '@/components/layout/DashboardLayout';
+import { Avatar } from '@/components/ui/Display';
 import { Icon } from '@/components/ui/Icon';
 import { PageLoader } from '@/components/ui/Spinner';
 import { LanguageToggle } from '@/components/ui/LanguageToggle';
@@ -117,53 +118,33 @@ export function AdminLayout() {
 
     return (
         <div className="min-h-dvh">
-            {open && <div className="animate-fade-in fixed inset-0 z-30 bg-slate-950/50 lg:hidden" onClick={() => setOpen(false)} />}
+            {open && <div className="animate-fade-in fixed inset-0 z-30 bg-[#0b1116]/55 backdrop-blur-[2px] lg:hidden" onClick={() => setOpen(false)} />}
             <aside
                 className={cn('fixed inset-y-0 start-0 z-40 flex w-[248px] flex-col border-e border-line bg-surface transition-transform duration-300 lg:translate-x-0', open ? 'translate-x-0' : isRtl ? 'translate-x-full' : '-translate-x-full')}
                 aria-label={t('قائمة الإدارة')}
             >
-                <div className="flex h-[72px] items-center gap-2 border-b border-line px-6">
+                <div className="flex h-16 shrink-0 items-center gap-2.5 px-5">
                     <Logo className="h-6" />
-                    <Badge tone="primary">{t('الإدارة')}</Badge>
+                    <span className="rounded-md border border-primary/15 bg-primary-soft px-1.5 py-0.5 text-[10.5px] font-semibold text-primary">{t('الإدارة')}</span>
                 </div>
-                <nav className="mk-scroll flex-1 overflow-y-auto px-3 py-4">
-                    {sections.map((section) => (
-                        <div key={section.title} className="mb-5">
-                            <p className="mb-2 px-3 text-[11px] font-semibold tracking-wide text-muted uppercase">{section.title}</p>
-                            <ul className="flex flex-col gap-0.5">
-                                {section.items.map((item) => (
-                                    <li key={item.to}>
-                                        <NavLink
-                                            to={item.to}
-                                            end={item.end}
-                                            className={({ isActive }) => cn('flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition', isActive ? 'bg-primary-soft text-primary' : 'text-ink-2 hover:bg-surface-3 hover:text-ink')}
-                                        >
-                                            <Icon name={item.icon} className="size-[18px]" />
-                                            {item.label}
-                                            {item.counter && unreadCount > 0 && <span className="ms-auto grid h-5 min-w-5 place-items-center rounded-full bg-danger px-1.5 text-[11px] font-bold text-white">{unreadCount > 99 ? '99+' : unreadCount}</span>}
-                                        </NavLink>
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-                    ))}
-                </nav>
+                <SidebarNav sections={sections} counter={(item) => (item.counter ? unreadCount : 0)} />
             </aside>
 
             <div className="lg:ps-[248px]">
-                <header className="sticky top-0 z-20 flex h-[72px] items-center gap-3 border-b border-line bg-surface/85 px-4 backdrop-blur-md sm:px-8">
-                    <button type="button" onClick={() => setOpen(true)} className="grid size-10 place-items-center rounded-xl border border-line text-ink-2 lg:hidden" aria-label={t('فتح القائمة')}>
-                        <Icon name="menu" />
+                <header className="sticky top-0 z-20 flex h-16 items-center gap-3 border-b border-line bg-surface/95 px-4 backdrop-blur-xl sm:px-8">
+                    <button type="button" onClick={() => setOpen(true)} className="grid size-9 place-items-center rounded-lg border border-line-strong/70 bg-surface text-ink-2 shadow-card lg:hidden" aria-label={t('فتح القائمة')}>
+                        <Icon name="menu" className="size-[18px]" />
                     </button>
-                    <div className="ms-auto flex items-center gap-2">
+                    <div className="ms-auto flex items-center gap-1">
                         <LanguageToggle />
                         <ThemeToggle />
                         <NotificationsMenu notifications={notifications} unreadCount={unreadCount} markRead={markRead} markAllRead={markAllRead} target={adminNotificationTarget} allHref="/admin/notifications" />
-                        <span className="flex items-center gap-2.5 px-2">
-                            <Avatar name={admin?.full_name} size="sm" />
-                            <span className="hidden text-start sm:block">
-                                <span className="block text-sm font-semibold text-ink">{admin?.full_name}</span>
-                                <span className="block text-xs text-muted">{admin?.is_super !== false ? t('مدير عام') : (admin?.role ?? t('فريق الإدارة'))}</span>
+                        <span className="mx-1.5 h-6 w-px bg-line" aria-hidden="true" />
+                        <span className="flex items-center gap-2.5 px-1">
+                            <Avatar name={admin?.full_name} size="sm" shape="circle" />
+                            <span className="hidden text-start leading-tight sm:block">
+                                <span className="block text-[13px] font-semibold text-ink">{admin?.full_name}</span>
+                                <span className="block text-[11px] text-muted">{admin?.is_super !== false ? t('مدير عام') : (admin?.role ?? t('فريق الإدارة'))}</span>
                             </span>
                         </span>
                         <button
@@ -172,15 +153,15 @@ export function AdminLayout() {
                                 logout();
                                 navigate('/admin/login');
                             }}
-                            className="grid size-10 place-items-center rounded-xl text-muted transition hover:bg-surface-3 hover:text-danger"
+                            className="grid size-9 place-items-center rounded-lg text-muted transition hover:bg-danger-soft hover:text-danger"
                             aria-label={t('تسجيل الخروج')}
                             title={t('تسجيل الخروج')}
                         >
-                            <Icon name="log-out" />
+                            <Icon name="log-out" className="size-[18px]" />
                         </button>
                     </div>
                 </header>
-                <main className="px-4 py-6 sm:px-8 sm:py-8">
+                <main className="mx-auto w-full max-w-[1440px] px-4 py-6 sm:px-8 sm:py-8">
                     <Suspense fallback={<PageLoader />}>
                         <Outlet context={{ reloadNotifications: loadNotifications }} />
                     </Suspense>

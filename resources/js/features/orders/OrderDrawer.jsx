@@ -131,7 +131,7 @@ export function OrderDrawer({ orderId, onClose, onChanged }) {
                                 <PaymentBadge order={order} />
                                 <OrderSourceBadge source={order.source} />
                             </span>
-                            <span className="text-xl font-bold text-ink">{formatMoney(order.total)}</span>
+                            <span className="mk-num text-xl font-semibold text-ink">{formatMoney(order.total)}</span>
                         </div>
                         <OrderProgress order={order} />
                         <div className="flex flex-wrap gap-2">

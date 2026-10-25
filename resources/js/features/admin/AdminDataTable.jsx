@@ -83,7 +83,7 @@ export function AdminDataTable({ load, columns, rowKey, storeId = null, searchPl
     return (
         <>
             {renderSummary && result && renderSummary(result)}
-            <div className="flex flex-wrap items-center gap-3 p-4">
+            <div className="mk-toolbar">
                 {searchPlaceholder && <Input type="search" icon="search" value={searchTerm} onChange={(event) => change(setSearchTerm)(event.target.value)} placeholder={searchPlaceholder} aria-label={searchPlaceholder} className="lg:w-80" />}
                 {!storeId && storeOptions.length > 0 && <Select value={store} onChange={(event) => change(setStore)(event.target.value)} aria-label={t('المتجر')} className="sm:w-48" options={[{ value: '', label: t('كل المتاجر') }, ...storeOptions]} />}
                 {filters.map((filter) => (
@@ -108,7 +108,7 @@ export function AdminDataTable({ load, columns, rowKey, storeId = null, searchPl
             ) : (
                 <div className="mk-scroll overflow-x-auto">
                     <table className="w-full text-sm" style={{ minWidth }}>
-                        <thead className="border-y border-line bg-surface-2 text-xs text-muted">
+                        <thead className="mk-thead">
                             <tr>
                                 {visibleColumns.map((column) => (
                                     <th key={column.label} scope="col" className="px-4 py-3 text-start font-medium whitespace-nowrap">

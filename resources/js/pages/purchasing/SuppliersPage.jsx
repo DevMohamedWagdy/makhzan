@@ -67,7 +67,7 @@ export function SuppliersPage() {
             />
 
             <section className="mk-card overflow-hidden">
-                <div className="p-4">
+                <div className="mk-toolbar">
                     <Input type="search" icon="search" value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder={t('ابحث بالاسم أو الهاتف...')} aria-label={t('بحث في الموردين')} className="lg:w-80" />
                 </div>
 
