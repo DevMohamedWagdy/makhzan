@@ -7,24 +7,24 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /*
- * Makhzan design tokens.
+ * Makhzan design tokens, taken from the SellyGrow logo palette (Growth Green, Ink, Sprout, Mist).
  * Semantic colors live in CSS variables so Light/Dark switch by toggling `.dark` on <html>.
  */
 :root {
-    --mk-bg: #f5f7fb;
+    --mk-bg: #f4f6f5;
     --mk-surface: #ffffff;
-    --mk-surface-2: #f9fafc;
-    --mk-surface-3: #f1f3f8;
-    --mk-border: #e7eaf1;
-    --mk-border-strong: #d5dae5;
-    --mk-text: #0f172a;
-    --mk-text-2: #475467;
-    --mk-muted: #8a94a6;
-    --mk-primary: #2c2c54;
-    --mk-primary-hover: #212140;
-    --mk-primary-soft: #ececf4;
-    --mk-secondary: #303952;
-    --mk-accent: #0ea5e9;
+    --mk-surface-2: #f8faf9;
+    --mk-surface-3: #eef2f0;
+    --mk-border: #e3e8e5;
+    --mk-border-strong: #d0d8d4;
+    --mk-text: #17212b;
+    --mk-text-2: #4b5761;
+    --mk-muted: #6b7671;
+    --mk-primary: #107a48;
+    --mk-primary-hover: #0c6239;
+    --mk-primary-soft: #e7f6ee;
+    --mk-secondary: #17212b;
+    --mk-accent: #16a35f;
     --mk-success: #16a34a;
     --mk-success-soft: #e9f9ef;
     --mk-warning: #d97706;
@@ -39,20 +39,20 @@
 }
 
 .dark {
-    --mk-bg: #0b0f19;
-    --mk-surface: #121826;
-    --mk-surface-2: #161d2e;
-    --mk-surface-3: #1c2438;
-    --mk-border: #232c40;
-    --mk-border-strong: #2f3a52;
-    --mk-text: #eef1f7;
-    --mk-text-2: #b2bccd;
-    --mk-muted: #7b879c;
-    --mk-primary: #7c7cc8;
-    --mk-primary-hover: #8e8ed4;
-    --mk-primary-soft: #1f1f3a;
-    --mk-secondary: #8d97b8;
-    --mk-accent: #38bdf8;
+    --mk-bg: #0b1117;
+    --mk-surface: #121a21;
+    --mk-surface-2: #16202a;
+    --mk-surface-3: #1c2732;
+    --mk-border: #24303b;
+    --mk-border-strong: #31404c;
+    --mk-text: #e8ecea;
+    --mk-text-2: #aeb8b3;
+    --mk-muted: #7c8892;
+    --mk-primary: #1c9459;
+    --mk-primary-hover: #22a866;
+    --mk-primary-soft: #12291e;
+    --mk-secondary: #aeb8b3;
+    --mk-accent: #b8f171;
     --mk-success: #34d399;
     --mk-success-soft: #0f2a22;
     --mk-warning: #fbbf24;
@@ -82,8 +82,10 @@
     --color-primary-hover: var(--mk-primary-hover);
     --color-primary-soft: var(--mk-primary-soft);
     --color-secondary: var(--mk-secondary);
-    --color-brand: #2c2c54;
-    --color-brand-light: #3d3d74;
+    --color-brand: #17212b;
+    --color-brand-light: #233140;
+    --color-brand-green: #16a35f;
+    --color-sprout: #b8f171;
     --color-accent: var(--mk-accent);
     --color-success: var(--mk-success);
     --color-success-soft: var(--mk-success-soft);

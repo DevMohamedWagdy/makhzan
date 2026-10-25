@@ -12,12 +12,16 @@ const VARIANTS = {
     danger: 'bg-danger text-white hover:opacity-90',
     'danger-soft': 'bg-danger-soft text-danger hover:bg-danger/15',
     success: 'bg-success text-white hover:opacity-90',
+    // Marketing bands on Ink (bg-brand) only: Sprout is unreadable on light surfaces.
+    sprout: 'bg-sprout font-semibold text-brand hover:bg-sprout/90',
+    'outline-light': 'border border-white/30 text-white hover:bg-white/10',
 };
 
 const SIZES = {
     sm: 'h-8 px-3 text-xs gap-1.5 rounded-lg',
     md: 'h-10 px-4 text-sm gap-2 rounded-lg',
     lg: 'h-12 px-6 text-sm gap-2 rounded-xl',
+    xl: 'h-14 px-7 text-[15px] gap-2 rounded-xl',
     icon: 'size-9 rounded-lg',
 };
 

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Logo } from '@/components/brand/Logo';
+import { Logo, LogoMark } from '@/components/brand/Logo';
 import { Button } from '@/components/ui/Button';
 import { Icon } from '@/components/ui/Icon';
 import { LanguageToggle } from '@/components/ui/LanguageToggle';
@@ -42,7 +42,13 @@ const STATS = [
     { value: '100%', label: t('سحابي بدون تثبيت') },
 ];
 
-const CHART_BARS = [42, 58, 46, 70, 62, 84, 76];
+const HERO_PROOF = [
+    { icon: 'truck', text: t('ربط مع شركات الشحن') },
+    { icon: 'users', text: t('نظام مسوّقين بالعمولة') },
+    { icon: 'bar-chart', text: t('تقارير لحظية لمبيعاتك') },
+];
+
+const CHART_BARS =[42, 58, 46, 70, 62, 84, 76];
 
 export function LandingPage() {
     const { isAuthenticated } = useAuth();
@@ -60,11 +66,11 @@ export function LandingPage() {
     }, []);
 
     const primaryAction = isAuthenticated ? (
-        <Button to="/dashboard" size="lg" iconEnd={arrow}>
+        <Button to="/dashboard" variant="sprout" size="xl" iconEnd={arrow}>
             {t('الذهاب إلى لوحة التحكم')}
         </Button>
     ) : (
-        <Button to="/register" size="lg" iconEnd={arrow}>
+        <Button to="/register" variant="sprout" size="xl" iconEnd={arrow}>
             {t('ابدأ مجاناً')}
         </Button>
     );
@@ -134,35 +140,50 @@ export function LandingPage() {
             </header>
 
             <main>
-                <section className="relative overflow-hidden">
-                    <div className="pointer-events-none absolute inset-x-0 top-0 -z-0 h-[560px] bg-gradient-to-b from-primary-soft to-transparent" aria-hidden="true" />
-                    <div className="pointer-events-none absolute -top-32 start-1/2 size-[520px] -translate-x-1/2 rounded-full bg-accent/15 blur-3xl rtl:translate-x-1/2" aria-hidden="true" />
+                {/* Hero on Ink (design system "Hero"): one Sprout CTA, proof chips, then the product frame overlapping the next section. */}
+                <section className="relative bg-brand text-white">
+                    <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
+                        <div className="absolute -top-40 start-1/2 h-[420px] w-[640px] -translate-x-1/2 rounded-full bg-primary/40 blur-3xl rtl:translate-x-1/2" />
+                    </div>
 
-                    <div className="relative mx-auto max-w-6xl px-4 pt-16 pb-20 text-center sm:px-6 sm:pt-24">
-                        <span className="inline-flex items-center gap-2 rounded-full border border-line bg-surface px-3.5 py-1.5 text-xs font-medium text-ink-2 shadow-card">
-                            <Icon name="sparkles" className="size-4 text-primary" />
+                    <div className="relative mx-auto max-w-6xl px-4 pt-16 text-center sm:px-6 sm:pt-24">
+                        <span className="inline-flex items-center gap-2 rounded-full border border-white/15 px-3.5 py-1.5 text-xs font-medium text-white/85">
+                            <Icon name="sparkles" className="size-4 text-sprout" />
                             {t('منصة واحدة لإدارة تجارتك بالكامل')}
                         </span>
-                        <h1 className="mx-auto mt-6 max-w-3xl text-4xl leading-[1.3] font-bold text-ink sm:text-5xl sm:leading-[1.25]">
-                            {t('كل ما يحتاجه متجرك،')} <span className="bg-gradient-to-l from-primary to-accent bg-clip-text text-transparent">{t('في منصة واحدة.')}</span>
+                        <h1 className="mx-auto mt-6 max-w-3xl text-4xl leading-[1.3] font-bold text-balance sm:text-5xl sm:leading-[1.25]">
+                            {t('كل ما يحتاجه متجرك،')} <span className="bg-gradient-to-l from-brand-green to-sprout bg-clip-text text-transparent">{t('في منصة واحدة.')}</span>
                         </h1>
-                        <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-ink-2 sm:text-lg">
+                        <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-white/75 sm:text-lg">
                             {t('المخزون، الطلبات، المسوقين والتقارير — نظام متكامل مصمم للتاجر العربي.')}
                         </p>
-                        <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+                        <div className="mt-8 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center">
                             {primaryAction}
-                            <Button variant="secondary" size="lg" onClick={scrollToHash('#features')}>
+                            <Button variant="outline-light" size="xl" onClick={scrollToHash('#features')}>
                                 {t('اكتشف المميزات')}
                             </Button>
                         </div>
-                        <p className="mt-4 text-xs text-muted">{t('بدون بطاقة ائتمان — جاهز للعمل خلال دقائق.')}</p>
+                        <p className="mt-4 text-xs text-white/60">{t('بدون بطاقة ائتمان — جاهز للعمل خلال دقائق.')}</p>
 
-                        <DashboardPreview />
+                        <ul className="mt-10 flex flex-wrap justify-center gap-x-8 gap-y-4">
+                            {HERO_PROOF.map((proof) => (
+                                <li key={proof.text} className="flex items-center gap-3 text-sm text-white/85">
+                                    <span className="grid size-10 place-items-center rounded-lg bg-brand-light text-sprout">
+                                        <Icon name={proof.icon} className="size-5" />
+                                    </span>
+                                    {proof.text}
+                                </li>
+                            ))}
+                        </ul>
+
+                        <div className="relative z-10 -mb-28 sm:-mb-40">
+                            <DashboardPreview />
+                        </div>
                     </div>
                 </section>
 
-                <section className="border-y border-line bg-surface">
-                    <dl className="mx-auto grid max-w-6xl grid-cols-2 gap-y-8 px-4 py-10 sm:px-6 md:grid-cols-4">
+                <section className="border-b border-line bg-surface">
+                    <dl className="mx-auto grid max-w-6xl grid-cols-2 gap-y-8 px-4 pt-36 pb-10 sm:px-6 sm:pt-48 md:grid-cols-4">
                         {STATS.map((stat) => (
                             <div key={stat.label} className="text-center">
                                 <dt className="sr-only">{stat.label}</dt>
@@ -223,23 +244,19 @@ export function LandingPage() {
                 </section>
 
                 <section className="px-4 pb-20 sm:px-6 sm:pb-24">
-                    <div className="relative mx-auto max-w-6xl overflow-hidden rounded-3xl bg-gradient-to-br from-brand via-brand to-sky-600 px-6 py-14 text-center sm:px-12 dark:from-indigo-900 dark:via-slate-900 dark:to-sky-900">
-                        <div className="pointer-events-none absolute -end-16 -top-16 size-64 rounded-full bg-sky-400/30 blur-3xl" aria-hidden="true" />
-                        <div className="pointer-events-none absolute -start-16 -bottom-16 size-64 rounded-full bg-indigo-300/20 blur-3xl" aria-hidden="true" />
+                    {/* Closing CTA band (design system "CtaBand"): Ink, the mark as a faint watermark, one Sprout button. */}
+                    <div className="relative mx-auto max-w-6xl overflow-hidden rounded-3xl bg-brand px-6 py-14 text-center sm:px-12 dark:ring-1 dark:ring-line">
+                        <LogoMark className="pointer-events-none absolute -start-8 -bottom-10 size-60 text-white/[0.06]" />
                         <h2 className="relative text-3xl font-bold text-white">{t('جاهز تنظّم تجارتك؟')}</h2>
-                        <p className="relative mx-auto mt-3 max-w-xl text-indigo-100">{t('انضم الآن وابدأ إدارة مخزونك وطلباتك ومسوقيك من مكان واحد.')}</p>
+                        <p className="relative mx-auto mt-3 max-w-xl text-white/75">{t('انضم الآن وابدأ إدارة مخزونك وطلباتك ومسوقيك من مكان واحد.')}</p>
                         <div className="relative mt-8 flex flex-wrap justify-center gap-3">
-                            <Link
-                                to={isAuthenticated ? '/dashboard' : '/register'}
-                                className="inline-flex h-12 items-center gap-2 rounded-xl bg-white px-6 text-sm font-semibold text-brand shadow-lg transition hover:bg-indigo-50"
-                            >
+                            <Button to={isAuthenticated ? '/dashboard' : '/register'} variant="sprout" size="lg" iconEnd={arrow}>
                                 {isAuthenticated ? t('الذهاب إلى لوحة التحكم') : t('أنشئ متجرك مجاناً')}
-                                <Icon name={arrow} className="size-4" />
-                            </Link>
+                            </Button>
                             {!isAuthenticated && (
-                                <Link to="/login" className="inline-flex h-12 items-center rounded-xl border border-white/30 px-6 text-sm font-semibold text-white transition hover:bg-white/10">
+                                <Button to="/login" variant="outline-light" size="lg">
                                     {t('لدي حساب بالفعل')}
-                                </Link>
+                                </Button>
                             )}
                         </div>
                     </div>

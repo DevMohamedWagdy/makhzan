@@ -26,7 +26,7 @@ function HeroBanner({ storeSlug, store, products }) {
     const photos = products.filter((product) => product.image_url).slice(0, 3);
 
     return (
-        <Link to={`/${storeSlug}/products`} className="group relative flex min-h-64 overflow-hidden rounded-3xl bg-gradient-to-br from-brand via-brand to-accent p-6 text-white sm:min-h-80 sm:p-10 lg:col-span-2">
+        <Link to={`/${storeSlug}/products`} className="group relative flex min-h-64 overflow-hidden rounded-3xl bg-gradient-to-br from-brand via-brand to-primary p-6 text-white sm:min-h-80 sm:p-10 lg:col-span-2">
             <div className="absolute -top-24 -end-24 size-80 rounded-full bg-white/10" aria-hidden="true" />
             <div className="absolute -bottom-32 end-1/3 size-72 rounded-full bg-white/5" aria-hidden="true" />
             <div className="relative flex max-w-md flex-col justify-center">

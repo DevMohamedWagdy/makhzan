@@ -12,7 +12,7 @@
 
         {{-- Filled per page by App\Support\PageMeta, so shared store and product links preview correctly. --}}
         <meta name="description" content="{{ $meta['description'] }}">
-        <meta name="theme-color" content="#2c2c54">
+        <meta name="theme-color" content="#17212b">
         <link rel="canonical" href="{{ $meta['url'] }}">
         <meta property="og:type" content="{{ $meta['type'] }}">
         <meta property="og:site_name" content="{{ $meta['site_name'] }}">
