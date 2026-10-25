@@ -322,7 +322,7 @@ function DashboardShell() {
 
 export function PageHeader({ title, description, breadcrumbs = [], actions }) {
     return (
-        <div className="mb-8 flex flex-col gap-4 border-b border-line pb-6 sm:flex-row sm:items-end sm:justify-between">
+        <div className="mk-page-header mb-8 flex flex-col gap-4 border-b border-line pb-6 sm:flex-row sm:items-end sm:justify-between">
             <div className="min-w-0">
                 {breadcrumbs.length > 0 && (
                     <nav aria-label={t('مسار التنقل')} className="mb-2 flex items-center gap-1.5 text-xs text-muted">

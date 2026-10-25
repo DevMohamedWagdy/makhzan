@@ -207,7 +207,7 @@ export function PurchaseOrderPage() {
                 }
             />
 
-            <div className="grid gap-6 lg:grid-cols-3">
+            <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-3">
                 <Card title={t('الأصناف')} className="lg:col-span-2" bodyClassName="p-0">
                     <div className="mk-scroll overflow-x-auto">
                         <table className="w-full min-w-[620px] text-sm">
@@ -239,7 +239,7 @@ export function PurchaseOrderPage() {
                     </div>
                 </Card>
 
-                <div className="flex flex-col gap-6">
+                <div className="flex flex-col gap-6 lg:sticky lg:top-24">
                     <Card>
                         <div className="flex items-center justify-between">
                             <PurchaseOrderStatusBadge status={order.status} />

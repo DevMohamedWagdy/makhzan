@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { PageHeader } from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/Button';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
-import { EmptyState, StatCard } from '@/components/ui/Display';
+import { EmptyState, StatCard, StatStrip } from '@/components/ui/Display';
 import { Dropdown } from '@/components/ui/Dropdown';
 import { Input, Select } from '@/components/ui/Form';
 import { Icon } from '@/components/ui/Icon';
@@ -166,12 +166,12 @@ export function ProductsPage() {
                 </div>
             )}
 
-            <div className="mb-6 mk-stat-group sm:grid-cols-2 xl:grid-cols-4">
+            <StatStrip>
                 <StatCard label={t('إجمالي المنتجات')} value={summary ? formatNumber(summary.total) : '—'} icon="box" tone="primary" />
                 <StatCard label={t('منشور في المتجر')} value={summary ? formatNumber(summary.active) : '—'} icon="store" tone="success" />
                 <StatCard label={t('مخزون منخفض')} value={summary ? formatNumber(summary.low_stock) : '—'} icon="alert-triangle" tone="warning" />
                 <StatCard label={t('نفد المخزون')} value={summary ? formatNumber(summary.out_of_stock) : '—'} icon="x" tone="danger" />
-            </div>
+            </StatStrip>
 
             <section className="mk-card overflow-hidden">
                 <div className="border-b border-line">

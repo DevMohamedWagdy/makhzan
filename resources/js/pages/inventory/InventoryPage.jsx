@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { PageHeader } from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/Button';
-import { Badge, EmptyState, StatCard } from '@/components/ui/Display';
+import { Badge, EmptyState, StatCard, StatStrip } from '@/components/ui/Display';
 import { Dropdown } from '@/components/ui/Dropdown';
 import { Input, Select } from '@/components/ui/Form';
 import { Icon } from '@/components/ui/Icon';
@@ -168,7 +168,7 @@ export function InventoryPage() {
                 }
             />
 
-            <div className="mb-6 mk-stat-group sm:grid-cols-2 xl:grid-cols-4">
+            <StatStrip>
                 <StatCard label={t('القطع في المخزون')} value={summary ? formatNumber(summary.units) : '—'} icon="box" hint={summary && t('في {count} صنف', { count: formatNumber(summary.variants) })} />
                 <StatCard
                     label={t('قيمة المخزون بالتكلفة')}
@@ -179,7 +179,7 @@ export function InventoryPage() {
                 />
                 <StatCard label={t('قيمة المخزون بسعر البيع')} value={summary ? formatMoney(summary.retail_value) : '—'} icon="bar-chart" tone="primary" />
                 <StatCard label={t('الربح المتوقع عند البيع')} value={summary ? formatMoney(summary.expected_profit) : '—'} icon="sparkles" tone="success" hint={t('للأصناف المسجلة تكلفتها')} />
-            </div>
+            </StatStrip>
 
             <section className="mk-card overflow-hidden">
                 <Tabs

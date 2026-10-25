@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { PageHeader } from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/Button';
-import { Avatar, EmptyState, StatCard } from '@/components/ui/Display';
+import { Avatar, EmptyState, StatCard, StatStrip } from '@/components/ui/Display';
 import { Input, Select } from '@/components/ui/Form';
 import { Pagination, Tabs } from '@/components/ui/Navigation';
 import { Skeleton } from '@/components/ui/Spinner';
@@ -87,12 +87,12 @@ export function CustomersPage() {
         <>
             <PageHeader title={t('العملاء')} description={t('عملاء متجرك الذين سجّلوا حساباً، وطلباتهم ومشترياتهم')} breadcrumbs={[t('لوحة التحكم'), t('المبيعات'), t('العملاء')]} />
 
-            <div className="mb-6 mk-stat-group sm:grid-cols-2 xl:grid-cols-4">
+            <StatStrip>
                 <StatCard label={t('كل العملاء')} value={summary ? formatNumber(summary.total) : '—'} icon="users" />
                 <StatCard label={t('سجّلوا هذا الشهر')} value={summary ? formatNumber(summary.new_this_month) : '—'} icon="user-plus" tone="info" />
                 <StatCard label={t('عملاء اشتروا')} value={summary ? formatNumber(summary.buyers) : '—'} icon="shopping-bag" tone="success" />
                 <StatCard label={t('عملاء متكررون')} value={summary ? formatNumber(summary.repeat_buyers) : '—'} icon="refresh" tone="warning" hint={summary && t('{value}% من المشترين طلبوا أكثر من مرة', { value: formatNumber(repeatRate) })} />
-            </div>
+            </StatStrip>
 
             <section className="mk-card overflow-hidden">
                 <Tabs

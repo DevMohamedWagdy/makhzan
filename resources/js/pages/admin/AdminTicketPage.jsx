@@ -3,7 +3,7 @@ import { Link, useOutletContext, useParams } from 'react-router-dom';
 import { PageHeader } from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/Button';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
-import { Alert, Badge, EmptyState } from '@/components/ui/Display';
+import { Alert, Badge, Card, DetailRow, EmptyState } from '@/components/ui/Display';
 import { Skeleton } from '@/components/ui/Spinner';
 import { useAdminAuth } from '@/context/AdminAuthContext';
 import { useToast } from '@/context/ToastContext';
@@ -100,42 +100,53 @@ export function AdminTicketPage() {
                     </>
                 }
                 actions={
-                    <>
-                        <Badge tone={type?.tone} icon={type?.icon}>
-                            {type?.label}
-                        </Badge>
-                        <Badge tone={status?.tone} dot>
-                            {status?.label}
-                        </Badge>
-                        {canReply &&
-                            (ticket.status === 'open' ? (
-                                <Button size="sm" variant="secondary" icon="lock" onClick={() => setClosing(true)}>
-                                    {t('إغلاق التذكرة')}
-                                </Button>
-                            ) : (
-                                <Button size="sm" variant="soft" icon="refresh" loading={busy} onClick={() => changeStatus(adminApi.reopenTicket, t('تمت إعادة فتح التذكرة'))}>
-                                    {t('إعادة فتح')}
-                                </Button>
-                            ))}
-                        <Button to="/admin/support" variant="ghost" size="sm" icon="arrow-right">
-                            {t('كل التذاكر')}
-                        </Button>
-                    </>
+                    <Button to="/admin/support" variant="ghost" size="sm" icon="arrow-right">
+                        {t('كل التذاكر')}
+                    </Button>
                 }
             />
 
-            <TicketThread
-                ticket={ticket}
-                viewer="admin"
-                loadAttachment={loadAttachment}
-                onReply={reply}
-                canReply={canReply}
-                closedNotice={
-                    <Alert tone="info" icon="lock" title={t('التذكرة مغلقة')}>
-                        {canReply ? t('أعد فتحها لتتمكن أنت والتاجر من الرد عليها.') : t('لا يمكن الرد على تذكرة مغلقة.')}
-                    </Alert>
-                }
-            />
+            {/* The conversation leads; type, status and the close / reopen action stay in view beside it. */}
+            <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_280px]">
+                <aside className="lg:sticky lg:top-24 lg:order-last">
+                    <Card bodyClassName="flex flex-col gap-4 py-2">
+                        <dl className="divide-y divide-line">
+                            <DetailRow label={t('نوع التذكرة')}>
+                                <Badge tone={type?.tone} icon={type?.icon}>
+                                    {type?.label}
+                                </Badge>
+                            </DetailRow>
+                            <DetailRow label={t('الحالة')}>
+                                <Badge tone={status?.tone} dot>
+                                    {status?.label}
+                                </Badge>
+                            </DetailRow>
+                        </dl>
+                        {canReply &&
+                            (ticket.status === 'open' ? (
+                                <Button size="sm" variant="secondary" icon="lock" className="mb-3 w-full" onClick={() => setClosing(true)}>
+                                    {t('إغلاق التذكرة')}
+                                </Button>
+                            ) : (
+                                <Button size="sm" variant="soft" icon="refresh" className="mb-3 w-full" loading={busy} onClick={() => changeStatus(adminApi.reopenTicket, t('تمت إعادة فتح التذكرة'))}>
+                                    {t('إعادة فتح')}
+                                </Button>
+                            ))}
+                    </Card>
+                </aside>
+                <TicketThread
+                    ticket={ticket}
+                    viewer="admin"
+                    loadAttachment={loadAttachment}
+                    onReply={reply}
+                    canReply={canReply}
+                    closedNotice={
+                        <Alert tone="info" icon="lock" title={t('التذكرة مغلقة')}>
+                            {canReply ? t('أعد فتحها لتتمكن أنت والتاجر من الرد عليها.') : t('لا يمكن الرد على تذكرة مغلقة.')}
+                        </Alert>
+                    }
+                />
+            </div>
 
             <ConfirmDialog
                 open={closing}

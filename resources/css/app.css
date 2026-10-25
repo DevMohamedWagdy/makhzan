@@ -239,6 +239,11 @@
         @apply flex flex-col divide-y divide-line overflow-hidden rounded-xl border border-line bg-surface;
     }
 
+    /* Compact figures row (StatStrip): closes the page header zone with the hairline under it. */
+    .mk-stat-strip {
+        @apply mb-8 border-b border-line pb-7;
+    }
+
     .mk-input {
         @apply h-10 w-full rounded-lg border border-line-strong/80 bg-surface px-3.5 text-sm text-ink placeholder:text-muted/80 transition outline-none;
         @apply hover:border-line-strong focus:border-primary focus:shadow-[0_0_0_3px_var(--mk-ring)];
@@ -460,4 +465,14 @@
 /* Trailing actions (clear filters, bulk actions) sit at the far end of the bar. */
 .mk-toolbar > button:last-child {
     margin-inline-start: auto;
+}
+
+/*
+ * Page header zone: when a StatStrip follows the PageHeader, the figures join the header and the
+ * hairline moves below them. Unlayered so it can lift the header's own spacing utilities.
+ */
+.mk-page-header:has(~ .mk-stat-strip, ~ * .mk-stat-strip) {
+    border-bottom-width: 0;
+    padding-bottom: 0;
+    margin-bottom: 1.75rem;
 }

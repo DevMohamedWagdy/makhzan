@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { PageHeader } from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/Button';
-import { EmptyState, StatCard } from '@/components/ui/Display';
+import { EmptyState, StatCard, StatStrip } from '@/components/ui/Display';
 import { Input, Select } from '@/components/ui/Form';
 import { Pagination, Tabs } from '@/components/ui/Navigation';
 import { Skeleton } from '@/components/ui/Spinner';
@@ -121,12 +121,12 @@ export function OrdersPage() {
                 }
             />
 
-            <div className="mb-6 mk-stat-group sm:grid-cols-2 xl:grid-cols-4">
+            <StatStrip>
                 <StatCard label={t('بانتظار التأكيد')} value={summary ? formatNumber(summary.pending) : '—'} icon="refresh" tone="warning" />
                 <StatCard label={t('طلبات اليوم')} value={summary ? formatNumber(summary.today) : '—'} icon="shopping-bag" tone="primary" />
                 <StatCard label={t('قيد الشحن')} value={summary ? formatNumber(summary.shipped) : '—'} icon="truck" tone="info" />
                 <StatCard label={t('إيرادات الطلبات المسلّمة')} value={summary ? formatMoney(summary.delivered_revenue) : '—'} icon="wallet" tone="success" hint={summary && t('{count} طلب تم توصيله', { count: formatNumber(summary.delivered) })} />
-            </div>
+            </StatStrip>
 
             <section className="mk-card overflow-hidden">
                 <Tabs tabs={tabs} value={status} onChange={(value) => setQuery({ status: value })} className="px-3" />
@@ -224,7 +224,7 @@ export function OrdersPage() {
                                                   <span className="block font-semibold text-ink">{formatMoney(order.total)}</span>
                                                   {order.coupon_code && <span className="ltr block text-start font-mono text-[11px] text-success">{order.coupon_code}</span>}
                                               </td>
-                                              <td className="px-4 py-3.5 whitespace-nowrap text-ink-2">{order.affiliate?.full_name ?? '—'}</td>
+                                              <td className="px-4 py-3.5 text-ink-2">{order.affiliate?.full_name ?? '—'}</td>
                                               <td className="px-4 py-3.5">
                                                   <PaymentBadge order={order} />
                                               </td>

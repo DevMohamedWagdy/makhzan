@@ -157,6 +157,17 @@ Z-index: sticky headers 20 · mobile sidebar scrim 30 · sidebar / storefront he
 | Storefront | `features/storefront/StorefrontLayout.jsx` | Ink announcement bar, sticky header with search field, category rail, perks band, footer; phone tab bar |
 | Landing / legal | `pages/landing/*` | Ink hero with grid texture, paper sections, Ink CTA band |
 
+## 6a. Page layouts
+
+| Page type | Layout |
+|---|---|
+| Home (merchant dashboard, admin overview) | Figures first, then two columns from `xl`: a wide main column (chart, latest orders / orders and affiliate figures, charts, top tables) and a sticky side column (needs-attention list and best sellers / stores and catalog figures). On phones the merchant's side column comes first. |
+| List pages (orders, products, customers, inventory, payments, affiliates, coupons, reviews, purchase orders) | Page header, then a compact `StatStrip` of key figures that closes the header zone, then one card holding tabs, the `.mk-toolbar` filter bar and the table. |
+| Settings | Side menu of sections (`Tabs variant="vertical"`, sticky from `lg`, a swipeable row of pills on phones) beside one card holding the open section under its icon and title. |
+| Detail and form pages (product, purchase order, manual order, support tickets) | Main content in the wide column, summary / status / actions in a sticky side panel (`lg:sticky lg:top-24`). Ticket pages keep the conversation in the main column and type, status and close / reopen beside it. |
+
+Two-column grids always declare `grid-cols-1` for phones and use `min-w-0` columns so wide tables scroll inside their card instead of widening the page.
+
 ## 7. Components
 
 | Component | File | Specification |
@@ -168,13 +179,14 @@ Z-index: sticky headers 20 · mobile sidebar scrim 30 · sidebar / storefront he
 | `Avatar` | `ui/Display.jsx` | `shape="rounded"` (stores) or `"circle"` (people). |
 | `Card` | `ui/Display.jsx` | 14 px sheet, header 60 px min with title 15 px / description 12.5 px. |
 | `StatCard` | `ui/Display.jsx` | Label + 32 px icon tile (logo-green icon for the primary tone) on one line, metric below, optional hint (e.g. `TrendBadge`). |
+| `StatStrip` | `ui/Display.jsx` | Compact figures row: StatCards inside it render as icon + label, 20–22 px figure and hint, split by hairlines from `md`, two per row on phones. After a `PageHeader` it takes over the header's bottom hairline. |
 | KPI ribbon | `.mk-stat-group` | StatCards joined in one sheet with hairline dividers; two per row on phones (an odd last cell spans the row), widened per page with `sm:`/`xl:` columns. |
 | Filter bar | `.mk-toolbar` | Search takes the free width; other filters 176 px (dates 160 px); phones: search on its own row, filters two per row; a lone search caps at 384 px; a trailing button sits at the far end. |
 | `EmptyState` | `ui/Display.jsx` | 56 px icon tile inside a dashed halo, 15 px title. |
 | `Alert` | `ui/Display.jsx` | Tone fill + ring, 13.5 px. |
 | `Modal`, `Drawer` | `ui/Overlay.jsx` | Pop / slide-in, 14 px radius, header with optional tone icon tile, tinted footer. |
 | `Dropdown` | `ui/Dropdown.jsx` | 224 px menu, 36 px items, edge-to-edge dividers. |
-| `Tabs` | `ui/Navigation.jsx` | `underline` (44 px, primary underline) and `segmented` (pill switch for card headers). |
+| `Tabs` | `ui/Navigation.jsx` | `underline` (44 px, logo-green underline), `segmented` (pill switch for card headers) and `vertical` (side menu from `lg`, arrow keys up/down). |
 | `Pagination` | `ui/Navigation.jsx` | 32 px tabular buttons; current page in Ink. |
 | `Stepper` | `ui/Navigation.jsx` | 44 px tiles, active tile with focus halo. |
 | `ColumnChart`, `BarList`, `SegmentedBar`, `TrendBadge` | `ui/Charts.jsx` | See §2.5; trend badge is a 20 px pill. |

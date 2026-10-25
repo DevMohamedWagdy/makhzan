@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { PageHeader } from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/Button';
-import { Alert, Badge, EmptyState, StatCard } from '@/components/ui/Display';
+import { Alert, Badge, EmptyState, StatCard, StatStrip } from '@/components/ui/Display';
 import { Input, Select } from '@/components/ui/Form';
 import { Icon } from '@/components/ui/Icon';
 import { Pagination } from '@/components/ui/Navigation';
@@ -196,7 +196,7 @@ export function PaymentsPage() {
                 </Alert>
             )}
 
-            <div className="mb-6 mk-stat-group sm:grid-cols-2 xl:grid-cols-4">
+            <StatStrip>
                 <StatCard label={t('تم تحصيله')} value={summary ? formatMoney(summary.collected) : '—'} icon="wallet" tone="success" hint={summary && t('{count} عملية ناجحة', { count: formatNumber(summary.successful) })} />
                 <StatCard label={t('تم استرداده')} value={summary ? formatMoney(summary.refunded) : '—'} icon="refresh" tone="info" />
                 <StatCard label={t('الصافي')} value={summary ? formatMoney(summary.net) : '—'} icon="sparkles" tone="primary" hint={summary && t('{count} محاولة فاشلة', { count: formatNumber(summary.failed) })} />
@@ -207,7 +207,7 @@ export function PaymentsPage() {
                     tone="warning"
                     hint={summary && (summary.awaiting.count > 0 ? <button type="button" className="text-primary hover:underline" onClick={() => setQuery({ status: 'pending', kind: '' })}>{t('{count} طلب لم يُدفع بعد', { count: formatNumber(summary.awaiting.count) })}</button> : t('لا يوجد'))}
                 />
-            </div>
+            </StatStrip>
 
             <section className="mk-card overflow-hidden">
                 <div className="mk-toolbar">

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/Button';
-import { Avatar, Badge, DetailRow, StatCard } from '@/components/ui/Display';
+import { Avatar, Badge, DetailRow, StatCard, StatStrip } from '@/components/ui/Display';
 import { Field, Textarea } from '@/components/ui/Form';
 import { Drawer, Modal } from '@/components/ui/Overlay';
 import { Skeleton } from '@/components/ui/Spinner';
@@ -362,11 +362,11 @@ export function AdminPayoutsTable({ storeId = null }) {
             emptyTitle={t('لا توجد تحويلات مطابقة')}
             renderSummary={(result) =>
                 result.summary && (
-                    <div className="mk-stat-group m-4 mb-0 sm:grid-cols-3">
+                    <StatStrip className="mb-0 px-5 pt-5 pb-5">
                         {Object.entries(PAYOUT_STATUSES).map(([status, config]) => (
                             <StatCard key={status} label={config.label} value={formatMoney(result.summary[status]?.amount ?? 0)} hint={t('{count} طلب', { count: formatNumber(result.summary[status]?.count ?? 0) })} icon={config.icon} tone={config.tone === 'danger' ? 'danger' : config.tone} />
                         ))}
-                    </div>
+                    </StatStrip>
                 )
             }
             columns={[

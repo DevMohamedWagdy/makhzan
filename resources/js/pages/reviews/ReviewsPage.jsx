@@ -3,7 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { PageHeader } from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/Button';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
-import { Badge, EmptyState, StatCard } from '@/components/ui/Display';
+import { Badge, EmptyState, StatCard, StatStrip } from '@/components/ui/Display';
 import { Field, Input, Select, Textarea } from '@/components/ui/Form';
 import { Pagination, Tabs } from '@/components/ui/Navigation';
 import { Modal } from '@/components/ui/Overlay';
@@ -235,11 +235,11 @@ export function ReviewsPage() {
         <>
             <PageHeader title={t('التقييمات')} description={t('تقييمات العملاء الذين استلموا منتجاتك، لا يظهر أي تقييم قبل موافقتك')} breadcrumbs={[t('لوحة التحكم'), t('المبيعات'), t('التقييمات')]} />
 
-            <div className="mb-6 mk-stat-group sm:grid-cols-3">
+            <StatStrip>
                 <StatCard label={t('متوسط تقييم المتجر')} value={summary?.average != null ? t('{rating} من ٥', { rating: formatNumber(summary.average) }) : '—'} icon="star" tone="warning" />
                 <StatCard label={t('تقييمات منشورة')} value={summary ? formatNumber(summary.approved) : '—'} icon="check-circle" tone="success" />
                 <StatCard label={t('بانتظار مراجعتك')} value={summary ? formatNumber(summary.pending) : '—'} icon="clock" tone="info" />
-            </div>
+            </StatStrip>
 
             <section className="mk-card overflow-hidden">
                 <Tabs tabs={tabs} value={status} onChange={(value) => setQuery({ status: value })} className="px-3" />

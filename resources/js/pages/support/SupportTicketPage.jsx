@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { PageHeader } from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/Button';
-import { Alert, Badge, EmptyState } from '@/components/ui/Display';
+import { Alert, Badge, Card, DetailRow, EmptyState } from '@/components/ui/Display';
 import { Skeleton } from '@/components/ui/Spinner';
 import { useAuth } from '@/context/AuthContext';
 import { TICKET_STATUSES, TICKET_TYPES } from '@/features/support/support';
@@ -66,32 +66,43 @@ export function SupportTicketPage() {
                 title={ticket.subject}
                 description={t('فُتحت في {date}', { date: formatDate(ticket.created_at) })}
                 actions={
-                    <>
-                        <Badge tone={type?.tone} icon={type?.icon}>
-                            {type?.label}
-                        </Badge>
-                        <Badge tone={status?.tone} dot>
-                            {status?.label}
-                        </Badge>
-                        <Button to="/dashboard/support" variant="secondary" size="sm" icon="arrow-right">
-                            {t('كل التذاكر')}
-                        </Button>
-                    </>
+                    <Button to="/dashboard/support" variant="secondary" size="sm" icon="arrow-right">
+                        {t('كل التذاكر')}
+                    </Button>
                 }
             />
 
-            <TicketThread
-                ticket={ticket}
-                viewer="vendor"
-                loadAttachment={loadAttachment}
-                onReply={reply}
-                canReply={can('support.create')}
-                closedNotice={
-                    <Alert tone="info" icon="lock" title={t('أُغلقت هذه التذكرة')}>
-                        {t('لا يمكن الرد عليها إلا إذا أعاد فريق الدعم فتحها. إن احتجت مساعدة أخرى افتح تذكرة جديدة.')}
-                    </Alert>
-                }
-            />
+            {/* The conversation leads; the ticket's type and status stay in view beside it. */}
+            <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_280px]">
+                <aside className="lg:sticky lg:top-24 lg:order-last">
+                    <Card bodyClassName="py-2">
+                        <dl className="divide-y divide-line">
+                            <DetailRow label={t('نوع التذكرة')}>
+                                <Badge tone={type?.tone} icon={type?.icon}>
+                                    {type?.label}
+                                </Badge>
+                            </DetailRow>
+                            <DetailRow label={t('الحالة')}>
+                                <Badge tone={status?.tone} dot>
+                                    {status?.label}
+                                </Badge>
+                            </DetailRow>
+                        </dl>
+                    </Card>
+                </aside>
+                <TicketThread
+                    ticket={ticket}
+                    viewer="vendor"
+                    loadAttachment={loadAttachment}
+                    onReply={reply}
+                    canReply={can('support.create')}
+                    closedNotice={
+                        <Alert tone="info" icon="lock" title={t('أُغلقت هذه التذكرة')}>
+                            {t('لا يمكن الرد عليها إلا إذا أعاد فريق الدعم فتحها. إن احتجت مساعدة أخرى افتح تذكرة جديدة.')}
+                        </Alert>
+                    }
+                />
+            </div>
         </>
     );
 }

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { PageHeader } from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/Button';
-import { EmptyState, StatCard } from '@/components/ui/Display';
+import { EmptyState, StatCard, StatStrip } from '@/components/ui/Display';
 import { Input, Select } from '@/components/ui/Form';
 import { Pagination, Tabs } from '@/components/ui/Navigation';
 import { Skeleton } from '@/components/ui/Spinner';
@@ -105,12 +105,12 @@ export function PurchaseOrdersPage() {
                 }
             />
 
-            <div className="mb-6 mk-stat-group sm:grid-cols-2 xl:grid-cols-4">
+            <StatStrip>
                 <StatCard label={t('بانتظار الاستلام')} value={summary ? formatNumber(summary.ordered + summary.partial) : '—'} icon="send" tone="info" hint={summary?.partial ? t('منها {count} مستلم جزئياً', { count: formatNumber(summary.partial) }) : undefined} />
                 <StatCard label={t('قطع في الطريق')} value={summary ? formatNumber(summary.units_on_order) : '—'} icon="truck" tone="warning" />
                 <StatCard label={t('قيمة البضاعة في الطريق')} value={summary ? formatMoney(summary.value_on_order) : '—'} icon="wallet" tone="primary" />
                 <StatCard label={t('مسودات')} value={summary ? formatNumber(summary.draft) : '—'} icon="edit" tone="neutral" />
-            </div>
+            </StatStrip>
 
             <section className="mk-card overflow-hidden">
                 <Tabs tabs={tabs} value={status} onChange={(value) => setQuery({ status: value })} className="px-3" />

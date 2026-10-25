@@ -4,6 +4,7 @@ import { PageHeader } from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/Button';
 import { Alert, Avatar, EmptyState } from '@/components/ui/Display';
 import { Field, Input, PasswordInput, Select, Switch, Textarea } from '@/components/ui/Form';
+import { Icon } from '@/components/ui/Icon';
 import { Tabs } from '@/components/ui/Navigation';
 import { Skeleton } from '@/components/ui/Spinner';
 import { useAuth } from '@/context/AuthContext';
@@ -391,30 +392,40 @@ export function SettingsPage() {
         <>
             <PageHeader title={t('إعدادات المتجر')} description={t('بيانات متجرك وطرق الدفع وطريقة تواصل العملاء معك وسياساتك')} breadcrumbs={[t('لوحة التحكم'), t('الإدارة'), t('إعدادات المتجر')]} />
 
-            <section className="mk-card overflow-hidden">
-                <Tabs tabs={tabs} value={tab} onChange={(value) => setSearchParams(value === 'store' ? {} : { tab: value }, { replace: true })} className="px-3" />
-                <div className="p-5 sm:p-6">
-                    {tab === 'account' ? (
-                        <AccountTab />
-                    ) : tab === 'domain' ? (
-                        <DomainTab />
-                    ) : tab === 'tracking' ? (
-                        <TrackingTab />
-                    ) : tab === 'payments' ? (
-                        <PaymentSettingsTab />
-                    ) : error ? (
-                        <EmptyState icon="alert-triangle" title={t('تعذر تحميل الإعدادات')} description={error} action={<Button variant="secondary" icon="refresh" onClick={load}>{t('إعادة المحاولة')}</Button>} />
-                    ) : !settings ? (
-                        <div className="flex flex-col gap-4">
-                            <Skeleton className="h-20 w-full" />
-                            <Skeleton className="h-40 w-full" />
-                        </div>
-                    ) : (
-                        <TabContent settings={settings} onSaved={onSaved} />
-                    )}
-                </div>
-            </section>
-
+            {/* Side menu of sections from lg; the open section's form fills the column beside it. */}
+            <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[232px_minmax(0,1fr)]">
+                <nav aria-label={t('إعدادات المتجر')} className="mk-card min-w-0 p-2 lg:sticky lg:top-24">
+                    <Tabs variant="vertical" tabs={tabs} value={tab} onChange={(value) => setSearchParams(value === 'store' ? {} : { tab: value }, { replace: true })} />
+                </nav>
+                <section className="mk-card min-w-0 overflow-hidden">
+                    <header className="flex items-center gap-3 border-b border-line px-5 py-4 sm:px-6">
+                        <span className="grid size-9 place-items-center rounded-lg bg-primary-soft text-brand-green ring-1 ring-primary/10 ring-inset">
+                            <Icon name={tabs.find((item) => item.value === tab)?.icon ?? 'settings'} className="size-[18px]" />
+                        </span>
+                        <h2 className="text-[15px] font-semibold text-ink">{tabs.find((item) => item.value === tab)?.label}</h2>
+                    </header>
+                    <div className="p-5 sm:p-6">
+                        {tab === 'account' ? (
+                            <AccountTab />
+                        ) : tab === 'domain' ? (
+                            <DomainTab />
+                        ) : tab === 'tracking' ? (
+                            <TrackingTab />
+                        ) : tab === 'payments' ? (
+                            <PaymentSettingsTab />
+                        ) : error ? (
+                            <EmptyState icon="alert-triangle" title={t('تعذر تحميل الإعدادات')} description={error} action={<Button variant="secondary" icon="refresh" onClick={load}>{t('إعادة المحاولة')}</Button>} />
+                        ) : !settings ? (
+                            <div className="flex flex-col gap-4">
+                                <Skeleton className="h-20 w-full" />
+                                <Skeleton className="h-40 w-full" />
+                            </div>
+                        ) : (
+                            <TabContent settings={settings} onSaved={onSaved} />
+                        )}
+                    </div>
+                </section>
+            </div>
         </>
     );
 }

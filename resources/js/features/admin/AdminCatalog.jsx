@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
-import { Badge, DetailRow, StatCard } from '@/components/ui/Display';
+import { Badge, DetailRow, StatCard, StatStrip } from '@/components/ui/Display';
 import { Drawer } from '@/components/ui/Overlay';
 import { Skeleton } from '@/components/ui/Spinner';
 import { useAdminAuth } from '@/context/AdminAuthContext';
@@ -248,10 +248,10 @@ export function AdminPaymentsTable({ storeId = null }) {
             emptyTitle={t('لا توجد مدفوعات أونلاين مطابقة')}
             renderSummary={(result) =>
                 result.summary && (
-                    <div className="mk-stat-group m-4 mb-0 sm:grid-cols-2">
+                    <StatStrip className="mb-0 px-5 pt-5 pb-5">
                         <StatCard label={t('تم تحصيله أونلاين')} value={formatMoney(result.summary.collected)} icon="wallet" tone="success" />
                         <StatCard label={t('تم استرداده')} value={formatMoney(result.summary.refunded)} icon="refresh" tone="warning" />
-                    </div>
+                    </StatStrip>
                 )
             }
             columns={[
