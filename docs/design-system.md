@@ -177,6 +177,7 @@ Z-index: sticky headers 20 · mobile sidebar scrim 30 · sidebar / storefront he
 | `Pagination` | `ui/Navigation.jsx` | 32 px tabular buttons; current page in Ink. |
 | `Stepper` | `ui/Navigation.jsx` | 44 px tiles, active tile with focus halo. |
 | `ColumnChart`, `BarList`, `SegmentedBar`, `TrendBadge` | `ui/Charts.jsx` | See §2.5; trend badge is a 20 px pill. |
+| Lists | `.mk-list`, `divide-y` | Rows never float as separate boxes inside a card: they share one box (`.mk-list`) or run edge to edge with hairline dividers (notifications, tickets, activity). Unread rows get a soft green tint and a 3 px logo-green edge. |
 | Tables | `.mk-thead` | Tinted header band, 11.5 px semibold labels, `divide-line` rows, `hover:bg-surface-2`. |
 | `SidebarNav` | `layout/DashboardLayout.jsx` | Shared Ink navigation for dashboard and admin. |
 | `PageHeader` | `layout/DashboardLayout.jsx` | Breadcrumbs, page title, 13.5 px description (max 2xl), actions aligned to the bottom; a hairline and 32 px gap separate it from the content. |
@@ -190,6 +191,7 @@ Z-index: sticky headers 20 · mobile sidebar scrim 30 · sidebar / storefront he
 | `.mk-card-link` | Hover lift for clickable cards |
 | `.mk-input` | Form control |
 | `.mk-stat-group` | KPI ribbon |
+| `.mk-list` | Grouped list: rows in one bordered box split by hairlines (portal orders and payouts, drawer address lists) |
 | `.mk-thead` | Table header row |
 | `.mk-page-title` | Page title type role |
 | `.mk-overline` | Small group label |

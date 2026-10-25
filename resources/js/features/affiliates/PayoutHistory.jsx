@@ -19,7 +19,7 @@ export function PayoutStatusBadge({ status }) {
 /** One payout or transfer request: amount, status, destination, dates and notes. */
 export function PayoutItem({ payout }) {
     return (
-        <li className="rounded-xl border border-line p-4">
+        <li className="px-4 py-3.5">
             <div className="flex items-center justify-between gap-3">
                 <span className="text-base font-bold text-ink">{formatMoney(payout.amount)}</span>
                 <PayoutStatusBadge status={payout.status} />
@@ -105,7 +105,7 @@ export function PayoutHistory({ load, refreshKey, emptyText = t('لا توجد �
             <p className="text-xs text-muted">
                 {t('إجمالي المحوَّل:')} <strong className="text-ink">{formatMoney(totalPaid)}</strong>
             </p>
-            <ul className="flex flex-col gap-3">
+            <ul className="mk-list">
                 {items.map((payout) => (
                     <PayoutItem key={payout.payout_id} payout={payout} />
                 ))}

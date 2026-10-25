@@ -20,7 +20,7 @@ export function AffiliateOrderRow({ order, onOpen }) {
 
     return (
         <li>
-            <Row type={onOpen ? 'button' : undefined} onClick={onOpen ? () => onOpen(order) : undefined} className="flex w-full flex-wrap items-center gap-x-4 gap-y-2 rounded-xl border border-line p-3.5 text-start transition hover:border-line-strong">
+            <Row type={onOpen ? 'button' : undefined} onClick={onOpen ? () => onOpen(order) : undefined} className="flex w-full flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3.5 text-start transition hover:bg-surface-2">
                 <span className="min-w-0 flex-1">
                     <span className="flex flex-wrap items-center gap-2">
                         <span className="font-semibold text-ink">#{order.number}</span>
@@ -84,7 +84,7 @@ export function AffiliateOrdersList({ load, refreshKey, onOpen, emptyText }) {
 
     return (
         <div className="flex flex-col gap-3">
-            <ul className="flex flex-col gap-3">
+            <ul className="mk-list">
                 {items.map((order) => (
                     <AffiliateOrderRow key={order.order_id} order={order} onOpen={onOpen} />
                 ))}

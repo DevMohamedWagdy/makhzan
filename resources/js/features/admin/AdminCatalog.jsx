@@ -248,7 +248,7 @@ export function AdminPaymentsTable({ storeId = null }) {
             emptyTitle={t('لا توجد مدفوعات أونلاين مطابقة')}
             renderSummary={(result) =>
                 result.summary && (
-                    <div className="grid gap-3 p-4 pb-0 sm:grid-cols-2">
+                    <div className="mk-stat-group m-4 mb-0 sm:grid-cols-2">
                         <StatCard label={t('تم تحصيله أونلاين')} value={formatMoney(result.summary.collected)} icon="wallet" tone="success" />
                         <StatCard label={t('تم استرداده')} value={formatMoney(result.summary.refunded)} icon="refresh" tone="warning" />
                     </div>

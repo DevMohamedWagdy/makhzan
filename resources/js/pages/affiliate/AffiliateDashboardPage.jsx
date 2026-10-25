@@ -109,7 +109,7 @@ export function AffiliateDashboardPage() {
                         ) : orders.data.length === 0 ? (
                             <p className="rounded-xl border border-dashed border-line-strong p-5 text-center text-sm text-muted">{t('لا توجد طلبات من روابطك بعد.')}</p>
                         ) : (
-                            <ul className="flex flex-col gap-3">
+                            <ul className="mk-list">
                                 {orders.data.slice(0, 5).map((order) => (
                                     <AffiliateOrderRow key={order.order_id} order={order} />
                                 ))}

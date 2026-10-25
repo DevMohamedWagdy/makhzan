@@ -192,9 +192,9 @@ export function AdminOrderDrawer({ orderId, onClose, onChanged }) {
                     )}
                     <section className="p-6">
                         <h3 className="mb-3 text-sm font-semibold text-ink">{t('المنتجات')}</h3>
-                        <ul className="flex flex-col gap-2 text-sm">
+                        <ul className="flex flex-col divide-y divide-line text-sm">
                             {order.items.map((item) => (
-                                <li key={item.item_id} className="flex justify-between gap-3">
+                                <li key={item.item_id} className="flex justify-between gap-3 py-2.5 first:pt-0 last:pb-0">
                                     <span className="text-ink">
                                         {item.product_name}
                                         {item.variant_title && <span className="text-muted"> · {item.variant_title}</span>} × {item.quantity}

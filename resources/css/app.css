@@ -226,6 +226,11 @@
             0 1px 0 0 var(--mk-border);
     }
 
+    /* Grouped list: rows share one bordered box and are split by hairlines instead of floating apart. */
+    .mk-list {
+        @apply flex flex-col divide-y divide-line overflow-hidden rounded-xl border border-line bg-surface;
+    }
+
     .mk-input {
         @apply h-10 w-full rounded-lg border border-line-strong/80 bg-surface px-3.5 text-sm text-ink placeholder:text-muted/80 transition outline-none;
         @apply hover:border-line-strong focus:border-primary focus:shadow-[0_0_0_3px_var(--mk-ring)];

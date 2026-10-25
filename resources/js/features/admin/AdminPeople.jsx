@@ -125,7 +125,7 @@ export function AdminCustomerDrawer({ customerId, onClose }) {
                 <DrawerLoading />
             ) : (
                 <div className="flex flex-col divide-y divide-line">
-                    <div className="grid grid-cols-2 gap-3 p-6">
+                    <div className="mk-stat-group m-6 grid-cols-2">
                         <StatCard label={t('الطلبات')} value={formatNumber(customer.stats.orders_count)} icon="shopping-bag" />
                         <StatCard label={t('المسلّمة')} value={formatNumber(customer.stats.delivered_orders)} icon="check-circle" tone="success" />
                         <StatCard label={t('إجمالي المشتريات')} value={formatMoney(customer.stats.total_spent)} icon="wallet" tone="info" />
@@ -146,9 +146,9 @@ export function AdminCustomerDrawer({ customerId, onClose }) {
                     {customer.addresses?.length > 0 && (
                         <section className="p-6">
                             <h3 className="mb-3 text-sm font-semibold text-ink">{t('العناوين')}</h3>
-                            <ul className="flex flex-col gap-2 text-sm text-ink-2">
+                            <ul className="mk-list text-sm text-ink-2">
                                 {customer.addresses.map((address) => (
-                                    <li key={address.address_id} className="rounded-xl bg-surface-2 px-4 py-3">
+                                    <li key={address.address_id} className="px-4 py-3">
                                         {address.recipient_name} · <span className="ltr">{address.phone}</span>
                                         <span className="block text-xs text-muted">{address.address_line}</span>
                                     </li>
@@ -281,7 +281,7 @@ export function AdminAffiliateDrawer({ affiliateId, onClose, onChanged }) {
                         <Badge tone={AFFILIATE_TIERS[affiliate.tier]?.tone}>{AFFILIATE_TIERS[affiliate.tier]?.label}</Badge>
                         {affiliate.frozen_reason && <span className="text-sm text-danger">{t('سبب التجميد: {reason}', { reason: affiliate.frozen_reason })}</span>}
                     </div>
-                    <div className="grid grid-cols-2 gap-3 p-6">
+                    <div className="mk-stat-group m-6 grid-cols-2">
                         <StatCard label={t('الطلبات')} value={formatNumber(affiliate.stats.orders_count)} icon="shopping-bag" />
                         <StatCard label={t('المبيعات')} value={formatMoney(affiliate.stats.sales_total)} icon="bar-chart" tone="info" />
                         <StatCard label={t('العمولات المكتسبة')} value={formatMoney(affiliate.stats.earned_commission)} icon="award" tone="success" />
@@ -362,7 +362,7 @@ export function AdminPayoutsTable({ storeId = null }) {
             emptyTitle={t('لا توجد تحويلات مطابقة')}
             renderSummary={(result) =>
                 result.summary && (
-                    <div className="grid gap-3 p-4 pb-0 sm:grid-cols-3">
+                    <div className="mk-stat-group m-4 mb-0 sm:grid-cols-3">
                         {Object.entries(PAYOUT_STATUSES).map(([status, config]) => (
                             <StatCard key={status} label={config.label} value={formatMoney(result.summary[status]?.amount ?? 0)} hint={t('{count} طلب', { count: formatNumber(result.summary[status]?.count ?? 0) })} icon={config.icon} tone={config.tone === 'danger' ? 'danger' : config.tone} />
                         ))}

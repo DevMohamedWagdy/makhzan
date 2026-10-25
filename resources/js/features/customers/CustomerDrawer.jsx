@@ -143,9 +143,9 @@ export function CustomerDrawer({ customerId, onClose }) {
                         {customer.addresses.length === 0 ? (
                             <p className="text-sm text-muted">{t('لا توجد عناوين محفوظة.')}</p>
                         ) : (
-                            <ul className="flex flex-col gap-2">
+                            <ul className="mk-list">
                                 {customer.addresses.map((address) => (
-                                    <li key={address.address_id} className="rounded-xl border border-line p-3 text-sm">
+                                    <li key={address.address_id} className="p-3.5 text-sm">
                                         <div className="flex items-center justify-between gap-2">
                                             <span className="font-medium text-ink">{address.recipient_name}</span>
                                             {address.is_default && <Badge tone="primary">{t('الافتراضي')}</Badge>}

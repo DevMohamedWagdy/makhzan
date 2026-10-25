@@ -30,7 +30,7 @@ export function AffiliatePayoutsPage() {
 
     return (
         <>
-            <div>
+            <div className="border-b border-line pb-6">
                 <h1 className="mk-page-title">{t('أرباحي وتحويلاتي')}</h1>
                 <p className="mt-1 text-sm text-muted">{t('المبالغ التي حوّلها المتجر لك وطلبات التحويل')}</p>
             </div>
@@ -54,7 +54,7 @@ export function AffiliatePayoutsPage() {
                         ) : result.data.length === 0 ? (
                             <p className="rounded-xl border border-dashed border-line-strong p-5 text-center text-sm text-muted">{t('لم تستلم أي تحويلات بعد.')}</p>
                         ) : (
-                            <ul className="flex flex-col gap-3">
+                            <ul className="mk-list">
                                 {result.data.map((payout) => (
                                     <PayoutItem key={payout.payout_id} payout={payout} />
                                 ))}

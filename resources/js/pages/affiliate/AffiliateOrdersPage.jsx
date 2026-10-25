@@ -32,7 +32,7 @@ export function AffiliateOrdersPage() {
 
     return (
         <>
-            <div>
+            <div className="border-b border-line pb-6">
                 <h1 className="mk-page-title">{t('طلباتي')}</h1>
                 <p className="mt-1 text-sm text-muted">{t('الطلبات التي تمت عبر روابطك وعمولة كل طلب')}</p>
             </div>
@@ -62,7 +62,7 @@ export function AffiliateOrdersPage() {
                     ) : result.data.length === 0 ? (
                         <EmptyState icon="shopping-bag" title={status ? t('لا توجد طلبات بهذه الحالة') : t('لا توجد طلبات من روابطك بعد')} description={t('شارك روابط الإحالة الخاصة بك، وكل طلب يتم عبرها يظهر هنا.')} />
                     ) : (
-                        <ul className="flex flex-col gap-3">
+                        <ul className="mk-list">
                             {result.data.map((order) => (
                                 <AffiliateOrderRow key={order.order_id} order={order} />
                             ))}
