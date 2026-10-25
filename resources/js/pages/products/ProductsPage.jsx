@@ -186,28 +186,26 @@ export function ProductsPage() {
                     />
                 </div>
 
-                <div className="flex flex-col gap-3 p-4 lg:flex-row lg:items-center">
-                    <div className="lg:w-80">
+                <div className="mk-toolbar">
+                    <div>
                         <Input type="search" icon="search" value={filters.search} onChange={(event) => setFilters({ search: event.target.value })} placeholder={t('ابحث باسم المنتج أو SKU...')} aria-label={t('بحث في المنتجات')} />
                     </div>
-                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:flex lg:flex-1">
-                        <Select
-                            aria-label={t('فلترة حسب القسم')}
-                            value={filters.category_id}
-                            onChange={(event) => setFilters({ category_id: event.target.value })}
-                            placeholder={t('كل الأقسام')}
-                            options={(categories ?? []).map((category) => ({ value: category.category_id, label: localized(category) }))}
-                            className="lg:w-44"
-                        />
-                        <Select aria-label={t('فلترة حسب المخزون')} value={filters.stock} onChange={(event) => setFilters({ stock: event.target.value })} placeholder={t('كل حالات المخزون')} options={Object.entries(STOCK_LEVELS).map(([value, label]) => ({ value, label }))} className="lg:w-44" />
-                        <Select
-                            aria-label={t('عدد النتائج في الصفحة')}
-                            value={filters.per_page}
-                            onChange={(event) => setFilters({ per_page: Number(event.target.value) })}
-                            options={PER_PAGE_OPTIONS.map((count) => ({ value: count, label: t('{count} في الصفحة', { count }) }))}
-                            className="lg:w-36"
-                        />
-                    </div>
+                    <Select
+                        aria-label={t('فلترة حسب القسم')}
+                        value={filters.category_id}
+                        onChange={(event) => setFilters({ category_id: event.target.value })}
+                        placeholder={t('كل الأقسام')}
+                        options={(categories ?? []).map((category) => ({ value: category.category_id, label: localized(category) }))}
+                        className="lg:w-44"
+                    />
+                    <Select aria-label={t('فلترة حسب المخزون')} value={filters.stock} onChange={(event) => setFilters({ stock: event.target.value })} placeholder={t('كل حالات المخزون')} options={Object.entries(STOCK_LEVELS).map(([value, label]) => ({ value, label }))} className="lg:w-44" />
+                    <Select
+                        aria-label={t('عدد النتائج في الصفحة')}
+                        value={filters.per_page}
+                        onChange={(event) => setFilters({ per_page: Number(event.target.value) })}
+                        options={PER_PAGE_OPTIONS.map((count) => ({ value: count, label: t('{count} في الصفحة', { count }) }))}
+                        className="lg:w-36"
+                    />
                     {hasActiveFilters && (
                         <Button variant="ghost" icon="x" onClick={resetFilters} className="lg:ms-auto">
                             {t('مسح الفلاتر')}

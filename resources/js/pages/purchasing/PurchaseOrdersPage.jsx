@@ -114,7 +114,7 @@ export function PurchaseOrdersPage() {
 
             <section className="mk-card overflow-hidden">
                 <Tabs tabs={tabs} value={status} onChange={(value) => setQuery({ status: value })} className="px-3" />
-                <div className="flex flex-wrap items-center gap-3 p-4">
+                <div className="mk-toolbar">
                     <Input type="search" icon="search" value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder={t('ابحث برقم الأمر أو اسم المورد...')} aria-label={t('بحث في أوامر الشراء')} className="lg:w-80" />
                     <Select aria-label={t('فلترة حسب المورد')} value={supplierId} onChange={(event) => setQuery({ supplier_id: event.target.value })} placeholder={t('كل الموردين')} options={suppliers.map((supplier) => ({ value: String(supplier.supplier_id), label: supplier.name }))} className="w-52" />
                 </div>

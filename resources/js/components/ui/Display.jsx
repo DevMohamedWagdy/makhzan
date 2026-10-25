@@ -67,12 +67,12 @@ export function StatCard({ label, value, icon, tone = 'primary', hint }) {
     return (
         <div className="mk-card flex min-w-0 flex-col p-4 sm:p-5">
             <div className="flex items-start justify-between gap-3">
-                <p className="text-[13px] leading-5 font-medium text-muted">{label}</p>
+                <p className="text-[12.5px] leading-5 font-medium text-muted sm:text-[13px]">{label}</p>
                 <span className={cn('grid size-8 shrink-0 place-items-center rounded-lg', ICON_TONES[tone])}>
                     <Icon name={icon} className="size-4" />
                 </span>
             </div>
-            <p className="mk-num mt-1.5 truncate text-[22px] leading-8 font-semibold text-ink sm:mt-2 sm:text-[26px] sm:leading-9">{value}</p>
+            <p className="mk-num mt-1.5 truncate text-[19px] leading-7 font-semibold text-ink sm:mt-2 sm:text-[26px] sm:leading-9">{value}</p>
             {hint && <div className="mt-1.5 text-xs text-muted">{hint}</div>}
         </div>
     );

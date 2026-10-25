@@ -8,21 +8,21 @@
 
 /*
  * Makhzan design tokens — "Ink & Leaf" (see docs/design-system.md).
- * Exact logo colors: Ink navy #17212b and Growth Green #16a35f. Warm paper canvas, white sheets with
+ * Exact logo colors: Ink navy #17212b and Growth Green #16a35f. A white canvas, white sheets with
  * hairline borders, a navy rail where the logo green is the signature accent. A deeper green
  * (--mk-primary) is kept only where white text sits on green, so it stays readable. Elevation comes from borders first, shadows second.
  * Semantic colors live in CSS variables so Light/Dark switch by toggling `.dark` on <html>.
  */
 :root {
-    --mk-bg: #f4f4ef;
+    --mk-bg: #ffffff;
     --mk-surface: #ffffff;
-    --mk-surface-2: #fafaf7;
-    --mk-surface-3: #f0f0ea;
-    --mk-border: #e6e6df;
-    --mk-border-strong: #d4d5cc;
+    --mk-surface-2: #f8f9fa;
+    --mk-surface-3: #f1f3f4;
+    --mk-border: #e6e9ec;
+    --mk-border-strong: #d3d8dd;
     --mk-text: #17212b;
-    --mk-text-2: #434d55;
-    --mk-muted: #6c736e;
+    --mk-text-2: #45505b;
+    --mk-muted: #6b7480;
     --mk-primary: #0e7a46;
     --mk-primary-hover: #0a6239;
     --mk-primary-soft: #e8f3ec;
@@ -213,8 +213,16 @@
      * KPI ribbon: StatCards joined into one sheet with hairline dividers. Each cell draws its own
      * end and bottom rule; the sheet clips the outer ones, so partial last rows stay clean.
      */
+    /* Two figures per row on phones; pages widen it with sm:/xl: grid-cols utilities. */
     .mk-stat-group {
-        @apply grid overflow-hidden rounded-2xl border border-line bg-surface shadow-card;
+        @apply grid grid-cols-2 overflow-hidden rounded-2xl border border-line bg-surface shadow-card;
+    }
+
+    /* On phones an odd last figure spans the row instead of leaving an empty cell. */
+    @media (width < 40rem) {
+        .mk-stat-group:not(.grid-cols-1) > :last-child:nth-child(odd) {
+            grid-column: span 2;
+        }
     }
 
     .mk-stat-group > * {
@@ -400,4 +408,56 @@
         animation-duration: 0.01ms !important;
         transition-duration: 0.01ms !important;
     }
+}
+
+/*
+ * Filter bar above a table or list: the first control (usually search) takes the free width,
+ * every other control keeps a steady 176px (dates 160px). On phones search takes its own row and the
+ * filters pair up two per row.
+ * Unlayered on purpose so it wins over per-page width utilities on the inputs inside.
+ */
+.mk-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem;
+}
+
+.mk-toolbar > div {
+    flex: 1 1 8rem;
+    min-width: 0;
+}
+
+.mk-toolbar > div:first-child {
+    flex: 999 1 100%;
+    max-width: none;
+}
+
+.mk-toolbar > div .mk-input {
+    width: 100%;
+}
+
+@media (min-width: 640px) {
+    .mk-toolbar > div:first-child {
+        flex-basis: 12rem;
+    }
+
+    .mk-toolbar > div:not(:first-child) {
+        flex: 0 1 11rem;
+    }
+
+    .mk-toolbar > div:not(:first-child):has(input[type='date']) {
+        flex-basis: 10rem;
+    }
+}
+
+/* A lone search box keeps a readable width instead of spanning the whole card. */
+.mk-toolbar > div:only-child {
+    flex: 0 1 24rem;
+}
+
+/* Trailing actions (clear filters, bulk actions) sit at the far end of the bar. */
+.mk-toolbar > button:last-child {
+    margin-inline-start: auto;
 }

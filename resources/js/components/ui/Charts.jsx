@@ -40,9 +40,10 @@ export function ColumnChart({ data, formatValue = formatNumber, caption, height 
         <figure className="flex flex-col gap-2">
             <div className="flex gap-3">
                 <div className="flex shrink-0 flex-col justify-between text-end text-[11px] text-muted" style={{ height }} aria-hidden="true">
-                    {ticks.map((tick) => (
+                    {ticks.map((tick, index) => (
                         <span key={tick} className="leading-none">
-                            {formatValue(tick)}
+                            {/* A tick that rounds to its neighbor's label (e.g. 0.5 shown as 1 on an empty period) stays unlabeled. */}
+                            {index > 0 && formatValue(tick) === formatValue(ticks[index - 1]) ? '' : formatValue(tick)}
                         </span>
                     ))}
                 </div>

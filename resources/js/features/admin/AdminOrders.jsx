@@ -48,7 +48,7 @@ export function AdminOrdersTable({ storeId = null }) {
 
     return (
         <>
-            <div className="flex flex-wrap items-center gap-3 p-4">
+            <div className="mk-toolbar">
                 <Input type="search" icon="search" value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder={t('رقم الطلب أو اسم العميل أو هاتفه...')} aria-label={t('بحث في الطلبات')} className="lg:w-80" />
                 <Select value={filters.status} onChange={(event) => setFilter('status', event.target.value)} aria-label={t('الحالة')} className="sm:w-44" options={STATUS_OPTIONS} />
                 <Input type="date" value={filters.from} onChange={(event) => setFilter('from', event.target.value)} aria-label={t('من تاريخ')} className="sm:w-40" />

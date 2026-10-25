@@ -86,7 +86,7 @@ export function AffiliateDashboardPage() {
                 </div>
             </div>
 
-            <div className="mk-stat-group grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="mk-stat-group sm:grid-cols-2 xl:grid-cols-4">
                 <StatCard label={t('طلباتي')} value={formatNumber(affiliate.stats.orders_count)} icon="shopping-bag" />
                 <StatCard label={t('مبيعاتي')} value={formatMoney(affiliate.stats.sales_total)} icon="bar-chart" tone="info" />
                 <StatCard label={t('إجمالي أرباحي')} value={formatMoney(affiliate.stats.earned_commission)} icon="wallet" tone="success" />

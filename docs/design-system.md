@@ -6,9 +6,9 @@ All tokens live in `resources/css/app.css`. Components consume them through Tail
 
 ## 1. Concept
 
-**Paper, ink and the logo's leaf.** The palette uses the logo's two colors exactly: navy `#17212B` and Growth Green `#16A35F`.
+**White, ink and the logo's leaf.** The palette uses the logo's two colors exactly: navy `#17212B` and Growth Green `#16A35F`.
 
-- **Paper** — a warm off-white canvas with white sheets on top. Structure comes from hairline borders first, shadows second.
+- **White** — a white canvas with white sheets on top, separated by cool hairline borders (no tinted page background). Structure comes from borders first, shadows second.
 - **Ink** — the logo navy (`#17212b`) is the text color and a solid *material*: the navigation rail, hero bands, commission and balance tiles, auth brand panel.
 - **Leaf** — the logo green (`#16a35f`, `brand-green`) is the signature accent: icons, charts, active tabs and nav icons, counters, focus halo, key figures and CTAs on navy. Navy text on it (and it on navy) reads at 5:1.
 - **Deep green** (`--mk-primary`, `#0e7a46`) is kept only where white or small green text sits on/against light surfaces: primary buttons, links, badges. White on the logo green would only reach 3.2:1.
@@ -21,15 +21,15 @@ Restraint rules: no decorative gradients on light surfaces, no glassmorphism bey
 
 | Token (CSS var) | Tailwind | Light | Dark | Use |
 |---|---|---|---|---|
-| `--mk-bg` | `bg-bg` | `#f4f4ef` | `#0a0f13` | Page canvas |
+| `--mk-bg` | `bg-bg` | `#ffffff` | `#0a0f13` | Page canvas |
 | `--mk-surface` | `bg-surface` | `#ffffff` | `#11181e` | Cards, sheets, inputs |
-| `--mk-surface-2` | `bg-surface-2` | `#fafaf7` | `#141c23` | Table headers, footers of dialogs, row hover |
-| `--mk-surface-3` | `bg-surface-3` | `#f0f0ea` | `#1a242c` | Ghost hover, segmented track, skeletons |
-| `--mk-border` | `border-line` | `#e6e6df` | `#222d36` | Hairlines, dividers |
-| `--mk-border-strong` | `border-line-strong` | `#d4d5cc` | `#2f3c46` | Input borders, hover borders |
+| `--mk-surface-2` | `bg-surface-2` | `#f8f9fa` | `#141c23` | Table headers, footers of dialogs, row hover |
+| `--mk-surface-3` | `bg-surface-3` | `#f1f3f4` | `#1a242c` | Ghost hover, segmented track, skeletons |
+| `--mk-border` | `border-line` | `#e6e9ec` | `#222d36` | Hairlines, dividers |
+| `--mk-border-strong` | `border-line-strong` | `#d3d8dd` | `#2f3c46` | Input borders, hover borders |
 | `--mk-text` | `text-ink` | `#17212b` | `#e9edea` | Primary text |
-| `--mk-text-2` | `text-ink-2` | `#434d55` | `#adb7b1` | Secondary text |
-| `--mk-muted` | `text-muted` | `#6c736e` | `#7d8992` | Labels, captions, placeholders |
+| `--mk-text-2` | `text-ink-2` | `#45505b` | `#adb7b1` | Secondary text |
+| `--mk-muted` | `text-muted` | `#6b7480` | `#7d8992` | Labels, captions, placeholders |
 | `--mk-primary` | `bg-primary` / `text-primary` | `#0e7a46` | `#1c9459` | Actions, links, focus |
 | `--mk-primary-hover` | `bg-primary-hover` | `#0a6239` | `#23a866` | Primary hover |
 | `--mk-primary-soft` | `bg-primary-soft` | `#e8f3ec` | `#11281d` | Selected / soft tint |
@@ -93,7 +93,7 @@ Family: **Alexandria** (Arabic + Latin, weights 300–800) loaded through `larav
 | Storefront section | 18 → 22/32 | 700 | `SectionHeader` |
 | Dialog title | 17/28 | 600 | `DialogHeader` |
 | Card title | 15/24 | 600 | `Card` |
-| Metric (KPI) | 22/32 → 26/36 | 600, tabular | `StatCard` |
+| Metric (KPI) | 19/28 → 26/36 | 600, tabular | `StatCard` |
 | Body | 14/22 | 400 | default |
 | Control / tab text | 13.5 | 500 | `Button md`, `Tabs`, nav items |
 | Label | 13/20 | 500 | `Field` |
@@ -168,7 +168,8 @@ Z-index: sticky headers 20 · mobile sidebar scrim 30 · sidebar / storefront he
 | `Avatar` | `ui/Display.jsx` | `shape="rounded"` (stores) or `"circle"` (people). |
 | `Card` | `ui/Display.jsx` | 14 px sheet, header 60 px min with title 15 px / description 12.5 px. |
 | `StatCard` | `ui/Display.jsx` | Label + 32 px icon tile (logo-green icon for the primary tone) on one line, metric below, optional hint (e.g. `TrendBadge`). |
-| KPI ribbon | `.mk-stat-group` | StatCards joined in one sheet with hairline dividers; cells draw their own end/bottom rules so partial rows stay clean. |
+| KPI ribbon | `.mk-stat-group` | StatCards joined in one sheet with hairline dividers; two per row on phones (an odd last cell spans the row), widened per page with `sm:`/`xl:` columns. |
+| Filter bar | `.mk-toolbar` | Search takes the free width; other filters 176 px (dates 160 px); phones: search on its own row, filters two per row; a lone search caps at 384 px; a trailing button sits at the far end. |
 | `EmptyState` | `ui/Display.jsx` | 56 px icon tile inside a dashed halo, 15 px title. |
 | `Alert` | `ui/Display.jsx` | Tone fill + ring, 13.5 px. |
 | `Modal`, `Drawer` | `ui/Overlay.jsx` | Pop / slide-in, 14 px radius, header with optional tone icon tile, tinted footer. |
@@ -191,6 +192,7 @@ Z-index: sticky headers 20 · mobile sidebar scrim 30 · sidebar / storefront he
 | `.mk-card-link` | Hover lift for clickable cards |
 | `.mk-input` | Form control |
 | `.mk-stat-group` | KPI ribbon |
+| `.mk-toolbar` | Filter bar above tables and lists |
 | `.mk-list` | Grouped list: rows in one bordered box split by hairlines (portal orders and payouts, drawer address lists) |
 | `.mk-thead` | Table header row |
 | `.mk-page-title` | Page title type role |
@@ -204,5 +206,5 @@ Z-index: sticky headers 20 · mobile sidebar scrim 30 · sidebar / storefront he
 
 - Layouts use logical properties (`ms-`, `pe-`, `start-`, `end-`, `border-s`) so Arabic (RTL, default) and English (LTR) mirror automatically.
 - Arrow and chevron icons are drawn for RTL; `Icon` mirrors them in English, so always request the Arabic drawing (`arrow-left`, `chevron-left`).
-- Breakpoints follow Tailwind (`sm` 640, `md` 768, `lg` 1024, `xl` 1280, `2xl` 1536). The navy rail becomes an off-canvas drawer below `lg`; KPI ribbons collapse to one column on phones with 16 px cell padding and 22 px figures; the auth brand panel appears from `lg`.
+- Breakpoints follow Tailwind (`sm` 640, `md` 768, `lg` 1024, `xl` 1280, `2xl` 1536). The navy rail becomes an off-canvas drawer below `lg`; KPI ribbons show two figures per row on phones with 16 px cell padding and 19 px figures; filter bars stack search above paired filters; the auth brand panel appears from `lg`.
 - Motion: 150–300 ms ease-out; everything is disabled under `prefers-reduced-motion`.

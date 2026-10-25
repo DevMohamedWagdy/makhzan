@@ -248,7 +248,7 @@ export function AdminStorePage() {
 
 function OverviewTab({ store }) {
     return (
-        <div className="grid gap-6 p-5 xl:grid-cols-2">
+        <div className="grid gap-6 p-5 2xl:grid-cols-2">
             <div className="mk-stat-group sm:grid-cols-2">
                 <StatCard label={t('المبيعات المسلّمة')} value={formatMoney(store.delivered_sales)} icon="bar-chart" tone="success" />
                 <StatCard label={t('الطلبات')} value={formatNumber(store.orders_count)} icon="shopping-bag" hint={store.last_order_at ? t('آخر طلب {time}', { time: formatRelative(store.last_order_at) }) : t('لا طلبات بعد')} />

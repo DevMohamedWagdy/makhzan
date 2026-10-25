@@ -151,8 +151,8 @@ export function SupportTicketsPage() {
                     }}
                     className="px-3"
                 />
-                <div className="flex flex-col gap-3 p-4 sm:flex-row">
-                    <div className="w-full sm:max-w-sm">
+                <div className="mk-toolbar">
+                    <div>
                         <Input
                             icon="search"
                             value={search}

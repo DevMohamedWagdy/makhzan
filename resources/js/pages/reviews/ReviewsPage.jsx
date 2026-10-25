@@ -243,7 +243,7 @@ export function ReviewsPage() {
 
             <section className="mk-card overflow-hidden">
                 <Tabs tabs={tabs} value={status} onChange={(value) => setQuery({ status: value })} className="px-3" />
-                <div className="flex flex-col gap-3 p-4 sm:flex-row">
+                <div className="mk-toolbar">
                     <Input type="search" icon="search" value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder={t('ابحث باسم المنتج أو العميل...')} aria-label={t('بحث في التقييمات')} className="sm:w-72" />
                     <Select value={rating} onChange={(event) => setQuery({ rating: event.target.value })} options={RATING_OPTIONS} aria-label={t('التقييم')} className="sm:w-44" />
                 </div>

@@ -104,7 +104,7 @@ export function CustomersPage() {
                     onChange={(value) => setQuery({ buyers: value })}
                     className="px-3"
                 />
-                <div className="flex flex-wrap items-center gap-3 p-4">
+                <div className="mk-toolbar">
                     <Input type="search" icon="search" value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder={t('ابحث بالاسم أو الهاتف أو البريد...')} aria-label={t('بحث في العملاء')} className="lg:w-96" />
                     <Select value={sort} onChange={(event) => setQuery({ sort: event.target.value })} options={SORTS} icon="filter" aria-label={t('ترتيب العملاء')} className="w-52" />
                 </div>

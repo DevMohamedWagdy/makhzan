@@ -131,7 +131,7 @@ export function CouponsPage() {
 
             <section className="mk-card overflow-hidden">
                 <Tabs tabs={tabs} value={state} onChange={(value) => setQuery({ state: value })} className="px-3" />
-                <div className="p-4">
+                <div className="mk-toolbar">
                     <Input type="search" icon="search" value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder={t('ابحث بالكود...')} aria-label={t('بحث في الكوبونات')} className="lg:w-72" dir="ltr" />
                 </div>
 

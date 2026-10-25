@@ -55,7 +55,7 @@ export function AdminStoresPage() {
             <PageHeader title={t('المتاجر')} description={t('كل المتاجر على المنصة وحالتها')} />
 
             <section className="mk-card overflow-hidden">
-                <div className="flex flex-wrap items-center gap-3 p-4">
+                <div className="mk-toolbar">
                     <Input type="search" icon="search" value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder={t('ابحث باسم المتجر أو الرابط أو المالك...')} aria-label={t('بحث في المتاجر')} className="lg:w-96" />
                     <Select value={status} onChange={(event) => setQuery({ status: event.target.value })} aria-label={t('الحالة')} className="sm:w-48" options={STATUSES} />
                 </div>

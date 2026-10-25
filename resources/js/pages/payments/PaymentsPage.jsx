@@ -210,7 +210,7 @@ export function PaymentsPage() {
             </div>
 
             <section className="mk-card overflow-hidden">
-                <div className="flex flex-wrap items-center gap-3 p-4">
+                <div className="mk-toolbar">
                     <Input type="search" icon="search" value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder={t('ابحث برقم الطلب أو رقم العملية...')} aria-label={t('بحث في المدفوعات')} className="lg:w-80" />
                     {Object.entries(FILTERS).map(([key, options]) => (
                         <Select key={key} value={filters[key]} onChange={(event) => setQuery({ [key]: event.target.value })} options={options} aria-label={options[0].label} className="sm:w-44" />

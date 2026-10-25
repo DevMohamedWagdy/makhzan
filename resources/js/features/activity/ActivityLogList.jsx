@@ -49,7 +49,7 @@ export function ActivityLogList({ load, fixed = {}, showStore = false, compact =
     return (
         <>
             {!compact && (
-                <div className="flex flex-wrap items-center gap-3 p-4">
+                <div className="mk-toolbar">
                     <Input type="search" icon="search" value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder={t('ابحث باسم المنفذ أو العنصر...')} aria-label={t('بحث في السجل')} className="lg:w-72" />
                     <Select value={filters.event} onChange={(event) => setFilter('event', event.target.value)} aria-label={t('الحدث')} className="sm:w-44" options={EVENT_FILTERS} />
                     <Select value={filters.actor_type} onChange={(event) => setFilter('actor_type', event.target.value)} aria-label={t('المنفذ')} className="sm:w-44" options={ACTOR_TYPES} />

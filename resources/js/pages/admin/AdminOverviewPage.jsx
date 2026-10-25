@@ -14,7 +14,7 @@ import { adminApi } from '@/services/adminApi';
 const dayLabel = new Intl.DateTimeFormat(intlLocale, { day: 'numeric', month: 'short' });
 
 /** Ribbon columns by how many figures a section holds, so every row fills its width. */
-const SECTION_COLUMNS = { 2: 'sm:grid-cols-2', 3: 'sm:grid-cols-3', 5: 'sm:grid-cols-3 2xl:grid-cols-5' };
+const SECTION_COLUMNS = { 2: 'sm:grid-cols-2', 3: 'sm:grid-cols-3', 5: 'sm:grid-cols-3 sm:[&>:last-child]:col-span-2 2xl:grid-cols-5 2xl:[&>:last-child]:col-span-1' };
 
 /** A titled ribbon of stat cards. */
 function StatSection({ title, children, className }) {

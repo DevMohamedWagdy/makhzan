@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
 import { Avatar, Badge, EmptyState } from '@/components/ui/Display';
 import { Input, Select } from '@/components/ui/Form';
+import { Icon } from '@/components/ui/Icon';
 import { Pagination } from '@/components/ui/Navigation';
 import { Skeleton } from '@/components/ui/Spinner';
 import { useAdminAuth } from '@/context/AdminAuthContext';
@@ -41,7 +42,7 @@ export function AdminVendorsTable({ storeId = null }) {
 
     return (
         <>
-            <div className="flex flex-wrap items-center gap-3 p-4">
+            <div className="mk-toolbar">
                 <Input type="search" icon="search" value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder={t('الاسم أو البريد أو الهاتف...')} aria-label={t('بحث في الحسابات')} className="lg:w-80" />
                 <Select
                     value={type}
@@ -72,7 +73,7 @@ export function AdminVendorsTable({ storeId = null }) {
             ) : (
                 <ul className="divide-y divide-line border-t border-line">
                     {result.data.map((vendor) => (
-                        <li key={vendor.vendor_id} className="flex flex-wrap items-center gap-4 px-4 py-3">
+                        <li key={vendor.vendor_id} className="flex flex-wrap items-center gap-4 px-5 py-3.5 transition hover:bg-surface-2">
                             <Avatar name={vendor.full_name} size="md" />
                             <div className="min-w-0 flex-1">
                                 <p className="flex flex-wrap items-center gap-2 font-semibold text-ink">
@@ -87,8 +88,9 @@ export function AdminVendorsTable({ storeId = null }) {
                                 </p>
                             </div>
                             {!storeId && vendor.store && (
-                                <Link to={`/admin/stores/${vendor.store.store_id}`} className="text-sm text-ink-2 hover:text-primary">
-                                    {vendor.store.name}
+                                <Link to={`/admin/stores/${vendor.store.store_id}`} className="inline-flex h-8 max-w-56 items-center gap-1.5 rounded-lg border border-line px-2.5 text-xs font-medium text-ink-2 transition hover:border-line-strong hover:text-primary">
+                                    <Icon name="store" className="size-3.5 shrink-0 text-muted" />
+                                    <span className="truncate">{vendor.store.name}</span>
                                 </Link>
                             )}
                             {can('vendors.update') && <Button size="icon" variant="ghost" icon="edit" onClick={() => setEditing(vendor)} aria-label={t('تعديل {name}', { name: vendor.full_name })} />}

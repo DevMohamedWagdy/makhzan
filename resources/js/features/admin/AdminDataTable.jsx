@@ -83,7 +83,7 @@ export function AdminDataTable({ load, columns, rowKey, storeId = null, searchPl
     return (
         <>
             {renderSummary && result && renderSummary(result)}
-            <div className="flex flex-wrap items-center gap-3 p-4">
+            <div className="mk-toolbar">
                 {searchPlaceholder && <Input type="search" icon="search" value={searchTerm} onChange={(event) => change(setSearchTerm)(event.target.value)} placeholder={searchPlaceholder} aria-label={searchPlaceholder} className="lg:w-80" />}
                 {!storeId && storeOptions.length > 0 && <Select value={store} onChange={(event) => change(setStore)(event.target.value)} aria-label={t('المتجر')} className="sm:w-48" options={[{ value: '', label: t('كل المتاجر') }, ...storeOptions]} />}
                 {filters.map((filter) => (

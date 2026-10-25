@@ -24,7 +24,7 @@ const ATTENTION_TONES = {
 };
 
 /** The strip spreads its cells over one row on wide screens, whatever their count. */
-const ATTENTION_COLUMNS = { 1: '', 2: 'sm:grid-cols-2', 3: 'sm:grid-cols-3', 4: 'sm:grid-cols-2 xl:grid-cols-4', 5: 'sm:grid-cols-3 xl:grid-cols-5' };
+const ATTENTION_COLUMNS = { 1: 'grid-cols-1', 2: 'grid-cols-1 sm:grid-cols-2', 3: 'grid-cols-1 sm:grid-cols-3', 4: 'grid-cols-1 sm:grid-cols-2 xl:grid-cols-4', 5: 'grid-cols-1 sm:grid-cols-3 xl:grid-cols-5' };
 
 /** Things waiting on the vendor, each linking to the page where it's handled. */
 function NeedsAttention({ items }) {

@@ -193,7 +193,7 @@ export function InventoryPage() {
                     onChange={(value) => setQuery({ level: value })}
                     className="px-3"
                 />
-                <div className="flex flex-wrap items-center gap-3 p-4">
+                <div className="mk-toolbar">
                     <Input type="search" icon="search" value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder={t('ابحث باسم المنتج أو SKU...')} aria-label={t('بحث في المخزون')} className="lg:w-80" />
                     <Select
                         aria-label={t('فلترة حسب القسم')}

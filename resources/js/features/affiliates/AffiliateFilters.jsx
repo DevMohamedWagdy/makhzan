@@ -23,8 +23,8 @@ export function AffiliateStatusTabs({ value, onChange, summary }) {
 
 export function AffiliateFilters({ filters, onChange, onReset, hasActiveFilters }) {
     return (
-        <div className="flex flex-col gap-3 p-4 lg:flex-row lg:items-center">
-            <div className="lg:w-80">
+        <div className="mk-toolbar">
+            <div>
                 <Input
                     type="search"
                     icon="search"
@@ -34,17 +34,15 @@ export function AffiliateFilters({ filters, onChange, onReset, hasActiveFilters 
                     aria-label={t('بحث في المسوقين')}
                 />
             </div>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:flex lg:flex-1">
-                <Select aria-label={t('فلترة حسب الشريحة')} value={filters.tier} onChange={(event) => onChange({ tier: event.target.value })} placeholder={t('كل الشرائح')} options={toOptions(AFFILIATE_TIERS)} className="lg:w-40" />
-                <Select aria-label={t('فلترة حسب وسيلة السحب')} value={filters.payout_method} onChange={(event) => onChange({ payout_method: event.target.value })} placeholder={t('كل وسائل السحب')} options={toOptions(PAYOUT_METHODS)} className="lg:w-44" />
-                <Select
-                    aria-label={t('عدد النتائج في الصفحة')}
-                    value={filters.per_page}
-                    onChange={(event) => onChange({ per_page: Number(event.target.value) })}
-                    options={PER_PAGE_OPTIONS.map((count) => ({ value: count, label: t('{count} في الصفحة', { count }) }))}
-                    className="lg:w-36"
-                />
-            </div>
+            <Select aria-label={t('فلترة حسب الشريحة')} value={filters.tier} onChange={(event) => onChange({ tier: event.target.value })} placeholder={t('كل الشرائح')} options={toOptions(AFFILIATE_TIERS)} className="lg:w-40" />
+            <Select aria-label={t('فلترة حسب وسيلة السحب')} value={filters.payout_method} onChange={(event) => onChange({ payout_method: event.target.value })} placeholder={t('كل وسائل السحب')} options={toOptions(PAYOUT_METHODS)} className="lg:w-44" />
+            <Select
+                aria-label={t('عدد النتائج في الصفحة')}
+                value={filters.per_page}
+                onChange={(event) => onChange({ per_page: Number(event.target.value) })}
+                options={PER_PAGE_OPTIONS.map((count) => ({ value: count, label: t('{count} في الصفحة', { count }) }))}
+                className="lg:w-36"
+            />
             {hasActiveFilters && (
                 <Button variant="ghost" icon="x" onClick={onReset} className="lg:ms-auto">
                     {t('مسح الفلاتر')}
