@@ -10,7 +10,7 @@ export default defineConfig({
             input: ['resources/css/app.css', 'resources/js/app.jsx'],
             refresh: true,
             fonts: [
-                google('Alexandria', {
+                google('Noto Kufi Arabic', {
                     weights: [300, 400, 500, 600, 700, 800],
                     subsets: ['arabic', 'latin'],
                     optimizedFallbacks: false,

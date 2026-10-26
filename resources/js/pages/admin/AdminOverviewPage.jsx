@@ -31,7 +31,7 @@ function StatSection({ title, children, className, columns }) {
 /** Daily counts for the last 30 days. */
 function DailyChart({ title, daily, field }) {
     return (
-        <Card title={title} description={t('آخر ٣٠ يوماً')}>
+        <Card title={title} description={t('آخر 30 يوماً')}>
             <ColumnChart caption={title} data={daily.map((day) => ({ key: day.date, label: dayLabel.format(parseDate(day.date)), value: day[field] }))} />
         </Card>
     );
@@ -134,7 +134,7 @@ export function AdminOverviewPage() {
 
                         <div className="flex flex-col gap-6">
                             <TopTable
-                                title={t('أعلى ٥ متاجر مبيعاً')}
+                                title={t('أعلى 5 متاجر مبيعاً')}
                                 rows={data.top_stores}
                                 rowKey={(store) => store.store_id}
                                 emptyText={t('لا توجد مبيعات بعد.')}
@@ -146,7 +146,7 @@ export function AdminOverviewPage() {
                                 ]}
                             />
                             <TopTable
-                                title={t('أعلى ٥ مسوقين مبيعاً')}
+                                title={t('أعلى 5 مسوقين مبيعاً')}
                                 rows={data.top_affiliates}
                                 rowKey={(affiliate) => affiliate.affiliate_id}
                                 emptyText={t('لا توجد عمولات بعد.')}

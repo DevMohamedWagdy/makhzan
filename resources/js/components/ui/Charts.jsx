@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { t } from '@/i18n';
 import { cn, formatNumber } from '@/lib/format';
 
@@ -22,6 +22,28 @@ function niceMax(value) {
     return [1, 2, 2.5, 5, 10].map((step) => step * power).find((candidate) => candidate >= value);
 }
 
+/** Whether something placed over column `index` should center on it or pin to the start/end edge. */
+function edgeAnchor(index, count) {
+    const position = (index + 0.5) / count;
+
+    if (position < 0.12) {
+        return 'start';
+    }
+
+    return position > 0.88 ? 'end' : 'center';
+}
+
+/** Inline position for {@link edgeAnchor}; centered items also need the translate classes. */
+function edgeAnchorStyle(index, count) {
+    const anchor = edgeAnchor(index, count);
+
+    if (anchor === 'start') {
+        return { insetInlineStart: 0 };
+    }
+
+    return anchor === 'end' ? { insetInlineEnd: 0 } : { insetInlineStart: `${((index + 0.5) / count) * 100}%` };
+}
+
 /**
  * Single-series column chart (one bar per day, oldest first in reading direction) with a
  * hover/focus tooltip, three recessive gridlines and thinned x labels. A visually hidden
@@ -33,21 +55,33 @@ export function ColumnChart({ data, formatValue = formatNumber, caption, height 
     const [active, setActive] = useState(null);
     const max = niceMax(Math.max(...data.map((point) => point.value), 0));
     const ticks = [max, max / 2, 0];
-    const labelEvery = Math.max(1, Math.ceil(data.length / 8));
+    const [plotWidth, setPlotWidth] = useState(0);
+    const plotRef = useRef(null);
+
+    useEffect(() => {
+        const observer = new ResizeObserver(([entry]) => setPlotWidth(entry.contentRect.width));
+        observer.observe(plotRef.current);
+
+        return () => observer.disconnect();
+    }, []);
+
+    // One date label per ~72px ("22 أكتوبر" is ~45px wide) keeps neighbors from touching at any card width.
+    const labelEvery = Math.max(1, Math.ceil(data.length / Math.max(2, Math.floor(plotWidth / 72))));
+    const isIntegerSeries = data.every((point) => Number.isInteger(point.value));
     const hovered = active === null ? null : data[active];
 
     return (
         <figure className="flex flex-col gap-2">
             <div className="flex gap-3">
-                <div className="flex shrink-0 flex-col justify-between text-end text-[11px] text-muted" style={{ height }} aria-hidden="true">
+                <div className="flex shrink-0 flex-col justify-between text-end text-2xs text-muted" style={{ height }} aria-hidden="true">
                     {ticks.map((tick, index) => (
                         <span key={tick} className="leading-none">
-                            {/* A tick that rounds to its neighbor's label (e.g. 0.5 shown as 1 on an empty period) stays unlabeled. */}
-                            {index > 0 && formatValue(tick) === formatValue(ticks[index - 1]) ? '' : formatValue(tick)}
+                            {/* A fractional tick on a count series (0.5 orders), or one that rounds to its neighbor's label, stays unlabeled. */}
+                            {(isIntegerSeries && !Number.isInteger(tick)) || (index > 0 && formatValue(tick) === formatValue(ticks[index - 1])) ? '' : formatValue(tick)}
                         </span>
                     ))}
                 </div>
-                <div className="relative min-w-0 flex-1">
+                <div ref={plotRef} className="relative min-w-0 flex-1">
                     <div className="pointer-events-none absolute inset-0 flex flex-col justify-between" aria-hidden="true">
                         {ticks.map((tick) => (
                             <span key={tick} className={cn('border-t', tick === 0 ? 'border-line-strong' : 'border-dashed border-line')} />
@@ -65,20 +99,27 @@ export function ColumnChart({ data, formatValue = formatNumber, caption, height 
                     </div>
                     {hovered && (
                         <div
-                            className="mk-card pointer-events-none absolute top-0 z-10 -translate-x-1/2 px-3 py-2 text-xs whitespace-nowrap shadow-pop rtl:translate-x-1/2"
-                            style={{ insetInlineStart: `${((active + 0.5) / data.length) * 100}%` }}
+                            className={cn('mk-card pointer-events-none absolute top-0 z-10 px-3 py-2 text-xs whitespace-nowrap shadow-pop', edgeAnchor(active, data.length) === 'center' && '-translate-x-1/2 rtl:translate-x-1/2')}
+                            style={edgeAnchorStyle(active, data.length)}
                         >
                             <p className="text-muted">{hovered.label}</p>
                             <p className="mk-num mt-0.5 text-sm font-semibold text-ink">{formatValue(hovered.value)}</p>
                             {hovered.detail && <p className="mt-0.5 text-muted">{hovered.detail}</p>}
                         </div>
                     )}
-                    <div className="mt-2 flex gap-[2px] text-[11px] text-muted" aria-hidden="true">
-                        {data.map((point, index) => (
-                            <span key={point.key} className="min-w-0 flex-1 text-center whitespace-nowrap">
-                                {index % labelEvery === 0 ? point.label : ''}
-                            </span>
-                        ))}
+                    {/* Labels are centered under their column; the outermost ones pin to the chart edge so they never spill past it. */}
+                    <div className="relative mt-2 h-4 text-2xs text-muted" aria-hidden="true">
+                        {data.map((point, index) =>
+                            index % labelEvery === 0 ? (
+                                <span
+                                    key={point.key}
+                                    className={cn('absolute top-0 whitespace-nowrap', edgeAnchor(index, data.length) === 'center' && '-translate-x-1/2 rtl:translate-x-1/2')}
+                                    style={edgeAnchorStyle(index, data.length)}
+                                >
+                                    {point.label}
+                                </span>
+                            ) : null,
+                        )}
                     </div>
                 </div>
             </div>
@@ -180,8 +221,8 @@ export function TrendBadge({ current, previous, inverse = false }) {
     const good = change > 0 !== inverse;
 
     return (
-        <span className={cn('inline-flex h-5 items-center gap-1 rounded-full px-1.5 text-[11px] font-semibold', good ? 'bg-success-soft text-success' : 'bg-danger-soft text-danger')}>
-            <span aria-hidden="true" className="text-[8px]">{change > 0 ? '▲' : '▼'}</span>
+        <span className={cn('inline-flex h-5 items-center gap-1 rounded-full px-1.5 text-2xs font-semibold', good ? 'bg-success-soft text-success' : 'bg-danger-soft text-danger')}>
+            <span aria-hidden="true" className="text-3xs">{change > 0 ? '▲' : '▼'}</span>
             <span className="ltr">{`${change > 0 ? '+' : '-'}${formatNumber(rounded)}%`}</span>
             <span className="sr-only">{t('مقارنة بالفترة السابقة')}</span>
         </span>

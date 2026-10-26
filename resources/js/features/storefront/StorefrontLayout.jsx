@@ -52,7 +52,7 @@ function HeaderAction({ icon, label, badge, className, ...props }) {
         <span className={cn('relative flex items-center gap-2 rounded-lg px-2 py-1.5 text-ink-2 transition hover:bg-surface-3 hover:text-ink', className)} {...props}>
             <span className="relative">
                 <Icon name={icon} className="size-[22px]" />
-                {badge > 0 && <span className="mk-num absolute -top-2 -end-2 grid h-[18px] min-w-[18px] place-items-center rounded-full bg-primary px-1 text-[10px] font-semibold text-white ring-2 ring-surface">{badge > 99 ? '99+' : badge}</span>}
+                {badge > 0 && <span className="mk-num absolute -top-2 -end-2 grid h-[18px] min-w-[18px] place-items-center rounded-full bg-primary px-1 text-3xs font-semibold text-white ring-2 ring-surface">{badge > 99 ? '99+' : badge}</span>}
             </span>
             {label && <span className="hidden max-w-28 truncate text-sm font-semibold lg:block">{label}</span>}
         </span>
@@ -125,10 +125,10 @@ function MobileTabBar({ storeSlug }) {
             <ul className="grid grid-cols-4">
                 {tabs.map((tab) => (
                     <li key={tab.label}>
-                        <NavLink end={tab.end} to={tab.to} className={({ isActive }) => cn('flex flex-col items-center gap-1 py-2 text-[11px] font-medium transition', isActive ? 'text-primary' : 'text-muted')}>
+                        <NavLink end={tab.end} to={tab.to} className={({ isActive }) => cn('flex flex-col items-center gap-1 py-2 text-2xs font-medium transition', isActive ? 'text-primary' : 'text-muted')}>
                             <span className="relative">
                                 <Icon name={tab.icon} className="size-[22px]" />
-                                {tab.badge > 0 && <span className="absolute -top-1.5 -end-2 grid h-4 min-w-4 place-items-center rounded-full bg-primary px-1 text-[9px] font-bold text-white">{tab.badge > 99 ? '99+' : tab.badge}</span>}
+                                {tab.badge > 0 && <span className="absolute -top-1.5 -end-2 grid h-4 min-w-4 place-items-center rounded-full bg-primary px-1 text-3xs font-semibold text-white">{tab.badge > 99 ? '99+' : tab.badge}</span>}
                             </span>
                             {tab.label}
                         </NavLink>
@@ -326,7 +326,7 @@ export function StorefrontLayout() {
                         <div className="mx-auto flex h-[72px] max-w-7xl items-center gap-3 px-4 sm:gap-6 sm:px-6">
                             <Link to={`/${storeSlug}`} className="flex min-w-0 shrink-0 items-center gap-2.5">
                                 {store ? <Avatar name={store.name} src={store.logo_url} size="md" /> : <Skeleton className="size-10 rounded-xl" />}
-                                <span className="max-w-40 truncate text-[17px] font-bold text-ink sm:max-w-56">{store?.name}</span>
+                                <span className="max-w-40 truncate text-lg font-semibold text-ink sm:max-w-56">{store?.name}</span>
                             </Link>
                             <SearchBox storeSlug={storeSlug} className="hidden flex-1 md:flex" />
                             <div className="ms-auto flex items-center gap-1 md:ms-0">
@@ -380,7 +380,7 @@ export function StorefrontLayout() {
                                             <Icon name={perk.icon} className="size-5" />
                                         </span>
                                         <span>
-                                            <span className="block text-sm font-bold text-ink">{perk.title}</span>
+                                            <span className="block text-sm font-semibold text-ink">{perk.title}</span>
                                             <span className="block text-xs text-muted">{perk.text}</span>
                                         </span>
                                     </li>
@@ -391,14 +391,14 @@ export function StorefrontLayout() {
                             <div>
                                 <div className="flex items-center gap-2.5">
                                     {store && <Avatar name={store.name} src={store.logo_url} size="md" />}
-                                    <p className="text-lg font-bold text-ink">{store?.name}</p>
+                                    <p className="text-lg font-semibold text-ink">{store?.name}</p>
                                 </div>
                                 <p className="mt-3 text-sm leading-relaxed text-muted">{store?.description || t('تسوّق بأمان والدفع عند الاستلام.')}</p>
                                 {store && <StoreContact store={store} />}
                             </div>
                             {categories.length > 0 && (
                                 <div>
-                                    <p className="text-sm font-bold text-ink">{t('الأقسام')}</p>
+                                    <p className="text-sm font-semibold text-ink">{t('الأقسام')}</p>
                                     <ul className="mt-3 flex flex-col gap-2.5 text-sm">
                                         {categories.slice(0, 6).map((category) => (
                                             <li key={category.slug}>
@@ -411,7 +411,7 @@ export function StorefrontLayout() {
                                 </div>
                             )}
                             <div>
-                                <p className="text-sm font-bold text-ink">{t('حسابي')}</p>
+                                <p className="text-sm font-semibold text-ink">{t('حسابي')}</p>
                                 <ul className="mt-3 flex flex-col gap-2.5 text-sm">
                                     <li>
                                         <Link to={`/${storeSlug}/account/orders`} className="text-muted hover:text-primary">
@@ -437,7 +437,7 @@ export function StorefrontLayout() {
                             </div>
                             {store?.policies?.length > 0 && (
                                 <div>
-                                    <p className="text-sm font-bold text-ink">{t('سياسات المتجر')}</p>
+                                    <p className="text-sm font-semibold text-ink">{t('سياسات المتجر')}</p>
                                     <ul className="mt-3 flex flex-col gap-2.5 text-sm">
                                         {store.policies.map((policy) => (
                                             <li key={policy.key}>

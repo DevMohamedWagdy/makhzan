@@ -110,7 +110,7 @@ function Sidebar({ open, onClose }) {
                 aria-label={t('القائمة الرئيسية')}
             >
                 <div className="flex h-16 shrink-0 items-center justify-between px-5">
-                    <Logo className="h-[18px]" />
+                    <Logo className="h-[26px]" />
                     <button type="button" onClick={onClose} className="grid size-9 place-items-center rounded-lg text-muted hover:bg-surface-3 hover:text-ink lg:hidden" aria-label={t('إغلاق القائمة')}>
                         <Icon name="x" />
                     </button>
@@ -119,8 +119,8 @@ function Sidebar({ open, onClose }) {
                 <div className="mx-3 mb-2 flex items-center gap-2.5 rounded-xl border border-line bg-surface-2 p-2">
                     <Avatar name={store?.name} src={store?.logo_url} size="sm" />
                     <div className="min-w-0 flex-1">
-                        <p className="truncate text-[13px] leading-5 font-semibold text-ink">{store?.name}</p>
-                        <p className="ltr truncate text-start text-[11px] leading-4 text-muted" title={storeUrl}>
+                        <p className="truncate text-sm font-semibold text-ink">{store?.name}</p>
+                        <p className="ltr truncate text-start text-2xs text-muted" title={storeUrl}>
                             {storeUrl.replace(/^https?:\/\//, '')}
                         </p>
                     </div>
@@ -142,7 +142,7 @@ function Sidebar({ open, onClose }) {
                         }}
                         aria-label={copied ? t('تم النسخ') : t('نسخ الرابط')}
                         title={copied ? t('تم النسخ') : t('نسخ الرابط')}
-                        className={cn('grid size-8 shrink-0 place-items-center rounded-lg transition', copied ? 'text-brand-accent' : 'text-muted hover:bg-surface-3 hover:text-ink')}
+                        className={cn('grid size-8 shrink-0 place-items-center rounded-lg transition', copied ? 'text-brand-green' : 'text-muted hover:bg-surface-3 hover:text-ink')}
                     >
                         <Icon name={copied ? 'check' : 'copy'} className="size-4" />
                     </button>
@@ -163,17 +163,17 @@ export function SidebarNav({ sections, alerts = {}, counter, onNavigate }) {
         <nav className="mk-scroll flex-1 overflow-y-auto px-3 pt-2 pb-6">
             {sections.map((section) => (
                 <div key={section.title} className="mt-5 first:mt-2">
-                    <p className="mb-1 px-3 text-[11px] leading-5 font-medium text-muted">{section.title}</p>
+                    <p className="mb-1 px-3 text-2xs font-medium text-muted">{section.title}</p>
                     <ul className="flex flex-col gap-px">
                         {section.items.map((item) => {
                             const count = counter ? counter(item) : item.counter ? alerts[item.counter] : 0;
 
                             return item.soon ? (
                                 <li key={item.label}>
-                                    <span className="flex h-9 cursor-not-allowed items-center gap-3 rounded-lg px-3 text-[13.5px] text-muted" title={t('هذه الوحدة قيد التطوير')}>
+                                    <span className="flex h-9 cursor-not-allowed items-center gap-3 rounded-lg px-3 text-sm text-muted" title={t('هذه الوحدة قيد التطوير')}>
                                         <Icon name={item.icon} className="size-[18px]" />
                                         {item.label}
-                                        <span className="ms-auto rounded-md bg-surface-3 px-1.5 py-0.5 text-[10px]">{t('قريباً')}</span>
+                                        <span className="ms-auto rounded-md bg-surface-3 px-1.5 py-0.5 text-3xs">{t('قريباً')}</span>
                                     </span>
                                 </li>
                             ) : (
@@ -184,15 +184,15 @@ export function SidebarNav({ sections, alerts = {}, counter, onNavigate }) {
                                         onClick={onNavigate}
                                         className={({ isActive }) =>
                                             cn(
-                                                'flex h-9 items-center gap-3 rounded-lg px-3 text-[13.5px] transition',
-                                                isActive ? 'bg-primary-soft font-semibold text-ink [&>svg]:text-brand-accent' : 'text-ink-2 hover:bg-surface-2 hover:text-ink [&>svg]:text-muted',
+                                                'flex h-9 items-center gap-3 rounded-lg px-3 text-sm transition',
+                                                isActive ? 'bg-primary-soft font-semibold text-ink [&>svg]:text-brand-green' : 'text-ink-2 hover:bg-surface-2 hover:text-ink [&>svg]:text-muted',
                                             )
                                         }
                                     >
                                         <Icon name={item.icon} className="size-[18px] shrink-0" />
                                         <span className="truncate">{item.label}</span>
                                         {count > 0 && (
-                                            <span className="mk-num ms-auto grid h-5 min-w-5 place-items-center rounded-full bg-primary px-1.5 text-[11px] font-semibold text-white">
+                                            <span className="mk-num ms-auto grid h-5 min-w-5 place-items-center rounded-full bg-primary px-1.5 text-2xs font-semibold text-white">
                                                 {count > 99 ? '99+' : count}
                                             </span>
                                         )}
@@ -270,7 +270,7 @@ function DashboardShell() {
                     <button type="button" onClick={() => setSidebarOpen(true)} className="grid size-9 place-items-center rounded-lg border border-line-strong/70 bg-surface text-ink-2 shadow-card lg:hidden" aria-label={t('فتح القائمة')}>
                         <Icon name="menu" className="size-[18px]" />
                     </button>
-                    <Logo className="h-4 lg:hidden" />
+                    <Logo className="h-[22px] lg:hidden" />
                     <div className="ms-auto flex items-center gap-1">
                         <LanguageToggle />
                         <ThemeToggle />
@@ -282,8 +282,8 @@ function DashboardShell() {
                                 <button type="button" {...props} className="flex items-center gap-2.5 rounded-xl p-1 pe-2 transition hover:bg-surface-3">
                                     <Avatar name={vendor?.full_name} size="sm" shape="circle" />
                                     <span className="hidden text-start leading-tight sm:block">
-                                        <span className="block text-[13px] font-semibold text-ink">{vendor?.full_name}</span>
-                                        <span className="block text-[11px] text-muted">{isOwner ? t('صاحب المتجر') : t('عضو فريق العمل')}</span>
+                                        <span className="block text-sm font-semibold text-ink">{vendor?.full_name}</span>
+                                        <span className="block text-2xs text-muted">{isOwner ? t('صاحب المتجر') : t('عضو فريق العمل')}</span>
                                     </span>
                                     <Icon name="chevron-down" className="hidden size-4 text-muted sm:block" />
                                 </button>
@@ -334,8 +334,8 @@ export function PageHeader({ title, description, breadcrumbs = [], actions }) {
                         ))}
                     </nav>
                 )}
-                <h1 className="text-[22px] leading-8 font-semibold text-ink sm:text-[26px] sm:leading-9">{title}</h1>
-                {description && <p className="mt-1 max-w-2xl text-[13.5px] leading-6 text-muted">{description}</p>}
+                <h1 className="mk-page-title">{title}</h1>
+                {description && <p className="mt-1 max-w-2xl text-sm text-muted">{description}</p>}
             </div>
             {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
         </div>

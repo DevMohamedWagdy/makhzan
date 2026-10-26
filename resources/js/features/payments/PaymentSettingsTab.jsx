@@ -215,7 +215,7 @@ export function PaymentSettingsTab() {
                     <ol className="flex flex-col gap-3 border-t border-line p-4 text-sm">
                         {GUIDE.map((step, index) => (
                             <li key={step.title} className="flex gap-3">
-                                <span className="grid size-6 shrink-0 place-items-center rounded-full bg-primary-soft text-xs font-bold text-primary">{index + 1}</span>
+                                <span className="grid size-6 shrink-0 place-items-center rounded-full bg-primary-soft text-xs font-semibold text-primary">{index + 1}</span>
                                 <span>
                                     <span className="block font-medium text-ink">{step.title}</span>
                                     <span className="text-ink-2">{step.text}</span>

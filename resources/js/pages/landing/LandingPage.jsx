@@ -1,59 +1,64 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Logo } from '@/components/brand/Logo';
+import { Logo, LogoMark } from '@/components/brand/Logo';
 import { Button } from '@/components/ui/Button';
 import { Icon } from '@/components/ui/Icon';
 import { LanguageToggle } from '@/components/ui/LanguageToggle';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { useAuth } from '@/context/AuthContext';
 import { t } from '@/i18n';
-import { CURRENCY } from '@/lib/constants';
-import { cn, formatCompactNumber } from '@/lib/format';
-import { ContactSection } from '@/pages/landing/ContactSection';
-import { FeaturesSection } from '@/pages/landing/FeaturesSection';
+import { cn } from '@/lib/format';
 import { SiteFooter } from '@/pages/landing/SiteFooter';
-import { platformApi } from '@/services/platformApi';
 
 const NAV_LINKS = [
-    { href: '#about', label: t('من نحن') },
-    { href: '#features', label: t('مميزاتنا') },
-    { href: '#stats', label: t('أرقامنا') },
-    { href: '#contact', label: t('تواصل معنا') },
+    { href: '#features', label: t('المميزات') },
+    { href: '#how-it-works', label: t('كيف يعمل') },
+    { href: '#storefront', label: t('المتجر الإلكتروني') },
 ];
 
-/** Live platform totals (see PlatformStatsController), keyed by the API field. */
+const FEATURES = [
+    { icon: 'warehouse', title: t('مخزون متعدد الفروع'), text: t('تابع الكميات في كل مخزن، وانقل البضاعة بين الفروع مع سجل كامل لكل حركة.') },
+    { icon: 'shopping-bag', title: t('إدارة الطلبات'), text: t('استقبل الطلبات من متجرك وتابع حالتها من التأكيد حتى التسليم في شاشة واحدة.') },
+    { icon: 'truck', title: t('شحن وتحصيل'), text: t('اربط الطلبات بشركات الشحن وتابع مبالغ التحصيل بدون جداول يدوية.') },
+    { icon: 'users', title: t('برنامج المسوقين'), text: t('روابط إحالة وعمولات مرنة ولوحة خاصة لكل مسوق يتابع منها أرباحه.') },
+    { icon: 'gift', title: t('كوبونات وولاء'), text: t('كوبونات خصم ونقاط ولاء ومستويات للعملاء تعيدهم للشراء مرة بعد مرة.') },
+    { icon: 'bar-chart', title: t('تقارير واضحة'), text: t('المبيعات والأرباح وأفضل المنتجات أداءً، بأرقام تفهمها من أول نظرة.') },
+    { icon: 'file-text', title: t('المشتريات والموردين'), text: t('أوامر شراء واستلام بضاعة من الموردين تحدّث المخزون تلقائياً.') },
+    { icon: 'shield-check', title: t('فريق وصلاحيات'), text: t('أضف موظفيك وحدد لكل واحد الأقسام التي يراها، مع سجل لكل نشاط.') },
+];
+
+const STEPS = [
+    { title: t('أنشئ حسابك'), text: t('سجّل في دقيقة وأدخل بيانات متجرك الأساسية.') },
+    { title: t('أضف منتجاتك'), text: t('ارفع المنتجات والأقسام وحدد الكميات في كل مخزن.') },
+    { title: t('ابدأ البيع'), text: t('شارك رابط متجرك واستقبل الطلبات وتابعها من لوحة التحكم.') },
+];
+
+const STOREFRONT_POINTS = [t('رابط خاص لمتجرك أو دومين باسمك'), t('سلة ودفع إلكتروني وتتبع للطلبات'), t('حسابات للعملاء مع المفضلة ونقاط الولاء'), t('يعمل بالعربية والإنجليزية على كل الأجهزة')];
+
 const STATS = [
-    { key: 'stores', label: t('عدد المتاجر') },
-    { key: 'orders', label: t('عدد الطلبات') },
-    { key: 'products', label: t('عدد المنتجات') },
-    { key: 'sales', label: t('إجمالي المبيعات'), isMoney: true },
+    { value: '+10', label: t('وحدات متكاملة') },
+    { value: '24/7', label: t('متجرك يعمل دائماً') },
+    { value: '2', label: t('لغتان: عربي وإنجليزي') },
+    { value: '100%', label: t('سحابي بدون تثبيت') },
 ];
 
-/** Reasons to choose the platform, for the About section. */
-const ABOUT_REASONS = [
-    { icon: 'hub', title: t('كل تجارتك في مكان واحد'), text: t('المخزون والطلبات والمتجر والمسوقين مترابطين، فكل طلب يحدّث المخزون والتقارير تلقائياً.') },
-    { icon: 'arabic', title: t('مصمم للتاجر العربي'), text: t('عربي من الأساس مع دعم كامل للإنجليزية، ويفهم طريقة البيع والشحن والتحصيل في منطقتنا.') },
-    { icon: 'devices', title: t('من أي جهاز وفي أي وقت'), text: t('نظام سحابي بالكامل بدون تثبيت أو أجهزة خاصة — تابع متجرك من الموبايل أو الكمبيوتر.') },
-    { icon: 'storefront', title: t('متجر جاهز في دقائق'), text: t('رابط خاص لمتجرك أو دومين باسمك، مع سلة ودفع إلكتروني وتتبع للطلبات.') },
-    { icon: 'secure', title: t('بياناتك في أمان'), text: t('صلاحيات دقيقة لكل موظف وسجل كامل لكل عملية تتم في متجرك.') },
-    { icon: 'growth', title: t('قرارات مبنية على أرقام'), text: t('تقارير واضحة للمبيعات والأرباح وأفضل المنتجات تساعدك تعرف أين تركز.') },
+const HERO_PROOF = [
+    { icon: 'truck', text: t('ربط مع شركات الشحن') },
+    { icon: 'users', text: t('نظام مسوّقين بالعمولة') },
+    { icon: 'bar-chart', text: t('تقارير لحظية لمبيعاتك') },
 ];
 
-/** Staggered entrance for the hero; the global reduced-motion rule turns it off. */
-const RISE = 'animate-[mk-pop_0.7s_cubic-bezier(0.22,1,0.36,1)_both]';
+const CHART_BARS =[42, 58, 46, 70, 62, 84, 76];
 
 export function LandingPage() {
     const { isAuthenticated } = useAuth();
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const activeSection = useActiveSection(NAV_LINKS.map((link) => link.href));
     // Icon mirrors arrows in English itself, so the Arabic drawing is always the one to ask for.
     const arrow = 'arrow-left';
-    // Clear over the hero; once scrolled (or opened) the bar turns into a solid floating surface.
-    const isSolid = isScrolled || isMenuOpen;
 
     useEffect(() => {
-        const onScroll = () => setIsScrolled(window.scrollY > 24);
+        const onScroll = () => setIsScrolled(window.scrollY > 8);
 
         onScroll();
         window.addEventListener('scroll', onScroll, { passive: true });
@@ -62,341 +67,208 @@ export function LandingPage() {
     }, []);
 
     const primaryAction = isAuthenticated ? (
-        <Button to="/dashboard" size="xl" iconEnd={arrow}>
+        <Button to="/dashboard" variant="brand" size="xl" iconEnd={arrow}>
             {t('الذهاب إلى لوحة التحكم')}
         </Button>
     ) : (
-        <Button to="/register" size="xl" iconEnd={arrow}>
+        <Button to="/register" variant="brand" size="xl" iconEnd={arrow}>
             {t('ابدأ مجاناً')}
         </Button>
     );
 
     return (
         <div className="min-h-dvh scroll-smooth bg-bg">
-            <header className="fixed inset-x-0 top-0 z-40 px-3 pt-3 sm:px-4 sm:pt-4">
-                <div
-                    className={cn(
-                        'mx-auto max-w-6xl rounded-2xl border transition-[background-color,border-color,box-shadow] duration-300',
-                        isSolid ? 'border-line bg-surface/85 shadow-pop backdrop-blur-xl backdrop-saturate-150' : 'border-transparent',
-                    )}
-                >
-                    <div className={cn('flex items-center gap-4 ps-4 pe-2 transition-[height] duration-300 sm:ps-5', isScrolled ? 'h-14' : 'h-16')}>
-                        <div className="flex min-w-0 flex-1 items-center">
-                            <Link to="/" aria-label={t('الصفحة الرئيسية لـ Sellygrow')} onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-                                <Logo className="h-3 sm:h-[18px]" />
-                            </Link>
-                        </div>
-                        <nav className="hidden items-center gap-1 md:flex" aria-label={t('القائمة الرئيسية')}>
-                            {NAV_LINKS.map((link) => {
-                                const isActive = activeSection === link.href;
-
-                                return (
-                                    <a
-                                        key={link.href}
-                                        href={link.href}
-                                        aria-current={isActive ? 'location' : undefined}
-                                        className={cn(
-                                            'rounded-lg px-3 py-2 text-sm transition',
-                                            isActive ? 'bg-primary-soft font-medium text-primary' : 'text-ink-2 hover:bg-surface-3 hover:text-ink',
-                                        )}
-                                    >
-                                        {link.label}
-                                    </a>
-                                );
-                            })}
-                        </nav>
-                        <div className="flex shrink-0 items-center justify-end gap-1.5 md:flex-1">
-                            <LanguageToggle className="hidden sm:grid" />
-                            <ThemeToggle />
+            <header className={cn('sticky top-0 z-30 transition', isScrolled || isMenuOpen ? 'border-b border-line bg-surface/85 backdrop-blur-md' : 'border-b border-transparent')}>
+                <div className="mx-auto flex h-18 max-w-6xl items-center gap-6 px-4 sm:px-6">
+                    <Link to="/" aria-label={t('الصفحة الرئيسية لـ Sellygrow')}>
+                        <Logo className="h-5" />
+                    </Link>
+                    <nav className="hidden items-center gap-1 md:flex" aria-label={t('القائمة الرئيسية')}>
+                        {NAV_LINKS.map((link) => (
+                            <a key={link.href} href={link.href} className="rounded-lg px-3 py-2 text-sm text-ink-2 transition hover:bg-surface-3 hover:text-ink">
+                                {link.label}
+                            </a>
+                        ))}
+                    </nav>
+                    <div className="ms-auto flex items-center gap-2">
+                        <LanguageToggle className="hidden sm:grid" />
+                        <ThemeToggle />
+                        {isAuthenticated ? (
+                            <Button to="/dashboard">{t('لوحة التحكم')}</Button>
+                        ) : (
+                            <>
+                                <span className="hidden sm:block">
+                                    <Button to="/login" variant="ghost">
+                                        {t('تسجيل الدخول')}
+                                    </Button>
+                                </span>
+                                <Button to="/register">{t('ابدأ مجاناً')}</Button>
+                            </>
+                        )}
+                        <button
+                            type="button"
+                            onClick={() => setIsMenuOpen((open) => !open)}
+                            aria-expanded={isMenuOpen}
+                            aria-controls="landing-mobile-menu"
+                            aria-label={isMenuOpen ? t('إغلاق القائمة') : t('فتح القائمة')}
+                            className="grid size-10 place-items-center rounded-xl border border-line bg-surface text-ink-2 transition hover:border-line-strong hover:text-ink md:hidden"
+                        >
+                            <Icon name={isMenuOpen ? 'x' : 'menu'} />
+                        </button>
+                    </div>
+                </div>
+                {isMenuOpen && (
+                    <nav id="landing-mobile-menu" className="border-t border-line px-4 pt-2 pb-4 md:hidden" aria-label={t('القائمة الرئيسية')}>
+                        {NAV_LINKS.map((link) => (
+                            <a key={link.href} href={link.href} onClick={() => setIsMenuOpen(false)} className="block rounded-lg px-3 py-3 text-sm text-ink-2 transition hover:bg-surface-3 hover:text-ink">
+                                {link.label}
+                            </a>
+                        ))}
+                        <div className="mt-2 flex items-center gap-2 border-t border-line pt-4">
                             {isAuthenticated ? (
-                                <Button to="/dashboard">
+                                <Button to="/dashboard" variant="secondary" className="flex-1">
                                     {t('لوحة التحكم')}
                                 </Button>
                             ) : (
-                                <>
-                                    <span className="hidden sm:block">
-                                        <Button to="/login" variant="ghost">
-                                            {t('تسجيل الدخول')}
-                                        </Button>
-                                    </span>
-                                    <Button to="/register">
-                                        {t('ابدأ مجاناً')}
-                                    </Button>
-                                </>
+                                <Button to="/login" variant="secondary" icon="log-in" className="flex-1">
+                                    {t('تسجيل الدخول')}
+                                </Button>
                             )}
-                            <button
-                                type="button"
-                                onClick={() => setIsMenuOpen((open) => !open)}
-                                aria-expanded={isMenuOpen}
-                                aria-controls="landing-mobile-menu"
-                                aria-label={isMenuOpen ? t('إغلاق القائمة') : t('فتح القائمة')}
-                                className="grid size-10 place-items-center rounded-xl border border-line bg-surface text-ink-2 transition hover:border-line-strong hover:text-ink md:hidden"
-                            >
-                                <Icon name={isMenuOpen ? 'x' : 'menu'} />
-                            </button>
+                            <LanguageToggle />
                         </div>
-                    </div>
-                    {isMenuOpen && (
-                        <nav id="landing-mobile-menu" className="animate-pop border-t border-line px-2 pt-2 pb-3 md:hidden" aria-label={t('القائمة الرئيسية')}>
-                            {NAV_LINKS.map((link) => (
-                                <a
-                                    key={link.href}
-                                    href={link.href}
-                                    onClick={() => setIsMenuOpen(false)}
-                                    className={cn(
-                                        'flex items-center justify-between rounded-xl px-3 py-3 text-sm transition',
-                                        activeSection === link.href ? 'bg-primary-soft font-medium text-primary' : 'text-ink-2 hover:bg-surface-3 hover:text-ink',
-                                    )}
-                                >
-                                    {link.label}
-                                    <Icon name="chevron-left" className="size-4 opacity-50" />
-                                </a>
-                            ))}
-                            <div className="mt-2 flex items-center gap-2 border-t border-line px-1 pt-3">
-                                {isAuthenticated ? (
-                                    <Button to="/dashboard" variant="secondary" className="flex-1">
-                                        {t('لوحة التحكم')}
-                                    </Button>
-                                ) : (
-                                    <Button to="/login" variant="secondary" icon="log-in" className="flex-1">
-                                        {t('تسجيل الدخول')}
-                                    </Button>
-                                )}
-                                <LanguageToggle />
-                            </div>
-                        </nav>
-                    )}
-                </div>
+                    </nav>
+                )}
             </header>
 
             <main>
-                {/* Split hero: the pitch on one side, a real capture of the merchant dashboard on the other. */}
-                <section className="relative overflow-hidden bg-gradient-to-b from-primary-soft/70 via-bg to-bg">
-                    <div className="pointer-events-none absolute inset-0" aria-hidden="true">
-                        <div className="absolute -top-32 -end-32 size-[520px] rounded-full bg-brand-accent/15 blur-3xl" />
-                        <div className="absolute -bottom-40 -start-32 size-[420px] rounded-full bg-primary/10 blur-3xl" />
+                {/* Hero on Ink (design system "Hero"): one logo-green CTA, proof chips, then the product frame overlapping the next section. */}
+                <section className="relative bg-brand text-white">
+                    <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
+                        <div className="mk-grid-texture absolute inset-0 [mask-image:radial-gradient(ellipse_60%_55%_at_50%_0%,black,transparent)]" />
+                        <div className="absolute -top-40 start-1/2 h-[420px] w-[640px] -translate-x-1/2 rounded-full bg-primary/40 blur-3xl rtl:translate-x-1/2" />
                     </div>
 
-                    <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-4 pt-32 pb-20 sm:px-6 sm:pt-40 lg:grid-cols-[0.9fr_1.1fr] lg:gap-12 lg:pb-32">
-                        <div className="text-center lg:text-start">
-                            <h1 className={cn('text-[42px] leading-[1.2] font-bold tracking-tight text-ink sm:text-[58px] lg:text-[56px]', RISE)}>
-                                <span className="block">{t('إدارة تجارتك')}</span>
-                                <span className="block bg-gradient-to-l from-primary to-brand-accent bg-clip-text text-transparent">{t('لم تعد معقدة')}</span>
-                            </h1>
-                            <p className={cn('mx-auto mt-6 max-w-xl text-xl leading-relaxed font-medium text-ink [animation-delay:100ms] sm:text-2xl lg:mx-0', RISE)}>
-                                {t('مخزون ذكي، طلبات منظمة، وتقارير لحظية في مكان واحد.')}
-                            </p>
-                            <p className={cn('mx-auto mt-4 max-w-xl leading-relaxed text-muted [animation-delay:180ms] lg:mx-0', RISE)}>
-                                {t('Sellygrow يجمع المخزون والطلبات والمتجر الإلكتروني والمسوقين في لوحة واحدة — لتقضي وقتاً أقل في المتابعة ووقتاً أكثر في تنمية تجارتك.')}
-                            </p>
-                            <div className={cn('mt-9 flex flex-col items-stretch gap-3 [animation-delay:260ms] sm:flex-row sm:items-center sm:justify-center lg:justify-start', RISE)}>
-                                {primaryAction}
-                                <Button variant="secondary" size="xl" icon="info" onClick={scrollToHash('#about')}>
-                                    {t('من نحن')}
-                                </Button>
-                            </div>
+                    <div className="relative mx-auto max-w-6xl px-4 pt-16 text-center sm:px-6 sm:pt-24">
+                        <span className="inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/[0.04] px-3.5 py-1.5 text-xs font-medium text-white/85 backdrop-blur">
+                            <Icon name="sparkles" className="size-4 text-brand-green" />
+                            {t('منصة واحدة لإدارة تجارتك بالكامل')}
+                        </span>
+                        <h1 className="mx-auto mt-7 max-w-3xl text-4xl font-semibold text-balance sm:text-5xl">
+                            {t('كل ما يحتاجه متجرك،')} <span className="text-brand-green">{t('في منصة واحدة.')}</span>
+                        </h1>
+                        <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-white/75 sm:text-lg">
+                            {t('المخزون، الطلبات، المسوقين والتقارير — نظام متكامل مصمم للتاجر العربي.')}
+                        </p>
+                        <div className="mt-8 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center">
+                            {primaryAction}
+                            <Button variant="outline-light" size="xl" onClick={scrollToHash('#features')}>
+                                {t('اكتشف المميزات')}
+                            </Button>
                         </div>
+                        <p className="mt-4 text-xs text-white/60">{t('بدون بطاقة ائتمان — جاهز للعمل خلال دقائق.')}</p>
 
-                        <div className={cn('[animation-delay:200ms]', RISE)}>
-                            <HeroVisual />
+                        <ul className="mt-10 flex flex-wrap justify-center gap-x-8 gap-y-4">
+                            {HERO_PROOF.map((proof) => (
+                                <li key={proof.text} className="flex items-center gap-3 text-sm text-white/85">
+                                    <span className="grid size-9 place-items-center rounded-lg border border-white/10 bg-white/[0.04] text-brand-green">
+                                        <Icon name={proof.icon} className="size-5" />
+                                    </span>
+                                    {proof.text}
+                                </li>
+                            ))}
+                        </ul>
+
+                        <div className="relative z-10 -mb-28 sm:-mb-40">
+                            <DashboardPreview />
                         </div>
                     </div>
                 </section>
 
-                {/* About: why merchants choose the platform, a centered heading over six outlined cards. */}
-                <section id="about" className="mx-auto max-w-6xl scroll-mt-28 px-4 py-20 sm:px-6 sm:py-24">
-                    <div className="mx-auto max-w-2xl text-center">
-                        <h2 className="text-[32px] leading-tight font-bold text-ink sm:text-[44px]">
-                            {t('لماذا تختار')} <span className="text-primary">Sellygrow</span>{t('؟')}
-                        </h2>
-                        <p className="mt-4 text-base leading-relaxed text-muted sm:text-lg">
-                            {t('منصة واحدة تدير منها مخزونك وطلباتك ومتجرك الإلكتروني ومسوقيك — في أي وقت، ومن أي جهاز.')}
-                        </p>
-                    </div>
-                    <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 lg:gap-8">
-                        {ABOUT_REASONS.map((reason) => (
-                            <article key={reason.title} className="group rounded-2xl border border-line bg-surface p-7 shadow-card transition duration-300 hover:-translate-y-1 hover:border-primary/25 hover:shadow-raise">
-                                <span className="grid size-16 place-items-center rounded-2xl bg-gradient-to-br from-brand-accent to-primary text-white shadow-[0_10px_24px_-10px_rgb(24_44_97/0.5)] transition duration-300 group-hover:scale-105 group-hover:-rotate-3">
-                                    <AboutIcon name={reason.icon} />
+                <section className="border-b border-line bg-surface">
+                    <dl className="mx-auto grid max-w-6xl grid-cols-2 gap-y-8 px-4 pt-36 pb-12 sm:px-6 sm:pt-48 md:grid-cols-4 md:divide-x md:divide-line">
+                        {STATS.map((stat) => (
+                            <div key={stat.label} className="text-center">
+                                <dt className="sr-only">{stat.label}</dt>
+                                <dd className="ltr mk-num text-3xl font-semibold text-ink">{stat.value}</dd>
+                                <dd className="mt-1 text-sm text-muted">{stat.label}</dd>
+                            </div>
+                        ))}
+                    </dl>
+                </section>
+
+                <section id="features" className="mx-auto max-w-6xl scroll-mt-20 px-4 py-20 sm:px-6 sm:py-24">
+                    <SectionHeading eyebrow={t('المميزات')} title={t('أدوات حقيقية لتاجر حقيقي')} subtitle={t('كل وحدة مصممة لتوفر وقتك وتقلل الأخطاء، وكلها مترابطة في نظام واحد.')} />
+                    <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                        {FEATURES.map((feature) => (
+                            <article key={feature.title} className="mk-card mk-card-link group p-6">
+                                <span className="grid size-10 place-items-center rounded-xl bg-primary-soft text-brand-green ring-1 ring-primary/10 ring-inset transition group-hover:bg-brand-green group-hover:text-brand">
+                                    <Icon name={feature.icon} />
                                 </span>
-                                <h3 className="mt-6 text-xl font-semibold text-ink">{reason.title}</h3>
-                                <p className="mt-3 text-sm leading-relaxed text-muted sm:text-[15px]">{reason.text}</p>
+                                <h3 className="mt-5 text-base font-semibold text-ink">{feature.title}</h3>
+                                <p className="mt-2 text-sm leading-relaxed text-muted">{feature.text}</p>
                             </article>
                         ))}
                     </div>
                 </section>
 
-                <PlatformStats />
+                <section id="how-it-works" className="scroll-mt-20 bg-surface py-20 sm:py-24">
+                    <div className="mx-auto max-w-6xl px-4 sm:px-6">
+                        <SectionHeading eyebrow={t('كيف يعمل')} title={t('ابدأ في ثلاث خطوات')} />
+                        <ol className="mt-12 grid gap-6 md:grid-cols-3">
+                            {STEPS.map((step, index) => (
+                                <li key={step.title} className="relative rounded-2xl border border-line bg-bg p-6">
+                                    <span className="ltr mk-num grid size-10 place-items-center rounded-xl bg-panel text-sm font-semibold text-brand-green">{String(index + 1).padStart(2, '0')}</span>
+                                    <h3 className="mt-5 text-lg font-semibold text-ink">{step.title}</h3>
+                                    <p className="mt-2 text-sm leading-relaxed text-muted">{step.text}</p>
+                                </li>
+                            ))}
+                        </ol>
+                    </div>
+                </section>
 
-                <FeaturesSection />
+                <section id="storefront" className="mx-auto grid max-w-6xl scroll-mt-20 items-center gap-12 px-4 py-20 sm:px-6 sm:py-24 lg:grid-cols-2">
+                    <div>
+                        <span className="mk-overline text-primary">{t('المتجر الإلكتروني')}</span>
+                        <h2 className="mt-3 text-3xl font-semibold text-ink">{t('متجر أونلاين جاهز، متصل بمخزونك مباشرة')}</h2>
+                        <p className="mt-4 leading-relaxed text-ink-2">{t('كل طلب من متجرك يخصم من المخزون تلقائياً ويظهر في لوحة التحكم فوراً — بدون أي ربط أو برامج إضافية.')}</p>
+                        <ul className="mt-6 flex flex-col gap-3">
+                            {STOREFRONT_POINTS.map((point) => (
+                                <li key={point} className="flex items-center gap-3 text-sm text-ink">
+                                    <span className="grid size-6 shrink-0 place-items-center rounded-full bg-success-soft text-success">
+                                        <Icon name="check" className="size-4" strokeWidth={2.4} />
+                                    </span>
+                                    {point}
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                    <StorefrontPreview />
+                </section>
 
-                <ContactSection />
+                <section className="px-4 pb-20 sm:px-6 sm:pb-24">
+                    {/* Closing CTA band (design system "CtaBand"): Ink, the mark as a faint watermark, one logo-green button. */}
+                    <div className="relative mx-auto max-w-6xl overflow-hidden rounded-3xl bg-brand px-6 py-16 text-center sm:px-12 dark:ring-1 dark:ring-line">
+                        <div className="mk-grid-texture pointer-events-none absolute inset-0 [mask-image:radial-gradient(ellipse_at_center,black,transparent_70%)]" aria-hidden="true" />
+                        <LogoMark className="pointer-events-none absolute -start-8 -bottom-10 size-60 text-white/[0.06]" />
+                        <h2 className="relative text-3xl font-semibold text-white">{t('جاهز تنظّم تجارتك؟')}</h2>
+                        <p className="relative mx-auto mt-3 max-w-xl text-white/75">{t('انضم الآن وابدأ إدارة مخزونك وطلباتك ومسوقيك من مكان واحد.')}</p>
+                        <div className="relative mt-8 flex flex-wrap justify-center gap-3">
+                            <Button to={isAuthenticated ? '/dashboard' : '/register'} variant="brand" size="lg" iconEnd={arrow}>
+                                {isAuthenticated ? t('الذهاب إلى لوحة التحكم') : t('أنشئ متجرك مجاناً')}
+                            </Button>
+                            {!isAuthenticated && (
+                                <Button to="/login" variant="outline-light" size="lg">
+                                    {t('لدي حساب بالفعل')}
+                                </Button>
+                            )}
+                        </div>
+                    </div>
+                </section>
             </main>
 
             <SiteFooter />
         </div>
     );
-}
-
-/** Two-tone line icons drawn for the About cards: white strokes over a translucent white fill, on a green tile. */
-function AboutIcon({ name }) {
-    const accent = 'fill-white/25';
-    // Masks what sits behind an overlapping shape (the tile's own green).
-    const mask = 'fill-primary';
-    const shapes = {
-        hub: (
-            <>
-                <circle cx="24" cy="24" r="6" className={accent} />
-                <rect x="4" y="4" width="12" height="12" rx="3" />
-                <rect x="32" y="4" width="12" height="12" rx="3" />
-                <rect x="4" y="32" width="12" height="12" rx="3" />
-                <rect x="32" y="32" width="12" height="12" rx="3" className={accent} />
-                <path d="M16 16l3.8 3.8M32 16l-3.8 3.8M16 32l3.8-3.8M32 32l-3.8-3.8" />
-            </>
-        ),
-        arabic: (
-            <>
-                <path d="M9 8h30a4 4 0 0 1 4 4v18a4 4 0 0 1-4 4H22l-8 7v-7H9a4 4 0 0 1-4-4V12a4 4 0 0 1 4-4Z" className={accent} />
-                <text x="24" y="27" textAnchor="middle" fontSize="17" fontWeight="700" fill="currentColor" stroke="none">
-                    ع
-                </text>
-            </>
-        ),
-        devices: (
-            <>
-                <rect x="4" y="9" width="30" height="21" rx="2.5" />
-                <path d="M2 36h28" />
-                <rect x="31" y="17" width="14" height="25" rx="3" className={mask} />
-                <rect x="31" y="17" width="14" height="25" rx="3" className={accent} />
-                <path d="M36 37h4" />
-            </>
-        ),
-        storefront: (
-            <>
-                <path d="M8 20v20h22M40 20v6" />
-                <path d="M5 20 9 8h30l4 12H5Z" className={accent} />
-                <path d="M19 40V30h8v10" />
-                <circle cx="37" cy="37" r="7" className={mask} />
-                <circle cx="37" cy="37" r="7" className={accent} />
-                <path d="M37 33.5V37l2.5 1.5" />
-            </>
-        ),
-        secure: (
-            <>
-                <path d="M24 4 40 10v12c0 10-7 18-16 22C15 40 8 32 8 22V10l16-6Z" className={accent} />
-                <rect x="17.5" y="22" width="13" height="10" rx="2" className={mask} />
-                <path d="M20 22v-3a4 4 0 0 1 8 0v3M24 26v2" />
-            </>
-        ),
-        growth: (
-            <>
-                <path d="M6 6v36h36" />
-                <rect x="12" y="28" width="6" height="10" rx="1.5" />
-                <rect x="22" y="22" width="6" height="16" rx="1.5" />
-                <rect x="32" y="15" width="6" height="23" rx="1.5" className={accent} />
-                <path d="m12 20 9-7 6 4 12-10M33 7h6v6" />
-            </>
-        ),
-    };
-
-    return (
-        <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" className="size-8" aria-hidden="true">
-            {shapes[name]}
-        </svg>
-    );
-}
-
-/**
- * Stats band: big brand-accent figures with a short label, no dividers. The totals come from the API and
- * count up once the band scrolls into view; the band hides itself if they can't be loaded.
- */
-function PlatformStats() {
-    const [stats, setStats] = useState(null);
-    const [isInView, setIsInView] = useState(false);
-    const sectionRef = useRef(null);
-
-    useEffect(() => {
-        platformApi
-            .stats()
-            .then(setStats)
-            .catch(() => setStats(false));
-    }, []);
-
-    useEffect(() => {
-        const observer = new IntersectionObserver(
-            ([entry]) => {
-                if (entry.isIntersecting) {
-                    setIsInView(true);
-                    observer.disconnect();
-                }
-            },
-            { threshold: 0.4 },
-        );
-
-        observer.observe(sectionRef.current);
-
-        return () => observer.disconnect();
-    }, []);
-
-    if (stats === false) {
-        return null;
-    }
-
-    return (
-        <section ref={sectionRef} id="stats" aria-label={t('أرقام عن المنصة')} aria-busy={stats === null} className="scroll-mt-28 border-y border-primary/10 bg-primary-soft/70 dark:bg-primary-soft/40">
-            <dl className="mx-auto grid max-w-6xl grid-cols-2 gap-x-6 gap-y-12 px-4 py-12 sm:px-6 sm:py-16 md:grid-cols-4">
-                {STATS.map((stat) => (
-                    <div key={stat.key} className="flex flex-col items-center text-center">
-                        <dt className="order-2 mt-3 text-sm text-ink-2 sm:text-base">{stat.isMoney ? `${stat.label} (${CURRENCY})` : stat.label}</dt>
-                        <dd className="mk-num order-1 flex h-10 items-center text-[36px] leading-none font-bold tracking-tight whitespace-nowrap text-primary sm:h-12 sm:text-[40px] lg:text-[46px] xl:h-[52px] xl:text-[52px]">
-                            {stats ? (
-                                <CountUp value={stats[stat.key]} isRunning={isInView} />
-                            ) : (
-                                <span className="h-full w-24 animate-pulse rounded-lg bg-surface-3" />
-                            )}
-                        </dd>
-                    </div>
-                ))}
-            </dl>
-        </section>
-    );
-}
-
-/** Counts from 0 to `value` with an ease-out once `isRunning` turns on (instantly under reduced motion). */
-function CountUp({ value, isRunning }) {
-    const [shownValue, setShownValue] = useState(0);
-
-    useEffect(() => {
-        if (!isRunning) {
-            return undefined;
-        }
-
-        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-            setShownValue(value);
-
-            return undefined;
-        }
-
-        // Timed from the first frame: its timestamp can predate a performance.now() taken here.
-        let startedAt = null;
-        let frame;
-        const tick = (now) => {
-            startedAt ??= now;
-            const progress = Math.min(1, (now - startedAt) / 1400);
-
-            setShownValue(value * (1 - (1 - progress) ** 3));
-
-            if (progress < 1) {
-                frame = requestAnimationFrame(tick);
-            }
-        };
-
-        frame = requestAnimationFrame(tick);
-
-        return () => cancelAnimationFrame(frame);
-    }, [isRunning, value]);
-
-    return <span>{formatCompactNumber(shownValue)}</span>;
 }
 
 /** Router links can't target in-page anchors, so section buttons scroll by hand. */
@@ -407,89 +279,111 @@ function scrollToHash(hash) {
     };
 }
 
-/** The in-page section (by hash) that sits under the middle of the viewport, for the navbar's active link. */
-function useActiveSection(hashes) {
-    const [activeHash, setActiveHash] = useState(null);
-    const key = hashes.join(',');
-
-    useEffect(() => {
-        const sections = key
-            .split(',')
-            .map((hash) => document.querySelector(hash))
-            .filter(Boolean);
-        const observer = new IntersectionObserver(
-            (entries) => {
-                const visible = entries.find((entry) => entry.isIntersecting);
-
-                if (visible) {
-                    setActiveHash(`#${visible.target.id}`);
-                } else if (window.scrollY < window.innerHeight / 2) {
-                    setActiveHash(null);
-                }
-            },
-            { rootMargin: '-45% 0px -50% 0px' },
-        );
-
-        sections.forEach((section) => observer.observe(section));
-
-        return () => observer.disconnect();
-    }, [key]);
-
-    return activeHash;
-}
-
-/**
- * A real capture of the merchant dashboard (demo data) in a browser frame. On large screens it tilts back in 3D
- * and runs past the page edge; the light or dark capture follows the site theme.
- */
-function HeroVisual() {
+function SectionHeading({ eyebrow, title, subtitle }) {
     return (
-        <div className="relative [perspective:2400px] lg:w-[150%]">
-            <Chevrons className="absolute -top-14 start-6 hidden h-12 w-16 text-brand-accent sm:block" />
-            <Chevrons className="absolute -bottom-14 start-1/3 hidden h-12 w-16 rotate-180 text-brand-accent sm:block" />
-            <div className="absolute inset-10 rounded-[2rem] bg-gradient-to-br from-brand-accent/40 via-primary/15 to-info/10 blur-3xl" aria-hidden="true" />
-            <figure className="relative rounded-2xl border border-line bg-surface/90 p-1.5 shadow-[0_50px_100px_-40px_rgb(24_44_97/0.4)] backdrop-blur lg:origin-left lg:[transform:rotateY(10deg)_rotateX(4deg)] lg:rtl:origin-right lg:rtl:[transform:rotateY(-10deg)_rotateX(4deg)]">
-                <div className="flex items-center gap-3 px-3 py-2" dir="ltr" aria-hidden="true">
-                    <span className="flex gap-1.5">
-                        <span className="size-2.5 rounded-full bg-danger/70" />
-                        <span className="size-2.5 rounded-full bg-warning/70" />
-                        <span className="size-2.5 rounded-full bg-success/70" />
-                    </span>
-                    <span className="mx-auto flex h-6 w-full max-w-60 items-center justify-center gap-1.5 rounded-md bg-surface-3 text-[11px] text-muted">
-                        <Icon name="lock" className="size-3" />
-                        {t('لوحة تحكم التاجر')}
-                    </span>
-                    <span className="w-10" />
-                </div>
-                <div className="overflow-hidden rounded-xl border border-line">
-                    <img
-                        src="/images/landing/dashboard-light.jpg"
-                        alt={t('لوحة تحكم Sellygrow: المبيعات والطلبات والمخزون في شاشة واحدة')}
-                        width="2880"
-                        height="1800"
-                        fetchPriority="high"
-                        className="w-full dark:hidden"
-                    />
-                    <img
-                        src="/images/landing/dashboard-dark.jpg"
-                        alt={t('لوحة تحكم Sellygrow: المبيعات والطلبات والمخزون في شاشة واحدة')}
-                        width="2880"
-                        height="1800"
-                        loading="lazy"
-                        className="hidden w-full dark:block"
-                    />
-                </div>
-            </figure>
+        <div className="mx-auto max-w-2xl text-center">
+            <span className="mk-overline text-primary">{eyebrow}</span>
+            <h2 className="mt-3 text-3xl font-semibold text-ink sm:text-4xl">{title}</h2>
+            {subtitle && <p className="mt-3 leading-relaxed text-ink-2">{subtitle}</p>}
         </div>
     );
 }
 
-function Chevrons({ className }) {
+/** Illustrative dashboard mock built from markup (no screenshot to keep in sync). */
+function DashboardPreview() {
     return (
-        <svg viewBox="0 0 72 52" fill="none" stroke="currentColor" strokeWidth="5" className={className} aria-hidden="true">
-            <path d="M30 4 8 26l22 22" />
-            <path d="M60 4 38 26l22 22" opacity="0.4" />
-        </svg>
+        <div className="relative mx-auto mt-16 max-w-5xl" aria-hidden="true">
+            <div className="rounded-2xl border border-line bg-surface p-2 shadow-pop">
+                <div className="flex items-center gap-1.5 px-3 py-2">
+                    <span className="size-2.5 rounded-full bg-danger/70" />
+                    <span className="size-2.5 rounded-full bg-warning/70" />
+                    <span className="size-2.5 rounded-full bg-success/70" />
+                </div>
+                <div className="grid gap-3 rounded-xl bg-bg p-3 text-start sm:p-5 md:grid-cols-[180px_1fr]">
+                    <div className="hidden flex-col gap-1 rounded-xl bg-panel p-3 md:flex">
+                        {[
+                            ['grid', t('الرئيسية')],
+                            ['shopping-bag', t('الطلبات')],
+                            ['box', t('المنتجات')],
+                            ['warehouse', t('المخزون')],
+                            ['users', t('المسوقين')],
+                            ['bar-chart', t('التقارير')],
+                        ].map(([icon, label], index) => (
+                            <span key={label} className={cn('flex items-center gap-2 rounded-lg px-2.5 py-2 text-xs', index === 0 ? 'bg-white/[0.07] font-semibold text-white [&>svg]:text-brand-green' : 'text-panel-text/80')}>
+                                <Icon name={icon} className="size-4" />
+                                {label}
+                            </span>
+                        ))}
+                    </div>
+                    <div className="flex flex-col gap-3">
+                        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+                            {[
+                                ['wallet', t('المبيعات'), 'text-primary bg-primary-soft'],
+                                ['shopping-bag', t('الطلبات'), 'text-info bg-info-soft'],
+                                ['users', t('العملاء'), 'text-success bg-success-soft'],
+                                ['box', t('المنتجات'), 'text-warning bg-warning-soft'],
+                            ].map(([icon, label, tone]) => (
+                                <div key={label} className="rounded-xl border border-line bg-surface p-3">
+                                    <span className={cn('grid size-8 place-items-center rounded-lg', tone)}>
+                                        <Icon name={icon} className="size-4" />
+                                    </span>
+                                    <span className="mt-3 block text-xs text-muted">{label}</span>
+                                    <span className="mt-1.5 block h-2.5 w-2/3 rounded-full bg-surface-3" />
+                                </div>
+                            ))}
+                        </div>
+                        <div className="rounded-xl border border-line bg-surface p-4">
+                            <div className="flex items-center justify-between">
+                                <span className="text-xs font-semibold text-ink">{t('المبيعات')}</span>
+                                <span className="h-2 w-16 rounded-full bg-surface-3" />
+                            </div>
+                            <div className="mt-4 flex h-32 items-end gap-2 sm:gap-3">
+                                {CHART_BARS.map((height, index) => (
+                                    <span
+                                        key={index}
+                                        style={{ height: `${height}%` }}
+                                        className={cn('flex-1 rounded-t-md', index === CHART_BARS.length - 2 ? 'bg-gradient-to-t from-primary to-accent' : 'bg-primary/20')}
+                                    />
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     );
 }
 
+function StorefrontPreview() {
+    return (
+        <div className="relative" aria-hidden="true">
+            <div className="absolute inset-6 -z-0 rounded-3xl bg-gradient-to-br from-primary/25 to-accent/25 blur-2xl" />
+            <div className="relative rounded-2xl border border-line bg-surface p-4 shadow-pop">
+                <div className="flex items-center justify-between rounded-xl bg-bg px-4 py-3">
+                    <span className="flex items-center gap-2 text-sm font-semibold text-ink">
+                        <span className="grid size-8 place-items-center rounded-lg bg-primary text-white">
+                            <Icon name="store" className="size-4" />
+                        </span>
+                        {t('متجري')}
+                    </span>
+                    <span className="flex items-center gap-3 text-ink-2">
+                        <Icon name="search" className="size-4" />
+                        <Icon name="heart" className="size-4" />
+                        <Icon name="shopping-bag" className="size-4" />
+                    </span>
+                </div>
+                <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                    {['bg-primary-soft', 'bg-surface-3', 'bg-warning-soft', 'bg-info-soft', 'bg-surface-3', 'bg-primary-soft'].map((tone, index) => (
+                        <div key={tone} className={cn('rounded-xl border border-line p-2', index > 3 && 'hidden sm:block')}>
+                            <div className={cn('grid aspect-square place-items-center rounded-lg', tone)}>
+                                <Icon name="box" className="size-8 text-muted/60" />
+                            </div>
+                            <span className="mt-2 block h-2 w-3/4 rounded-full bg-surface-3" />
+                            <span className="mt-1.5 block h-2 w-1/3 rounded-full bg-primary/30" />
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </div>
+    );
+}

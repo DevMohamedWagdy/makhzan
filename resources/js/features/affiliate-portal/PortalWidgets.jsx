@@ -58,7 +58,7 @@ export function ChangePasswordModal({ open, onClose }) {
                     {(props) => <PasswordInput {...props} {...bind('current_password')} autoComplete="current-password" data-autofocus />}
                 </Field>
                 <Field label={t('كلمة المرور الجديدة')} error={errors.password} required>
-                    {(props) => <PasswordInput {...props} {...bind('password')} showStrength placeholder={t('٨ أحرف على الأقل')} />}
+                    {(props) => <PasswordInput {...props} {...bind('password')} showStrength placeholder={t('8 أحرف على الأقل')} />}
                 </Field>
                 <Field label={t('تأكيد كلمة المرور الجديدة')} error={errors.password_confirmation} required>
                     {(props) => <PasswordInput {...props} {...bind('password_confirmation')} />}
@@ -93,7 +93,7 @@ export function ReferralLinks({ codes, storeName }) {
                     <li key={referral.referral_code_id} className={cn('rounded-xl border border-line p-4', !referral.is_active && 'opacity-60')}>
                         <div className="flex flex-wrap items-center justify-between gap-3">
                             <div className="flex items-center gap-2">
-                                <span className="ltr rounded-lg bg-primary-soft px-2.5 py-1 font-mono text-base font-bold text-primary">{referral.code}</span>
+                                <span className="ltr rounded-lg bg-primary-soft px-2.5 py-1 font-mono text-base font-semibold text-primary">{referral.code}</span>
                                 <Badge tone={referral.is_active ? 'success' : 'neutral'} dot>
                                     {referral.is_active ? t('فعّال') : t('معطّل')}
                                 </Badge>
@@ -230,7 +230,7 @@ export function PayoutRequestCard({ affiliate, isImpersonating, onRequest }) {
     return (
         <Card title={t('تحويل أرباحي')}>
             <p className="text-xs text-muted">{t('رصيدك المستحق')}</p>
-            <p className="mk-num mt-1 text-[28px] leading-9 font-semibold text-ink">{formatMoney(balance)}</p>
+            <p className="mk-num mt-1 text-3xl font-semibold text-ink">{formatMoney(balance)}</p>
 
             {request ? (
                 <Alert tone="warning" icon="refresh" title={t('طلبك قيد المراجعة')} className="mt-4">

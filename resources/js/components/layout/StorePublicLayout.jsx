@@ -17,7 +17,7 @@ export function StorePublicLayout({ store, children, narrow = false }) {
                 <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-4 sm:px-6">
                     <div className="flex min-w-0 items-center gap-3">
                         {store ? <Avatar name={store.name} src={store.logo_url} size="sm" /> : <Skeleton className="size-8 rounded-xl" />}
-                        <span className="truncate text-[15px] font-semibold text-ink">{store?.name}</span>
+                        <span className="truncate text-base font-semibold text-ink">{store?.name}</span>
                     </div>
                     <div className="flex items-center gap-1">
                         <LanguageToggle />

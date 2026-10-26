@@ -324,7 +324,7 @@ export function OrderDrawer({ orderId, onClose, onChanged }) {
                                     </p>
                                 </div>
                                 <div className="text-end">
-                                    <p className="font-bold text-ink">{formatMoney(order.commission.amount)}</p>
+                                    <p className="font-semibold text-ink">{formatMoney(order.commission.amount)}</p>
                                     <Badge tone={COMMISSION_STATUSES[order.commission.status]?.tone ?? 'neutral'}>{COMMISSION_STATUSES[order.commission.status]?.label}</Badge>
                                 </div>
                             </div>

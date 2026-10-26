@@ -174,7 +174,7 @@ export function CouponsPage() {
                                     : coupons.map((coupon) => (
                                           <tr key={coupon.coupon_id} className="transition hover:bg-surface-2">
                                               <td className="px-4 py-3">
-                                                  <button type="button" onClick={() => copy(coupon.code)} className="ltr inline-flex items-center gap-1.5 rounded-lg bg-primary-soft px-2.5 py-1 font-mono text-sm font-bold text-primary" title={t('نسخ الكود')}>
+                                                  <button type="button" onClick={() => copy(coupon.code)} className="ltr inline-flex items-center gap-1.5 rounded-lg bg-primary-soft px-2.5 py-1 font-mono text-sm font-semibold text-primary" title={t('نسخ الكود')}>
                                                       {coupon.code}
                                                       <Icon name={copiedValue === coupon.code ? 'check' : 'copy'} className="size-3.5" />
                                                   </button>

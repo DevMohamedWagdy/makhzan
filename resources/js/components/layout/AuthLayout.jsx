@@ -5,14 +5,16 @@ import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { t } from '@/i18n';
 import { cn } from '@/lib/format';
 
-/** Login, sign-up and password pages: the form centered on a calm paper page. */
+/**
+ * Login, sign-up and password pages: the form centered on a calm paper column.
+ */
 export function AuthLayout({ children, wide = false }) {
     return (
         <div className="flex min-h-dvh">
             <div className="relative flex min-w-0 flex-1 flex-col">
                 <header className="flex h-16 items-center justify-between gap-2 px-4 sm:px-8">
                     <Link to="/login" aria-label={t('الصفحة الرئيسية لـ Sellygrow')}>
-                        <Logo className="h-[18px]" />
+                        <Logo className="h-6" />
                     </Link>
                     <div className="flex items-center gap-1">
                         <LanguageToggle />
@@ -44,8 +46,8 @@ export function AuthLayout({ children, wide = false }) {
 export function AuthHeading({ title, subtitle }) {
     return (
         <div className="mb-8">
-            <h1 className="text-[24px] leading-9 font-semibold text-ink">{title}</h1>
-            {subtitle && <p className="mt-1.5 text-[13.5px] leading-6 text-muted">{subtitle}</p>}
+            <h1 className="text-2xl font-semibold text-ink">{title}</h1>
+            {subtitle && <p className="mt-1.5 text-sm text-muted">{subtitle}</p>}
         </div>
     );
 }

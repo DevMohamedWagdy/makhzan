@@ -34,7 +34,7 @@ function QuickShare({ codes }) {
     return (
         <div className="mk-card flex flex-col gap-3 p-4 sm:flex-row sm:items-center">
             <span className="flex items-center gap-3 text-sm font-medium text-ink">
-                <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-primary-soft text-brand-accent ring-1 ring-primary/10 ring-inset">
+                <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-primary-soft text-brand-green ring-1 ring-primary/10 ring-inset">
                     <Icon name="link" className="size-[18px]" />
                 </span>
                 {t('رابطك للمشاركة')}
@@ -67,7 +67,7 @@ export function AffiliateDashboardPage() {
         <>
             <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
                 <div>
-                    <h1 className="text-[22px] leading-8 font-semibold text-ink sm:text-[26px] sm:leading-9">{t('أهلاً {value} 👋', { value: firstName })}</h1>
+                    <h1 className="mk-page-title">{t('أهلاً {value} 👋', { value: firstName })}</h1>
                     <div className="mt-2 flex flex-wrap items-center gap-2">
                         <StatusBadge status={affiliate.status} />
                         <TierBadge tier={affiliate.tier} />
@@ -76,12 +76,12 @@ export function AffiliateDashboardPage() {
                 </div>
                 <div className="relative flex items-center gap-4 overflow-hidden rounded-2xl bg-panel px-5 py-4 text-white shadow-raise">
                     <div className="mk-grid-texture absolute inset-0 [mask-image:linear-gradient(to_left,black,transparent)]" aria-hidden="true" />
-                    <span className="relative grid size-10 place-items-center rounded-xl border border-white/10 bg-white/5 text-brand-accent">
+                    <span className="relative grid size-10 place-items-center rounded-xl border border-white/10 bg-white/5 text-brand-green">
                         <Icon name="percent" className="size-5" />
                     </span>
                     <div className="relative">
                         <p className="text-xs text-panel-text">{t('عمولتك على كل طلب')}</p>
-                        <p className="mk-num text-[26px] leading-8 font-semibold text-brand-accent">{formatCommission(affiliate.commission)}</p>
+                        <p className="mk-num text-2xl font-semibold text-brand-green">{formatCommission(affiliate.commission)}</p>
                     </div>
                 </div>
             </div>

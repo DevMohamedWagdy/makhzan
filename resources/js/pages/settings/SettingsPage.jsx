@@ -341,7 +341,7 @@ function AccountTab() {
                     {(props) => <PasswordInput {...props} {...bindPassword('current_password')} autoComplete="current-password" />}
                 </Field>
                 <Field label={t('كلمة المرور الجديدة')} required error={passwordErrors.password}>
-                    {(props) => <PasswordInput {...props} {...bindPassword('password')} showStrength autoComplete="new-password" placeholder={t('٨ أحرف على الأقل')} />}
+                    {(props) => <PasswordInput {...props} {...bindPassword('password')} showStrength autoComplete="new-password" placeholder={t('8 أحرف على الأقل')} />}
                 </Field>
                 <Field label={t('تأكيد كلمة المرور الجديدة')} required error={passwordErrors.password_confirmation}>
                     {(props) => <PasswordInput {...props} {...bindPassword('password_confirmation')} autoComplete="new-password" />}
@@ -402,7 +402,7 @@ export function SettingsPage() {
                         <span className="grid size-9 place-items-center rounded-lg bg-primary-soft text-brand-accent ring-1 ring-primary/10 ring-inset">
                             <Icon name={tabs.find((item) => item.value === tab)?.icon ?? 'settings'} className="size-[18px]" />
                         </span>
-                        <h2 className="text-[15px] font-semibold text-ink">{tabs.find((item) => item.value === tab)?.label}</h2>
+                        <h2 className="text-base font-semibold text-ink">{tabs.find((item) => item.value === tab)?.label}</h2>
                     </header>
                     <div className="p-5 sm:p-6">
                         {tab === 'account' ? (

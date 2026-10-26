@@ -83,7 +83,7 @@ export function ProductImagesField({ productId, images, onImagesChange, pendingF
                 {items.map((item, index) => (
                     <li key={item.key} className="group relative aspect-square overflow-hidden rounded-xl border border-line bg-surface-2">
                         <img src={item.url} alt={t('صورة المنتج {value}', { value: index + 1 })} className="size-full object-cover" />
-                        {index === 0 && <span className="absolute top-1.5 start-1.5 rounded-md bg-primary px-1.5 py-0.5 text-[10px] font-semibold text-white">{t('الرئيسية')}</span>}
+                        {index === 0 && <span className="absolute top-1.5 start-1.5 rounded-md bg-primary px-1.5 py-0.5 text-3xs font-semibold text-white">{t('الرئيسية')}</span>}
                         {!readOnly && (
                             <div className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-1 bg-slate-950/60 p-1 opacity-100 transition sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
                                 <div className="flex">

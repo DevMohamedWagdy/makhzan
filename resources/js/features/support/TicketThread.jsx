@@ -85,7 +85,7 @@ function FileAttachment({ attachment, load }) {
             <Icon name={downloading ? 'refresh' : 'file-text'} className={cn('size-5 shrink-0 text-primary', downloading && 'animate-spin')} />
             <span className="min-w-0">
                 <span className="block truncate text-xs font-medium text-ink">{attachment.name}</span>
-                <span className="ltr block text-start text-[11px] text-muted">{formatFileSize(attachment.size)}</span>
+                <span className="ltr block text-start text-2xs text-muted">{formatFileSize(attachment.size)}</span>
             </span>
             <Icon name="download" className="size-4 shrink-0 text-muted" />
         </button>
@@ -101,7 +101,7 @@ function Message({ message, own, load }) {
             <div className={cn('flex max-w-[min(640px,85%)] flex-col gap-1.5', own && 'items-end')}>
                 <p className="flex flex-wrap items-center gap-1.5 text-xs text-muted">
                     <span className="font-semibold text-ink-2">{message.author_name ?? t('حساب محذوف')}</span>
-                    {fromTeam && <span className="rounded bg-primary-soft px-1.5 py-0.5 text-[10px] font-semibold text-primary">{t('فريق الدعم')}</span>}
+                    {fromTeam && <span className="rounded bg-primary-soft px-1.5 py-0.5 text-3xs font-semibold text-primary">{t('فريق الدعم')}</span>}
                     <span>
                         {formatDate(message.created_at)} · {formatTime(message.created_at)}
                     </span>

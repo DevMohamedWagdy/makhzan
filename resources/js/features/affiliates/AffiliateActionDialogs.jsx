@@ -116,7 +116,7 @@ export function ImpersonateDialog({ affiliate, open, onClose, onConfirm, loading
         >
             <AffiliateSummary affiliate={affiliate} />
             <Alert tone="info" icon="shield-check">
-                {t('الجلسة صالحة لمدة ٣٠ دقيقة، وكل إجراء تقوم به يُسجل في سجل النشاط باسمك كصاحب المتجر. لن تتمكن من رؤية كلمة مرور المسوق.')}
+                {t('الجلسة صالحة لمدة 30 دقيقة، وكل إجراء تقوم به يُسجل في سجل النشاط باسمك كصاحب المتجر. لن تتمكن من رؤية كلمة مرور المسوق.')}
             </Alert>
         </ConfirmDialog>
     );

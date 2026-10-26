@@ -22,7 +22,7 @@ export function MovementTypeBadge({ type }) {
 
 /** "+30" in green or "−3" in red; the sign carries the direction, not only the color. */
 export function QuantityChange({ value }) {
-    return <span className={cn('ltr inline-block font-bold', value > 0 ? 'text-success' : 'text-danger')}>{`${value > 0 ? '+' : '−'}${formatNumber(Math.abs(value))}`}</span>;
+    return <span className={cn('ltr inline-block font-semibold', value > 0 ? 'text-success' : 'text-danger')}>{`${value > 0 ? '+' : '−'}${formatNumber(Math.abs(value))}`}</span>;
 }
 
 /** Where a movement came from: its order, a note, or who recorded it. */
@@ -98,7 +98,7 @@ export function MovementsTable({ movements, loading, showProduct = true }) {
                                           {formatNumber(movement.stock_before)} → <strong className="text-ink">{formatNumber(movement.stock_after)}</strong>
                                       </span>
                                       {movement.warehouse_stock_after != null && movement.warehouse_stock_after !== movement.stock_after && (
-                                          <span className="block text-[11px] text-muted">
+                                          <span className="block text-2xs text-muted">
                                               {t('في المخزن: {before} → {after}', { before: formatNumber(movement.warehouse_stock_before), after: formatNumber(movement.warehouse_stock_after) })}
                                           </span>
                                       )}

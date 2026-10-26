@@ -178,7 +178,7 @@ export function AffiliateProfileDrawer({ affiliate, open, onClose, actions, crea
                             <Icon name={stat.icon} className="size-3.5" />
                             {stat.label}
                         </p>
-                        <p className="mt-1.5 truncate text-base font-bold text-ink">{stat.value}</p>
+                        <p className="mt-1.5 truncate text-base font-semibold text-ink">{stat.value}</p>
                     </div>
                 ))}
             </div>
@@ -205,7 +205,7 @@ export function AffiliateProfileDrawer({ affiliate, open, onClose, actions, crea
                     <div className="flex items-center justify-between gap-3 rounded-xl border border-line p-4">
                         <div>
                             <p className="text-xs text-muted">{commission.isCustom ? t('عمولة استثنائية مخصصة') : t('عمولة الشريحة الافتراضية')}</p>
-                            <p className="mt-1 text-lg font-bold text-ink">{formatCommission(commission)}</p>
+                            <p className="mt-1 text-lg font-semibold text-ink">{formatCommission(commission)}</p>
                             {commission.note && <p className="mt-1 text-xs text-ink-2">{commission.note}</p>}
                         </div>
                         <Badge tone={commission.isCustom ? 'warning' : 'neutral'}>{commission.isCustom ? t('مخصصة') : t('افتراضية')}</Badge>
@@ -292,7 +292,7 @@ export function AffiliateProfileDrawer({ affiliate, open, onClose, actions, crea
                                     <li key={referral.referral_code_id} className="rounded-xl border border-line p-4">
                                         <div className="flex items-center justify-between gap-3">
                                             <div className="flex items-center gap-2">
-                                                <span className="ltr rounded-lg bg-primary-soft px-2.5 py-1 font-mono text-sm font-bold text-primary">{referral.code}</span>
+                                                <span className="ltr rounded-lg bg-primary-soft px-2.5 py-1 font-mono text-sm font-semibold text-primary">{referral.code}</span>
                                                 <CopyButton value={referral.code} label={t('نسخ الكود')} />
                                             </div>
                                             <Badge tone={referral.is_active ? 'success' : 'neutral'} dot>

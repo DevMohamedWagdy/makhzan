@@ -109,8 +109,8 @@ export function AffiliatePortalLayout() {
                     <div className="flex min-w-0 items-center gap-3">
                         {store ? <Avatar name={store.name} src={store.logo_url} size="sm" /> : <Skeleton className="size-8 rounded-xl" />}
                         <div className="min-w-0">
-                            <p className="truncate text-[13.5px] leading-5 font-semibold text-ink">{store?.name}</p>
-                            <p className="mk-overline text-brand-accent">{t('بوابة المسوقين')}</p>
+                            <p className="truncate text-sm font-semibold text-ink">{store?.name}</p>
+                            <p className="mk-overline text-brand-green">{t('بوابة المسوقين')}</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-1">
@@ -131,7 +131,7 @@ export function AffiliatePortalLayout() {
                                 trigger={(props) => (
                                     <button type="button" {...props} className="flex items-center gap-2 rounded-xl p-1 pe-2 transition hover:bg-surface-3">
                                         <Avatar name={affiliate.full_name} src={affiliate.avatar_url} size="sm" shape="circle" />
-                                        <span className="hidden text-[13px] font-semibold text-ink sm:block">{affiliate.full_name.split(' ')[0]}</span>
+                                        <span className="hidden text-sm font-semibold text-ink sm:block">{affiliate.full_name.split(' ')[0]}</span>
                                         <Icon name="chevron-down" className="hidden size-4 text-muted sm:block" />
                                     </button>
                                 )}
@@ -152,13 +152,13 @@ export function AffiliatePortalLayout() {
                             to={item.to}
                             end={item.end}
                             className={({ isActive }) =>
-                                cn('-mb-px flex h-11 items-center gap-2 border-b-2 px-3 text-[13.5px] font-medium whitespace-nowrap transition', isActive ? 'border-brand-accent text-ink [&>svg]:text-brand-accent' : 'border-transparent text-muted hover:border-line-strong hover:text-ink')
+                                cn('-mb-px flex h-11 items-center gap-2 border-b-2 px-3 text-sm font-medium whitespace-nowrap transition', isActive ? 'border-brand-green text-ink [&>svg]:text-brand-green' : 'border-transparent text-muted hover:border-line-strong hover:text-ink')
                             }
                         >
                             <Icon name={item.icon} className="size-[18px]" />
                             {item.label}
                             {item.counter && notifications.unreadCount > 0 && (
-                                <span className="mk-num grid h-5 min-w-5 place-items-center rounded-full bg-danger px-1.5 text-[11px] font-semibold text-white">{notifications.unreadCount > 99 ? '99+' : notifications.unreadCount}</span>
+                                <span className="mk-num grid h-5 min-w-5 place-items-center rounded-full bg-danger px-1.5 text-2xs font-semibold text-white">{notifications.unreadCount > 99 ? '99+' : notifications.unreadCount}</span>
                             )}
                         </NavLink>
                     ))}
@@ -198,7 +198,7 @@ export function AffiliatePortalLayout() {
                 />
             )}
             <footer className="pb-8 text-center">
-                <Logo className="mx-auto h-3 opacity-50 grayscale transition hover:opacity-80 hover:grayscale-0" />
+                <Logo className="mx-auto h-4 opacity-50 grayscale transition hover:opacity-80 hover:grayscale-0" />
             </footer>
         </div>
     );

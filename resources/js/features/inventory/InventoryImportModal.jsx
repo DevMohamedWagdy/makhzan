@@ -97,9 +97,9 @@ export function InventoryImportModal({ open, onClose, onImported }) {
         <Modal open={open} onClose={close} dismissible={!importing} size="lg" icon="file-spreadsheet" title={t('جرد بملف Excel')} description={t('صدّر المخزون، عدّل عمودي الكمية والتكلفة، ثم ارفع الملف.')}>
             <div className="flex flex-col gap-5">
                 <ol className="flex flex-col gap-2 text-sm text-ink-2">
-                    <li>{t('١. حمّل ملف المخزون الحالي (يفتح في Excel).')}</li>
-                    <li>{t('٢. عدّل عمود stock بالكمية المعدودة، وعمود cost بتكلفة القطعة. اترك الخانة فارغة لإبقاء القيمة كما هي.')}</li>
-                    <li>{t('٣. احفظه بصيغة CSV وارفعه هنا. كل فرق في الكمية يُسجل كتسوية جرد.')}</li>
+                    <li>{t('1. حمّل ملف المخزون الحالي (يفتح في Excel).')}</li>
+                    <li>{t('2. عدّل عمود stock بالكمية المعدودة، وعمود cost بتكلفة القطعة. اترك الخانة فارغة لإبقاء القيمة كما هي.')}</li>
+                    <li>{t('3. احفظه بصيغة CSV وارفعه هنا. كل فرق في الكمية يُسجل كتسوية جرد.')}</li>
                 </ol>
 
                 {warehouses?.length > 1 && (

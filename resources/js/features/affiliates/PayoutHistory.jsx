@@ -21,7 +21,7 @@ export function PayoutItem({ payout }) {
     return (
         <li className="px-4 py-3.5">
             <div className="flex items-center justify-between gap-3">
-                <span className="text-base font-bold text-ink">{formatMoney(payout.amount)}</span>
+                <span className="text-base font-semibold text-ink">{formatMoney(payout.amount)}</span>
                 <PayoutStatusBadge status={payout.status} />
             </div>
             <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted">

@@ -137,7 +137,7 @@ export function StoreOrderPage() {
                 <div className="animate-pop flex items-start gap-4 rounded-2xl bg-success-soft p-5 text-success">
                     <Icon name="check-circle" className="size-8 shrink-0" />
                     <div>
-                        <p className="text-lg font-bold">{t('تم استلام طلبك بنجاح 🎉')}</p>
+                        <p className="text-lg font-semibold">{t('تم استلام طلبك بنجاح 🎉')}</p>
                         <p className="mt-1 text-sm text-ink-2">{t('سيتواصل معك المتجر لتأكيد الطلب، وستدفع {total} عند الاستلام.', { total: formatMoney(order.total) })}</p>
                     </div>
                 </div>
@@ -229,7 +229,7 @@ export function StoreOrderPage() {
                     )}
                     <div className="flex justify-between border-t border-line pt-2 text-base">
                         <dt className="font-semibold text-ink">{online ? t('الإجمالي') : t('الإجمالي (الدفع عند الاستلام)')}</dt>
-                        <dd className="font-bold text-ink">{formatMoney(order.total)}</dd>
+                        <dd className="font-semibold text-ink">{formatMoney(order.total)}</dd>
                     </div>
                     {order.refunded_amount > 0 && (
                         <div className="flex justify-between text-info">
