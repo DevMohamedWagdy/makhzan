@@ -75,7 +75,7 @@ export function RoleFormModal({ open, role, catalog, onClose, onSaved, save, sec
                     <Icon name={config.icon} className="size-4 text-primary" />
                     <span>
                         {config.label}
-                        {config.hint && <span className="block text-[11px] font-normal text-muted">{config.hint}</span>}
+                        {config.hint && <span className="block text-2xs font-normal text-muted">{config.hint}</span>}
                     </span>
                 </button>
                 <div className="flex flex-wrap gap-1.5">
@@ -144,7 +144,7 @@ export function RoleFormModal({ open, role, catalog, onClose, onSaved, save, sec
                 <div className="mk-scroll max-h-[55vh] overflow-y-auto rounded-xl border border-line">
                     {groupedSections.map(({ key, label, entries }) => (
                         <div key={key}>
-                            {label && <p className="sticky top-0 z-10 border-b border-line bg-surface-2 px-4 py-2 text-[11px] font-semibold tracking-wide text-muted uppercase">{label}</p>}
+                            {label && <p className="sticky top-0 z-10 border-b border-line bg-surface-2 px-4 py-2 text-2xs font-semibold tracking-wide text-muted uppercase">{label}</p>}
                             {entries.map(([section, actions]) => renderSection(section, actions))}
                         </div>
                     ))}

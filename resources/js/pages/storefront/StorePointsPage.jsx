@@ -77,7 +77,7 @@ export function StorePointsPage() {
                 <div className="mk-grid-texture absolute inset-0 [mask-image:linear-gradient(to_bottom,black,transparent)]" aria-hidden="true" />
                 <div className="relative">
                     <p className="text-sm text-panel-text">{t('رصيدك')}</p>
-                    <p className="mk-num mt-1 text-[34px] leading-[44px] font-semibold text-brand-green">{t('{count} نقطة', { count: formatNumber(summary.balance) })}</p>
+                    <p className="mk-num mt-1 text-4xl font-semibold text-brand-green">{t('{count} نقطة', { count: formatNumber(summary.balance) })}</p>
                     <p className="mt-1 text-sm text-panel-text">{t('تساوي خصم {amount} على طلبك القادم', { amount: formatMoney(summary.balance_value) })}</p>
                 </div>
                 <Icon name="star" className="relative size-14 fill-brand-green/15 text-brand-green/70" />
@@ -85,7 +85,7 @@ export function StorePointsPage() {
 
             {summary.enabled && summary.tier && (
                 <section className="flex flex-col gap-4 rounded-2xl border border-line bg-surface p-5">
-                    <h2 className="font-semibold text-ink">{t('مستواك')}</h2>
+                    <h2 className="text-base font-semibold text-ink">{t('مستواك')}</h2>
                     <TierProgress tier={summary.tier} className="text-ink" />
                     <ul className="grid gap-2 text-sm sm:grid-cols-3">
                         {summary.tier.tiers.map((tier) => {
@@ -113,7 +113,7 @@ export function StorePointsPage() {
                 <ul className="grid gap-3 text-sm sm:grid-cols-3">
                     <li className="rounded-2xl border border-line bg-surface p-4">
                         <p className="font-semibold text-ink">{t('اكسب')}</p>
-                        <p className="mt-1 text-ink-2">{t('{points} نقطة عن كل ١٠٠ جنيه في طلباتك المسلّمة', { points: formatNumber(summary.earn_rate) })}</p>
+                        <p className="mt-1 text-ink-2">{t('{points} نقطة عن كل 100 جنيه في طلباتك المسلّمة', { points: formatNumber(summary.earn_rate) })}</p>
                     </li>
                     <li className="rounded-2xl border border-line bg-surface p-4">
                         <p className="font-semibold text-ink">{t('استبدل')}</p>
@@ -127,7 +127,7 @@ export function StorePointsPage() {
             )}
 
             <section className="rounded-2xl border border-line bg-surface">
-                <h2 className="border-b border-line p-4 font-semibold text-ink">{t('سجل النقاط')}</h2>
+                <h2 className="border-b border-line p-4 text-base font-semibold text-ink">{t('سجل النقاط')}</h2>
                 {result.data.length === 0 ? (
                     <p className="p-6 text-center text-sm text-muted">{t('لا توجد حركات بعد. ستُضاف نقاطك بعد توصيل أول طلب.')}</p>
                 ) : (

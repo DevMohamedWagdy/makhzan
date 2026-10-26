@@ -112,7 +112,7 @@ export function LoyaltyPage() {
                         {errors.loyalty_enabled && <p className="-mt-3 text-xs font-medium text-danger">{errors.loyalty_enabled}</p>}
 
                         <div className="grid gap-4 sm:grid-cols-3">
-                            <Field label={t('نقاط لكل ١٠٠ جنيه')} error={errors.loyalty_earn_rate} hint={t('من قيمة المنتجات بعد الخصومات، عند توصيل الطلب.')}>
+                            <Field label={t('نقاط لكل 100 جنيه')} error={errors.loyalty_earn_rate} hint={t('من قيمة المنتجات بعد الخصومات، عند توصيل الطلب.')}>
                                 {(props) => <Input {...props} type="number" min="1" value={form.loyalty_earn_rate} onChange={set('loyalty_earn_rate')} dir="ltr" />}
                             </Field>
                             <Field label={t('قيمة النقطة (جنيه)')} error={errors.loyalty_point_value} hint={t('الخصم الذي تعطيه كل نقطة عند إتمام الطلب.')}>
@@ -124,7 +124,7 @@ export function LoyaltyPage() {
                         </div>
 
                         <Alert tone="info" icon="info">
-                            {t('بهذه الإعدادات: طلب منتجاته بـ ١٠٠٠ جنيه يكسب {points} نقطة = خصم {amount} على الطلب القادم (استرجاع {percent}%).', {
+                            {t('بهذه الإعدادات: طلب منتجاته بـ 1000 جنيه يكسب {points} نقطة = خصم {amount} على الطلب القادم (استرجاع {percent}%).', {
                                 points: formatNumber(Math.floor(Number(form.loyalty_earn_rate) * 10)),
                                 amount: formatMoney(Math.floor(Number(form.loyalty_earn_rate) * 10) * Number(form.loyalty_point_value)),
                                 percent: formatNumber(Math.round(cashbackPercent * 100) / 100),
@@ -160,7 +160,7 @@ export function LoyaltyPage() {
                                             <Field
                                                 label={t('مضاعف النقاط')}
                                                 error={errors[`loyalty_tiers.${index}.multiplier`]}
-                                                hint={Number(tier.multiplier) >= 1 ? t('{points} نقطة لكل ١٠٠ جنيه', { points: formatNumber(Math.floor(Number(form.loyalty_earn_rate) * Number(tier.multiplier) * 100) / 100) }) : undefined}
+                                                hint={Number(tier.multiplier) >= 1 ? t('{points} نقطة لكل 100 جنيه', { points: formatNumber(Math.floor(Number(form.loyalty_earn_rate) * Number(tier.multiplier) * 100) / 100) }) : undefined}
                                             >
                                                 {(props) => <Input {...props} type="number" min="1" max="10" step="0.05" value={tier.multiplier} onChange={setTier(index, 'multiplier')} disabled={!canEdit} dir="ltr" />}
                                             </Field>

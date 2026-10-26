@@ -91,7 +91,7 @@ export function StoreOrdersPage() {
                                     </p>
                                 </div>
                                 <OrderStatusBadge status={order.status} />
-                                <span className="font-bold text-ink">{formatMoney(order.total)}</span>
+                                <span className="font-semibold text-ink">{formatMoney(order.total)}</span>
                             </Link>
                         </li>
                     ))}

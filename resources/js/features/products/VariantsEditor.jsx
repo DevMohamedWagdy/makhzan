@@ -95,32 +95,32 @@ function PriceInputs({ row, errors, prefix, onChange, warehouses, compact = fals
             <>
                 <td className="px-2 py-2">
                     {input('price', { suffix: money, 'aria-label': t('السعر') })}
-                    {errors[`${prefix}.price`] && <p className="mt-1 text-[11px] text-danger">{errors[`${prefix}.price`]}</p>}
+                    {errors[`${prefix}.price`] && <p className="mt-1 text-2xs text-danger">{errors[`${prefix}.price`]}</p>}
                 </td>
                 {perWarehouse ? (
                     warehouses.map((warehouse, index) => (
                         <td key={warehouse.warehouse_id} className="px-2 py-2">
                             {warehouseInput(warehouse)}
-                            {index === 0 && errors[`${prefix}.warehouse_stocks`] && <p className="mt-1 text-[11px] text-danger">{errors[`${prefix}.warehouse_stocks`]}</p>}
+                            {index === 0 && errors[`${prefix}.warehouse_stocks`] && <p className="mt-1 text-2xs text-danger">{errors[`${prefix}.warehouse_stocks`]}</p>}
                         </td>
                     ))
                 ) : (
                     <td className="px-2 py-2">
                         {input('stock', { step: 1, 'aria-label': t('الكمية') })}
-                        {errors[`${prefix}.stock`] && <p className="mt-1 text-[11px] text-danger">{errors[`${prefix}.stock`]}</p>}
+                        {errors[`${prefix}.stock`] && <p className="mt-1 text-2xs text-danger">{errors[`${prefix}.stock`]}</p>}
                     </td>
                 )}
                 <td className="px-2 py-2">
                     {input('compare_at_price', { suffix: money, 'aria-label': t('السعر قبل الخصم'), placeholder: '—' })}
-                    {errors[`${prefix}.compare_at_price`] && <p className="mt-1 text-[11px] text-danger">{errors[`${prefix}.compare_at_price`]}</p>}
+                    {errors[`${prefix}.compare_at_price`] && <p className="mt-1 text-2xs text-danger">{errors[`${prefix}.compare_at_price`]}</p>}
                 </td>
                 <td className="px-2 py-2">
                     {input('cost', { suffix: money, 'aria-label': t('التكلفة'), placeholder: '—' })}
-                    {errors[`${prefix}.cost`] && <p className="mt-1 text-[11px] text-danger">{errors[`${prefix}.cost`]}</p>}
+                    {errors[`${prefix}.cost`] && <p className="mt-1 text-2xs text-danger">{errors[`${prefix}.cost`]}</p>}
                 </td>
                 <td className="px-2 py-2">
                     <Input value={row.sku} onChange={(event) => onChange({ sku: event.target.value })} dir="ltr" className={cn(fieldClass, 'text-start')} aria-label="SKU" placeholder="—" maxLength={60} aria-invalid={errors[`${prefix}.sku`] ? 'true' : undefined} />
-                    {errors[`${prefix}.sku`] && <p className="mt-1 text-[11px] text-danger">{errors[`${prefix}.sku`]}</p>}
+                    {errors[`${prefix}.sku`] && <p className="mt-1 text-2xs text-danger">{errors[`${prefix}.sku`]}</p>}
                 </td>
             </>
         );

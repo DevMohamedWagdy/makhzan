@@ -192,7 +192,7 @@ export function StoreResetPasswordPage() {
                     </Alert>
                 )}
                 <Field label={t('كلمة المرور الجديدة')} error={errors.password} required>
-                    {(props) => <PasswordInput {...props} {...bind('password')} data-autofocus showStrength placeholder={t('٨ أحرف على الأقل')} autoComplete="new-password" />}
+                    {(props) => <PasswordInput {...props} {...bind('password')} data-autofocus showStrength placeholder={t('8 أحرف على الأقل')} autoComplete="new-password" />}
                 </Field>
                 <Field label={t('تأكيد كلمة المرور')} error={errors.password_confirmation} required>
                     {(props) => <PasswordInput {...props} {...bind('password_confirmation')} placeholder={t('أعد كتابة كلمة المرور')} autoComplete="new-password" />}

@@ -82,7 +82,7 @@ function DialogHeader({ titleId, title, description, icon, iconTone = 'primary',
                 </span>
             )}
             <div className="min-w-0 flex-1">
-                <h2 id={titleId} className="text-[17px] leading-7 font-semibold text-ink">
+                <h2 id={titleId} className="text-lg font-semibold text-ink">
                     {title}
                 </h2>
                 {description && <p className="mt-1 text-sm leading-relaxed text-muted">{description}</p>}

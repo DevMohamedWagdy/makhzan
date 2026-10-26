@@ -66,7 +66,7 @@ export function CommissionCell({ affiliate }) {
         <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
             <span className="text-sm font-semibold text-ink">{formatCommission(commission)}</span>
             {commission.isCustom && (
-                <span className="rounded bg-warning-soft px-1.5 py-0.5 text-[10px] font-medium text-warning" title={commission.note ?? t('عمولة مخصصة')}>
+                <span className="rounded bg-warning-soft px-1.5 py-0.5 text-3xs font-medium text-warning" title={commission.note ?? t('عمولة مخصصة')}>
                     {t('مخصصة')}
                 </span>
             )}

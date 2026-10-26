@@ -50,7 +50,7 @@ function toFormValues(affiliate) {
 function SectionTitle({ index, title, description }) {
     return (
         <div className="flex items-start gap-3 sm:col-span-2">
-            <span className="grid size-7 shrink-0 place-items-center rounded-lg bg-primary-soft text-xs font-bold text-primary">{index}</span>
+            <span className="grid size-7 shrink-0 place-items-center rounded-lg bg-primary-soft text-xs font-semibold text-primary">{index}</span>
             <div>
                 <h3 className="text-sm font-semibold text-ink">{title}</h3>
                 {description && <p className="mt-0.5 text-xs text-muted">{description}</p>}
@@ -111,7 +111,7 @@ export function AffiliateForm({ affiliate, onSaved, onCancel }) {
             <div className="grid flex-1 gap-5 p-6 sm:grid-cols-2">
                 {formError && <Alert tone="danger" className="sm:col-span-2">{formError}</Alert>}
 
-                <SectionTitle index={t('١')} title={t('البيانات الشخصية')} description={t('بيانات التواصل مع المسوق ودخوله لحسابه')} />
+                <SectionTitle index={t('1')} title={t('البيانات الشخصية')} description={t('بيانات التواصل مع المسوق ودخوله لحسابه')} />
 
                 <Field label={t('الصورة الشخصية')} optional error={errors.avatar} className="sm:col-span-2">
                     {() => (
@@ -135,19 +135,19 @@ export function AffiliateForm({ affiliate, onSaved, onCancel }) {
                     {(props) => <Input {...props} {...bind('email')} icon="mail" type="email" dir="ltr" className="text-start" placeholder="name@example.com" />}
                 </Field>
                 <Field label={isEdit ? t('كلمة مرور جديدة') : t('كلمة المرور')} error={errors.password} hint={isEdit ? t('اتركها فارغة للإبقاء على كلمة المرور الحالية') : undefined} required={!isEdit}>
-                    {(props) => <PasswordInput {...props} {...bind('password')} showStrength placeholder={t('٨ أحرف على الأقل')} />}
+                    {(props) => <PasswordInput {...props} {...bind('password')} showStrength placeholder={t('8 أحرف على الأقل')} />}
                 </Field>
                 <Field label={t('تأكيد كلمة المرور')} error={errors.password_confirmation} required={!isEdit}>
                     {(props) => <PasswordInput {...props} {...bind('password_confirmation')} placeholder={t('أعد كتابة كلمة المرور')} />}
                 </Field>
 
                 <div className="h-px bg-line sm:col-span-2" />
-                <SectionTitle index={t('٢')} title={t('وسيلة السحب المفضلة')} description={t('الحساب الذي ستُحوَّل إليه أرباح المسوق')} />
+                <SectionTitle index={t('2')} title={t('وسيلة السحب المفضلة')} description={t('الحساب الذي ستُحوَّل إليه أرباح المسوق')} />
 
                 <PayoutMethodFields values={values} errors={errors} bind={bind} setValues={setValues} />
 
                 <div className="h-px bg-line sm:col-span-2" />
-                <SectionTitle index={t('٣')} title={t('شريحة المسوق')} description={t('تحدد نسبة العمولة الافتراضية، ويمكنك تخصيصها لاحقاً')} />
+                <SectionTitle index={t('3')} title={t('شريحة المسوق')} description={t('تحدد نسبة العمولة الافتراضية، ويمكنك تخصيصها لاحقاً')} />
                 <div className="sm:col-span-2">
                     <OptionCards options={TIER_OPTIONS} value={values.tier} onChange={(tier) => setValues({ ...values, tier })} name="tier" />
                 </div>

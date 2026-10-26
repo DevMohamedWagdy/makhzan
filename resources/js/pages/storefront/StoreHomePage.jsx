@@ -10,9 +10,9 @@ import { t } from '@/i18n';
 function SectionHeader({ title, to }) {
     return (
         <div className="mb-4 flex items-center justify-between gap-3">
-            <h2 className="text-lg font-bold text-ink sm:text-[22px] sm:leading-8">{title}</h2>
+            <h2 className="text-lg font-semibold text-ink sm:text-xl">{title}</h2>
             {to && (
-                <Link to={to} className="inline-flex h-8 items-center gap-1 rounded-full border border-line-strong/70 bg-surface px-3.5 text-xs font-medium text-ink-2 transition hover:border-primary hover:text-primary sm:text-[13px]">
+                <Link to={to} className="inline-flex h-8 items-center gap-1 rounded-full border border-line-strong/70 bg-surface px-3.5 text-xs font-medium text-ink-2 transition hover:border-primary hover:text-primary sm:text-sm">
                     {t('عرض الكل')}
                     <Icon name="chevron-left" className="size-4" />
                 </Link>
@@ -32,7 +32,7 @@ function HeroBanner({ storeSlug, store, products }) {
             <div className="absolute -bottom-40 start-1/4 size-80 rounded-full bg-brand-green/10 blur-3xl" aria-hidden="true" />
             <div className="relative flex max-w-md flex-col justify-center">
                 <span className="mk-overline w-fit text-brand-green">{t('أهلاً بك في')}</span>
-                <h1 className="mt-3 text-[32px] leading-tight font-bold sm:text-[52px] sm:leading-[1.1]">{store.name}</h1>
+                <h1 className="mt-3 text-3xl font-semibold sm:text-5xl">{store.name}</h1>
                 <p className="mt-4 text-sm leading-relaxed text-panel-text sm:text-base">{store.description || t('تسوّق أحدث التشكيلات بأفضل الأسعار، والدفع عند الاستلام.')}</p>
                 <span className="mt-7 inline-flex h-12 w-fit items-center gap-2 rounded-xl bg-brand-green px-6 text-sm font-semibold text-brand shadow-[inset_0_1px_0_rgb(255_255_255/0.35)] transition group-hover:gap-3">
                     {t('تسوّق الآن')}
@@ -62,7 +62,7 @@ function PromoCard({ to, eyebrow, title, product, tone }) {
         <Link to={to} className={`group relative flex min-h-28 items-center justify-between gap-4 overflow-hidden rounded-3xl p-4 sm:p-6 ${tone}`}>
             <div className="relative">
                 <p className="mk-overline text-primary">{eyebrow}</p>
-                <p className="mt-1.5 text-base leading-snug font-bold sm:text-xl">{title}</p>
+                <p className="mt-1.5 text-base font-semibold sm:text-xl">{title}</p>
                 <span className="mt-3 inline-flex items-center gap-1 text-sm font-semibold underline-offset-4 group-hover:underline">
                     {t('تسوّق الآن')}
                     <Icon name="chevron-left" className="size-4" />
@@ -89,7 +89,7 @@ function CategoryCircles({ storeSlug, categories }) {
                             <span className="grid size-full place-items-center rounded-full bg-primary-soft text-2xl font-semibold text-primary">{category.name.charAt(0)}</span>
                         )}
                     </span>
-                    <span className="line-clamp-2 text-xs font-medium text-ink group-hover:text-primary sm:text-[13px]">{category.name}</span>
+                    <span className="line-clamp-2 text-xs font-medium text-ink group-hover:text-primary sm:text-sm">{category.name}</span>
                 </Link>
             ))}
         </div>

@@ -97,7 +97,7 @@ export function AffiliateResetPasswordPage() {
                     </Alert>
                 )}
                 <Field label={t('كلمة المرور الجديدة')} error={errors.password} required>
-                    {(props) => <PasswordInput {...props} {...bind('password')} showStrength placeholder={t('٨ أحرف على الأقل')} autoFocus />}
+                    {(props) => <PasswordInput {...props} {...bind('password')} showStrength placeholder={t('8 أحرف على الأقل')} autoFocus />}
                 </Field>
                 <Field label={t('تأكيد كلمة المرور')} error={errors.password_confirmation} required>
                     {(props) => <PasswordInput {...props} {...bind('password_confirmation')} placeholder={t('أعد كتابة كلمة المرور')} />}

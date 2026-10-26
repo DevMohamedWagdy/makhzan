@@ -12,7 +12,7 @@ const BADGE_TONES = {
 
 export function Badge({ tone = 'neutral', dot = false, icon, className, children }) {
     return (
-        <span className={cn('inline-flex h-6 items-center gap-1.5 rounded-full px-2.5 text-[11.5px] leading-none font-medium whitespace-nowrap ring-1 ring-current/12 ring-inset', BADGE_TONES[tone], className)}>
+        <span className={cn('inline-flex h-6 items-center gap-1.5 rounded-full px-2.5 text-2xs leading-none font-medium whitespace-nowrap ring-1 ring-current/12 ring-inset', BADGE_TONES[tone], className)}>
             {dot && <span className="size-1.5 rounded-full bg-current" />}
             {icon && <Icon name={icon} className="size-3.5" />}
             {children}
@@ -49,8 +49,8 @@ export function Card({ title, description, actions, className, bodyClassName, ch
             {(title || actions) && (
                 <header className="flex min-h-[60px] flex-wrap items-center justify-between gap-3 border-b border-line px-5 py-3.5">
                     <div className="min-w-0">
-                        {title && <h2 className="text-[15px] leading-6 font-semibold text-ink">{title}</h2>}
-                        {description && <p className="mt-0.5 text-[12.5px] leading-5 text-muted">{description}</p>}
+                        {title && <h2 className="text-base font-semibold text-ink">{title}</h2>}
+                        {description && <p className="mt-0.5 text-xs text-muted">{description}</p>}
                     </div>
                     {actions && <div className="flex items-center gap-2">{actions}</div>}
                 </header>
@@ -76,12 +76,12 @@ export function StatCard({ label, value, icon, tone = 'primary', hint }) {
                 </span>
                 {hint && (
                     <div className="min-w-0 truncate">
-                        {typeof hint === 'string' ? <span className="inline-flex h-6 max-w-full items-center truncate rounded-full bg-surface-3 px-2.5 text-[11px] font-medium text-ink-2">{hint}</span> : hint}
+                        {typeof hint === 'string' ? <span className="inline-flex h-6 max-w-full items-center truncate rounded-full bg-surface-3 px-2.5 text-2xs font-medium text-ink-2">{hint}</span> : hint}
                     </div>
                 )}
             </div>
-            <p className="mk-num mt-4 truncate text-[20px] leading-7 font-bold text-ink sm:text-[24px] sm:leading-8">{value}</p>
-            <p className="mt-0.5 truncate text-[12.5px] leading-5 text-muted sm:text-[13px]">{label}</p>
+            <p className="mk-num mt-4 truncate text-xl font-semibold text-ink sm:text-2xl">{value}</p>
+            <p className="mt-0.5 truncate text-xs text-muted sm:text-sm">{label}</p>
         </div>
     );
 }
@@ -99,7 +99,7 @@ export function EmptyState({ icon = 'users', title, description, action }) {
                 <Icon name={icon} className="size-6" />
             </span>
             <div>
-                <p className="text-[15px] font-semibold text-ink">{title}</p>
+                <p className="text-base font-semibold text-ink">{title}</p>
                 {description && <p className="mt-1 max-w-sm text-sm leading-relaxed text-muted">{description}</p>}
             </div>
             {action}
@@ -111,7 +111,7 @@ export function Alert({ tone = 'info', icon, title, children, className }) {
     const icons = { info: 'info', warning: 'alert-triangle', danger: 'alert-circle', success: 'check-circle' };
 
     return (
-        <div role={tone === 'danger' ? 'alert' : undefined} className={cn('flex gap-3 rounded-xl p-3.5 text-[13.5px] ring-1 ring-current/15 ring-inset', BADGE_TONES[tone], className)}>
+        <div role={tone === 'danger' ? 'alert' : undefined} className={cn('flex gap-3 rounded-xl p-3.5 text-sm ring-1 ring-current/15 ring-inset', BADGE_TONES[tone], className)}>
             <Icon name={icon ?? icons[tone]} className="mt-0.5 size-[18px] shrink-0" />
             <div className="leading-relaxed">
                 {title && <p className="font-semibold">{title}</p>}

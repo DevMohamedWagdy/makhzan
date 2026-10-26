@@ -35,7 +35,7 @@ export function NotificationsMenu({ notifications, unreadCount, markRead, markAl
             >
                 <Icon name="bell" className="size-[18px]" />
                 {unreadCount > 0 && (
-                    <span className="absolute -top-0.5 -end-0.5 grid h-[18px] min-w-[18px] place-items-center rounded-full bg-danger px-1 text-[10px] font-bold text-white ring-2 ring-surface">
+                    <span className="absolute -top-0.5 -end-0.5 grid h-[18px] min-w-[18px] place-items-center rounded-full bg-danger px-1 text-3xs font-semibold text-white ring-2 ring-surface">
                         {unreadCount > 99 ? '99+' : unreadCount}
                     </span>
                 )}

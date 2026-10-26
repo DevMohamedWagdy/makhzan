@@ -20,9 +20,9 @@ const VARIANTS = {
 /** Heights sit on the 4px grid: 32 · 40 · 44 · 52, icon buttons 36. */
 const SIZES = {
     sm: 'h-8 px-3 text-xs gap-1.5 rounded-lg',
-    md: 'h-10 px-4 text-[13.5px] gap-2 rounded-lg',
+    md: 'h-10 px-4 text-sm gap-2 rounded-lg',
     lg: 'h-11 px-5 text-sm gap-2 rounded-xl',
-    xl: 'h-[52px] px-7 text-[15px] gap-2.5 rounded-xl',
+    xl: 'h-[52px] px-7 text-base gap-2.5 rounded-xl',
     icon: 'size-9 rounded-lg',
 };
 

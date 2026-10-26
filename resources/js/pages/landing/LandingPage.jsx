@@ -153,7 +153,7 @@ export function LandingPage() {
                             <Icon name="sparkles" className="size-4 text-brand-green" />
                             {t('منصة واحدة لإدارة تجارتك بالكامل')}
                         </span>
-                        <h1 className="mx-auto mt-7 max-w-3xl text-[38px] leading-[1.3] font-bold text-balance sm:text-[56px] sm:leading-[1.2]">
+                        <h1 className="mx-auto mt-7 max-w-3xl text-4xl font-semibold text-balance sm:text-5xl">
                             {t('كل ما يحتاجه متجرك،')} <span className="text-brand-green">{t('في منصة واحدة.')}</span>
                         </h1>
                         <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-white/75 sm:text-lg">
@@ -189,7 +189,7 @@ export function LandingPage() {
                         {STATS.map((stat) => (
                             <div key={stat.label} className="text-center">
                                 <dt className="sr-only">{stat.label}</dt>
-                                <dd className="ltr mk-num text-[32px] leading-10 font-semibold text-ink">{stat.value}</dd>
+                                <dd className="ltr mk-num text-3xl font-semibold text-ink">{stat.value}</dd>
                                 <dd className="mt-1 text-sm text-muted">{stat.label}</dd>
                             </div>
                         ))}
@@ -229,7 +229,7 @@ export function LandingPage() {
                 <section id="storefront" className="mx-auto grid max-w-6xl scroll-mt-20 items-center gap-12 px-4 py-20 sm:px-6 sm:py-24 lg:grid-cols-2">
                     <div>
                         <span className="mk-overline text-primary">{t('المتجر الإلكتروني')}</span>
-                        <h2 className="mt-3 text-[30px] leading-snug font-bold text-ink">{t('متجر أونلاين جاهز، متصل بمخزونك مباشرة')}</h2>
+                        <h2 className="mt-3 text-3xl font-semibold text-ink">{t('متجر أونلاين جاهز، متصل بمخزونك مباشرة')}</h2>
                         <p className="mt-4 leading-relaxed text-ink-2">{t('كل طلب من متجرك يخصم من المخزون تلقائياً ويظهر في لوحة التحكم فوراً — بدون أي ربط أو برامج إضافية.')}</p>
                         <ul className="mt-6 flex flex-col gap-3">
                             {STOREFRONT_POINTS.map((point) => (
@@ -250,7 +250,7 @@ export function LandingPage() {
                     <div className="relative mx-auto max-w-6xl overflow-hidden rounded-3xl bg-brand px-6 py-16 text-center sm:px-12 dark:ring-1 dark:ring-line">
                         <div className="mk-grid-texture pointer-events-none absolute inset-0 [mask-image:radial-gradient(ellipse_at_center,black,transparent_70%)]" aria-hidden="true" />
                         <LogoMark className="pointer-events-none absolute -start-8 -bottom-10 size-60 text-white/[0.06]" />
-                        <h2 className="relative text-3xl font-bold text-white">{t('جاهز تنظّم تجارتك؟')}</h2>
+                        <h2 className="relative text-3xl font-semibold text-white">{t('جاهز تنظّم تجارتك؟')}</h2>
                         <p className="relative mx-auto mt-3 max-w-xl text-white/75">{t('انضم الآن وابدأ إدارة مخزونك وطلباتك ومسوقيك من مكان واحد.')}</p>
                         <div className="relative mt-8 flex flex-wrap justify-center gap-3">
                             <Button to={isAuthenticated ? '/dashboard' : '/register'} variant="brand" size="lg" iconEnd={arrow}>
@@ -283,7 +283,7 @@ function SectionHeading({ eyebrow, title, subtitle }) {
     return (
         <div className="mx-auto max-w-2xl text-center">
             <span className="mk-overline text-primary">{eyebrow}</span>
-            <h2 className="mt-3 text-[30px] leading-snug font-bold text-ink sm:text-[34px]">{title}</h2>
+            <h2 className="mt-3 text-3xl font-semibold text-ink sm:text-4xl">{title}</h2>
             {subtitle && <p className="mt-3 leading-relaxed text-ink-2">{subtitle}</p>}
         </div>
     );

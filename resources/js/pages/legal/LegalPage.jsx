@@ -181,7 +181,7 @@ export function LegalPage({ document: name }) {
 
                     {legalDocument.sections.map((section, index) => (
                         <section key={section.title} className="mt-8">
-                            <h2 className="text-lg font-bold text-ink">
+                            <h2 className="text-lg font-semibold text-ink">
                                 {index + 1}. {section.title}
                             </h2>
                             {section.paragraphs.map((paragraph) => (

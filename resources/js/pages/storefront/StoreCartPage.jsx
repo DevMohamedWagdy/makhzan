@@ -134,7 +134,7 @@ export function StoreCartPage() {
                                     )}
                                     {line.unit_price !== undefined && (
                                         <div className="text-end">
-                                            <p className="font-bold text-ink">{formatMoney(line.line_total)}</p>
+                                            <p className="font-semibold text-ink">{formatMoney(line.line_total)}</p>
                                             <p className="text-xs text-muted">{t('{price} للقطعة', { price: formatMoney(line.unit_price) })}</p>
                                         </div>
                                     )}
@@ -157,7 +157,7 @@ export function StoreCartPage() {
                         </div>
                         <div className="mt-1 flex justify-between border-t border-line pt-3 text-base">
                             <dt className="font-semibold text-ink">{t('الإجمالي')}</dt>
-                            <dd className="font-bold text-ink">{formatMoney(quote.subtotal)}</dd>
+                            <dd className="font-semibold text-ink">{formatMoney(quote.subtotal)}</dd>
                         </div>
                     </dl>
                     {blocked && <Alert tone="warning">{t('بعض المنتجات لم تعد متاحة، احذفها لإتمام الطلب.')}</Alert>}

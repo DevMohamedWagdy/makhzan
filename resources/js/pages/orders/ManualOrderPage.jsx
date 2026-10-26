@@ -160,7 +160,7 @@ export function ManualOrderPage() {
                                                                 count: formatNumber(item.stock),
                                                             })}
                                                         </span>
-                                                        {errors[`items.${item.variant_id}`] && <p className="text-[11px] text-danger">{errors[`items.${item.variant_id}`]}</p>}
+                                                        {errors[`items.${item.variant_id}`] && <p className="text-2xs text-danger">{errors[`items.${item.variant_id}`]}</p>}
                                                     </td>
                                                     <td className="px-2 py-2.5 whitespace-nowrap text-ink-2">{formatMoney(item.price)}</td>
                                                     <td className="px-2 py-2.5 align-top">

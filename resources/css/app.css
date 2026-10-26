@@ -95,10 +95,41 @@
 @theme {
     --radius-2xl: 0.875rem;
     --radius-3xl: 1.125rem;
+
+    /*
+     * One type scale for every page; arbitrary text-[Npx] sizes are not used. Noto Kufi's tall
+     * ascenders and Arabic marks need roomier line heights than Tailwind's defaults.
+     * Roles: 3xs counter bubbles · 2xs badges, axis labels, overlines, table heads · xs meta and
+     * helper text · sm body, inputs, buttons, nav · base card titles · lg dialog titles ·
+     * xl-2xl page titles and stat values · 3xl-5xl landing and portal heroes.
+     * Weights: normal for text, medium for labels and controls, semibold for titles and numbers.
+     */
+    --text-3xs: 0.625rem;
+    --text-3xs--line-height: 0.875rem;
+    --text-2xs: 0.6875rem;
+    --text-2xs--line-height: 1rem;
+    --text-xs: 0.75rem;
+    --text-xs--line-height: 1.125rem;
+    --text-sm: 0.875rem;
+    --text-sm--line-height: 1.375rem;
+    --text-base: 0.9375rem;
+    --text-base--line-height: 1.5rem;
+    --text-lg: 1.0625rem;
+    --text-lg--line-height: 1.625rem;
+    --text-xl: 1.25rem;
+    --text-xl--line-height: 1.875rem;
+    --text-2xl: 1.5rem;
+    --text-2xl--line-height: 2.125rem;
+    --text-3xl: 1.875rem;
+    --text-3xl--line-height: 2.5rem;
+    --text-4xl: 2.375rem;
+    --text-4xl--line-height: 3.125rem;
+    --text-5xl: 3.25rem;
+    --text-5xl--line-height: 4.125rem;
 }
 
 @theme inline {
-    --font-sans: 'Alexandria', ui-sans-serif, system-ui, sans-serif;
+    --font-sans: 'Noto Kufi Arabic', ui-sans-serif, system-ui, sans-serif;
 
     --color-bg: var(--mk-bg);
     --color-surface: var(--mk-surface);
@@ -147,8 +178,8 @@
     body {
         background-color: var(--mk-bg);
         color: var(--mk-text);
-        font-size: 0.875rem;
-        line-height: 1.6;
+        font-size: var(--text-sm);
+        line-height: var(--text-sm--line-height);
         transition:
             background-color 0.25s ease,
             color 0.25s ease;
@@ -243,7 +274,7 @@
 
     /* Table header row: quiet overline labels on a tinted band. */
     .mk-thead {
-        @apply border-y border-line bg-surface-2 text-[11.5px] text-muted;
+        @apply border-y border-line bg-surface-2 text-2xs text-muted;
     }
 
     .mk-thead th {
@@ -256,12 +287,12 @@
 
     /* Type scale — page title: 22/32 on phones, 26/36 from sm, semibold. */
     .mk-page-title {
-        @apply text-[22px] leading-8 font-semibold text-ink sm:text-[26px] sm:leading-9;
+        @apply text-xl font-semibold text-ink sm:text-2xl;
     }
 
     /* Small uppercase label above a heading or a group (sidebar sections, card overlines). */
     .mk-overline {
-        @apply text-[11px] leading-4 font-semibold text-muted;
+        @apply text-2xs font-semibold text-muted;
     }
 
     :lang(en) .mk-overline {

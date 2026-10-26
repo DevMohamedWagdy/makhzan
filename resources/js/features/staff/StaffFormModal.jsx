@@ -67,7 +67,7 @@ export function StaffFormModal({ open, member, roles, onClose, onSaved }) {
                     {(props) => <Input {...props} {...bind('email')} type="email" dir="ltr" className="text-start" />}
                 </Field>
                 <Field label={member ? t('كلمة مرور جديدة') : t('كلمة المرور')} required={!member} optional={Boolean(member)} hint={member ? t('اتركها فارغة للإبقاء على كلمة المرور الحالية') : undefined} error={errors.password} className="sm:col-span-2">
-                    {(props) => <PasswordInput {...props} {...bind('password')} showStrength autoComplete="new-password" placeholder={t('٨ أحرف على الأقل')} />}
+                    {(props) => <PasswordInput {...props} {...bind('password')} showStrength autoComplete="new-password" placeholder={t('8 أحرف على الأقل')} />}
                 </Field>
 
                 <Field label={t('الدور')} required error={errors.role_id} hint={roles.length === 0 ? t('أضف دوراً أولاً من تبويب الأدوار.') : undefined} className="sm:col-span-2">

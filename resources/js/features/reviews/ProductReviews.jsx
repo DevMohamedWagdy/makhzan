@@ -17,7 +17,7 @@ function RatingSummary({ summary }) {
     return (
         <div className="flex flex-col gap-4 rounded-2xl border border-line bg-surface p-5">
             <div className="flex items-center gap-3">
-                <span className="text-4xl font-bold text-ink">{formatNumber(summary.average ?? 0)}</span>
+                <span className="text-4xl font-semibold text-ink">{formatNumber(summary.average ?? 0)}</span>
                 <div>
                     <Stars rating={summary.average} />
                     <p className="mt-1 text-xs text-muted">{t('{count} تقييم', { count: formatNumber(summary.count) })}</p>
@@ -126,7 +126,7 @@ function ReviewForm({ storeSlug, productSlug }) {
         event.preventDefault();
 
         if (!rating) {
-            setErrors({ rating: t('اختر تقييماً من ١ إلى ٥ نجوم') });
+            setErrors({ rating: t('اختر تقييماً من 1 إلى 5 نجوم') });
 
             return;
         }
@@ -200,7 +200,7 @@ export function ProductReviews({ storeSlug, productSlug, storeName }) {
 
     return (
         <section id="reviews" className="scroll-mt-36">
-            <h2 className="mb-4 text-lg font-bold text-ink sm:text-[22px] sm:leading-8">{t('تقييمات العملاء')}</h2>
+            <h2 className="mb-4 text-lg font-semibold text-ink sm:text-xl">{t('تقييمات العملاء')}</h2>
             {!page ? (
                 <Skeleton className="h-40 rounded-2xl" />
             ) : (

@@ -73,7 +73,7 @@ function SuccessScreen({ store, result }) {
                         <ul className="mt-3 flex flex-col gap-2 text-sm text-ink-2">
                             <li className="flex gap-2">
                                 <Icon name="shield-check" className="mt-0.5 size-4 shrink-0 text-primary" />
-                                {t('يراجع فريق {name} طلبك عادةً خلال ٤٨ ساعة.', { name: store.name })}
+                                {t('يراجع فريق {name} طلبك عادةً خلال 48 ساعة.', { name: store.name })}
                             </li>
                             <li className="flex gap-2">
                                 <Icon name="link" className="mt-0.5 size-4 shrink-0 text-primary" />
@@ -107,7 +107,7 @@ function SuccessScreen({ store, result }) {
                 <div className="mk-card mt-8 p-5 text-start">
                     <p className="text-xs text-muted">{t('كود الإحالة الخاص بك')}</p>
                     <div className="mt-2 flex items-center justify-between gap-3">
-                        <span className="ltr rounded-lg bg-primary-soft px-3 py-1.5 font-mono text-lg font-bold text-primary">{result.referral_code}</span>
+                        <span className="ltr rounded-lg bg-primary-soft px-3 py-1.5 font-mono text-lg font-semibold text-primary">{result.referral_code}</span>
                         <Button size="sm" variant={copiedValue === result.referral_code ? 'success' : 'secondary'} icon={copiedValue === result.referral_code ? 'check' : 'copy'} onClick={() => copy(result.referral_code)}>
                             {copiedValue === result.referral_code ? t('تم النسخ') : t('نسخ الكود')}
                         </Button>
@@ -232,7 +232,7 @@ export function AffiliateJoinPage() {
                                 <Badge tone="primary" icon="megaphone">
                                     {t('برنامج المسوقين')}
                                 </Badge>
-                                <h1 className="mt-4 text-[30px] leading-tight font-bold text-ink">{t('انضم لفريق مسوقي {name}', { name: store.name })}</h1>
+                                <h1 className="mt-4 text-3xl font-semibold text-ink">{t('انضم لفريق مسوقي {name}', { name: store.name })}</h1>
                                 <p className="mt-3 text-sm leading-relaxed text-muted">{t('سوّق منتجات {name} لمتابعيك واربح عمولة على كل طلب يتم توصيله عبر رابطك.', { name: store.name })}</p>
                             </>
                         ) : (
@@ -247,7 +247,7 @@ export function AffiliateJoinPage() {
                     <div className="relative overflow-hidden rounded-2xl bg-panel p-6 text-white shadow-raise">
                         <div className="mk-grid-texture absolute inset-0 [mask-image:linear-gradient(to_bottom,black,transparent)]" aria-hidden="true" />
                         <p className="relative text-sm text-panel-text">{t('عمولتك على كل طلب')}</p>
-                        <p className="mk-num relative mt-1 text-[40px] leading-[48px] font-semibold text-brand-green">{link ? `${link.commission_percentage}%` : '—'}</p>
+                        <p className="mk-num relative mt-1 text-4xl font-semibold text-brand-green">{link ? `${link.commission_percentage}%` : '—'}</p>
                         <p className="relative mt-2 text-xs text-panel-text/80">{tier ? t('تبدأ كـ «{label}» ويمكن ترقيتك حسب أدائك', { label: tier.label }) : ' '}</p>
                     </div>
 
@@ -289,7 +289,7 @@ export function AffiliateJoinPage() {
                             {(props) => <Input {...props} {...bind('email')} icon="mail" type="email" dir="ltr" className="text-start" autoComplete="email" placeholder="name@example.com" />}
                         </Field>
                         <Field label={t('كلمة المرور')} error={errors.password} required>
-                            {(props) => <PasswordInput {...props} {...bind('password')} showStrength placeholder={t('٨ أحرف على الأقل')} />}
+                            {(props) => <PasswordInput {...props} {...bind('password')} showStrength placeholder={t('8 أحرف على الأقل')} />}
                         </Field>
                         <Field label={t('تأكيد كلمة المرور')} error={errors.password_confirmation} required>
                             {(props) => <PasswordInput {...props} {...bind('password_confirmation')} placeholder={t('أعد كتابة كلمة المرور')} />}

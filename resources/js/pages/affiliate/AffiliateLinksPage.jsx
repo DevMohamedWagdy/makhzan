@@ -26,7 +26,7 @@ export function AffiliateLinksPage() {
                         {affiliate.coupons.map((coupon) => (
                             <li key={coupon.code} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-line p-4">
                                 <span>
-                                    <span className="ltr inline-block rounded-lg bg-primary-soft px-2.5 py-1 font-mono text-base font-bold text-primary">{coupon.code}</span>
+                                    <span className="ltr inline-block rounded-lg bg-primary-soft px-2.5 py-1 font-mono text-base font-semibold text-primary">{coupon.code}</span>
                                     <span className="mt-1.5 block text-sm text-ink">{describeDiscount(coupon)}</span>
                                     {describeConditions(coupon).length > 0 && <span className="block text-xs text-muted">{describeConditions(coupon).join(' · ')}</span>}
                                 </span>

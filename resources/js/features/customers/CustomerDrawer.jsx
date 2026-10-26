@@ -18,7 +18,7 @@ function Stat({ label, value }) {
     return (
         <div className="rounded-xl bg-surface-2 p-3">
             <p className="text-xs text-muted">{label}</p>
-            <p className="mt-1 text-base font-bold text-ink">{value}</p>
+            <p className="mt-1 text-base font-semibold text-ink">{value}</p>
         </div>
     );
 }

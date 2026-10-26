@@ -18,7 +18,7 @@ export function CouponBox({ coupon, error, onApply, onRemove }) {
             <div className="flex items-center justify-between gap-3 rounded-xl border border-success/30 bg-success-soft p-3 text-sm">
                 <span className="flex min-w-0 items-center gap-2 text-success">
                     <Icon name="gift" className="size-4 shrink-0" />
-                    <span className="ltr font-mono font-bold">{coupon.code}</span>
+                    <span className="ltr font-mono font-semibold">{coupon.code}</span>
                     <span className="truncate">{coupon.free_shipping ? t('شحن مجاني') : t('وفّرت {amount}', { amount: formatMoney(coupon.discount) })}</span>
                 </span>
                 <button type="button" onClick={onRemove} className="shrink-0 text-xs font-medium text-ink-2 hover:text-danger">

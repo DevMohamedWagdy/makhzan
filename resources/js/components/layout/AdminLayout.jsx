@@ -125,7 +125,7 @@ export function AdminLayout() {
             >
                 <div className="flex h-16 shrink-0 items-center gap-2.5 px-5">
                     <Logo className="h-6" />
-                    <span className="rounded-md border border-primary/15 bg-primary-soft px-1.5 py-0.5 text-[10.5px] font-semibold text-primary">{t('الإدارة')}</span>
+                    <span className="rounded-md border border-primary/15 bg-primary-soft px-1.5 py-0.5 text-2xs font-semibold text-primary">{t('الإدارة')}</span>
                 </div>
                 <SidebarNav sections={sections} counter={(item) => (item.counter ? unreadCount : 0)} />
             </aside>
@@ -143,8 +143,8 @@ export function AdminLayout() {
                         <span className="flex items-center gap-2.5 px-1">
                             <Avatar name={admin?.full_name} size="sm" shape="circle" />
                             <span className="hidden text-start leading-tight sm:block">
-                                <span className="block text-[13px] font-semibold text-ink">{admin?.full_name}</span>
-                                <span className="block text-[11px] text-muted">{admin?.is_super !== false ? t('مدير عام') : (admin?.role ?? t('فريق الإدارة'))}</span>
+                                <span className="block text-sm font-semibold text-ink">{admin?.full_name}</span>
+                                <span className="block text-2xs text-muted">{admin?.is_super !== false ? t('مدير عام') : (admin?.role ?? t('فريق الإدارة'))}</span>
                             </span>
                         </span>
                         <button
