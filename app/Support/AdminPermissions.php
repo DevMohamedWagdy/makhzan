@@ -21,6 +21,7 @@ class AdminPermissions
         'coupons' => ['view'],
         'reviews' => ['view', 'update'],
         'tickets' => ['view', 'reply'],
+        'messages' => ['view', 'delete'],
         'logs' => ['view'],
         'settings' => ['view', 'update'],
         'team' => ['manage'],

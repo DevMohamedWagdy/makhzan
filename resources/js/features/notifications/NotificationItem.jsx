@@ -11,6 +11,7 @@ const TYPES = {
     store_registered: { icon: 'store', className: 'bg-success-soft text-success' },
     ticket_opened: { icon: 'message-square', className: 'bg-primary-soft text-primary' },
     ticket_vendor_replied: { icon: 'message-square', className: 'bg-warning-soft text-warning' },
+    contact_message: { icon: 'mail', className: 'bg-info-soft text-info' },
     // Support tickets (dashboard)
     ticket_replied: { icon: 'message-square', className: 'bg-primary-soft text-primary' },
     ticket_closed: { icon: 'lock', className: 'bg-surface-3 text-ink-2' },
@@ -75,6 +76,10 @@ export function adminNotificationTarget(notification) {
         return `/admin/support/${notification.details.ticket_id}`;
     }
 
+    if (notification.type === 'contact_message') {
+        return '/admin/messages';
+    }
+
     return `/admin/stores/${notification.details.store_id}`;
 }
 
@@ -99,7 +104,7 @@ export function NotificationItem({ notification, onOpen, compact = false }) {
                 'relative flex w-full items-start gap-3 text-start transition',
                 // Compact rows sit in the bell menu; full rows fill a divided list edge to edge.
                 compact ? 'rounded-xl p-2.5 hover:bg-surface-3' : 'gap-4 px-5 py-4 hover:bg-surface-2 sm:px-6',
-                unread && (compact ? 'bg-primary-soft/40' : 'bg-primary-soft/35 before:absolute before:inset-y-0 before:start-0 before:w-[3px] before:bg-brand-green'),
+                unread && (compact ? 'bg-primary-soft/40' : 'bg-primary-soft/35 before:absolute before:inset-y-0 before:start-0 before:w-[3px] before:bg-brand-accent'),
             )}
         >
             <span className={cn('grid size-9 shrink-0 place-items-center rounded-xl', config.className)}>
@@ -109,7 +114,7 @@ export function NotificationItem({ notification, onOpen, compact = false }) {
                 <span className={cn('block text-sm leading-6', unread ? 'font-semibold text-ink' : 'text-ink-2')}>{notification.message}</span>
                 <span className="mt-0.5 block text-xs text-muted">{formatRelative(notification.created_at)}</span>
             </span>
-            {unread && <span className="mt-2.5 size-2 shrink-0 rounded-full bg-brand-green" aria-label={t('غير مقروء')} />}
+            {unread && <span className="mt-2.5 size-2 shrink-0 rounded-full bg-brand-accent" aria-label={t('غير مقروء')} />}
         </button>
     );
 }

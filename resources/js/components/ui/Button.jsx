@@ -12,8 +12,8 @@ const VARIANTS = {
     danger: 'bg-danger text-white shadow-[inset_0_1px_0_rgb(255_255_255/0.12)] hover:brightness-95 active:translate-y-px',
     'danger-soft': 'bg-danger-soft text-danger hover:bg-danger/15',
     success: 'bg-success text-white hover:brightness-95',
-    // Logo green with navy text (5:1): for navy bands (bg-brand) such as the landing hero.
-    brand: 'bg-brand-green font-semibold text-brand shadow-[inset_0_1px_0_rgb(255_255_255/0.25)] hover:brightness-110',
+    // Growth Gold with night-navy text: the CTA on dark brand bands (bg-brand).
+    brand: 'bg-gold font-semibold text-brand shadow-[inset_0_1px_0_rgb(255_255_255/0.3)] hover:brightness-105',
     'outline-light': 'border border-white/20 text-white hover:border-white/35 hover:bg-white/[0.06]',
 };
 

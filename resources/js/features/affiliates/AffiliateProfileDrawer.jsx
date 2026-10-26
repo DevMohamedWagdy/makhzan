@@ -73,7 +73,7 @@ export function AffiliateProfileDrawer({ affiliate, open, onClose, actions, crea
 
     const header = (
         <div className="relative">
-            <div className="mk-grid-texture relative h-24 bg-panel"><div className="absolute -top-16 end-10 size-48 rounded-full bg-brand-green/25 blur-3xl" /></div>
+            <div className="mk-grid-texture relative h-24 bg-panel"><div className="absolute -top-16 end-10 size-48 rounded-full bg-brand-accent/25 blur-3xl" /></div>
             <button type="button" onClick={onClose} className="absolute top-4 end-4 grid size-9 place-items-center rounded-lg bg-white/15 text-white backdrop-blur hover:bg-white/25" aria-label={t('إغلاق')} title={t('إغلاق')}>
                 <Icon name="x" />
             </button>

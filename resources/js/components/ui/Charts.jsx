@@ -3,7 +3,7 @@ import { t } from '@/i18n';
 import { cn, formatNumber } from '@/lib/format';
 
 const TONE_FILLS = {
-    primary: 'bg-brand-green',
+    primary: 'bg-brand-accent',
     success: 'bg-success',
     warning: 'bg-warning',
     danger: 'bg-danger',
@@ -57,7 +57,7 @@ export function ColumnChart({ data, formatValue = formatNumber, caption, height 
                         {data.map((point, index) => (
                             <div key={point.key} className="group flex h-full min-w-0 flex-1 cursor-default items-end" onMouseEnter={() => setActive(index)}>
                                 <span
-                                    className={cn('mx-auto w-full max-w-7 rounded-t-[3px] transition-colors', active === null || active === index ? 'bg-brand-green' : 'bg-brand-green/35', point.value === 0 && 'opacity-0')}
+                                    className={cn('mx-auto w-full max-w-7 rounded-t-[3px] transition-colors', active === null || active === index ? 'bg-brand-accent' : 'bg-brand-accent/35', point.value === 0 && 'opacity-0')}
                                     style={{ height: `${Math.max((point.value / max) * 100, point.value > 0 ? 1.5 : 0)}%` }}
                                 />
                             </div>
@@ -123,7 +123,7 @@ export function BarList({ items, emptyText = t('لا توجد بيانات في 
                     </div>
                     {item.detail && <p className="ms-6 mt-0.5 text-xs text-muted">{item.detail}</p>}
                     <div className="ms-6 mt-1.5 h-1.5 overflow-hidden rounded-full bg-surface-3">
-                        <div className="h-full rounded-full bg-brand-green" style={{ width: `${(item.value / max) * 100}%` }} />
+                        <div className="h-full rounded-full bg-brand-accent" style={{ width: `${(item.value / max) * 100}%` }} />
                     </div>
                 </li>
             ))}

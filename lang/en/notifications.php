@@ -23,6 +23,7 @@ return [
         'store_registered' => 'New store :store registered (:owner)',
         'ticket_opened' => 'New support ticket from :store: :subject',
         'ticket_vendor_replied' => ':store replied to the ticket: :subject',
+        'contact_message' => 'New contact message from :name: :excerpt',
     ],
     'customer_order' => [
         'pending' => [

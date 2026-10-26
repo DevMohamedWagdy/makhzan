@@ -23,6 +23,7 @@ return [
         'store_registered' => 'تاجر جديد سجّل متجر :store (:owner)',
         'ticket_opened' => 'تذكرة دعم جديدة من :store: :subject',
         'ticket_vendor_replied' => 'رد جديد من :store على التذكرة: :subject',
+        'contact_message' => 'رسالة تواصل جديدة من :name: :excerpt',
     ],
     'customer_order' => [
         'pending' => [

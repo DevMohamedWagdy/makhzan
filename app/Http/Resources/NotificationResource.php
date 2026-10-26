@@ -81,6 +81,7 @@ class NotificationResource extends JsonResource
             'coupon_assigned' => AffiliateCouponNotification::message($details['code'], $details['type'], $details['value']),
             'store_registered' => __('notifications.admin.store_registered', ['store' => $details['store_name'], 'owner' => $details['owner_name'] ?? '']),
             'ticket_opened', 'ticket_vendor_replied' => __("notifications.admin.{$this->type}", ['store' => $details['store_name'], 'subject' => $details['subject']]),
+            'contact_message' => __('notifications.admin.contact_message', ['name' => $details['full_name'], 'excerpt' => $details['excerpt']]),
             'ticket_replied', 'ticket_closed', 'ticket_reopened' => __("notifications.{$this->type}.message", ['subject' => $details['subject']]),
             'store_suspended', 'store_reactivated', 'coupon_used_up', 'coupon_expired', 'new_sign_in', 'password_changed' => StoreAlertNotification::message($this->type, $details),
             default => $details['message'] ?? '',

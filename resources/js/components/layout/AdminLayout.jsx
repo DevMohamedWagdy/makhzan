@@ -21,6 +21,7 @@ const NAV_SECTIONS = [
             { label: t('الرئيسية'), icon: 'grid', to: '/admin', end: true, permission: 'overview.view' },
             { label: t('الإشعارات'), icon: 'bell', to: '/admin/notifications', counter: true },
             { label: t('تذاكر الدعم'), icon: 'message-square', to: '/admin/support', permission: 'tickets.view' },
+            { label: t('رسائل التواصل'), icon: 'mail', to: '/admin/messages', permission: 'messages.view' },
         ],
     },
     {
@@ -124,7 +125,7 @@ export function AdminLayout() {
                 aria-label={t('قائمة الإدارة')}
             >
                 <div className="flex h-16 shrink-0 items-center gap-2.5 px-5">
-                    <Logo className="h-6" />
+                    <Logo className="h-[18px]" />
                     <span className="rounded-md border border-primary/15 bg-primary-soft px-1.5 py-0.5 text-[10.5px] font-semibold text-primary">{t('الإدارة')}</span>
                 </div>
                 <SidebarNav sections={sections} counter={(item) => (item.counter ? unreadCount : 0)} />

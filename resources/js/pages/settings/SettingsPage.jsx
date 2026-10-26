@@ -399,7 +399,7 @@ export function SettingsPage() {
                 </nav>
                 <section className="mk-card min-w-0 overflow-hidden">
                     <header className="flex items-center gap-3 border-b border-line px-5 py-4 sm:px-6">
-                        <span className="grid size-9 place-items-center rounded-lg bg-primary-soft text-brand-green ring-1 ring-primary/10 ring-inset">
+                        <span className="grid size-9 place-items-center rounded-lg bg-primary-soft text-brand-accent ring-1 ring-primary/10 ring-inset">
                             <Icon name={tabs.find((item) => item.value === tab)?.icon ?? 'settings'} className="size-[18px]" />
                         </span>
                         <h2 className="text-[15px] font-semibold text-ink">{tabs.find((item) => item.value === tab)?.label}</h2>

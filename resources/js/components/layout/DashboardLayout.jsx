@@ -110,7 +110,7 @@ function Sidebar({ open, onClose }) {
                 aria-label={t('القائمة الرئيسية')}
             >
                 <div className="flex h-16 shrink-0 items-center justify-between px-5">
-                    <Logo className="h-[26px]" />
+                    <Logo className="h-[18px]" />
                     <button type="button" onClick={onClose} className="grid size-9 place-items-center rounded-lg text-muted hover:bg-surface-3 hover:text-ink lg:hidden" aria-label={t('إغلاق القائمة')}>
                         <Icon name="x" />
                     </button>
@@ -142,7 +142,7 @@ function Sidebar({ open, onClose }) {
                         }}
                         aria-label={copied ? t('تم النسخ') : t('نسخ الرابط')}
                         title={copied ? t('تم النسخ') : t('نسخ الرابط')}
-                        className={cn('grid size-8 shrink-0 place-items-center rounded-lg transition', copied ? 'text-brand-green' : 'text-muted hover:bg-surface-3 hover:text-ink')}
+                        className={cn('grid size-8 shrink-0 place-items-center rounded-lg transition', copied ? 'text-brand-accent' : 'text-muted hover:bg-surface-3 hover:text-ink')}
                     >
                         <Icon name={copied ? 'check' : 'copy'} className="size-4" />
                     </button>
@@ -185,7 +185,7 @@ export function SidebarNav({ sections, alerts = {}, counter, onNavigate }) {
                                         className={({ isActive }) =>
                                             cn(
                                                 'flex h-9 items-center gap-3 rounded-lg px-3 text-[13.5px] transition',
-                                                isActive ? 'bg-primary-soft font-semibold text-ink [&>svg]:text-brand-green' : 'text-ink-2 hover:bg-surface-2 hover:text-ink [&>svg]:text-muted',
+                                                isActive ? 'bg-primary-soft font-semibold text-ink [&>svg]:text-brand-accent' : 'text-ink-2 hover:bg-surface-2 hover:text-ink [&>svg]:text-muted',
                                             )
                                         }
                                     >
@@ -270,7 +270,7 @@ function DashboardShell() {
                     <button type="button" onClick={() => setSidebarOpen(true)} className="grid size-9 place-items-center rounded-lg border border-line-strong/70 bg-surface text-ink-2 shadow-card lg:hidden" aria-label={t('فتح القائمة')}>
                         <Icon name="menu" className="size-[18px]" />
                     </button>
-                    <Logo className="h-[22px] lg:hidden" />
+                    <Logo className="h-4 lg:hidden" />
                     <div className="ms-auto flex items-center gap-1">
                         <LanguageToggle />
                         <ThemeToggle />

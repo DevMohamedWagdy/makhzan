@@ -36,13 +36,15 @@ function useStoreOptions(enabled) {
 
 /**
  * A platform-wide list for the admin panel: search, a store filter (unless `storeId` pins one
- * store), extra select filters, a table and pagination. Rows open `onRowClick`.
+ * store, or `withStoreFilter` is off for rows that belong to no store), extra select filters, a table
+ * and pagination. Rows open `onRowClick`.
  *
  * @param {{
  *   load: (params: object) => Promise<{ data: object[], meta: object }>,
  *   columns: Array<{ label: string, render: (row: object) => any, className?: string }>,
  *   rowKey: (row: object) => string|number,
  *   storeId?: number|null,
+ *   withStoreFilter?: boolean,
  *   searchPlaceholder?: string,
  *   filters?: Array<{ key: string, label: string, options: Array<{ value: string, label: string }> }>,
  *   onRowClick?: (row: object) => void,
@@ -53,7 +55,7 @@ function useStoreOptions(enabled) {
  *   renderSummary?: (result: object) => any,
  * }} props
  */
-export function AdminDataTable({ load, columns, rowKey, storeId = null, searchPlaceholder, filters = [], onRowClick, emptyIcon = 'search', emptyTitle, minWidth = '860px', reloadKey, renderSummary }) {
+export function AdminDataTable({ load, columns, rowKey, storeId = null, withStoreFilter = true, searchPlaceholder, filters = [], onRowClick, emptyIcon = 'search', emptyTitle, minWidth = '860px', reloadKey, renderSummary }) {
     const [searchTerm, setSearchTerm] = useState('');
     const search = useDebouncedValue(searchTerm, 300);
     const [values, setValues] = useState(() => Object.fromEntries(filters.map((filter) => [filter.key, ''])));
@@ -61,7 +63,7 @@ export function AdminDataTable({ load, columns, rowKey, storeId = null, searchPl
     const [page, setPage] = useState(1);
     const [result, setResult] = useState(null);
     const [error, setError] = useState(null);
-    const storeOptions = useStoreOptions(!storeId);
+    const storeOptions = useStoreOptions(!storeId && withStoreFilter);
 
     const fetchPage = useCallback(() => {
         setError(null);
@@ -85,7 +87,7 @@ export function AdminDataTable({ load, columns, rowKey, storeId = null, searchPl
             {renderSummary && result && renderSummary(result)}
             <div className="mk-toolbar">
                 {searchPlaceholder && <Input type="search" icon="search" value={searchTerm} onChange={(event) => change(setSearchTerm)(event.target.value)} placeholder={searchPlaceholder} aria-label={searchPlaceholder} className="lg:w-80" />}
-                {!storeId && storeOptions.length > 0 && <Select value={store} onChange={(event) => change(setStore)(event.target.value)} aria-label={t('المتجر')} className="sm:w-48" options={[{ value: '', label: t('كل المتاجر') }, ...storeOptions]} />}
+                {!storeId && withStoreFilter && storeOptions.length > 0 && <Select value={store} onChange={(event) => change(setStore)(event.target.value)} aria-label={t('المتجر')} className="sm:w-48" options={[{ value: '', label: t('كل المتاجر') }, ...storeOptions]} />}
                 {filters.map((filter) => (
                     <Select key={filter.key} value={values[filter.key]} onChange={(event) => change(setValues)((current) => ({ ...current, [filter.key]: event.target.value }))} aria-label={filter.label} className="sm:w-44" options={filter.options} />
                 ))}

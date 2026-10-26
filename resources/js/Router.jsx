@@ -29,6 +29,7 @@ const AdminCustomersPage = lazy(() => import('@/pages/admin/AdminCustomersPage')
 const AdminAffiliatesPage = lazy(() => import('@/pages/admin/AdminAffiliatesPage').then((module) => ({ default: module.AdminAffiliatesPage })));
 const AdminPayoutsPage = lazy(() => import('@/pages/admin/AdminPayoutsPage').then((module) => ({ default: module.AdminPayoutsPage })));
 const AdminProductsPage = lazy(() => import('@/pages/admin/AdminProductsPage').then((module) => ({ default: module.AdminProductsPage })));
+const AdminContactMessagesPage = lazy(() => import('@/pages/admin/AdminContactMessagesPage').then((module) => ({ default: module.AdminContactMessagesPage })));
 const AdminReviewsPage = lazy(() => import('@/pages/admin/AdminReviewsPage').then((module) => ({ default: module.AdminReviewsPage })));
 const AdminPaymentsPage = lazy(() => import('@/pages/admin/AdminPaymentsPage').then((module) => ({ default: module.AdminPaymentsPage })));
 const AdminCouponsPage = lazy(() => import('@/pages/admin/AdminCouponsPage').then((module) => ({ default: module.AdminCouponsPage })));
@@ -321,6 +322,9 @@ export function App() {
                                     </Route>
                                     <Route element={<RequireAdminPermission permission="products.view" />}>
                                         <Route path="products" element={<AdminProductsPage />} />
+                                    </Route>
+                                    <Route element={<RequireAdminPermission permission="messages.view" />}>
+                                        <Route path="messages" element={<AdminContactMessagesPage />} />
                                     </Route>
                                     <Route element={<RequireAdminPermission permission="reviews.view" />}>
                                         <Route path="reviews" element={<AdminReviewsPage />} />

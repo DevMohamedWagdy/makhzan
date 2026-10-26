@@ -28,7 +28,7 @@ export function StorePublicLayout({ store, children, narrow = false }) {
             <main className={cn('mx-auto w-full flex-1 px-4 py-8 sm:px-6 sm:py-12', narrow ? 'max-w-md' : 'max-w-5xl')}>{children}</main>
             <footer className="flex items-center justify-center gap-2 pb-8 text-xs text-muted">
                 {t('مدعوم من')}
-                <Logo className="h-2.5" />
+                <Logo className="h-2" />
             </footer>
         </div>
     );

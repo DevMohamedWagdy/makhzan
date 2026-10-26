@@ -77,10 +77,10 @@ export function StorePointsPage() {
                 <div className="mk-grid-texture absolute inset-0 [mask-image:linear-gradient(to_bottom,black,transparent)]" aria-hidden="true" />
                 <div className="relative">
                     <p className="text-sm text-panel-text">{t('رصيدك')}</p>
-                    <p className="mk-num mt-1 text-[34px] leading-[44px] font-semibold text-brand-green">{t('{count} نقطة', { count: formatNumber(summary.balance) })}</p>
+                    <p className="mk-num mt-1 text-[34px] leading-[44px] font-semibold text-brand-accent">{t('{count} نقطة', { count: formatNumber(summary.balance) })}</p>
                     <p className="mt-1 text-sm text-panel-text">{t('تساوي خصم {amount} على طلبك القادم', { amount: formatMoney(summary.balance_value) })}</p>
                 </div>
-                <Icon name="star" className="relative size-14 fill-brand-green/15 text-brand-green/70" />
+                <Icon name="star" className="relative size-14 fill-brand-accent/15 text-brand-accent/70" />
             </section>
 
             {summary.enabled && summary.tier && (

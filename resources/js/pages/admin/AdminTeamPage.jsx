@@ -27,6 +27,7 @@ const SECTIONS = {
     coupons: { label: t('الكوبونات'), icon: 'percent' },
     reviews: { label: t('التقييمات'), icon: 'star' },
     tickets: { label: t('تذاكر الدعم'), icon: 'message-square' },
+    messages: { label: t('رسائل التواصل'), icon: 'mail' },
     logs: { label: t('سجل النشاط'), icon: 'clock' },
     settings: { label: t('إعدادات المنصة'), icon: 'settings' },
     team: { label: t('فريق الإدارة'), icon: 'shield-check' },
@@ -39,6 +40,7 @@ const ACTIONS = {
     impersonate: t('الدخول بحساب التاجر'),
     manage: t('إدارة'),
     reply: t('الرد والإغلاق'),
+    delete: t('حذف'),
 };
 
 const TEMPLATES = [

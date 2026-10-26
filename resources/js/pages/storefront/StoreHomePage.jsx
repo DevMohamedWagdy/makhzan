@@ -28,13 +28,13 @@ function HeroBanner({ storeSlug, store, products }) {
     return (
         <Link to={`/${storeSlug}/products`} className="group relative flex min-h-64 overflow-hidden rounded-3xl bg-panel p-6 text-white sm:min-h-80 sm:p-10 lg:col-span-2">
             <div className="mk-grid-texture absolute inset-0 [mask-image:linear-gradient(to_bottom,black,transparent)]" aria-hidden="true" />
-            <div className="absolute -top-32 -end-20 size-96 rounded-full bg-brand-green/25 blur-3xl" aria-hidden="true" />
-            <div className="absolute -bottom-40 start-1/4 size-80 rounded-full bg-brand-green/10 blur-3xl" aria-hidden="true" />
+            <div className="absolute -top-32 -end-20 size-96 rounded-full bg-brand-accent/25 blur-3xl" aria-hidden="true" />
+            <div className="absolute -bottom-40 start-1/4 size-80 rounded-full bg-brand-accent/10 blur-3xl" aria-hidden="true" />
             <div className="relative flex max-w-md flex-col justify-center">
-                <span className="mk-overline w-fit text-brand-green">{t('أهلاً بك في')}</span>
+                <span className="mk-overline w-fit text-brand-accent">{t('أهلاً بك في')}</span>
                 <h1 className="mt-3 text-[32px] leading-tight font-bold sm:text-[52px] sm:leading-[1.1]">{store.name}</h1>
                 <p className="mt-4 text-sm leading-relaxed text-panel-text sm:text-base">{store.description || t('تسوّق أحدث التشكيلات بأفضل الأسعار، والدفع عند الاستلام.')}</p>
-                <span className="mt-7 inline-flex h-12 w-fit items-center gap-2 rounded-xl bg-brand-green px-6 text-sm font-semibold text-brand shadow-[inset_0_1px_0_rgb(255_255_255/0.35)] transition group-hover:gap-3">
+                <span className="mt-7 inline-flex h-12 w-fit items-center gap-2 rounded-xl bg-brand-accent px-6 text-sm font-semibold text-white shadow-[inset_0_1px_0_rgb(255_255_255/0.35)] transition group-hover:gap-3">
                     {t('تسوّق الآن')}
                     <Icon name="arrow-left" className="size-4" />
                 </span>

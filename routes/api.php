@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\V1\Admin\ActivityLogController as AdminActivityLogC
 use App\Http\Controllers\Api\V1\Admin\AdminRoleController;
 use App\Http\Controllers\Api\V1\Admin\AffiliateController as AdminAffiliateController;
 use App\Http\Controllers\Api\V1\Admin\AuthController as AdminAuthController;
+use App\Http\Controllers\Api\V1\Admin\ContactMessageController as AdminContactMessageController;
 use App\Http\Controllers\Api\V1\Admin\CouponController as AdminCouponController;
 use App\Http\Controllers\Api\V1\Admin\CustomerController as AdminCustomerController;
 use App\Http\Controllers\Api\V1\Admin\MailSettingsController as AdminMailSettingsController;
@@ -14,6 +15,7 @@ use App\Http\Controllers\Api\V1\Admin\PaymentController as AdminPaymentControlle
 use App\Http\Controllers\Api\V1\Admin\PayoutController as AdminPayoutController;
 use App\Http\Controllers\Api\V1\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Api\V1\Admin\ReviewController as AdminReviewController;
+use App\Http\Controllers\Api\V1\Admin\SiteSettingsController as AdminSiteSettingsController;
 use App\Http\Controllers\Api\V1\Admin\StoreController as AdminStoreController;
 use App\Http\Controllers\Api\V1\Admin\SupportTicketController as AdminSupportTicketController;
 use App\Http\Controllers\Api\V1\Admin\TeamController as AdminTeamController;
@@ -26,6 +28,9 @@ use App\Http\Controllers\Api\V1\Affiliate\OrderController as AffiliateOrderContr
 use App\Http\Controllers\Api\V1\Affiliate\PayoutController;
 use App\Http\Controllers\Api\V1\Payments\PaymobCallbackController;
 use App\Http\Controllers\Api\V1\Public\AffiliateRegistrationController;
+use App\Http\Controllers\Api\V1\Public\ContactMessageController;
+use App\Http\Controllers\Api\V1\Public\PlatformStatsController;
+use App\Http\Controllers\Api\V1\Public\SiteContentController;
 use App\Http\Controllers\Api\V1\Public\StoreController;
 use App\Http\Controllers\Api\V1\Storefront\CartController;
 use App\Http\Controllers\Api\V1\Storefront\Customer\AddressController as CustomerAddressController;
@@ -108,6 +113,23 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::post('forgot-password', [PasswordResetController::class, 'store'])->middleware('throttle:vendor-password')->name('forgot-password');
         Route::post('reset-password', [PasswordResetController::class, 'update'])->middleware('throttle:vendor-password')->name('reset-password');
     });
+
+    Route::get('platform-stats', PlatformStatsController::class)
+        ->middleware('throttle:60,1')
+        ->name('platform-stats');
+
+    Route::get('site/contact', [SiteContentController::class, 'contact'])
+        ->middleware('throttle:60,1')
+        ->name('site.contact');
+
+    Route::post('site/contact-messages', [ContactMessageController::class, 'store'])
+        ->middleware('throttle:contact-messages')
+        ->name('site.contact-messages.store');
+
+    Route::get('site/legal/{document}', [SiteContentController::class, 'legal'])
+        ->middleware('throttle:60,1')
+        ->whereIn('document', ['terms', 'privacy'])
+        ->name('site.legal');
 
     Route::get('stores/slug-availability', StoreSlugAvailabilityController::class)
         ->middleware('throttle:60,1')
@@ -265,6 +287,9 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
             Route::get('payments', [AdminPaymentController::class, 'index'])->middleware('admin.can:payments.view')->name('payments.index');
             Route::get('coupons', [AdminCouponController::class, 'index'])->middleware('admin.can:coupons.view')->name('coupons.index');
 
+            Route::get('contact-messages', [AdminContactMessageController::class, 'index'])->middleware('admin.can:messages.view')->name('contact-messages.index');
+            Route::patch('contact-messages/{contactMessage}', [AdminContactMessageController::class, 'update'])->middleware('admin.can:messages.view')->name('contact-messages.update');
+            Route::delete('contact-messages/{contactMessage}', [AdminContactMessageController::class, 'destroy'])->middleware('admin.can:messages.delete')->name('contact-messages.destroy');
             Route::get('reviews', [AdminReviewController::class, 'index'])->middleware('admin.can:reviews.view')->name('reviews.index');
             Route::middleware('admin.can:reviews.update')->group(function () {
                 Route::patch('reviews/{review}', [AdminReviewController::class, 'update'])->name('reviews.update');
@@ -285,8 +310,10 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
             Route::get('logs', AdminActivityLogController::class)->middleware('admin.can:logs.view')->name('logs');
 
             Route::get('settings/mail', [AdminMailSettingsController::class, 'show'])->middleware('admin.can:settings.view')->name('settings.mail.show');
+            Route::get('settings/site', [AdminSiteSettingsController::class, 'show'])->middleware('admin.can:settings.view')->name('settings.site.show');
             Route::middleware('admin.can:settings.update')->group(function () {
                 Route::put('settings/mail', [AdminMailSettingsController::class, 'update'])->name('settings.mail.update');
+                Route::put('settings/site', [AdminSiteSettingsController::class, 'update'])->name('settings.site.update');
                 Route::post('settings/mail/test', [AdminMailSettingsController::class, 'test'])->middleware('throttle:10,1')->name('settings.mail.test');
             });
 

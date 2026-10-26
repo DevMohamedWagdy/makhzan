@@ -32,7 +32,7 @@ function SearchBox({ storeSlug, className }) {
     return (
         <form
             role="search"
-            className={cn('h-11 items-center overflow-hidden rounded-xl border border-line-strong bg-surface-2 p-1 transition focus-within:border-primary focus-within:bg-surface focus-within:shadow-[0_0_0_3px_var(--mk-ring)]', className)}
+            className={cn('h-11 items-center overflow-hidden rounded-xl border border-line-strong bg-surface-2 p-1 transition focus-within:border-primary focus-within:bg-surface', className)}
             onSubmit={(event) => {
                 event.preventDefault();
                 term.trim() && navigate(`/${storeSlug}/search?q=${encodeURIComponent(term.trim())}`);
@@ -309,7 +309,7 @@ export function StorefrontLayout() {
                         <div className="mx-auto flex h-9 max-w-7xl items-center justify-between gap-4 px-4 text-xs sm:px-6">
                             <p className="truncate font-medium">{store?.announcement || perks.map((perk) => perk.title).join('  •  ')}</p>
                             {whatsappNumber && (
-                                <a href={`https://wa.me/${whatsappNumber}`} target="_blank" rel="noreferrer" className="hidden shrink-0 items-center gap-1.5 font-medium text-brand-green hover:text-white sm:inline-flex">
+                                <a href={`https://wa.me/${whatsappNumber}`} target="_blank" rel="noreferrer" className="hidden shrink-0 items-center gap-1.5 font-medium text-brand-accent hover:text-white sm:inline-flex">
                                     <Icon name="message-square" className="size-3.5" />
                                     {t('راسلنا على واتساب')}
                                 </a>
@@ -376,7 +376,7 @@ export function StorefrontLayout() {
                             <ul className="mx-auto grid max-w-7xl grid-cols-2 gap-6 px-4 py-8 sm:px-6 lg:grid-cols-4">
                                 {perks.map((perk) => (
                                     <li key={perk.title} className="flex items-center gap-3">
-                                        <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-primary-soft text-brand-green ring-1 ring-primary/10 ring-inset">
+                                        <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-primary-soft text-brand-accent ring-1 ring-primary/10 ring-inset">
                                             <Icon name={perk.icon} className="size-5" />
                                         </span>
                                         <span>
@@ -455,7 +455,7 @@ export function StorefrontLayout() {
                                 <span>{t('© {year} {store}. جميع الحقوق محفوظة.', { year: new Date().getFullYear(), store: store?.name ?? '' })}</span>
                                 <span className="flex items-center gap-2">
                                     {t('مدعوم من')}
-                                    <Logo className="h-2.5" />
+                                    <Logo className="h-2" />
                                 </span>
                             </div>
                         </div>

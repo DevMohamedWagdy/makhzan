@@ -19,7 +19,7 @@ import { reportsApi } from '@/services/reportsApi';
 const ATTENTION_TONES = {
     warning: 'bg-warning-soft text-warning',
     danger: 'bg-danger-soft text-danger',
-    primary: 'bg-primary-soft text-brand-green',
+    primary: 'bg-primary-soft text-brand-accent',
     info: 'bg-info-soft text-info',
 };
 
@@ -127,7 +127,7 @@ function TeamMemberHome() {
                 <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                     {shortcuts.map((shortcut) => (
                         <Link key={shortcut.to} to={shortcut.to} className="mk-card mk-card-link group flex items-start gap-4 p-5">
-                            <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary-soft text-brand-green ring-1 ring-primary/10 ring-inset">
+                            <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary-soft text-brand-accent ring-1 ring-primary/10 ring-inset">
                                 <Icon name={shortcut.icon} className="size-5" />
                             </span>
                             <span>

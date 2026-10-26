@@ -1,78 +1,20 @@
-import { useId } from 'react';
 import { cn } from '@/lib/format';
 
-/** Growth Green: the mark and "Grow" keep this color in both themes. Source files live in public/brand/logo. */
-const BRAND_GREEN = '#16A35F';
-
-/** The mark: five stacked blocks rising to a leaf, on a 3x3 grid of 28-unit modules (96 x 96). */
-const MARK_BLOCKS = [
-    [0, 68],
-    [34, 68],
-    [68, 68],
-    [34, 34],
-    [68, 34],
-];
-const MARK_LEAF_PATH = 'M71,28 A3,3 0 0 1 68,25 V17 A17,17 0 0 1 85,0 H93 A3,3 0 0 1 96,3 V11 A17,17 0 0 1 79,28 Z';
-
-/** Monoline wordmark strokes (baseline 100, x-height 50, cap height 30). The y and w are clipped flat at the x-height. */
-const SELLY_PATH = 'M32.33,41.79 A14.75,14.75 0 1 0 20.25,65 A14.75,14.75 0 1 1 8.17,88.21 M54,75 H93 A19.5,19.5 0 1 0 87.29,88.79 M113,30 V100 M133,30 V100';
-const SELLY_Y_PATH = 'M146.32,46 L169,100 M191.68,46 L158.5,125';
-const GROW_PATH = 'M259.6,46.04 A29.5,29.5 0 1 0 266.5,65 M240,65 H272 M286.5,100 V50 M286.5,78 A22.5,22.5 0 0 1 309,55.5 M320.5,75 A19.5,19.5 0 1 0 359.5,75 A19.5,19.5 0 1 0 320.5,75 Z';
-const GROW_W_PATH = 'M374.3,46 L390,100 L404,50 L418,100 L433.7,46';
-
-const STROKE = { fill: 'none', strokeWidth: 11, strokeLinecap: 'butt', strokeLinejoin: 'miter', strokeMiterlimit: 10 };
-
-function MarkShapes() {
-    return (
-        <>
-            {MARK_BLOCKS.map(([x, y]) => (
-                <rect key={`${x}-${y}`} x={x} y={y} width="28" height="28" rx="6" />
-            ))}
-            <path d={MARK_LEAF_PATH} />
-        </>
-    );
-}
-
-/** The mark alone, filled with currentColor (watermarks, compact headers). Decorative by default. */
-export function LogoMark({ className }) {
-    return (
-        <svg viewBox="0 0 96 96" className={cn('size-6', className)} fill="currentColor" aria-hidden="true">
-            <MarkShapes />
-        </svg>
-    );
-}
+/**
+ * "SELLYGROW" in Montserrat Regular capitals with open tracking (+6 per 100), outlined so the logo never
+ * depends on a loaded font (cap height 29 to 101). Source files live in public/brand/logo; the "SG" tile
+ * there is the favicon and app icon, not part of the logo.
+ */
+const WORDMARK_PATH = 'M30.70 100.60L30.70 100.60Q22.90 100.60 15.75 98.05Q8.60 95.50 4.70 91.50L4.70 91.50L7.60 85.80Q11.30 89.40 17.55 91.85Q23.80 94.30 30.70 94.30L30.70 94.30Q37.30 94.30 41.45 92.65Q45.60 91 47.55 88.20Q49.50 85.40 49.50 82L49.50 82Q49.50 77.90 47.15 75.40Q44.80 72.90 41 71.45Q37.20 70 32.60 68.90Q28 67.80 23.40 66.55Q18.80 65.30 14.95 63.20Q11.10 61.10 8.75 57.65Q6.40 54.20 6.40 48.60L6.40 48.60Q6.40 43.40 9.15 39.05Q11.90 34.70 17.60 32.05Q23.30 29.40 32.20 29.40L32.20 29.40Q38.10 29.40 43.90 31.05Q49.70 32.70 53.90 35.60L53.90 35.60L51.40 41.50Q46.90 38.50 41.85 37.10Q36.80 35.70 32.10 35.70L32.10 35.70Q25.80 35.70 21.70 37.40Q17.60 39.10 15.65 41.95Q13.70 44.80 13.70 48.40L13.70 48.40Q13.70 52.50 16.05 55Q18.40 57.50 22.25 58.90Q26.10 60.30 30.70 61.40Q35.30 62.50 39.85 63.80Q44.40 65.10 48.25 67.15Q52.10 69.20 54.45 72.60Q56.80 76 56.80 81.50L56.80 81.50Q56.80 86.60 54 90.95Q51.20 95.30 45.45 97.95Q39.70 100.60 30.70 100.60ZM128.40 100L78.90 100L78.90 30L126.90 30L126.90 36.40L86.30 36.40L86.30 93.60L128.40 93.60L128.40 100ZM122.50 67.60L85.50 67.60L85.50 61.30L122.50 61.30L122.50 67.60ZM198.40 100L151.80 100L151.80 30L159.20 30L159.20 93.60L198.40 93.60L198.40 100ZM263.30 100L216.70 100L216.70 30L224.10 30L224.10 93.60L263.30 93.60L263.30 100ZM305.60 100L298.30 100L298.30 74L300.00 78.60L270.30 30L278.20 30L304.30 72.70L300.10 72.70L326.20 30L333.60 30L303.90 78.60L305.60 74L305.60 100ZM381.80 100.60L381.80 100.60Q373.80 100.60 367.05 97.95Q360.30 95.30 355.35 90.50Q350.40 85.70 347.65 79.20Q344.90 72.70 344.90 65L344.90 65Q344.90 57.30 347.65 50.80Q350.40 44.30 355.40 39.50Q360.40 34.70 367.15 32.05Q373.90 29.40 381.90 29.40L381.90 29.40Q389.90 29.40 396.55 31.90Q403.20 34.40 407.90 39.50L407.90 39.50L403.30 44.20Q398.90 39.80 393.60 37.90Q388.30 36 382.20 36L382.20 36Q375.70 36 370.25 38.15Q364.80 40.30 360.75 44.25Q356.70 48.20 354.45 53.45Q352.20 58.70 352.20 65L352.20 65Q352.20 71.20 354.45 76.50Q356.70 81.80 360.75 85.75Q364.80 89.70 370.25 91.85Q375.70 94 382.10 94L382.10 94Q388.10 94 393.45 92.20Q398.80 90.40 403.30 86.10L403.30 86.10L407.50 91.70Q402.50 96.10 395.80 98.35Q389.10 100.60 381.80 100.60ZM407.50 65L407.50 91.70L400.40 90.80L400.40 65L407.50 65ZM441.80 100L434.40 100L434.40 30L460.60 30Q473.90 30 481.55 36.35Q489.20 42.70 489.20 54L489.20 54Q489.20 61.40 485.75 66.75Q482.30 72.10 475.90 74.95Q469.50 77.80 460.60 77.80L460.60 77.80L438.50 77.80L441.80 74.40L441.80 100ZM490.30 100L482.20 100L464.20 74.60L472.20 74.60L490.30 100ZM441.80 32.90L441.80 75L438.50 71.50L460.40 71.50Q470.90 71.50 476.35 66.90Q481.80 62.30 481.80 54L481.80 54Q481.80 45.60 476.35 41Q470.90 36.40 460.40 36.40L460.40 36.40L438.50 36.40L441.80 32.90ZM543.30 100.60L543.30 100.60Q535.40 100.60 528.65 97.95Q521.90 95.30 516.95 90.45Q512.00 85.60 509.25 79.15Q506.50 72.70 506.50 65L506.50 65Q506.50 57.30 509.25 50.85Q512.00 44.40 516.95 39.55Q521.90 34.70 528.60 32.05Q535.30 29.40 543.30 29.40L543.30 29.40Q551.20 29.40 557.90 32.05Q564.60 34.70 569.55 39.50Q574.50 44.30 577.25 50.80Q580.00 57.30 580.00 65L580.00 65Q580.00 72.70 577.25 79.20Q574.50 85.70 569.55 90.50Q564.60 95.30 557.90 97.95Q551.20 100.60 543.30 100.60ZM543.30 94L543.30 94Q549.60 94 554.95 91.85Q560.30 89.70 564.25 85.75Q568.20 81.80 570.40 76.55Q572.60 71.30 572.60 65L572.60 65Q572.60 58.70 570.40 53.45Q568.20 48.20 564.25 44.25Q560.30 40.30 554.95 38.15Q549.60 36 543.30 36L543.30 36Q537.00 36 531.60 38.15Q526.20 40.30 522.25 44.25Q518.30 48.20 516.05 53.45Q513.80 58.70 513.80 65L513.80 65Q513.80 71.20 516.05 76.50Q518.30 81.80 522.25 85.75Q526.20 89.70 531.60 91.85Q537.00 94 543.30 94ZM626.20 100L618.50 100L594.90 30L602.50 30L624.60 95.90L620.80 95.90L643.60 30L650.40 30L672.90 95.90L669.30 95.90L691.60 30L698.70 30L675.10 100L667.30 100L645.80 37.50L647.80 37.50L626.20 100Z';
 
 /**
- * SellyGrow primary lockup: the mark beside the wordmark.
- * "Selly" reads the theme's text token, so the logo follows light and dark mode; `inverse` keeps it
- * light for the Ink rail and brand bands, which stay dark in both themes.
+ * SellyGrow wordmark, text only, in one color: the theme's logo token (navy in light mode, near-white in dark),
+ * or white with `inverse` for dark brand bands.
  */
 export function Logo({ className, inverse = false }) {
-    const id = useId().replace(/:/g, '');
-
     return (
-        <svg viewBox="0 0 546.5 102" className={cn('w-auto', className ?? 'h-5')} role="img" aria-label="SellyGrow" dir="ltr">
-            <defs>
-                <clipPath id={`${id}-y`}>
-                    <rect x="140" y="50" width="70" height="75" />
-                </clipPath>
-                <clipPath id={`${id}-w`}>
-                    <rect x="370" y="50" width="70" height="50" />
-                </clipPath>
-            </defs>
-            <g transform="scale(0.875)" fill={BRAND_GREEN}>
-                <MarkShapes />
-            </g>
-            <g transform="translate(108.5,-23)">
-                <g {...STROKE} style={{ stroke: inverse ? '#f1f4f2' : 'var(--mk-text)' }}>
-                    <path d={SELLY_PATH} />
-                    <path clipPath={`url(#${id}-y)`} d={SELLY_Y_PATH} />
-                </g>
-                <g {...STROKE} stroke={BRAND_GREEN}>
-                    <path d={GROW_PATH} />
-                    <path clipPath={`url(#${id}-w)`} d={GROW_W_PATH} />
-                </g>
-            </g>
+        <svg viewBox="2 27 700 76" className={cn('w-auto', className ?? 'h-4')} role="img" aria-label="SellyGrow" dir="ltr">
+            <path d={WORDMARK_PATH} fill={inverse ? '#ffffff' : 'var(--mk-logo)'} />
         </svg>
     );
 }

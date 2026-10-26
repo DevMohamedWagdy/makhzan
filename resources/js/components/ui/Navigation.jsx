@@ -54,10 +54,10 @@ export function Tabs({ tabs, value, onChange, className, variant = 'underline' }
                         onClick={() => onChange(tab.value)}
                         className={cn(
                             vertical
-                                ? cn('flex h-10 shrink-0 items-center gap-2.5 rounded-lg px-3 text-[13.5px] font-medium whitespace-nowrap transition', selected ? 'bg-primary-soft text-ink [&>svg]:text-brand-green' : 'text-ink-2 hover:bg-surface-3 hover:text-ink')
+                                ? cn('flex h-10 shrink-0 items-center gap-2.5 rounded-lg px-3 text-[13.5px] font-medium whitespace-nowrap transition', selected ? 'bg-primary-soft text-ink [&>svg]:text-brand-accent' : 'text-ink-2 hover:bg-surface-3 hover:text-ink')
                                 : segmented
                                 ? cn('flex h-8 items-center gap-1.5 rounded-md px-3 text-[12.5px] font-medium whitespace-nowrap transition', selected ? 'bg-surface text-ink shadow-[0_1px_2px_rgb(18_26_33/0.08),0_0_0_1px_var(--mk-border)]' : 'text-muted hover:text-ink')
-                                : cn('-mb-px flex h-11 items-center gap-2 border-b-2 px-3 text-[13.5px] font-medium whitespace-nowrap transition', selected ? 'border-brand-green text-ink [&>svg]:text-brand-green' : 'border-transparent text-muted hover:border-line-strong hover:text-ink'),
+                                : cn('-mb-px flex h-11 items-center gap-2 border-b-2 px-3 text-[13.5px] font-medium whitespace-nowrap transition', selected ? 'border-brand-accent text-ink [&>svg]:text-brand-accent' : 'border-transparent text-muted hover:border-line-strong hover:text-ink'),
                         )}
                     >
                         {tab.icon && <Icon name={tab.icon} className="size-[18px]" />}
@@ -148,7 +148,7 @@ export function Stepper({ steps, current }) {
                         </span>
                         {index < steps.length - 1 && (
                             <span className="relative h-0.5 flex-1 overflow-hidden rounded-full bg-surface-3">
-                                <span className={cn('absolute inset-y-0 start-0 bg-brand-green transition-all duration-500', index < current ? 'w-full' : 'w-0')} />
+                                <span className={cn('absolute inset-y-0 start-0 bg-brand-accent transition-all duration-500', index < current ? 'w-full' : 'w-0')} />
                             </span>
                         )}
                     </li>

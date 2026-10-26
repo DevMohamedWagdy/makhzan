@@ -1,4 +1,4 @@
-# SellyGrow Design System — "Ink & Leaf"
+# SellyGrow Design System — "Navy & Gold"
 
 The visual language for every SellyGrow surface: the merchant dashboard, the platform admin, the affiliate (marketer) portal, the customer storefront, and the public landing / auth pages.
 
@@ -6,14 +6,17 @@ All tokens live in `resources/css/app.css`. Components consume them through Tail
 
 ## 1. Concept
 
-**White, ink and the logo's leaf.** The palette uses the logo's two colors exactly: navy `#17212B` and Growth Green `#16A35F`.
+**White, navy and a touch of gold.** The palette follows the brand: Navy `#182C61` (the wordmark and the "SG" app icon), Growth Gold `#F5A524` and Night Navy `#0F1D42`.
 
-- **Canvas** — a light gray app canvas (`#f5f6f8`) with white cards (hairline border + soft shadow), a white sidebar and a white header bar.
-- **Ink** — the logo navy (`#17212b`) is the text color and a solid *material* for brand bands: landing and storefront heroes, commission and balance tiles, auth brand panel.
-- **Leaf** — the logo green (`#16a35f`, `brand-green`) is the signature accent: icons, charts, active tabs and nav icons, counters, focus halo, key figures and CTAs on navy. Navy text on it (and it on navy) reads at 5:1.
-- **Deep green** (`--mk-primary`, `#0e7a46`) is kept only where white or small green text sits on/against light surfaces: primary buttons, links, badges. White on the logo green would only reach 3.2:1.
+- **Canvas** — a cool light canvas (`#f5f7fb`) with white cards (hairline border + soft shadow), a white sidebar and a white header bar.
+- **Navy** (`--mk-primary`, `#182c61`) is the one action color: primary buttons, links, focus, selected states. White on it reads at 13:1.
+- **Brand accent** (`#2f55b4`, `brand-accent`) is a brighter blue for icons, charts, active tabs and nav icons, counters and key figures.
+- **Night Navy** (`#0f1d42`, `bg-brand` / `bg-panel`) is a solid *material* for brand bands: storefront heroes, commission and balance tiles.
+- **Gold** (`#f5a524`, `gold`) is used sparingly: the CTA button on Night Navy bands (dark text on it).
+- **Logo** — "SELLYGROW" in Montserrat Regular capitals, one color (`--mk-logo`: navy in light mode, near-white in dark). The "SG" tile is only the favicon / app icon.
+- **Green** survives only as a status (`success`: paid, delivered), never as a brand color.
 
-Restraint rules: no decorative gradients on light surfaces, no glassmorphism beyond the sticky headers' `backdrop-blur`, no neon, no heavy drop shadows. Ink bands may use the hairline grid texture and a soft green glow.
+Restraint rules: no decorative gradients on light surfaces, no glassmorphism beyond the sticky headers' `backdrop-blur`, no neon, no heavy drop shadows. Night Navy bands may use the hairline grid texture and a soft blue glow.
 
 ## 2. Color
 
@@ -21,21 +24,23 @@ Restraint rules: no decorative gradients on light surfaces, no glassmorphism bey
 
 | Token (CSS var) | Tailwind | Light | Dark | Use |
 |---|---|---|---|---|
-| `--mk-bg` | `bg-bg` | `#f5f6f8` | `#0a0f13` | Page canvas |
-| `--mk-surface` | `bg-surface` | `#ffffff` | `#11181e` | Cards, sheets, inputs |
-| `--mk-surface-2` | `bg-surface-2` | `#f8f9fa` | `#141c23` | Table headers, footers of dialogs, row hover |
-| `--mk-surface-3` | `bg-surface-3` | `#f1f3f4` | `#1a242c` | Ghost hover, segmented track, skeletons |
-| `--mk-border` | `border-line` | `#e7e9ee` | `#222d36` | Hairlines, dividers |
-| `--mk-border-strong` | `border-line-strong` | `#d3d8dd` | `#2f3c46` | Input borders, hover borders |
-| `--mk-text` | `text-ink` | `#17212b` | `#e9edea` | Primary text |
-| `--mk-text-2` | `text-ink-2` | `#45505b` | `#adb7b1` | Secondary text |
-| `--mk-muted` | `text-muted` | `#6b7480` | `#7d8992` | Labels, captions, placeholders |
-| `--mk-primary` | `bg-primary` / `text-primary` | `#0e7a46` | `#1c9459` | Actions, links, focus |
-| `--mk-primary-hover` | `bg-primary-hover` | `#0a6239` | `#23a866` | Primary hover |
-| `--mk-primary-soft` | `bg-primary-soft` | `#e8f3ec` | `#11281d` | Selected / soft tint |
-| `--mk-accent` | `text-accent` | `#16a35f` | `#16a35f` | Brand green accent |
-| `--mk-brand-green` | `bg-brand-green` / `text-brand-green` | `#16a35f` | `#16a35f` | Logo green: icons, charts, highlights |
-| `--mk-ring` | `--color-ring` | `rgb(22 163 95 / .3)` | `rgb(22 163 95 / .4)` | Focus halo |
+| `--mk-bg` | `bg-bg` | `#f5f7fb` | `#090d18` | Page canvas |
+| `--mk-surface` | `bg-surface` | `#ffffff` | `#101626` | Cards, sheets, inputs |
+| `--mk-surface-2` | `bg-surface-2` | `#f8f9fc` | `#141b2d` | Table headers, footers of dialogs, row hover |
+| `--mk-surface-3` | `bg-surface-3` | `#eff2f8` | `#1a2236` | Ghost hover, segmented track, skeletons |
+| `--mk-border` | `border-line` | `#e3e7f0` | `#242d44` | Hairlines, dividers |
+| `--mk-border-strong` | `border-line-strong` | `#cdd3e1` | `#313b55` | Input borders, hover borders |
+| `--mk-text` | `text-ink` | `#141b2d` | `#e9edf6` | Primary text |
+| `--mk-text-2` | `text-ink-2` | `#444c60` | `#b0b8cc` | Secondary text |
+| `--mk-muted` | `text-muted` | `#697186` | `#7f889e` | Labels, captions, placeholders |
+| `--mk-primary` | `bg-primary` / `text-primary` | `#182c61` | `#4a6bc8` | Actions, links, focus |
+| `--mk-primary-hover` | `bg-primary-hover` | `#10204a` | `#5d7dd6` | Primary hover |
+| `--mk-primary-soft` | `bg-primary-soft` | `#e9eef8` | `#16213f` | Selected / soft tint |
+| `--mk-accent` | `text-accent` | `#2f55b4` | `#7c96e8` | Brand accent |
+| `--mk-brand-accent` | `bg-brand-accent` / `text-brand-accent` | `#2f55b4` | `#7c96e8` | Icons, charts, highlights |
+| `--mk-gold` | `bg-gold` / `text-gold` | `#f5a524` | `#fbbf24` | CTA on Night Navy bands |
+| `--mk-logo` | `fill: var(--mk-logo)` | `#182c61` | `#e9edf6` | The wordmark |
+| `--mk-ring` | `--color-ring` | `rgb(24 44 97 / .28)` | `rgb(124 150 232 / .4)` | Focus halo |
 
 ### 2.2 Status
 
@@ -70,14 +75,14 @@ Static brand colors: `brand #17212b`, `brand-light #223140`.
 | Hover (primary) | `bg-primary-hover` |
 | Focus (keyboard) | `box-shadow: 0 0 0 3px var(--mk-ring)` — global `:focus-visible` rule; inputs use the same halo on `:focus` |
 | Active / pressed | primary and danger buttons nudge `translate-y-px` |
-| Selected | `bg-primary-soft` + `border-primary` + ring halo (option cards); `text-ink` + 2px logo-green underline and icon (tabs); white raised pill (segmented) |
-| Selected (sidebar) | `bg-primary-soft`, semibold ink text, logo-green icon |
+| Selected | `bg-primary-soft` + `border-primary` + ring halo (option cards); `text-ink` + 2px brand-accent underline and icon (tabs); white raised pill (segmented) |
+| Selected (sidebar) | `bg-primary-soft`, semibold ink text, brand-accent icon |
 | Disabled | `opacity-50`, `cursor-not-allowed`, no shadow; inputs `bg-surface-2 text-muted` |
 | Invalid | `border-danger` + danger-tinted halo |
 
 ### 2.5 Chart palette
 
-Single-series charts and ranked bars use the logo green (`brand-green`); while one column is hovered the others drop to `brand-green/35`. Part-to-whole charts use the status tones (`brand-green`, `success`, `warning`, `danger`, `info`, `muted`) and always carry a text legend.
+Single-series charts and ranked bars use the logo green (`brand-accent`); while one column is hovered the others drop to `brand-accent/35`. Part-to-whole charts use the status tones (`brand-accent`, `success`, `warning`, `danger`, `info`, `muted`) and always carry a text legend.
 
 ## 3. Typography
 
@@ -149,8 +154,8 @@ Z-index: sticky headers 20 · mobile sidebar scrim 30 · sidebar / storefront he
 
 | Shell | File | Composition |
 |---|---|---|
-| Merchant dashboard | `components/layout/DashboardLayout.jsx` | 264 px white sidebar: logo, one compact store row (name, link, visit and copy icon buttons), quiet group labels, active page on a soft green highlight with a logo-green icon, green counters; white 64 px header; gray canvas; 1440 px content |
-| Platform admin | `components/layout/AdminLayout.jsx` | Same white sidebar (248 px) through the shared `SidebarNav`, with a green "Admin" tag |
+| Merchant dashboard | `components/layout/DashboardLayout.jsx` | 264 px white sidebar: logo, one compact store row (name, link, visit and copy icon buttons), quiet group labels, active page on a soft navy highlight with a brand-accent icon, navy counters; white 64 px header; gray canvas; 1440 px content |
+| Platform admin | `components/layout/AdminLayout.jsx` | Same white sidebar (248 px) through the shared `SidebarNav`, with a navy "Admin" tag |
 | Affiliate portal | `features/affiliate-portal/AffiliatePortalLayout.jsx` | Store-branded top bar with underline tabs; Ink commission tile on the home |
 | Auth (vendor, admin) | `components/layout/AuthLayout.jsx` | Form column on paper + Ink brand panel (≥ lg) with grid texture and product promise |
 | Store public (affiliate join / login) | `components/layout/StorePublicLayout.jsx` | Store-branded header, centered content, "powered by" footer |
@@ -172,7 +177,7 @@ Two-column grids always declare `grid-cols-1` for phones and use `min-w-0` colum
 
 | Component | File | Specification |
 |---|---|---|
-| `Button` | `ui/Button.jsx` | Variants: primary (deep green, faint inset highlight), secondary (white, strong hairline, no shadow), soft, ghost, danger, danger-soft, success, brand (logo green with navy text, for navy bands), outline-light (navy bands only). Sizes 32 / 40 / 44 / 52, icon 36. |
+| `Button` | `ui/Button.jsx` | Variants: primary (navy, faint inset highlight), secondary (white, strong hairline, no shadow), soft, ghost, danger, danger-soft, success, brand (gold with night-navy text, for Night Navy bands), outline-light (Night Navy bands only). Sizes 32 / 40 / 44 / 52, icon 36. |
 | `Field`, `Input`, `Select`, `Textarea`, `PasswordInput` | `ui/Form.jsx` + `.mk-input` | 40 px, 8 px radius, `border-line-strong/80`, halo focus, invalid state, disabled tint. Label 13 px / 500. |
 | `Checkbox`, `Switch`, `OptionCards` | `ui/Form.jsx` | 18 px box; 44 × 24 switch with soft knob shadow; option cards with selected halo. |
 | `Badge` | `ui/Display.jsx` | 24 px pill, 11.5 px, tone soft fill + 12 % ring. |
@@ -186,11 +191,11 @@ Two-column grids always declare `grid-cols-1` for phones and use `min-w-0` colum
 | `Alert` | `ui/Display.jsx` | Tone fill + ring, 13.5 px. |
 | `Modal`, `Drawer` | `ui/Overlay.jsx` | Pop / slide-in, 14 px radius, header with optional tone icon tile, tinted footer. |
 | `Dropdown` | `ui/Dropdown.jsx` | 224 px menu, 36 px items, edge-to-edge dividers. |
-| `Tabs` | `ui/Navigation.jsx` | `underline` (44 px, logo-green underline), `segmented` (pill switch for card headers) and `vertical` (side menu from `lg`, arrow keys up/down). |
+| `Tabs` | `ui/Navigation.jsx` | `underline` (44 px, brand-accent underline), `segmented` (pill switch for card headers) and `vertical` (side menu from `lg`, arrow keys up/down). |
 | `Pagination` | `ui/Navigation.jsx` | 32 px tabular buttons; current page in Ink. |
 | `Stepper` | `ui/Navigation.jsx` | 44 px tiles, active tile with focus halo. |
 | `ColumnChart`, `BarList`, `SegmentedBar`, `TrendBadge` | `ui/Charts.jsx` | See §2.5; trend badge is a 20 px pill. |
-| Lists | `.mk-list`, `divide-y` | Rows never float as separate boxes inside a card: they share one box (`.mk-list`) or run edge to edge with hairline dividers (notifications, tickets, activity). Unread rows get a soft green tint and a 3 px logo-green edge. |
+| Lists | `.mk-list`, `divide-y` | Rows never float as separate boxes inside a card: they share one box (`.mk-list`) or run edge to edge with hairline dividers (notifications, tickets, activity). Unread rows get a soft navy tint and a 3 px brand-accent edge. |
 | Tables | `.mk-thead` | Tinted header band, 11.5 px semibold labels, `divide-line` rows, `hover:bg-surface-2`. |
 | `SidebarNav` | `layout/DashboardLayout.jsx` | Shared Ink navigation for dashboard and admin. |
 | `PageHeader` | `layout/DashboardLayout.jsx` | Breadcrumbs, page title, 13.5 px description (max 2xl), actions aligned to the bottom; 24 px above the content. |

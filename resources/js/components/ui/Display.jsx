@@ -61,7 +61,7 @@ export function Card({ title, description, actions, className, bodyClassName, ch
 }
 
 /** Icon tiles carry the logo green; badge text keeps the deeper, readable green. */
-const ICON_TONES = { ...BADGE_TONES, primary: 'bg-primary-soft text-brand-green' };
+const ICON_TONES = { ...BADGE_TONES, primary: 'bg-primary-soft text-brand-accent' };
 
 /**
  * KPI card: tone icon tile and an optional status pill on top, the figure, then its label.

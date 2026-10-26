@@ -51,6 +51,10 @@ export const adminApi = {
     payments: (filters) => request('GET', `${BASE}/payments`, { query: filters, auth }),
     coupons: (filters) => request('GET', `${BASE}/coupons`, { query: filters, auth }),
 
+    /** Landing-page contact messages: `{ data, meta, summary: { unread, total } }`. */
+    contactMessages: (filters) => request('GET', `${BASE}/contact-messages`, { query: filters, auth, raw: true }),
+    updateContactMessage: (messageId, isRead) => request('PATCH', `${BASE}/contact-messages/${messageId}`, { body: { is_read: isRead }, auth }),
+    deleteContactMessage: (messageId) => request('DELETE', `${BASE}/contact-messages/${messageId}`, { auth }),
     reviews: (filters) => request('GET', `${BASE}/reviews`, { query: filters, auth }),
     updateReview: (reviewId, status) => request('PATCH', `${BASE}/reviews/${reviewId}`, { body: { status }, auth }),
     deleteReview: (reviewId) => request('DELETE', `${BASE}/reviews/${reviewId}`, { auth }),
@@ -86,4 +90,9 @@ export const adminApi = {
     updateMailSettings: (payload) => request('PUT', `${BASE}/settings/mail`, { body: payload, auth }),
     /** Sends a test message now; `{ message }`. */
     testMail: (email) => request('POST', `${BASE}/settings/mail/test`, { body: { email }, auth }),
+
+    /** The public website: footer contact channels and the Terms / Privacy text (Arabic and English). */
+    siteSettings: () => request('GET', `${BASE}/settings/site`, { auth }),
+    /** Blank fields clear; a blank legal page falls back to the built-in text. */
+    updateSiteSettings: (payload) => request('PUT', `${BASE}/settings/site`, { body: payload, auth }),
 };

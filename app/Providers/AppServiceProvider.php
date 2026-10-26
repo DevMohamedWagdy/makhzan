@@ -51,6 +51,8 @@ class AppServiceProvider extends ServiceProvider
             Limit::perMinute(10)->by('customer-ip:'.$request->ip()),
         ]);
         RateLimiter::for('affiliate-registration', fn (Request $request) => Limit::perHour(10)->by($request->ip()));
+        // The landing page's contact form: its own counter, apart from the other public routes a page view hits.
+        RateLimiter::for('contact-messages', fn (Request $request) => [Limit::perMinute(5)->by($request->ip()), Limit::perDay(30)->by($request->ip())]);
 
         // Per identifier and per IP, so one address can't spray reset emails across accounts.
         RateLimiter::for('vendor-password', fn (Request $request) => [

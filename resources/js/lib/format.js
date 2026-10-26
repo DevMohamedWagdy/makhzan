@@ -3,12 +3,18 @@ import { CURRENCY } from './constants';
 
 // Arabic uses Latin digits (ar-EG-u-nu-latn): easier to scan in data-dense tables.
 const numberFormatter = new Intl.NumberFormat(intlLocale);
+const compactFormatter = new Intl.NumberFormat(intlLocale, { notation: 'compact', maximumFractionDigits: 1 });
 const dateFormatter = new Intl.DateTimeFormat(intlLocale, { day: 'numeric', month: 'short', year: 'numeric' });
 const timeFormatter = new Intl.DateTimeFormat(intlLocale, { hour: 'numeric', minute: '2-digit' });
 const relativeFormatter = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' });
 
 export function formatNumber(value) {
     return numberFormatter.format(value ?? 0);
+}
+
+/** Large figures shortened from 10,000 up (12.5K / 12.5 ألف); smaller ones in full. */
+export function formatCompactNumber(value) {
+    return value >= 10_000 ? compactFormatter.format(value) : numberFormatter.format(Math.round(value ?? 0));
 }
 
 export function formatMoney(value) {

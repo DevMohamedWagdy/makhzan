@@ -41,4 +41,6 @@ return [
     'role_in_use' => 'A role with team members cannot be deleted. Move them to another role first.',
     'job_title_max' => 'The job title may not be longer than 100 characters',
     'job_title_required' => 'Enter the staff member\'s job title',
+    'contact_message_sent' => 'We got your message; our team will get back to you soon.',
+
 ];

@@ -1,155 +1,59 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Logo } from '@/components/brand/Logo';
 import { Button } from '@/components/ui/Button';
 import { LanguageToggle } from '@/components/ui/LanguageToggle';
+import { Skeleton } from '@/components/ui/Spinner';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { useAuth } from '@/context/AuthContext';
 import { t } from '@/i18n';
 import { APP_NAME } from '@/lib/constants';
 import { formatDate } from '@/lib/format';
 import { SiteFooter } from '@/pages/landing/SiteFooter';
+import { BUILT_IN_DOCUMENTS, BUILT_IN_UPDATED_AT, parseLegalText } from '@/pages/legal/legalDocuments';
+import { siteApi } from '@/services/siteApi';
 
-/** When the documents below last changed; bump it with every edit. */
-const UPDATED_AT = '2026-10-14';
+/** The built-in document in the reader's language (its strings are Arabic source text). */
+function builtInDocument(name) {
+    const { intro, sections } = BUILT_IN_DOCUMENTS[name];
 
-/**
- * The platform's legal documents, shown at /terms and /privacy. They cover Makhzan and its
- * vendors; each store's own policies for its shoppers live at /{store-slug}/policies/….
- */
-const DOCUMENTS = {
-    terms: {
-        title: t('الشروط والأحكام'),
-        intro: t('توضح هذه الشروط العلاقة بين منصة Sellygrow والتجار الذين يستخدمونها لإدارة تجارتهم وبيع منتجاتهم. باستخدامك للمنصة أو إنشاء حساب عليها فإنك توافق على هذه الشروط.'),
-        sections: [
-            {
-                title: t('التعريفات'),
-                paragraphs: [
-                    t('"المنصة" أو "Sellygrow": خدمة إدارة المخزون والطلبات والمتجر الإلكتروني المقدمة عبر هذا الموقع.'),
-                    t('"التاجر": صاحب الحساب الذي يسجل متجره على المنصة، ويشمل موظفيه الذين يمنحهم صلاحيات.'),
-                    t('"العميل": الشخص الذي يشتري من متجر التاجر عبر المتجر الإلكتروني أو من خلال طلب يسجله التاجر.'),
-                ],
-            },
-            {
-                title: t('الحساب والاستخدام'),
-                paragraphs: [
-                    t('يجب أن تكون البيانات التي تقدمها عند التسجيل صحيحة ومحدثة، وأنت مسؤول عن سرية كلمة المرور وعن كل ما يتم من خلال حسابك وحسابات موظفيك.'),
-                    t('يجب أن يكون عمرك 18 عاماً على الأقل، وأن يكون لك الحق القانوني في ممارسة النشاط التجاري الذي تديره من خلال المنصة.'),
-                    t('يُمنع استخدام المنصة في بيع منتجات مخالفة للقانون المصري أو مقلدة أو تنتهك حقوق الغير، أو في أي نشاط احتيالي أو مضلل للعملاء.'),
-                ],
-            },
-            {
-                title: t('الرسوم والدفع'),
-                paragraphs: [
-                    t('استخدام المنصة متاح حالياً بدون رسوم اشتراك. إذا أضفنا رسوماً في المستقبل فسنبلغك بها مسبقاً قبل تطبيقها.'),
-                ],
-            },
-            {
-                title: t('المدفوعات الإلكترونية'),
-                paragraphs: [
-                    t('عند تفعيل الدفع الإلكتروني تتم معالجة مدفوعات العملاء عبر بوابة دفع خارجية مرخصة (مثل Paymob) وبحساب التاجر لديها، ولا تحتفظ المنصة ببيانات البطاقات البنكية.'),
-                    t('التاجر مسؤول عن رسوم بوابة الدفع وعن رد المبالغ لعملائه وفق سياسة الاسترجاع الخاصة بمتجره والقوانين المعمول بها.'),
-                ],
-            },
-            {
-                title: t('مسؤولية التاجر تجاه عملائه'),
-                paragraphs: [t('التاجر هو البائع، وهو المسؤول وحده عن منتجاته وأسعارها ووصفها وجودتها وشحنها وتسليمها وخدمة ما بعد البيع.'), t('يلتزم التاجر بنشر سياسات واضحة لمتجره (الشحن، الاسترجاع والاستبدال، الخصوصية) وبالالتزام بقانون حماية المستهلك المصري رقم 181 لسنة 2018.')],
-            },
-            {
-                title: t('البيانات والمحتوى'),
-                paragraphs: [t('تبقى بيانات متجرك ومنتجاتك وعملائك ملكاً لك، وتستخدمها المنصة فقط لتقديم الخدمة لك كما هو موضح في سياسة الخصوصية.'), t('تمنح المنصة ترخيصاً محدوداً لعرض الصور والنصوص التي ترفعها داخل متجرك ولوحة التحكم، وأنت تضمن أن لك الحق في استخدامها.')],
-            },
-            {
-                title: t('توفر الخدمة وحدود المسؤولية'),
-                paragraphs: [
-                    t('نبذل أقصى جهد لتعمل المنصة بشكل مستمر، لكن قد تتوقف الخدمة مؤقتاً للصيانة أو لأسباب خارجة عن إرادتنا، ولا نضمن خلوها التام من الأخطاء.'),
-                    t('لا تتحمل المنصة أي خسائر غير مباشرة أو فوات أرباح، ويقتصر الحد الأقصى لمسؤوليتها على قيمة ما دفعه التاجر للمنصة خلال الأشهر الثلاثة السابقة للمطالبة.'),
-                ],
-            },
-            {
-                title: t('إيقاف الحساب وإنهاؤه'),
-                paragraphs: [t('يحق للمنصة إيقاف أي متجر يخالف هذه الشروط أو يتلقى شكاوى متكررة من العملاء، مع إخطار التاجر بالسبب كلما أمكن.'), t('يمكنك إغلاق حسابك في أي وقت، ويمكنك طلب تصدير بياناتك أو حذفها نهائياً بالتواصل مع الدعم.')],
-            },
-            {
-                title: t('القانون المطبق وتعديل الشروط'),
-                paragraphs: [
-                    t('تخضع هذه الشروط لقوانين جمهورية مصر العربية، وتختص المحاكم المصرية بنظر أي نزاع ينشأ عنها.'),
-                    t('قد نعدل هذه الشروط من وقت لآخر، وسنخطرك بأي تغيير جوهري عبر لوحة التحكم أو البريد الإلكتروني قبل سريانه. استمرارك في استخدام المنصة بعد ذلك يعني موافقتك على الشروط المعدلة.'),
-                ],
-            },
-        ],
-    },
-    privacy: {
-        title: t('سياسة الخصوصية'),
-        intro: t('نحترم خصوصيتك وخصوصية عملائك. توضح هذه السياسة البيانات التي تجمعها منصة Sellygrow، ولماذا نجمعها، وكيف نحميها، وما هي حقوقك تجاهها.'),
-        sections: [
-            {
-                title: t('البيانات التي نجمعها'),
-                paragraphs: [
-                    t('بيانات التاجر: الاسم ورقم الهاتف والبريد الإلكتروني وبيانات المتجر.'),
-                    t('بيانات عملاء المتجر: الاسم ورقم الهاتف والبريد الإلكتروني (اختياري) وعناوين التوصيل وسجل الطلبات ونقاط الولاء.'),
-                    t('بيانات الاستخدام: عنوان IP ونوع المتصفح وسجل النشاط داخل لوحة التحكم، لأغراض الأمان وتحسين الخدمة.'),
-                ],
-            },
-            {
-                title: t('كيف نستخدم البيانات'),
-                paragraphs: [
-                    t('لتشغيل المنصة: إنشاء الحسابات، وتسجيل الطلبات، وتحديث المخزون، وإرسال إشعارات الطلبات للتاجر والعميل.'),
-                    t('للتواصل معك بخصوص حسابك والتحديثات المهمة، ولحماية المنصة من الاحتيال وإساءة الاستخدام.'),
-                    t('لا نبيع البيانات الشخصية لأي طرف، ولا نستخدم بيانات عملاء متجرك للتسويق لصالحنا.'),
-                ],
-            },
-            {
-                title: t('المشاركة مع أطراف أخرى'),
-                paragraphs: [
-                    t('نشارك البيانات فقط بالقدر اللازم لتقديم الخدمة: مع بوابات الدفع لمعالجة المدفوعات، ومع شركات الشحن التي يتعامل معها التاجر لتوصيل الطلبات، ومع مزودي الاستضافة والبريد الإلكتروني.'),
-                    t('إذا فعّل التاجر أدوات تتبع إعلانية (مثل بكسل فيسبوك أو تيك توك أو جوجل) في متجره، تُرسل بيانات التصفح والشراء لتلك المنصات وفق إعدادات التاجر وسياساتها.'),
-                    t('قد نفصح عن البيانات إذا طلبتها جهة قضائية أو حكومية مختصة وفقاً للقانون.'),
-                ],
-            },
-            {
-                title: t('دور التاجر'),
-                paragraphs: [t('بالنسبة لبيانات عملاء المتجر، التاجر هو المسؤول عن جمعها واستخدامها، والمنصة تعالجها نيابة عنه. على التاجر إبلاغ عملائه بسياسة خصوصية متجره واستخدام بياناتهم فقط لتنفيذ طلباتهم والتواصل معهم بشأنها.')],
-            },
-            {
-                title: t('ملفات تعريف الارتباط والتخزين المحلي'),
-                paragraphs: [t('نستخدم التخزين المحلي في المتصفح لحفظ جلسة الدخول واللغة والمظهر وسلة المشتريات. ويمكن أن يضيف التاجر أدوات تتبع في متجره كما هو موضح أعلاه.')],
-            },
-            {
-                title: t('حماية البيانات والاحتفاظ بها'),
-                paragraphs: [t('نستخدم اتصالاً مشفراً (HTTPS) وتشفير كلمات المرور وصلاحيات وصول محدودة للموظفين، ونحتفظ بالبيانات طوال مدة نشاط الحساب.'), t('عند حذف الحساب نحذف البيانات أو نجعلها مجهولة الهوية خلال 90 يوماً، فيما عدا ما يلزمنا القانون بالاحتفاظ به (مثل السجلات المالية).')],
-            },
-            {
-                title: t('حقوقك'),
-                paragraphs: [
-                    t('وفقاً لقانون حماية البيانات الشخصية المصري رقم 151 لسنة 2020، يحق لك الاطلاع على بياناتك وتصحيحها وطلب حذفها أو تقييد معالجتها، والاعتراض على استخدامها.'),
-                    t('يستطيع التاجر تعديل معظم بياناته من لوحة التحكم مباشرة، ويمكن لعملاء المتجر التواصل مع التاجر أو معنا لممارسة هذه الحقوق.'),
-                ],
-            },
-            {
-                title: t('تعديل السياسة'),
-                paragraphs: [t('قد نحدّث هذه السياسة عند تغيير خدماتنا أو القوانين المطبقة، وسيظهر تاريخ آخر تحديث أعلى الصفحة.')],
-            },
-        ],
-    },
-};
+    return {
+        intro: [t(intro)],
+        sections: sections.map((section) => ({ title: t(section.title), paragraphs: section.paragraphs.map((paragraph) => t(paragraph)) })),
+        updatedAt: BUILT_IN_UPDATED_AT,
+    };
+}
 
-/** /terms and /privacy: a legal document with the platform header and footer. */
+/** /terms and /privacy: the admin's text for the reader's language, or the built-in document. */
 export function LegalPage({ document: name }) {
     const { isAuthenticated } = useAuth();
-    const legalDocument = DOCUMENTS[name];
+    const title = t(BUILT_IN_DOCUMENTS[name].title);
+    const [legalDocument, setLegalDocument] = useState(null);
 
     useEffect(() => {
         window.scrollTo(0, 0);
-        document.title = `${legalDocument.title} | ${APP_NAME}`;
-    }, [legalDocument]);
+        document.title = `${title} | ${APP_NAME}`;
+        setLegalDocument(null);
+
+        let isCurrent = true;
+
+        siteApi
+            .legal(name)
+            .then((result) => (result.content ? { ...parseLegalText(result.content), updatedAt: result.updated_at } : builtInDocument(name)))
+            .catch(() => builtInDocument(name))
+            .then((loaded) => isCurrent && setLegalDocument(loaded));
+
+        return () => {
+            isCurrent = false;
+        };
+    }, [name, title]);
 
     return (
         <div className="min-h-dvh bg-bg">
             <header className="border-b border-line bg-surface">
                 <div className="mx-auto flex h-18 max-w-6xl items-center gap-4 px-4 sm:px-6">
                     <Link to="/" aria-label={t('الصفحة الرئيسية لـ Sellygrow')}>
-                        <Logo className="h-5" />
+                        <Logo className="h-4" />
                     </Link>
                     <div className="ms-auto flex items-center gap-2">
                         <LanguageToggle className="hidden sm:grid" />
@@ -163,34 +67,44 @@ export function LegalPage({ document: name }) {
 
             <main className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
                 <nav aria-label={t('الصفحات القانونية')} className="mb-8 flex gap-2">
-                    {Object.entries(DOCUMENTS).map(([key, item]) => (
+                    {Object.entries(BUILT_IN_DOCUMENTS).map(([key, item]) => (
                         <Link key={key} to={`/${key}`} aria-current={key === name ? 'page' : undefined} className={key === name ? 'rounded-lg bg-primary-soft px-3 py-1.5 text-sm font-semibold text-primary' : 'rounded-lg px-3 py-1.5 text-sm text-ink-2 hover:bg-surface-3'}>
-                            {item.title}
+                            {t(item.title)}
                         </Link>
                     ))}
                 </nav>
 
-                <article className="mk-card p-6 sm:p-10">
-                    <h1 className="mk-page-title">{legalDocument.title}</h1>
-                    <p className="mt-2 text-sm text-muted">
-                        {t('آخر تحديث: {date}', {
-                            date: formatDate(UPDATED_AT),
-                        })}
-                    </p>
-                    <p className="mt-6 leading-loose text-ink-2">{legalDocument.intro}</p>
-
-                    {legalDocument.sections.map((section, index) => (
-                        <section key={section.title} className="mt-8">
-                            <h2 className="text-lg font-bold text-ink">
-                                {index + 1}. {section.title}
-                            </h2>
-                            {section.paragraphs.map((paragraph) => (
-                                <p key={paragraph} className="mt-3 leading-loose text-ink-2">
+                <article className="mk-card p-6 sm:p-10" aria-busy={!legalDocument}>
+                    <h1 className="mk-page-title">{title}</h1>
+                    {legalDocument ? (
+                        <>
+                            {legalDocument.updatedAt && <p className="mt-2 text-sm text-muted">{t('آخر تحديث: {date}', { date: formatDate(legalDocument.updatedAt) })}</p>}
+                            {legalDocument.intro.map((paragraph) => (
+                                <p key={paragraph} className="mt-6 leading-loose text-ink-2">
                                     {paragraph}
                                 </p>
                             ))}
-                        </section>
-                    ))}
+
+                            {legalDocument.sections.map((section, index) => (
+                                <section key={`${index}-${section.title}`} className="mt-8">
+                                    <h2 className="text-lg font-bold text-ink">
+                                        {index + 1}. {section.title}
+                                    </h2>
+                                    {section.paragraphs.map((paragraph, paragraphIndex) => (
+                                        <p key={paragraphIndex} className="mt-3 leading-loose text-ink-2">
+                                            {paragraph}
+                                        </p>
+                                    ))}
+                                </section>
+                            ))}
+                        </>
+                    ) : (
+                        <div className="mt-6 flex flex-col gap-3">
+                            <Skeleton className="h-4 w-40" />
+                            <Skeleton className="h-24 w-full" />
+                            <Skeleton className="h-24 w-full" />
+                        </div>
+                    )}
                 </article>
             </main>
 
