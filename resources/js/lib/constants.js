@@ -7,7 +7,7 @@ export const CURRENCY = t('ج.م');
 
 /** @type {Record<import('./schema').AffiliateTier, { label: string, tone: string, default_commission: number, description: string }>} */
 export const AFFILIATE_TIERS = {
-    new: { label: t('مسوق جديد'), tone: 'info', default_commission: 5, description: t('للمسوقين في أول ٣٠ يوم') },
+    new: { label: t('مسوق جديد'), tone: 'info', default_commission: 5, description: t('للمسوقين في أول 30 يوم') },
     general: { label: t('مسوق عام'), tone: 'primary', default_commission: 8, description: t('الشريحة القياسية لأغلب المسوقين') },
     vip: { label: t('مسوق VIP'), tone: 'warning', default_commission: 12, description: t('لكبار المسوقين أصحاب المبيعات العالية') },
 };

@@ -1,14 +1,12 @@
 import { Link } from 'react-router-dom';
-import { Logo, LogoMark } from '@/components/brand/Logo';
-import { Icon } from '@/components/ui/Icon';
+import { Logo } from '@/components/brand/Logo';
 import { LanguageToggle } from '@/components/ui/LanguageToggle';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { t } from '@/i18n';
 import { cn } from '@/lib/format';
 
 /**
- * Login, sign-up and password pages: the form on a calm paper column, beside an Ink brand panel
- * (wide screens only) that carries the product promise. On phones the form stands alone.
+ * Login, sign-up and password pages: the form centered on a calm paper column.
  */
 export function AuthLayout({ children, wide = false }) {
     return (
@@ -41,36 +39,6 @@ export function AuthLayout({ children, wide = false }) {
                     </a>
                 </footer>
             </div>
-
-            <aside aria-hidden="true" className={cn('relative hidden shrink-0 overflow-hidden bg-panel text-white lg:flex lg:flex-col lg:justify-between', wide ? 'w-[38%]' : 'w-[46%]', 'max-w-[680px] p-12 xl:p-16')}>
-                <div className="mk-grid-texture absolute inset-0 [mask-image:radial-gradient(ellipse_at_top,black,transparent_75%)]" />
-                <div className="absolute -end-24 -top-24 size-[420px] rounded-full bg-brand-green/10 blur-3xl" />
-                <div className="absolute -bottom-40 -start-24 size-[380px] rounded-full bg-brand-green/20 blur-3xl" />
-                <LogoMark className="relative size-10 text-brand-green" />
-                <div className="relative">
-                    <p className="mk-overline text-brand-green">{t('منصة واحدة لإدارة تجارتك بالكامل')}</p>
-                    <p className="mt-5 text-[34px] leading-[1.25] font-semibold text-white xl:text-[40px]">
-                        {t('كل ما يحتاجه متجرك،')}
-                        <br />
-                        <span className="text-brand-green">{t('في منصة واحدة.')}</span>
-                    </p>
-                    <p className="mt-5 max-w-md text-[15px] leading-7 text-panel-text">{t('المخزون، الطلبات، المسوقين والتقارير — نظام متكامل مصمم للتاجر العربي.')}</p>
-                </div>
-                <ul className="relative flex flex-col divide-y divide-panel-line border-y border-panel-line">
-                    {[
-                        { icon: 'truck', text: t('ربط مع شركات الشحن') },
-                        { icon: 'users', text: t('نظام مسوّقين بالعمولة') },
-                        { icon: 'bar-chart', text: t('تقارير لحظية لمبيعاتك') },
-                    ].map((item) => (
-                        <li key={item.icon} className="flex items-center gap-3 py-3.5 text-sm text-panel-text">
-                            <span className="grid size-8 place-items-center rounded-lg bg-white/5 text-brand-green">
-                                <Icon name={item.icon} className="size-4" />
-                            </span>
-                            {item.text}
-                        </li>
-                    ))}
-                </ul>
-            </aside>
         </div>
     );
 }
@@ -78,8 +46,8 @@ export function AuthLayout({ children, wide = false }) {
 export function AuthHeading({ title, subtitle }) {
     return (
         <div className="mb-8">
-            <h1 className="text-[24px] leading-9 font-semibold text-ink">{title}</h1>
-            {subtitle && <p className="mt-1.5 text-[13.5px] leading-6 text-muted">{subtitle}</p>}
+            <h1 className="text-2xl font-semibold text-ink">{title}</h1>
+            {subtitle && <p className="mt-1.5 text-sm text-muted">{subtitle}</p>}
         </div>
     );
 }

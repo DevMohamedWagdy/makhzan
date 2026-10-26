@@ -32,7 +32,7 @@ export function AffiliateOrderRow({ order, onOpen }) {
                 </span>
                 <span className="text-end">
                     <span className="block text-xs text-muted">{t('قيمة الطلب {amount}', { amount: formatMoney(order.subtotal) })}</span>
-                    <span className="block font-bold text-ink">{formatMoney(order.commission_amount ?? order.commission?.amount)}</span>
+                    <span className="block font-semibold text-ink">{formatMoney(order.commission_amount ?? order.commission?.amount)}</span>
                     {commission && <Badge tone={commission.tone}>{commission.label}</Badge>}
                 </span>
             </Row>

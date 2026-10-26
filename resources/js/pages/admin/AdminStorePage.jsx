@@ -80,7 +80,7 @@ function SectionNav({ groups, value, onChange }) {
             <nav aria-label={t('أقسام المتجر')} className="mk-card hidden flex-col gap-4 p-3 lg:sticky lg:top-24 lg:flex">
                 {groups.map((group) => (
                     <div key={group.title}>
-                        <p className="px-3 pb-1.5 text-[11px] font-semibold text-muted">{group.title}</p>
+                        <p className="px-3 pb-1.5 text-2xs font-semibold text-muted">{group.title}</p>
                         <ul className="flex flex-col gap-0.5">
                             {group.items.map((item) => (
                                 <li key={item.value}>
@@ -194,7 +194,7 @@ export function AdminStorePage() {
             <section className="mk-card mb-6 flex flex-wrap items-center gap-4 p-5">
                 <Avatar name={store.name} src={store.logo_url} size="lg" />
                 <div className="min-w-64 flex-1">
-                    <p className="flex flex-wrap items-center gap-2 text-lg font-bold text-ink">
+                    <p className="flex flex-wrap items-center gap-2 text-lg font-semibold text-ink">
                         {store.name}
                         <StoreStatus store={store} />
                         {!store.accepting_orders && <Badge tone="warning">{t('لا يستقبل طلبات')}</Badge>}

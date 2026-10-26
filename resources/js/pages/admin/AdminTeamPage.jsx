@@ -231,7 +231,7 @@ function TeamMemberModal({ member, roles, onClose, onSaved }) {
                 <Field label={t('البريد الإلكتروني')} required error={errors.email}>
                     {(props) => <Input {...props} type="email" value={values.email} onChange={(event) => set('email', event.target.value)} dir="ltr" className="text-start" />}
                 </Field>
-                <Field label={member ? t('كلمة مرور جديدة') : t('كلمة المرور')} required={!member} optional={Boolean(member)} hint={t('١٠ أحرف على الأقل')} error={errors.password}>
+                <Field label={member ? t('كلمة مرور جديدة') : t('كلمة المرور')} required={!member} optional={Boolean(member)} hint={t('10 أحرف على الأقل')} error={errors.password}>
                     {(props) => <PasswordInput {...props} value={values.password} onChange={(event) => set('password', event.target.value)} autoComplete="new-password" />}
                 </Field>
                 <Switch checked={values.is_super} onChange={(checked) => set('is_super', checked)} label={t('مدير عام')} description={t('كل الصلاحيات، بما فيها إدارة الفريق.')} />

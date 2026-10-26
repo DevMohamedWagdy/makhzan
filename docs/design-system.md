@@ -81,7 +81,7 @@ Single-series charts and ranked bars use the logo green (`brand-green`); while o
 
 ## 3. Typography
 
-Family: **Alexandria** (Arabic + Latin, weights 300–800) loaded through `laravel-vite-plugin/fonts`. Body is 14 px / 1.6. Arabic text is never letter-spaced; Latin headings get `-0.012em` and overlines `0.08em` via `:lang(en)` rules.
+Family: **Noto Kufi Arabic** (Arabic + Latin, weights 300–800) loaded through `laravel-vite-plugin/fonts`. Body is 14 px / 1.6. Arabic text is never letter-spaced; Latin headings get `-0.012em` and overlines `0.08em` via `:lang(en)` rules.
 
 | Role | Size / line height | Weight | Implementation |
 |---|---|---|---|

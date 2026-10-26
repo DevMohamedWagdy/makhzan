@@ -110,7 +110,7 @@ export function OrderPrintPage() {
             )}
 
             {orders?.map((order) => (
-                <article key={order.order_id} className="mx-auto my-6 w-full max-w-[210mm] break-after-page bg-white p-10 text-[13px] leading-relaxed text-neutral-900 shadow-sm print:my-0 print:max-w-none print:p-0 print:shadow-none">
+                <article key={order.order_id} className="mx-auto my-6 w-full max-w-[210mm] break-after-page bg-white p-10 text-sm leading-relaxed text-neutral-900 shadow-sm print:my-0 print:max-w-none print:p-0 print:shadow-none">
                     {type === 'invoice' ? <Invoice order={order} store={store} /> : <PackingSlip order={order} store={store} />}
                 </article>
             ))}
@@ -124,13 +124,13 @@ function SheetHeader({ order, store, title }) {
             <div className="flex items-center gap-3">
                 {store?.logo_url && <img src={store.logo_url} alt="" className="size-14 rounded-lg object-contain" />}
                 <div>
-                    <p className="text-lg font-bold">{store?.name}</p>
+                    <p className="text-lg font-semibold">{store?.name}</p>
                     {store?.contact_phone && <p dir="ltr" className="text-end text-neutral-600">{store.contact_phone}</p>}
                     {store?.address && <p className="text-neutral-600">{store.address}</p>}
                 </div>
             </div>
             <div className="text-end">
-                <p className="text-xl font-bold">{title}</p>
+                <p className="text-xl font-semibold">{title}</p>
                 <p className="mt-1 font-semibold">#{order.number}</p>
                 <p className="text-neutral-600">{formatDate(order.created_at)}</p>
             </div>
@@ -142,7 +142,7 @@ function Recipient({ order, large = false }) {
     return (
         <section className={large ? 'rounded-lg border-2 border-neutral-900 p-4 text-base' : ''}>
             <p className="mb-1 text-xs font-semibold text-neutral-500">{t('الشحن إلى')}</p>
-            <p className="font-bold">{order.address.recipient_name}</p>
+            <p className="font-semibold">{order.address.recipient_name}</p>
             <p dir="ltr" className="text-end font-semibold">{order.address.phone}</p>
             <p>{formatAddress(order.address)}</p>
             {order.address.landmark && <p className="text-neutral-600">{t('علامة مميزة: {value}', { value: order.address.landmark })}</p>}
@@ -201,7 +201,7 @@ function Invoice({ order, store }) {
                         <dd>{formatMoney(value)}</dd>
                     </div>
                 ))}
-                <div className="mt-2 flex justify-between border-t-2 border-neutral-900 pt-2 text-base font-bold">
+                <div className="mt-2 flex justify-between border-t-2 border-neutral-900 pt-2 text-base font-semibold">
                     <dt>{t('الإجمالي')}</dt>
                     <dd>{formatMoney(order.total)}</dd>
                 </div>
@@ -230,7 +230,7 @@ function PackingSlip({ order, store }) {
                 <Recipient order={order} large />
                 <section className="flex flex-col items-center justify-center rounded-lg border-2 border-neutral-900 p-4 text-center">
                     <p className="text-xs font-semibold text-neutral-500">{collect > 0 ? t('المبلغ المطلوب تحصيله') : t('مدفوع مسبقاً')}</p>
-                    <p className="mt-1 text-3xl font-bold">{formatMoney(collect)}</p>
+                    <p className="mt-1 text-3xl font-semibold">{formatMoney(collect)}</p>
                 </section>
             </div>
 
@@ -254,7 +254,7 @@ function PackingSlip({ order, store }) {
                                 {item.variant_title && <p className="text-xs text-neutral-500">{item.variant_title}</p>}
                             </td>
                             <td dir="ltr" className="py-3 text-end font-mono text-xs">{item.sku ?? '—'}</td>
-                            <td className="py-3 text-center text-lg font-bold">{item.quantity}</td>
+                            <td className="py-3 text-center text-lg font-semibold">{item.quantity}</td>
                         </tr>
                     ))}
                 </tbody>

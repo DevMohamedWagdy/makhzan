@@ -67,7 +67,7 @@ export function AffiliateDashboardPage() {
         <>
             <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
                 <div>
-                    <h1 className="text-[22px] leading-8 font-semibold text-ink sm:text-[26px] sm:leading-9">{t('أهلاً {value} 👋', { value: firstName })}</h1>
+                    <h1 className="mk-page-title">{t('أهلاً {value} 👋', { value: firstName })}</h1>
                     <div className="mt-2 flex flex-wrap items-center gap-2">
                         <StatusBadge status={affiliate.status} />
                         <TierBadge tier={affiliate.tier} />
@@ -81,7 +81,7 @@ export function AffiliateDashboardPage() {
                     </span>
                     <div className="relative">
                         <p className="text-xs text-panel-text">{t('عمولتك على كل طلب')}</p>
-                        <p className="mk-num text-[26px] leading-8 font-semibold text-brand-green">{formatCommission(affiliate.commission)}</p>
+                        <p className="mk-num text-2xl font-semibold text-brand-green">{formatCommission(affiliate.commission)}</p>
                     </div>
                 </div>
             </div>

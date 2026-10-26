@@ -13,7 +13,7 @@ export function Field({ label, hint, error, required, optional, className, child
         <div className={cn('flex flex-col gap-1.5', className)}>
             {label && (
                 <div className="flex items-center justify-between gap-2">
-                    <label htmlFor={id} className="text-[13px] leading-5 font-medium text-ink">
+                    <label htmlFor={id} className="text-sm font-medium text-ink">
                         {label}
                         {required && <span className="ms-0.5 text-danger">*</span>}
                         {optional && <span className="ms-1.5 text-xs font-normal text-muted">{t('(اختياري)')}</span>}

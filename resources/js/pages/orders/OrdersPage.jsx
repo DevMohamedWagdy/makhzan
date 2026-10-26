@@ -222,7 +222,7 @@ export function OrdersPage() {
                                               <td className="px-4 py-3.5 text-ink-2">{t('{count} منتج', { count: order.items_count })}</td>
                                               <td className="px-4 py-3.5 whitespace-nowrap">
                                                   <span className="block font-semibold text-ink">{formatMoney(order.total)}</span>
-                                                  {order.coupon_code && <span className="ltr block text-start font-mono text-[11px] text-success">{order.coupon_code}</span>}
+                                                  {order.coupon_code && <span className="ltr block text-start font-mono text-2xs text-success">{order.coupon_code}</span>}
                                               </td>
                                               <td className="px-4 py-3.5 text-ink-2">{order.affiliate?.full_name ?? '—'}</td>
                                               <td className="px-4 py-3.5">

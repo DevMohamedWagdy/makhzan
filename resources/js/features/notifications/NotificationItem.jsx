@@ -106,7 +106,7 @@ export function NotificationItem({ notification, onOpen, compact = false }) {
                 <Icon name={config.icon} className="size-[18px]" />
             </span>
             <span className="min-w-0 flex-1">
-                <span className={cn('block text-sm leading-6', unread ? 'font-semibold text-ink' : 'text-ink-2')}>{notification.message}</span>
+                <span className={cn('block text-sm', unread ? 'font-semibold text-ink' : 'text-ink-2')}>{notification.message}</span>
                 <span className="mt-0.5 block text-xs text-muted">{formatRelative(notification.created_at)}</span>
             </span>
             {unread && <span className="mt-2.5 size-2 shrink-0 rounded-full bg-brand-green" aria-label={t('غير مقروء')} />}

@@ -74,7 +74,7 @@ function CodeInput({ value, onChange, onComplete, disabled }) {
                     autoFocus={index === 0}
                     maxLength={CODE_LENGTH}
                     aria-label={t('الرقم {number} من الكود', { number: index + 1 })}
-                    className="mk-input size-12 p-0 text-center text-xl font-bold tabular-nums sm:size-14 sm:text-2xl"
+                    className="mk-input size-12 p-0 text-center text-xl font-semibold tabular-nums sm:size-14 sm:text-2xl"
                 />
             ))}
         </div>

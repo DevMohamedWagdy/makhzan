@@ -38,17 +38,17 @@ function StockCell({ item }) {
 
     return (
         <span className="flex flex-col items-start gap-1">
-            <span className="text-base font-bold text-ink">{formatNumber(item.stock)}</span>
+            <span className="text-base font-semibold text-ink">{formatNumber(item.stock)}</span>
             <span className="flex items-center gap-1.5">
                 <Badge tone={badge.tone} dot>
                     {badge.label}
                 </Badge>
-                <span className="text-[11px] text-muted" title={t('حد التنبيه')}>
+                <span className="text-2xs text-muted" title={t('حد التنبيه')}>
                     {t('الحد {count}', { count: formatNumber(item.effective_threshold) })}
                 </span>
             </span>
             {item.warehouses?.length > 1 && (
-                <span className="flex flex-col text-[11px] text-muted">
+                <span className="flex flex-col text-2xs text-muted">
                     {item.warehouses.map((row) => (
                         <span key={row.warehouse_id}>
                             {row.name}: <strong className="font-semibold text-ink-2">{formatNumber(row.stock)}</strong>

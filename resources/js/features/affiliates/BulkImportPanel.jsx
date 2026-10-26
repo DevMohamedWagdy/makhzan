@@ -181,7 +181,7 @@ export function BulkImportPanel({ onImported }) {
                 onClear={clear}
                 onError={setFileError}
                 title={t('اسحب ملف المسوقين وأفلته هنا، أو اضغط للاختيار')}
-                description={t('ملف CSV بحد أقصى {MAX_IMPORT_SIZE_MB} ميجابايت و ١٠٠٠ صف — لملفات Excel: احفظها بصيغة CSV أولاً', { MAX_IMPORT_SIZE_MB })}
+                description={t('ملف CSV بحد أقصى {MAX_IMPORT_SIZE_MB} ميجابايت و 1000 صف — لملفات Excel: احفظها بصيغة CSV أولاً', { MAX_IMPORT_SIZE_MB })}
             />
 
             {fileError && <Alert tone="danger">{fileError}</Alert>}

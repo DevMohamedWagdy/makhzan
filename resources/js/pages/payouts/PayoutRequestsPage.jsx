@@ -94,7 +94,7 @@ export function PayoutRequestsPage() {
 
                                 <div className="min-w-0 flex-1">
                                     <div className="flex flex-wrap items-center gap-2">
-                                        <span className="text-base font-bold text-ink">{formatMoney(payout.amount)}</span>
+                                        <span className="text-base font-semibold text-ink">{formatMoney(payout.amount)}</span>
                                         <PayoutStatusBadge status={payout.status} />
                                     </div>
                                     <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted">

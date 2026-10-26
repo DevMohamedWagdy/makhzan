@@ -18,9 +18,9 @@ export function toDateString(date) {
 
 /** Period choices shared by date-filtered dashboard pages (reports, payments). */
 export const REPORT_PRESETS = {
-    7: t('آخر ٧ أيام'),
-    30: t('آخر ٣٠ يوماً'),
-    90: t('آخر ٩٠ يوماً'),
+    7: t('آخر 7 أيام'),
+    30: t('آخر 30 يوماً'),
+    90: t('آخر 90 يوماً'),
     month: t('هذا الشهر'),
     last_month: t('الشهر الماضي'),
     custom: t('فترة مخصصة'),
@@ -219,7 +219,7 @@ export function GovernorateReturnsCard({ governorates }) {
 /** Variants that will sell out soon at their last-30-days pace, soonest first. */
 export function StockForecastCard({ forecast }) {
     return (
-        <Card title={t('توقع نفاد المخزون')} description={t('حسب معدل البيع في آخر ٣٠ يوماً، المنتجات التي ستنفد خلال شهر')}>
+        <Card title={t('توقع نفاد المخزون')} description={t('حسب معدل البيع في آخر 30 يوماً، المنتجات التي ستنفد خلال شهر')}>
             {forecast.length === 0 ? (
                 <p className="rounded-xl border border-dashed border-line-strong p-5 text-center text-sm text-muted">{t('مخزونك يكفي أكثر من شهر بمعدل البيع الحالي.')}</p>
             ) : (

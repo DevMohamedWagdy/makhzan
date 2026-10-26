@@ -205,7 +205,7 @@ export function StoreProductPage() {
                         <Link to={`/${storeSlug}/c/${product.category.slug}`} className="text-sm font-semibold text-primary hover:underline">
                             {product.category.name}
                         </Link>
-                        <h1 className="mt-1.5 text-2xl leading-snug font-bold text-ink sm:text-3xl">{product.name}</h1>
+                        <h1 className="mt-1.5 text-2xl font-semibold text-ink sm:text-3xl">{product.name}</h1>
                         {product.reviews_count > 0 && (
                             <a href="#reviews" className="mt-2 inline-flex items-center gap-2 text-sm text-muted hover:text-primary">
                                 <Stars rating={product.rating_average} />
@@ -216,12 +216,12 @@ export function StoreProductPage() {
 
                     <div className="flex flex-wrap items-center gap-3 border-y border-line py-4">
                         <PriceTag price={price} compareAtPrice={compareAtPrice} size="lg" />
-                        {compareAtPrice > price && <span className="rounded-lg bg-success-soft px-2.5 py-1 text-sm font-bold text-success">{t('وفّر {amount}%', { amount: Math.round((1 - price / compareAtPrice) * 100) })}</span>}
+                        {compareAtPrice > price && <span className="rounded-lg bg-success-soft px-2.5 py-1 text-sm font-semibold text-success">{t('وفّر {amount}%', { amount: Math.round((1 - price / compareAtPrice) * 100) })}</span>}
                     </div>
 
                     {product.options.map((option, optionIndex) => (
                         <div key={option.name}>
-                            <p className="mb-2.5 text-sm font-bold text-ink">
+                            <p className="mb-2.5 text-sm font-semibold text-ink">
                                 {option.name}: <span className="font-normal text-ink-2">{selected[optionIndex]}</span>
                             </p>
                             <div className="flex flex-wrap gap-2" role="radiogroup" aria-label={option.name}>
@@ -256,7 +256,7 @@ export function StoreProductPage() {
 
                     {product.description && (
                         <div>
-                            <h2 className="mb-2 text-base font-bold text-ink">{t('تفاصيل المنتج')}</h2>
+                            <h2 className="mb-2 text-base font-semibold text-ink">{t('تفاصيل المنتج')}</h2>
                             <p className="text-sm leading-loose whitespace-pre-line text-ink-2">{product.description}</p>
                         </div>
                     )}
@@ -312,7 +312,7 @@ export function StoreProductPage() {
 
             {data.related.length > 0 && (
                 <section>
-                    <h2 className="mb-4 text-lg font-bold text-ink sm:text-2xl">{t('قد يعجبك أيضاً')}</h2>
+                    <h2 className="mb-4 text-lg font-semibold text-ink sm:text-2xl">{t('قد يعجبك أيضاً')}</h2>
                     <ProductRail storeSlug={storeSlug} products={data.related} />
                 </section>
             )}

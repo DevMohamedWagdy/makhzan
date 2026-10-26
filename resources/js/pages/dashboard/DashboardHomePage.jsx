@@ -40,7 +40,7 @@ function NeedsAttention({ items }) {
                             <Icon name={item.icon} className="size-[18px]" />
                         </span>
                         <span className="min-w-0 flex-1">
-                            <span className="mk-num block text-lg leading-6 font-semibold text-ink">{formatNumber(item.count)}</span>
+                            <span className="mk-num block text-lg font-semibold text-ink">{formatNumber(item.count)}</span>
                             <span className="block truncate text-xs text-muted">{item.label}</span>
                         </span>
                         <Icon name="chevron-left" className="size-4 text-muted transition group-hover:text-ink" />
@@ -212,9 +212,9 @@ function OverviewHome() {
                             {data.orders && <StatCard label={t('طلبات اليوم')} value={formatNumber(data.orders.today)} icon="shopping-bag" />}
                             {data.report && (
                                 <>
-                                    <StatCard label={t('مبيعات آخر ٣٠ يوماً')} value={formatMoney(data.report.totals.sales)} icon="bar-chart" tone="info" hint={<TrendBadge current={data.report.totals.sales} previous={data.report.previous.sales} />} />
-                                    <StatCard label={t('إيرادات محصّلة (٣٠ يوماً)')} value={formatMoney(data.report.totals.revenue)} icon="wallet" tone="success" hint={<TrendBadge current={data.report.totals.revenue} previous={data.report.previous.revenue} />} />
-                                    <StatCard label={t('عملاء جدد (٣٠ يوماً)')} value={formatNumber(data.report.totals.new_customers)} icon="users" tone="warning" hint={<TrendBadge current={data.report.totals.new_customers} previous={data.report.previous.new_customers} />} />
+                                    <StatCard label={t('مبيعات آخر 30 يوماً')} value={formatMoney(data.report.totals.sales)} icon="bar-chart" tone="info" hint={<TrendBadge current={data.report.totals.sales} previous={data.report.previous.sales} />} />
+                                    <StatCard label={t('إيرادات محصّلة (30 يوماً)')} value={formatMoney(data.report.totals.revenue)} icon="wallet" tone="success" hint={<TrendBadge current={data.report.totals.revenue} previous={data.report.previous.revenue} />} />
+                                    <StatCard label={t('عملاء جدد (30 يوماً)')} value={formatNumber(data.report.totals.new_customers)} icon="users" tone="warning" hint={<TrendBadge current={data.report.totals.new_customers} previous={data.report.previous.new_customers} />} />
                                 </>
                             )}
                         </StatStrip>
@@ -223,7 +223,7 @@ function OverviewHome() {
                     {/* Two columns from xl: the chart and latest orders lead; what needs attention and the best sellers sit beside them. */}
                     <div className="grid grid-cols-1 items-start gap-6 xl:grid-cols-3">
                         <div className="flex min-w-0 flex-col gap-6 xl:col-span-2">
-                            {data.report && <DailyChartCard daily={data.report.daily} title={t('آخر ٣٠ يوماً')} />}
+                            {data.report && <DailyChartCard daily={data.report.daily} title={t('آخر 30 يوماً')} />}
                             {data.recent && (
                                 <Card
                                     title={t('أحدث الطلبات')}

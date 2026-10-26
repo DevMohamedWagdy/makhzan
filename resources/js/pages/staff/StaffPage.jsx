@@ -80,7 +80,7 @@ function RoleCard({ role, total, onEdit, onDelete }) {
                         {sections.slice(0, VISIBLE_SECTIONS).map((item) => (
                             <span
                                 key={item.section}
-                                className={cn('inline-flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium', item.viewOnly ? 'bg-surface-3 text-ink-2' : 'bg-primary-soft text-primary')}
+                                className={cn('inline-flex items-center gap-1 rounded-md px-2 py-1 text-2xs font-medium', item.viewOnly ? 'bg-surface-3 text-ink-2' : 'bg-primary-soft text-primary')}
                                 title={item.viewOnly ? t('عرض فقط') : t('عرض وتعديل')}
                             >
                                 <Icon name={item.viewOnly ? 'eye' : item.icon} className="size-3" />
@@ -88,7 +88,7 @@ function RoleCard({ role, total, onEdit, onDelete }) {
                             </span>
                         ))}
                         {hidden > 0 && (
-                            <button type="button" onClick={onEdit} className="rounded-md bg-surface-3 px-2 py-1 text-[11px] font-medium text-ink-2 hover:text-primary">
+                            <button type="button" onClick={onEdit} className="rounded-md bg-surface-3 px-2 py-1 text-2xs font-medium text-ink-2 hover:text-primary">
                                 {t('+{count} أخرى', { count: formatNumber(hidden) })}
                             </button>
                         )}

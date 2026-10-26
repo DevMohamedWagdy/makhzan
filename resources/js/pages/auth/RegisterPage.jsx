@@ -169,7 +169,7 @@ export function RegisterPage() {
                     {step === 0 ? (
                         <div key="step-1" className="animate-step-in grid gap-5 sm:grid-cols-2">
                             <div className="sm:col-span-2">
-                                <p className="text-xs font-semibold text-primary">{t('الخطوة ١ من ٢')}</p>
+                                <p className="text-xs font-semibold text-primary">{t('الخطوة 1 من 2')}</p>
                                 <h2 className="mt-1 text-lg font-semibold text-ink">{t('البيانات الأساسية')}</h2>
                             </div>
                             <Field label={t('الاسم بالكامل')} error={errors.full_name} required className="sm:col-span-2">
@@ -182,7 +182,7 @@ export function RegisterPage() {
                                 {(props) => <Input {...props} {...bind('email')} icon="mail" type="email" dir="ltr" className="text-start" autoComplete="email" placeholder="name@example.com" />}
                             </Field>
                             <Field label={t('كلمة المرور')} error={errors.password} required>
-                                {(props) => <PasswordInput {...props} {...bind('password')} showStrength placeholder={t('٨ أحرف على الأقل')} />}
+                                {(props) => <PasswordInput {...props} {...bind('password')} showStrength placeholder={t('8 أحرف على الأقل')} />}
                             </Field>
                             <Field label={t('تأكيد كلمة المرور')} error={errors.password_confirmation} required>
                                 {(props) => <PasswordInput {...props} {...bind('password_confirmation')} placeholder={t('أعد كتابة كلمة المرور')} />}
@@ -191,7 +191,7 @@ export function RegisterPage() {
                     ) : (
                         <div key="step-2" className="animate-step-in grid gap-5 sm:grid-cols-2">
                             <div className="sm:col-span-2">
-                                <p className="text-xs font-semibold text-primary">{t('الخطوة ٢ من ٢')}</p>
+                                <p className="text-xs font-semibold text-primary">{t('الخطوة 2 من 2')}</p>
                                 <h2 className="mt-1 text-lg font-semibold text-ink">{t('بيانات المتجر')}</h2>
                             </div>
                             <Field label={t('لوجو المتجر')} optional error={errors.store_logo} className="sm:col-span-2">
@@ -202,7 +202,7 @@ export function RegisterPage() {
                                         onError={(message) => setErrors((previous) => ({ ...previous, store_logo: message ?? undefined }))}
                                         label={t('رفع لوجو المتجر')}
                                         maxSizeMb={MAX_LOGO_SIZE_MB}
-                                        hint={t('يفضّل صورة مربعة ٥١٢×٥١٢ بكسل — PNG أو JPG، بحد أقصى {MAX_LOGO_SIZE_MB} ميجابايت', { MAX_LOGO_SIZE_MB })}
+                                        hint={t('يفضّل صورة مربعة 512×512 بكسل — PNG أو JPG، بحد أقصى {MAX_LOGO_SIZE_MB} ميجابايت', { MAX_LOGO_SIZE_MB })}
                                     />
                                 )}
                             </Field>

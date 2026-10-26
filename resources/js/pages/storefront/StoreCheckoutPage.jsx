@@ -287,7 +287,7 @@ export function StoreCheckoutPage() {
                             <li key={line.variant_id} className="flex items-center gap-3">
                                 <span className="relative size-14 shrink-0 overflow-hidden rounded-xl bg-surface-2">
                                     <ProductImage src={line.image_url} alt="" />
-                                    <span className="absolute -top-1 -end-1 grid size-5 place-items-center rounded-full bg-ink text-[10px] font-bold text-surface">{line.quantity}</span>
+                                    <span className="absolute -top-1 -end-1 grid size-5 place-items-center rounded-full bg-ink text-3xs font-semibold text-surface">{line.quantity}</span>
                                 </span>
                                 <span className="min-w-0 flex-1 text-sm">
                                     <span className="block truncate font-medium text-ink">{line.name ?? t('منتج غير متاح')}</span>
@@ -321,7 +321,7 @@ export function StoreCheckoutPage() {
                         )}
                         <div className="flex justify-between border-t border-line pt-3 text-base">
                             <dt className="font-semibold text-ink">{t('الإجمالي')}</dt>
-                            <dd className="font-bold text-ink">{formatMoney(productsAfterCoupon - pointsDiscount + (coupon?.free_shipping ? 0 : (shippingFee ?? 0)))}</dd>
+                            <dd className="font-semibold text-ink">{formatMoney(productsAfterCoupon - pointsDiscount + (coupon?.free_shipping ? 0 : (shippingFee ?? 0)))}</dd>
                         </div>
                     </dl>
                     {loyalty && pointsBalance > 0 && (

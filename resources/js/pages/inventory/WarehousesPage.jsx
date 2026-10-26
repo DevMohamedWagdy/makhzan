@@ -144,7 +144,7 @@ export function WarehousesPage() {
                         <ul className="divide-y divide-line">
                             {warehouses.map((warehouse, index) => (
                                 <li key={warehouse.warehouse_id} className="flex flex-wrap items-center gap-4 px-5 py-4">
-                                    <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-surface-3 text-sm font-bold text-ink-2">{formatNumber(index + 1)}</span>
+                                    <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-surface-3 text-sm font-semibold text-ink-2">{formatNumber(index + 1)}</span>
                                     <div className="min-w-0 flex-1">
                                         <p className="flex flex-wrap items-center gap-2 font-semibold text-ink">
                                             {warehouse.name}

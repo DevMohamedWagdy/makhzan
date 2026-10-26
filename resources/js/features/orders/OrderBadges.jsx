@@ -70,7 +70,7 @@ export function OrderProgress({ order }) {
                                 <span className={cn('h-1 flex-1 rounded-full', index === PROGRESS.length - 1 ? 'invisible' : index < reached ? 'bg-primary' : 'bg-line')} />
                             </span>
                             <span className={cn('text-xs font-medium', done ? 'text-ink' : 'text-muted')}>{labels[step]}</span>
-                            {done && dates[step] && <span className="text-[11px] text-muted">{formatDate(dates[step])}</span>}
+                            {done && dates[step] && <span className="text-2xs text-muted">{formatDate(dates[step])}</span>}
                         </li>
                     );
                 })}

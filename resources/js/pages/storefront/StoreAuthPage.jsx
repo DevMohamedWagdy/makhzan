@@ -76,7 +76,7 @@ export function StoreAuthPage({ mode }) {
                                 {(props) => <Input {...props} type="email" dir="ltr" className="text-start" value={values.email} onChange={set('email')} autoComplete="email" />}
                             </Field>
                             <Field label={t('كلمة المرور')} required error={errors.password}>
-                                {(props) => <PasswordInput {...props} value={values.password} onChange={set('password')} autoComplete="new-password" showStrength placeholder={t('٨ أحرف على الأقل')} />}
+                                {(props) => <PasswordInput {...props} value={values.password} onChange={set('password')} autoComplete="new-password" showStrength placeholder={t('8 أحرف على الأقل')} />}
                             </Field>
                             <Field label={t('تأكيد كلمة المرور')} required error={errors.password_confirmation}>
                                 {(props) => <PasswordInput {...props} value={values.password_confirmation} onChange={set('password_confirmation')} autoComplete="new-password" />}

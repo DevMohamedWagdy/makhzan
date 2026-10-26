@@ -164,15 +164,15 @@ export function PurchaseOrderFormPage() {
                                                 <td className="px-2 py-2.5">
                                                     <span className="block font-medium text-ink">{item.label}</span>
                                                     {item.sku && <span className="ltr text-xs text-muted">{item.sku}</span>}
-                                                    {errors[`items.${index}.variant_id`] && <p className="text-[11px] text-danger">{errors[`items.${index}.variant_id`]}</p>}
+                                                    {errors[`items.${index}.variant_id`] && <p className="text-2xs text-danger">{errors[`items.${index}.variant_id`]}</p>}
                                                 </td>
                                                 <td className="px-2 py-2.5 align-top">
                                                     <Input type="number" inputMode="numeric" min={1} step={1} value={item.quantity} onChange={(event) => updateItem(index, { quantity: event.target.value })} className="h-9 text-sm" aria-label={t('الكمية')} aria-invalid={errors[`items.${index}.quantity`] ? 'true' : undefined} />
-                                                    {errors[`items.${index}.quantity`] && <p className="mt-1 text-[11px] text-danger">{errors[`items.${index}.quantity`]}</p>}
+                                                    {errors[`items.${index}.quantity`] && <p className="mt-1 text-2xs text-danger">{errors[`items.${index}.quantity`]}</p>}
                                                 </td>
                                                 <td className="px-2 py-2.5 align-top">
                                                     <Input type="number" inputMode="decimal" min={0} step="0.01" value={item.unit_cost} onChange={(event) => updateItem(index, { unit_cost: event.target.value })} className="h-9 text-sm" suffix={<span className="px-2 text-xs text-muted">{CURRENCY}</span>} aria-label={t('تكلفة القطعة')} aria-invalid={errors[`items.${index}.unit_cost`] ? 'true' : undefined} />
-                                                    {errors[`items.${index}.unit_cost`] && <p className="mt-1 text-[11px] text-danger">{errors[`items.${index}.unit_cost`]}</p>}
+                                                    {errors[`items.${index}.unit_cost`] && <p className="mt-1 text-2xs text-danger">{errors[`items.${index}.unit_cost`]}</p>}
                                                 </td>
                                                 <td className="px-2 py-2.5 font-semibold whitespace-nowrap text-ink">{formatMoney((Number(item.quantity) || 0) * (Number(item.unit_cost) || 0))}</td>
                                                 <td className="px-2 py-2.5">
