@@ -110,7 +110,7 @@ export function AffiliatePortalLayout() {
                         {store ? <Avatar name={store.name} src={store.logo_url} size="sm" /> : <Skeleton className="size-8 rounded-xl" />}
                         <div className="min-w-0">
                             <p className="truncate text-sm font-semibold text-ink">{store?.name}</p>
-                            <p className="mk-overline text-brand-green">{t('بوابة المسوقين')}</p>
+                            <p className="mk-overline text-brand-accent">{t('بوابة المسوقين')}</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-1">
@@ -152,7 +152,7 @@ export function AffiliatePortalLayout() {
                             to={item.to}
                             end={item.end}
                             className={({ isActive }) =>
-                                cn('-mb-px flex h-11 items-center gap-2 border-b-2 px-3 text-sm font-medium whitespace-nowrap transition', isActive ? 'border-brand-green text-ink [&>svg]:text-brand-green' : 'border-transparent text-muted hover:border-line-strong hover:text-ink')
+                                cn('-mb-px flex h-11 items-center gap-2 border-b-2 px-3 text-sm font-medium whitespace-nowrap transition', isActive ? 'border-brand-accent text-ink [&>svg]:text-brand-accent' : 'border-transparent text-muted hover:border-line-strong hover:text-ink')
                             }
                         >
                             <Icon name={item.icon} className="size-[18px]" />
@@ -198,7 +198,7 @@ export function AffiliatePortalLayout() {
                 />
             )}
             <footer className="pb-8 text-center">
-                <Logo className="mx-auto h-4 opacity-50 grayscale transition hover:opacity-80 hover:grayscale-0" />
+                <Logo className="mx-auto h-3 opacity-50 grayscale transition hover:opacity-80 hover:grayscale-0" />
             </footer>
         </div>
     );
