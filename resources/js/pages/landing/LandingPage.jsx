@@ -11,6 +11,7 @@ import { CURRENCY } from '@/lib/constants';
 import { cn, formatCompactNumber } from '@/lib/format';
 import { ContactSection } from '@/pages/landing/ContactSection';
 import { FeaturesSection } from '@/pages/landing/FeaturesSection';
+import { Reveal, SectionHeading } from '@/pages/landing/Reveal';
 import { SiteFooter } from '@/pages/landing/SiteFooter';
 import { platformApi } from '@/services/platformApi';
 
@@ -23,10 +24,10 @@ const NAV_LINKS = [
 
 /** Live platform totals (see PlatformStatsController), keyed by the API field. */
 const STATS = [
-    { key: 'stores', label: t('عدد المتاجر') },
-    { key: 'orders', label: t('عدد الطلبات') },
-    { key: 'products', label: t('عدد المنتجات') },
-    { key: 'sales', label: t('إجمالي المبيعات'), isMoney: true },
+    { key: 'stores', label: t('عدد المتاجر'), icon: 'store' },
+    { key: 'orders', label: t('عدد الطلبات'), icon: 'shopping-bag' },
+    { key: 'products', label: t('عدد المنتجات'), icon: 'box' },
+    { key: 'sales', label: t('إجمالي المبيعات'), icon: 'wallet', isMoney: true },
 ];
 
 /** Reasons to choose the platform, for the About section. */
@@ -39,8 +40,15 @@ const ABOUT_REASONS = [
     { icon: 'growth', title: t('قرارات مبنية على أرقام'), text: t('تقارير واضحة للمبيعات والأرباح وأفضل المنتجات تساعدك تعرف أين تركز.') },
 ];
 
-/** Staggered entrance for the hero; the global reduced-motion rule turns it off. */
-const RISE = 'animate-[mk-pop_0.7s_cubic-bezier(0.22,1,0.36,1)_both]';
+/** "Get started" steps, numbered in order. */
+const STEPS = [
+    { title: t('أنشئ حسابك'), text: t('سجّل بياناتك وبيانات متجرك في دقائق.') },
+    { title: t('أضف منتجاتك'), text: t('ارفع منتجاتك وكمياتها في كل مخزن.') },
+    { title: t('ابدأ البيع'), text: t('شارك رابط متجرك واستقبل طلباتك وتابعها من لوحة واحدة.') },
+];
+
+/** Accent glow under the hero's call to action, lifting on hover. */
+const GLOW = 'shadow-[0_8px_20px_-10px_rgb(245_165_36/0.35)] transition-[translate,box-shadow,filter] duration-300 hover:-translate-y-0.5 hover:shadow-[0_12px_24px_-10px_rgb(245_165_36/0.45)]';
 
 export function LandingPage() {
     const { isAuthenticated } = useAuth();
@@ -62,11 +70,11 @@ export function LandingPage() {
     }, []);
 
     const primaryAction = isAuthenticated ? (
-        <Button to="/dashboard" size="xl" iconEnd={arrow}>
+        <Button to="/dashboard" variant="brand" size="xl" iconEnd={arrow} className={GLOW}>
             {t('الذهاب إلى لوحة التحكم')}
         </Button>
     ) : (
-        <Button to="/register" size="xl" iconEnd={arrow}>
+        <Button to="/register" variant="brand" size="xl" iconEnd={arrow} className={GLOW}>
             {t('ابدأ مجاناً')}
         </Button>
     );
@@ -83,7 +91,7 @@ export function LandingPage() {
                     <div className={cn('flex items-center gap-4 ps-4 pe-2 transition-[height] duration-300 sm:ps-5', isScrolled ? 'h-14' : 'h-16')}>
                         <div className="flex min-w-0 flex-1 items-center">
                             <Link to="/" aria-label={t('الصفحة الرئيسية لـ Sellygrow')} onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-                                <Logo className="h-3 sm:h-[18px]" />
+                                <Logo className="h-3 sm:h-[18px]" inverse={!isSolid} />
                             </Link>
                         </div>
                         <nav className="hidden items-center gap-1 md:flex" aria-label={t('القائمة الرئيسية')}>
@@ -96,8 +104,10 @@ export function LandingPage() {
                                         href={link.href}
                                         aria-current={isActive ? 'location' : undefined}
                                         className={cn(
-                                            'rounded-lg px-3 py-2 text-sm transition',
-                                            isActive ? 'bg-primary-soft font-medium text-primary' : 'text-ink-2 hover:bg-surface-3 hover:text-ink',
+                                            'relative rounded-lg px-3 py-2 text-sm transition',
+                                            'after:absolute after:inset-x-3 after:bottom-1 after:h-0.5 after:origin-center after:rounded-full after:bg-gold after:transition-transform after:duration-300',
+                                            isActive ? 'font-medium after:scale-x-100' : 'after:scale-x-0 hover:after:scale-x-100',
+                                            isSolid ? (isActive ? 'text-ink' : 'text-ink-2 hover:text-ink') : isActive ? 'text-white' : 'text-white/75 hover:text-white',
                                         )}
                                     >
                                         {link.label}
@@ -106,20 +116,20 @@ export function LandingPage() {
                             })}
                         </nav>
                         <div className="flex shrink-0 items-center justify-end gap-1.5 md:flex-1">
-                            <LanguageToggle className="hidden sm:grid" />
-                            <ThemeToggle />
+                            <LanguageToggle className={cn('hidden sm:grid', !isSolid && 'text-white/80! hover:bg-white/10! hover:text-white!')} />
+                            <ThemeToggle className={cn(!isSolid && 'text-white/80! hover:bg-white/10! hover:text-white!')} />
                             {isAuthenticated ? (
-                                <Button to="/dashboard">
+                                <Button to="/dashboard" variant="brand">
                                     {t('لوحة التحكم')}
                                 </Button>
                             ) : (
                                 <>
                                     <span className="hidden sm:block">
-                                        <Button to="/login" variant="ghost">
+                                        <Button to="/login" variant={isSolid ? 'ghost' : 'outline-light'}>
                                             {t('تسجيل الدخول')}
                                         </Button>
                                     </span>
-                                    <Button to="/register">
+                                    <Button to="/register" variant="brand">
                                         {t('ابدأ مجاناً')}
                                     </Button>
                                 </>
@@ -130,7 +140,10 @@ export function LandingPage() {
                                 aria-expanded={isMenuOpen}
                                 aria-controls="landing-mobile-menu"
                                 aria-label={isMenuOpen ? t('إغلاق القائمة') : t('فتح القائمة')}
-                                className="grid size-10 place-items-center rounded-xl border border-line bg-surface text-ink-2 transition hover:border-line-strong hover:text-ink md:hidden"
+                                className={cn(
+                                    'grid size-10 place-items-center rounded-xl border transition md:hidden',
+                                    isSolid ? 'border-line bg-surface text-ink-2 hover:border-line-strong hover:text-ink' : 'border-white/20 text-white hover:bg-white/10',
+                                )}
                             >
                                 <Icon name={isMenuOpen ? 'x' : 'menu'} />
                             </button>
@@ -170,58 +183,77 @@ export function LandingPage() {
             </header>
 
             <main>
-                {/* Split hero: the pitch on one side, a real capture of the merchant dashboard on the other. */}
-                <section className="relative overflow-hidden bg-gradient-to-b from-primary-soft/70 via-bg to-bg">
-                    <div className="pointer-events-none absolute inset-0" aria-hidden="true">
-                        <div className="absolute -top-32 -end-32 size-[520px] rounded-full bg-brand-accent/15 blur-3xl" />
-                        <div className="absolute -bottom-40 -start-32 size-[420px] rounded-full bg-primary/10 blur-3xl" />
-                    </div>
+                {/* Slate hero in both themes: the pitch beside a capture of the dashboard, over drifting glows and a dune skyline. */}
+                <section className="relative isolate overflow-hidden bg-brand bg-[radial-gradient(ellipse_80%_70%_at_70%_0%,#1d3577_0%,#0f1d42_55%,#0a1532_100%)] text-white">
+                    <HeroBackdrop />
 
-                    <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-4 pt-32 pb-20 sm:px-6 sm:pt-40 lg:grid-cols-[0.9fr_1.1fr] lg:gap-12 lg:pb-32">
+                    <div className="relative mx-auto grid min-h-[100svh] max-w-6xl items-center gap-14 px-4 pt-32 pb-36 sm:px-6 lg:grid-cols-[1fr_1.05fr] lg:gap-10 lg:pt-28 lg:pb-40">
                         <div className="text-center lg:text-start">
-                            <h1 className={cn('text-[42px] leading-[1.2] font-bold tracking-tight text-ink sm:text-[58px] lg:text-[56px]', RISE)}>
+                            <Reveal as="span" className="inline-flex items-center gap-2.5 rounded-full border border-white/15 bg-white/[0.05] px-4 py-1.5 text-sm text-white/80 backdrop-blur">
+                                <span className="relative flex size-2">
+                                    <span className="absolute inset-0 animate-[mk-ping_1.8s_cubic-bezier(0,0,0.2,1)_infinite] rounded-full bg-gold" />
+                                    <span className="relative size-2 rounded-full bg-gold" />
+                                </span>
+                                {t('منصة متكاملة لإدارة تجارتك')}
+                            </Reveal>
+                            <Reveal as="h1" delay={100} className="mt-7 text-[40px] leading-[1.3] font-bold tracking-tight sm:text-[56px] lg:text-[60px]">
                                 <span className="block">{t('إدارة تجارتك')}</span>
-                                <span className="block bg-gradient-to-l from-primary to-brand-accent bg-clip-text text-transparent">{t('لم تعد معقدة')}</span>
-                            </h1>
-                            <p className={cn('mx-auto mt-6 max-w-xl text-xl leading-relaxed font-medium text-ink [animation-delay:100ms] sm:text-2xl lg:mx-0', RISE)}>
-                                {t('مخزون ذكي، طلبات منظمة، وتقارير لحظية في مكان واحد.')}
-                            </p>
-                            <p className={cn('mx-auto mt-4 max-w-xl leading-relaxed text-muted [animation-delay:180ms] lg:mx-0', RISE)}>
+                                <span className="mk-accent-text block pb-2">{t('لم تعد معقدة')}</span>
+                            </Reveal>
+                            <Reveal as="p" delay={200} className="mx-auto mt-5 max-w-xl text-lg leading-relaxed text-white/70 lg:mx-0">
                                 {t('Sellygrow يجمع المخزون والطلبات والمتجر الإلكتروني والمسوقين في لوحة واحدة — لتقضي وقتاً أقل في المتابعة ووقتاً أكثر في تنمية تجارتك.')}
-                            </p>
-                            <div className={cn('mt-9 flex flex-col items-stretch gap-3 [animation-delay:260ms] sm:flex-row sm:items-center sm:justify-center lg:justify-start', RISE)}>
+                            </Reveal>
+                            <Reveal delay={300} className="mt-9 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-center lg:justify-start">
                                 {primaryAction}
-                                <Button variant="secondary" size="xl" icon="info" onClick={scrollToHash('#about')}>
-                                    {t('من نحن')}
+                                <Button variant="outline-light" size="xl" onClick={scrollToHash('#about')}>
+                                    {t('اعرف أكثر')}
                                 </Button>
-                            </div>
+                            </Reveal>
                         </div>
 
-                        <div className={cn('[animation-delay:200ms]', RISE)}>
+                        <Reveal from="zoom" delay={250}>
                             <HeroVisual />
-                        </div>
+                        </Reveal>
                     </div>
                 </section>
 
-                {/* About: why merchants choose the platform, a centered heading over six outlined cards. */}
-                <section id="about" className="mx-auto max-w-6xl scroll-mt-28 px-4 py-20 sm:px-6 sm:py-24">
-                    <div className="mx-auto max-w-2xl text-center">
-                        <h2 className="text-[32px] leading-tight font-bold text-ink sm:text-[44px]">
-                            {t('لماذا تختار')} <span className="text-primary">Sellygrow</span>{t('؟')}
-                        </h2>
-                        <p className="mt-4 text-base leading-relaxed text-muted sm:text-lg">
-                            {t('منصة واحدة تدير منها مخزونك وطلباتك ومتجرك الإلكتروني ومسوقيك — في أي وقت، ومن أي جهاز.')}
-                        </p>
+                {/* About: a header row (pitch beside its lead), then a bento grid led by a slate card for the core promise. */}
+                <section id="about" className="mx-auto max-w-6xl scroll-mt-28 px-4 py-20 sm:px-6 sm:py-28">
+                    <div className="flex flex-col items-center gap-6 lg:flex-row lg:items-end lg:justify-between">
+                        <SectionHeading
+                            align="start"
+                            badge={t('لماذا Sellygrow؟')}
+                            title={
+                                <>
+                                    {t('لماذا تختار')} <span className="text-(--mk-gold-ink)">Sellygrow</span>
+                                    {t('؟')}
+                                </>
+                            }
+                        />
+                        <Reveal delay={150} className="max-w-md text-center lg:text-start">
+                            <p className="leading-relaxed text-muted sm:text-lg">{t('منصة واحدة تدير منها مخزونك وطلباتك ومتجرك الإلكتروني ومسوقيك — في أي وقت، ومن أي جهاز.')}</p>
+                            <Button variant="secondary" size="lg" iconEnd={arrow} onClick={scrollToHash('#features')} className="mt-5">
+                                {t('اكتشف المميزات')}
+                            </Button>
+                        </Reveal>
                     </div>
-                    <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 lg:gap-8">
-                        {ABOUT_REASONS.map((reason) => (
-                            <article key={reason.title} className="group rounded-2xl border border-line bg-surface p-7 shadow-card transition duration-300 hover:-translate-y-1 hover:border-primary/25 hover:shadow-raise">
-                                <span className="grid size-16 place-items-center rounded-2xl bg-gradient-to-br from-brand-accent to-primary text-white shadow-[0_10px_24px_-10px_rgb(24_44_97/0.5)] transition duration-300 group-hover:scale-105 group-hover:-rotate-3">
-                                    <AboutIcon name={reason.icon} />
-                                </span>
-                                <h3 className="mt-6 text-xl font-semibold text-ink">{reason.title}</h3>
-                                <p className="mt-3 text-sm leading-relaxed text-muted sm:text-[15px]">{reason.text}</p>
-                            </article>
+
+                    <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                        <Reveal className="sm:col-span-2 lg:row-span-2">
+                            <FeaturedReason reason={ABOUT_REASONS[0]} />
+                        </Reveal>
+                        {ABOUT_REASONS.slice(1).map((reason, index) => (
+                            <Reveal key={reason.title} delay={(index + 1) * 90}>
+                                <article className="group relative h-full overflow-hidden rounded-2xl border border-line bg-surface p-6 shadow-card transition-[translate,border-color,box-shadow] duration-500 ease-out before:absolute before:inset-x-0 before:top-0 before:h-1 before:origin-[inline-start] before:scale-x-0 before:bg-gold before:transition-transform before:duration-500 hover:-translate-y-1.5 hover:border-gold/40 hover:shadow-[0_24px_48px_-24px_rgb(245_165_36/0.4)] hover:before:scale-x-100">
+                                    <div className="flex items-center gap-3.5">
+                                        <span className="grid size-12 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-brand-light to-brand text-white transition-transform duration-500 ease-out group-hover:-rotate-6 [&_svg]:size-6">
+                                            <AboutIcon name={reason.icon} />
+                                        </span>
+                                        <h3 className="text-base font-semibold text-ink sm:text-lg">{reason.title}</h3>
+                                    </div>
+                                    <p className="mt-4 text-sm leading-relaxed text-muted">{reason.text}</p>
+                                </article>
+                            </Reveal>
                         ))}
                     </div>
                 </section>
@@ -229,6 +261,10 @@ export function LandingPage() {
                 <PlatformStats />
 
                 <FeaturesSection />
+
+                <StepsSection />
+
+                <CallToAction primaryAction={primaryAction} />
 
                 <ContactSection />
             </main>
@@ -238,11 +274,106 @@ export function LandingPage() {
     );
 }
 
+/** The hero's decoration: a faint grid fading out from the top, two drifting glows and layered dunes along the bottom. */
+function HeroBackdrop() {
+    return (
+        <div className="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
+            <div className="absolute inset-0 bg-[linear-gradient(rgb(255_255_255/0.04)_1px,transparent_1px),linear-gradient(90deg,rgb(255_255_255/0.04)_1px,transparent_1px)] bg-[size:56px_56px] [mask-image:radial-gradient(ellipse_70%_60%_at_50%_20%,#000_20%,transparent_75%)]" />
+            <div className="absolute -top-24 start-[8%] size-[380px] animate-[mk-float_12s_ease-in-out_infinite] rounded-full bg-gold/20 blur-[110px]" />
+            <div className="absolute top-1/3 end-[4%] size-[440px] animate-[mk-float_15s_ease-in-out_-5s_infinite] rounded-full bg-brand-accent/30 blur-[120px]" />
+            <svg viewBox="0 0 1440 220" preserveAspectRatio="none" className="absolute inset-x-0 bottom-0 h-40 w-full sm:h-56">
+                <path d="M0 140 160 70l140 60 180-96 170 92 150-62 190 84 160-70 140 52 150-44v134H0Z" className="fill-white/[0.03]" />
+                <path d="M0 176 200 110l170 52 200-80 180 74 190-58 160 60 180-46 160 40v68H0Z" className="fill-white/[0.05]" />
+                <path d="M0 160 200 110l170 52 200-80 180 74 190-58 160 60 180-46 160 40" fill="none" stroke="url(#mk-dune-edge)" strokeWidth="1.5" />
+                <defs>
+                    <linearGradient id="mk-dune-edge" x1="0" x2="1">
+                        <stop offset="0" stopColor="#f5a524" stopOpacity="0" />
+                        <stop offset="0.5" stopColor="#f5a524" stopOpacity="0.55" />
+                        <stop offset="1" stopColor="#f5a524" stopOpacity="0" />
+                    </linearGradient>
+                </defs>
+            </svg>
+        </div>
+    );
+}
+
+/** "Get started in three steps": numbered cards joined by a gold rail on large screens. */
+function StepsSection() {
+    return (
+        <section>
+            <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-28">
+                <SectionHeading badge={t('كيف تبدأ')} title={t('ابدأ في ثلاث خطوات')} text={t('من التسجيل حتى أول طلب في وقت أقل مما تتوقع.')} />
+                <ol className="relative mt-16 grid gap-6 lg:grid-cols-3 lg:gap-8">
+                    <span className="absolute inset-x-[16%] top-8 hidden h-px bg-gradient-to-l from-gold/0 via-gold/60 to-gold/0 lg:block" aria-hidden="true" />
+                    {STEPS.map((step, index) => (
+                        <Reveal as="li" key={step.title} delay={index * 140} className="group relative text-center">
+                            <span className="mk-num relative mx-auto grid size-16 place-items-center rounded-2xl border border-gold/30 bg-surface text-xl font-bold text-(--mk-gold-ink) shadow-[0_12px_30px_-14px_rgb(245_165_36/0.6)] transition-[translate,background-color,color] duration-500 ease-out group-hover:-translate-y-1 group-hover:bg-gold group-hover:text-brand">
+                                {String(index + 1).padStart(2, '0')}
+                            </span>
+                            <h3 className="mt-6 text-xl font-semibold text-ink">{step.title}</h3>
+                            <p className="mx-auto mt-2 max-w-xs text-sm leading-relaxed text-muted sm:text-[15px]">{step.text}</p>
+                        </Reveal>
+                    ))}
+                </ol>
+            </div>
+        </section>
+    );
+}
+
+/** The closing pitch on a slate card with a gold glow, just above the contact form. */
+function CallToAction({ primaryAction }) {
+    return (
+        <section className="mx-auto max-w-6xl px-4 pt-20 sm:px-6 sm:pt-28">
+            <Reveal className="relative isolate overflow-hidden rounded-3xl bg-brand bg-[radial-gradient(ellipse_at_top,#1d3577,#0f1d42_70%)] px-6 py-14 text-center text-white sm:px-12 sm:py-20">
+                <div className="pointer-events-none absolute -bottom-32 left-1/2 -z-10 size-[420px] -translate-x-1/2 animate-[mk-float_10s_ease-in-out_infinite] rounded-full bg-gold/25 blur-[100px]" aria-hidden="true" />
+                <h2 className="mx-auto max-w-2xl text-[28px] leading-tight font-bold sm:text-[40px]">
+                    {t('جاهز تنقل تجارتك')} <span className="mk-accent-text">{t('لمستوى أعلى؟')}</span>
+                </h2>
+                <p className="mx-auto mt-4 max-w-xl leading-relaxed text-white/65 sm:text-lg">{t('أنشئ حسابك الآن وابدأ إدارة مخزونك وطلباتك ومتجرك من مكان واحد.')}</p>
+                <div className="mt-9 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center">
+                    {primaryAction}
+                    <Button variant="outline-light" size="xl" icon="mail" onClick={scrollToHash('#contact')}>
+                        {t('تواصل معنا')}
+                    </Button>
+                </div>
+            </Reveal>
+        </section>
+    );
+}
+/** Modules the featured About card shows joined around the hub. */
+const CONNECTED_MODULES = [t('المخزون'), t('الطلبات'), t('المتجر'), t('المسوقين'), t('التقارير')];
+
+/** The bento's lead card: the core promise on slate, with the modules it ties together as linked pills. */
+function FeaturedReason({ reason }) {
+    return (
+        <article className="group relative isolate flex h-full flex-col overflow-hidden rounded-3xl bg-brand bg-[radial-gradient(ellipse_at_top,#1d3577,#0f1d42_70%)] p-7 text-white sm:p-9">
+            <div className="pointer-events-none absolute -end-20 -bottom-24 -z-10 size-72 rounded-full bg-gold/25 blur-[90px] transition-transform duration-700 ease-out group-hover:scale-125" aria-hidden="true" />
+            <span className="grid size-14 place-items-center rounded-2xl bg-gold text-brand transition-transform duration-500 ease-out group-hover:-rotate-6">
+                <AboutIcon name={reason.icon} />
+            </span>
+            <h3 className="mt-6 text-2xl font-bold sm:text-3xl">{reason.title}</h3>
+            <p className="mt-3 max-w-md leading-relaxed text-white/70">{reason.text}</p>
+            <ul className="mt-auto flex flex-wrap gap-2 pt-8">
+                {CONNECTED_MODULES.map((module, index) => (
+                    <li
+                        key={module}
+                        style={{ transitionDelay: `${index * 60}ms` }}
+                        className="flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.06] px-3.5 py-1.5 text-sm text-white/85 transition-[border-color,background-color] duration-500 group-hover:border-gold/50 group-hover:bg-gold/15"
+                    >
+                        <span className="size-1.5 rounded-full bg-gold" />
+                        {module}
+                    </li>
+                ))}
+            </ul>
+        </article>
+    );
+}
+
 /** Two-tone line icons drawn for the About cards: white strokes over a translucent white fill, on a green tile. */
 function AboutIcon({ name }) {
     const accent = 'fill-white/25';
-    // Masks what sits behind an overlapping shape (the tile's own green).
-    const mask = 'fill-primary';
+    // Masks what sits behind an overlapping shape (the tile's own slate).
+    const mask = 'fill-brand';
     const shapes = {
         hub: (
             <>
@@ -307,8 +438,8 @@ function AboutIcon({ name }) {
 }
 
 /**
- * Stats band: big brand-accent figures with a short label, no dividers. The totals come from the API and
- * count up once the band scrolls into view; the band hides itself if they can't be loaded.
+ * Platform figures on one card: four cells split by hairlines, each an icon tile, the figure and its label. The
+ * totals come from the API and count up once the card scrolls into view; it hides itself if they can't be loaded.
  */
 function PlatformStats() {
     const [stats, setStats] = useState(null);
@@ -343,21 +474,27 @@ function PlatformStats() {
     }
 
     return (
-        <section ref={sectionRef} id="stats" aria-label={t('أرقام عن المنصة')} aria-busy={stats === null} className="scroll-mt-28 border-y border-primary/10 bg-primary-soft/70 dark:bg-primary-soft/40">
-            <dl className="mx-auto grid max-w-6xl grid-cols-2 gap-x-6 gap-y-12 px-4 py-12 sm:px-6 sm:py-16 md:grid-cols-4">
-                {STATS.map((stat) => (
-                    <div key={stat.key} className="flex flex-col items-center text-center">
-                        <dt className="order-2 mt-3 text-sm text-ink-2 sm:text-base">{stat.isMoney ? `${stat.label} (${CURRENCY})` : stat.label}</dt>
-                        <dd className="mk-num order-1 flex h-10 items-center text-[36px] leading-none font-bold tracking-tight whitespace-nowrap text-primary sm:h-12 sm:text-[40px] lg:text-[46px] xl:h-[52px] xl:text-[52px]">
-                            {stats ? (
-                                <CountUp value={stats[stat.key]} isRunning={isInView} />
-                            ) : (
-                                <span className="h-full w-24 animate-pulse rounded-lg bg-surface-3" />
-                            )}
-                        </dd>
-                    </div>
-                ))}
-            </dl>
+        <section ref={sectionRef} id="stats" aria-label={t('أرقام عن المنصة')} aria-busy={stats === null} className="mx-auto max-w-6xl scroll-mt-28 px-4 pb-20 sm:px-6 sm:pb-28">
+            <Reveal className="relative overflow-hidden rounded-3xl border border-line bg-surface shadow-raise">
+                <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-l from-primary via-gold to-primary" aria-hidden="true" />
+                <dl className="grid grid-cols-2 lg:grid-cols-4">
+                    {STATS.map((stat, index) => (
+                        <Reveal
+                            key={stat.key}
+                            delay={index * 100}
+                            className={cn('group flex flex-col items-start gap-1 border-line p-5 sm:p-8', index % 2 === 1 && 'border-s', index < 2 && 'border-b lg:border-b-0', index === 2 && 'lg:border-s')}
+                        >
+                            <span className="mb-3 grid size-11 place-items-center rounded-xl bg-primary-soft text-primary transition-transform duration-300 group-hover:-translate-y-0.5">
+                                <Icon name={stat.icon} className="size-5" />
+                            </span>
+                            <dd className="mk-num order-2 flex h-10 items-center text-[30px] leading-none font-bold tracking-tight whitespace-nowrap text-ink sm:h-12 sm:text-[38px]">
+                                {stats ? <CountUp value={stats[stat.key]} isRunning={isInView} /> : <span className="h-full w-20 animate-pulse rounded-lg bg-surface-3" />}
+                            </dd>
+                            <dt className="order-3 text-sm text-muted">{stat.isMoney ? `${stat.label} (${CURRENCY})` : stat.label}</dt>
+                        </Reveal>
+                    ))}
+                </dl>
+            </Reveal>
         </section>
     );
 }
@@ -439,16 +576,14 @@ function useActiveSection(hashes) {
 }
 
 /**
- * A real capture of the merchant dashboard (demo data) in a browser frame. On large screens it tilts back in 3D
- * and runs past the page edge; the light or dark capture follows the site theme.
+ * A real capture of the merchant dashboard (demo data) in a browser frame. On large screens it rests turned
+ * toward the pitch and eases flat on hover; the light or dark capture follows the site theme.
  */
 function HeroVisual() {
     return (
-        <div className="relative [perspective:2400px] lg:w-[150%]">
-            <Chevrons className="absolute -top-14 start-6 hidden h-12 w-16 text-brand-accent sm:block" />
-            <Chevrons className="absolute -bottom-14 start-1/3 hidden h-12 w-16 rotate-180 text-brand-accent sm:block" />
-            <div className="absolute inset-10 rounded-[2rem] bg-gradient-to-br from-brand-accent/40 via-primary/15 to-info/10 blur-3xl" aria-hidden="true" />
-            <figure className="relative rounded-2xl border border-line bg-surface/90 p-1.5 shadow-[0_50px_100px_-40px_rgb(24_44_97/0.4)] backdrop-blur lg:origin-left lg:[transform:rotateY(10deg)_rotateX(4deg)] lg:rtl:origin-right lg:rtl:[transform:rotateY(-10deg)_rotateX(4deg)]">
+        <div className="group relative [perspective:2000px] lg:w-[125%]">
+            <div className="absolute -inset-x-6 inset-y-8 rounded-[2rem] bg-gradient-to-br from-gold/40 via-brand-accent/25 to-transparent blur-3xl" aria-hidden="true" />
+            <figure className="relative rounded-2xl border border-white/15 bg-surface/90 p-1.5 shadow-[0_50px_100px_-40px_rgb(10_21_50/0.7)] backdrop-blur transition-transform duration-700 ease-out lg:origin-left lg:[transform:rotateY(12deg)_rotateX(4deg)] lg:group-hover:[transform:rotateY(4deg)_rotateX(1deg)] lg:rtl:origin-right lg:rtl:[transform:rotateY(-12deg)_rotateX(4deg)] lg:rtl:group-hover:[transform:rotateY(-4deg)_rotateX(1deg)]">
                 <div className="flex items-center gap-3 px-3 py-2" dir="ltr" aria-hidden="true">
                     <span className="flex gap-1.5">
                         <span className="size-2.5 rounded-full bg-danger/70" />
@@ -483,13 +618,3 @@ function HeroVisual() {
         </div>
     );
 }
-
-function Chevrons({ className }) {
-    return (
-        <svg viewBox="0 0 72 52" fill="none" stroke="currentColor" strokeWidth="5" className={className} aria-hidden="true">
-            <path d="M30 4 8 26l22 22" />
-            <path d="M60 4 38 26l22 22" opacity="0.4" />
-        </svg>
-    );
-}
-

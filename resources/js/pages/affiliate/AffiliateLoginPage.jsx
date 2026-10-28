@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, Navigate, useLocation, useNavigate, useParams } from 'react-router-dom';
-import { StorePublicLayout } from '@/components/layout/StorePublicLayout';
+import { AuthHeading, AuthLayout } from '@/components/layout/AuthLayout';
 import { Button } from '@/components/ui/Button';
 import { Alert, Avatar } from '@/components/ui/Display';
 import { Checkbox, Field, Input, PasswordInput } from '@/components/ui/Form';
@@ -75,21 +75,15 @@ export function AffiliateLoginPage() {
     };
 
     return (
-        <StorePublicLayout store={store} narrow>
-            <div className="mb-8 text-center">
-                {store ? <Avatar name={store.name} src={store.logo_url} size="lg" className="mx-auto" /> : <Skeleton className="mx-auto size-14 rounded-xl" />}
-                <h1 className="mt-5 mk-page-title">{t('دخول المسوقين')}</h1>
-                <p className="mt-2 text-sm text-muted">
-                    {store
-                        ? t('تابع أرباحك وروابط الإحالة الخاصة بك في {name}', {
-                              name: store.name,
-                          })
-                        : ' '}
-                </p>
-            </div>
+        <AuthLayout audience="affiliate" homeTo={`/${storeSlug}/affiliates/login`} panel={store ? { title: t('اربح مع {name}', { name: store.name }) } : undefined}>
+            <AuthHeading
+                icon={store ? <Avatar name={store.name} src={store.logo_url} size="lg" /> : <Skeleton className="size-14 rounded-xl" />}
+                title={t('دخول المسوقين')}
+                subtitle={store ? t('تابع أرباحك وروابط الإحالة الخاصة بك في {name}', { name: store.name }) : ' '}
+            />
 
             {verification ? (
-                <div className="mk-card p-6">
+                <div>
                     <EmailCodeForm
                         verification={verification}
                         onVerify={async (code) => welcome(await verifyEmail({ storeSlug, challenge: verification.challenge, code, remember: verification.remember }))}
@@ -104,7 +98,7 @@ export function AffiliateLoginPage() {
                     />
                 </div>
             ) : (
-                <form onSubmit={onSubmit} noValidate className="mk-card flex flex-col gap-5 p-6">
+                <form onSubmit={onSubmit} noValidate className="flex flex-col gap-5">
                     {formError && <Alert tone="danger">{formError}</Alert>}
 
                     <Field label={t('البريد الإلكتروني')} error={errors.email} required>
@@ -130,9 +124,7 @@ export function AffiliateLoginPage() {
                 </form>
             )}
 
-            <div className="mt-6 flex flex-col gap-2 text-center text-xs leading-relaxed text-muted">
-                <p>{t('لست مسوقاً بعد؟ اطلب رابط التسجيل من المتجر للانضمام.')}</p>
-            </div>
-        </StorePublicLayout>
+            <p className="mt-8 text-center text-sm leading-relaxed text-muted">{t('لست مسوقاً بعد؟ اطلب رابط التسجيل من المتجر للانضمام.')}</p>
+        </AuthLayout>
     );
 }

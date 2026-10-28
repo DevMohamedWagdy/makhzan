@@ -3,7 +3,7 @@ import { Link, Navigate } from 'react-router-dom';
 import { PageHeader, allowedPages } from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/Button';
 import { TrendBadge } from '@/components/ui/Charts';
-import { Card, EmptyState, StatCard, StatStrip } from '@/components/ui/Display';
+import { Card, EmptyState, StatCard, StatStrip, WelcomeBanner, greetingFor } from '@/components/ui/Display';
 import { Icon } from '@/components/ui/Icon';
 import { Skeleton } from '@/components/ui/Spinner';
 import { useAuth } from '@/context/AuthContext';
@@ -23,31 +23,37 @@ const ATTENTION_TONES = {
     info: 'bg-info-soft text-info',
 };
 
-/** Things waiting on the vendor, each linking to the page where it's handled (the side column's first block). */
+/** Things waiting on the vendor, each linking to the page where it's handled; an all-clear note when none. */
 function NeedsAttention({ items }) {
     const open = items.filter((item) => item.count > 0);
 
-    if (open.length === 0) {
-        return null;
-    }
-
     return (
-        <ul className="mk-list shadow-card">
-            {open.map((item) => (
-                <li key={item.key}>
-                    <Link to={item.to} className="group flex items-center gap-3.5 px-4 py-3.5 transition hover:bg-surface-2">
-                        <span className={cn('grid size-9 shrink-0 place-items-center rounded-lg ring-1 ring-current/10 ring-inset', ATTENTION_TONES[item.tone])}>
-                            <Icon name={item.icon} className="size-[18px]" />
-                        </span>
-                        <span className="min-w-0 flex-1">
-                            <span className="mk-num block text-lg font-semibold text-ink">{formatNumber(item.count)}</span>
-                            <span className="block truncate text-xs text-muted">{item.label}</span>
-                        </span>
-                        <Icon name="chevron-left" className="size-4 text-muted transition group-hover:text-ink" />
-                    </Link>
-                </li>
-            ))}
-        </ul>
+        <Card title={t('يحتاج انتباهك')} description={t('مهام تنتظر قرارك الآن')} className="h-full" bodyClassName="p-2">
+            {open.length === 0 ? (
+                <div className="flex flex-col items-center gap-3 px-4 py-10 text-center">
+                    <span className="grid size-11 place-items-center rounded-xl bg-success-soft text-success">
+                        <Icon name="check" className="size-5" />
+                    </span>
+                    <p className="text-sm font-medium text-ink">{t('لا شيء ينتظرك الآن')}</p>
+                    <p className="text-xs text-muted">{t('ستظهر هنا الطلبات والتحويلات التي تحتاج قرارك.')}</p>
+                </div>
+            ) : (
+                <ul className="flex flex-col gap-0.5">
+                    {open.map((item) => (
+                        <li key={item.key}>
+                            <Link to={item.to} className="group flex items-center gap-3.5 rounded-xl px-3 py-3 transition hover:bg-surface-2">
+                                <span className={cn('grid size-9 shrink-0 place-items-center rounded-lg ring-1 ring-current/10 ring-inset', ATTENTION_TONES[item.tone])}>
+                                    <Icon name={item.icon} className="size-[18px]" />
+                                </span>
+                                <span className="min-w-0 flex-1 truncate text-sm text-ink-2">{item.label}</span>
+                                <span className="mk-num text-base font-semibold text-ink">{formatNumber(item.count)}</span>
+                                <Icon name="chevron-left" className="size-4 text-muted transition group-hover:text-ink" />
+                            </Link>
+                        </li>
+                    ))}
+                </ul>
+            )}
+        </Card>
     );
 }
 
@@ -174,8 +180,8 @@ function OverviewHome() {
 
     return (
         <>
-            <PageHeader
-                title={t('أهلاً {name} 👋', { name: firstName })}
+            <WelcomeBanner
+                title={greetingFor(firstName)}
                 description={t('ملخص متجرك وما ينتظرك اليوم')}
                 actions={
                     <>
@@ -220,25 +226,16 @@ function OverviewHome() {
                         </StatStrip>
                     )}
 
-                    {/* Two columns from xl: the chart and latest orders lead; what needs attention and the best sellers sit beside them. */}
-                    <div className="grid grid-cols-1 items-start gap-6 xl:grid-cols-3">
-                        <div className="flex min-w-0 flex-col gap-6 xl:col-span-2">
-                            {data.report && <DailyChartCard daily={data.report.daily} title={t('آخر 30 يوماً')} />}
-                            {data.recent && (
-                                <Card
-                                    title={t('أحدث الطلبات')}
-                                    actions={
-                                        <Link to="/dashboard/orders" className="text-sm font-medium text-primary hover:underline">
-                                            {t('كل الطلبات')}
-                                        </Link>
-                                    }
-                                >
-                                    <RecentOrders orders={data.recent} />
-                                </Card>
+                    {/* Two rows of "wide + side" from xl: the sales chart beside what needs attention, then the latest orders beside the best sellers. */}
+                    <div className="flex flex-col gap-6">
+                        <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+                            {data.report && (
+                                <div className="min-w-0 xl:col-span-2">
+                                    <DailyChartCard daily={data.report.daily} title={t('المبيعات - آخر 30 يوماً')} />
+                                </div>
                             )}
-                        </div>
-                        <aside className="order-first flex min-w-0 flex-col gap-6 xl:sticky xl:top-24 xl:order-none">
-                            <NeedsAttention
+                            <div className={cn('min-w-0', !data.report && 'xl:col-span-3')}>
+                                <NeedsAttention
                                 items={[
                                     data.orders && { key: 'orders', label: t('طلب بانتظار التأكيد'), count: data.orders.pending, icon: 'shopping-bag', tone: 'warning', to: '/dashboard/orders?status=pending' },
                                     data.affiliates && can('payouts') && { key: 'payouts', label: t('طلب تحويل عمولة'), count: data.affiliates.payout_requests, icon: 'send', tone: 'primary', to: '/dashboard/payout-requests' },
@@ -247,8 +244,32 @@ function OverviewHome() {
                                     data.products && { key: 'low', label: t('منتج مخزونه منخفض'), count: data.products.low_stock, icon: 'warehouse', tone: 'warning', to: '/dashboard/products?stock=low' },
                                 ].filter(Boolean)}
                             />
-                            {data.report && <TopProductsCard products={data.report.top_products} limit={5} />}
-                        </aside>
+                            </div>
+                        </div>
+
+                        {(data.recent || data.report) && (
+                            <div className="grid grid-cols-1 items-start gap-6 xl:grid-cols-3">
+                                {data.recent && (
+                                    <div className={cn('min-w-0', data.report ? 'xl:col-span-2' : 'xl:col-span-3')}>
+                                        <Card
+                                            title={t('أحدث الطلبات')}
+                                            actions={
+                                                <Link to="/dashboard/orders" className="text-sm font-medium text-primary hover:underline">
+                                                    {t('كل الطلبات')}
+                                                </Link>
+                                            }
+                                        >
+                                            <RecentOrders orders={data.recent} />
+                                        </Card>
+                                    </div>
+                                )}
+                                {data.report && (
+                                    <div className={cn('min-w-0', !data.recent && 'xl:col-span-3')}>
+                                        <TopProductsCard products={data.report.top_products} limit={5} />
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </div>
                 </>
             )}

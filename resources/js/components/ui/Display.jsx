@@ -1,3 +1,4 @@
+import { intlLocale, t } from '@/i18n';
 import { cn, initials } from '@/lib/format';
 import { Icon } from './Icon';
 
@@ -64,25 +65,90 @@ export function Card({ title, description, actions, className, bodyClassName, ch
 const ICON_TONES = { ...BADGE_TONES, primary: 'bg-primary-soft text-brand-accent' };
 
 /**
- * KPI card: tone icon tile and an optional status pill on top, the figure, then its label.
- * A plain-text hint renders as a neutral pill; a node (e.g. TrendBadge) renders as given.
+ * KPI card: the label with a small tone icon tile beside it, the figure, then an optional hint underneath.
+ * A plain-text hint renders as a neutral pill; a node (e.g. TrendBadge) renders as given. With `onClick` the
+ * card is a quick filter: a button that shows `isActive` with a primary ring.
  */
-export function StatCard({ label, value, icon, tone = 'primary', hint }) {
+export function StatCard({ label, value, icon, tone = 'primary', hint, onClick, isActive = false }) {
+    const Tag = onClick ? 'button' : 'div';
+
     return (
-        <div className="mk-card flex min-w-0 flex-col p-4 sm:p-5">
-            <div className="flex items-start justify-between gap-3">
-                <span className={cn('grid size-10 shrink-0 place-items-center rounded-xl', ICON_TONES[tone])}>
-                    <Icon name={icon} className="size-5" />
+        <Tag
+            {...(onClick && { type: 'button', onClick, 'aria-pressed': isActive })}
+            className={cn(
+                'mk-card flex min-w-0 flex-col p-4 text-start sm:p-5',
+                onClick && 'mk-card-link cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                isActive && 'border-primary/60 ring-1 ring-primary/40',
+            )}
+        >
+            <span className="flex w-full items-start justify-between gap-3">
+                <span className="min-w-0 truncate pt-1 text-xs font-medium text-muted sm:text-sm">{label}</span>
+                <span className={cn('grid size-9 shrink-0 place-items-center rounded-lg', ICON_TONES[tone])}>
+                    <Icon name={icon} className="size-[18px]" />
                 </span>
-                {hint && (
-                    <div className="min-w-0 truncate">
-                        {typeof hint === 'string' ? <span className="inline-flex h-6 max-w-full items-center truncate rounded-full bg-surface-3 px-2.5 text-2xs font-medium text-ink-2">{hint}</span> : hint}
-                    </div>
-                )}
+            </span>
+            <span className="mk-num mt-1.5 block truncate text-xl font-semibold tracking-tight text-ink sm:text-[26px] sm:leading-9">{value}</span>
+            {hint && (
+                <span className="mt-2.5 block min-w-0 truncate">
+                    {typeof hint === 'string' ? <span className="inline-flex h-6 max-w-full items-center truncate rounded-full bg-surface-3 px-2.5 text-2xs font-medium text-ink-2">{hint}</span> : hint}
+                </span>
+            )}
+        </Tag>
+    );
+}
+
+/**
+ * Bulk actions for the rows picked in a table: a night-navy bar that floats at the bottom of the page while
+ * anything is selected, with the count, the actions and a way to clear the selection.
+ */
+export function SelectionBar({ count, onClear, children }) {
+    if (count === 0) {
+        return null;
+    }
+
+    return (
+        <div className="pointer-events-none fixed inset-x-0 bottom-5 z-30 flex justify-center px-4 lg:ps-[280px]">
+            <div role="region" aria-label={t('إجراءات العناصر المختارة')} className="animate-pop pointer-events-auto flex max-w-full flex-wrap items-center gap-2 rounded-2xl bg-brand py-2 ps-4 pe-2 text-white shadow-[0_20px_40px_-12px_rgb(10_21_50/0.5)]">
+                <span className="mk-num me-2 text-sm font-medium">{t('تم اختيار {count}', { count })}</span>
+                {children}
+                <button type="button" onClick={onClear} className="grid size-9 place-items-center rounded-lg text-panel-muted transition hover:bg-white/10 hover:text-white" aria-label={t('إلغاء الاختيار')} title={t('إلغاء الاختيار')}>
+                    <Icon name="x" className="size-[18px]" />
+                </button>
             </div>
-            <p className="mk-num mt-4 truncate text-xl font-semibold text-ink sm:text-2xl">{value}</p>
-            <p className="mt-0.5 truncate text-xs text-muted sm:text-sm">{label}</p>
         </div>
+    );
+}
+
+const todayLabel = new Intl.DateTimeFormat(intlLocale, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+
+/** "Good morning, {name}" before noon, "Good evening, {name}" after: the greeting on home pages. */
+export function greetingFor(name) {
+    return new Date().getHours() < 12 ? t('صباح الخير، {name}', { name }) : t('مساء الخير، {name}', { name });
+}
+
+/**
+ * The top of a home page: a light card with today's date, the greeting, a line under it, optional meta
+ * (badges), an optional aside (a highlighted figure) and the page's main actions, over a faint navy glow.
+ */
+export function WelcomeBanner({ title, description, meta, actions, aside, className }) {
+    return (
+        <section className={cn('relative isolate mb-6 overflow-hidden rounded-2xl border border-line bg-surface px-5 py-5 shadow-card sm:px-7 sm:py-6', className)}>
+            <div className="pointer-events-none absolute -start-24 -top-28 -z-10 size-72 rounded-full bg-primary/10 blur-3xl" aria-hidden="true" />
+            <div className="pointer-events-none absolute inset-y-0 start-0 -z-10 w-1 bg-gradient-to-b from-primary to-gold" aria-hidden="true" />
+            <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+                <div className="min-w-0">
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-primary-soft px-2.5 py-1 text-2xs font-medium text-primary">
+                        <Icon name="clock" className="size-3.5" />
+                        {todayLabel.format(new Date())}
+                    </span>
+                    <h1 className="mt-3 text-xl font-semibold text-ink sm:text-2xl">{title}</h1>
+                    {description && <p className="mt-1 max-w-xl text-sm text-muted">{description}</p>}
+                    {meta && <div className="mt-3 flex flex-wrap items-center gap-2">{meta}</div>}
+                </div>
+                {aside}
+                {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
+            </div>
+        </section>
     );
 }
 

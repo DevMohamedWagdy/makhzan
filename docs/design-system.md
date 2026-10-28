@@ -6,17 +6,16 @@ All tokens live in `resources/css/app.css`. Components consume them through Tail
 
 ## 1. Concept
 
-**White, navy and a touch of gold.** The palette follows the brand: Navy `#182C61` (the wordmark and the "SG" app icon), Growth Gold `#F5A524` and Night Navy `#0F1D42`.
+**White, navy and gold.** Logo Navy `#182C61` is the main color; Growth Gold `#F5A524` (the logo's "G") is its accent.
 
-- **Canvas** — a cool light canvas (`#f5f7fb`) with white cards (hairline border + soft shadow), a white sidebar and a white header bar.
-- **Navy** (`--mk-primary`, `#182c61`) is the one action color: primary buttons, links, focus, selected states. White on it reads at 13:1.
-- **Brand accent** (`#2f55b4`, `brand-accent`) is a brighter blue for icons, charts, active tabs and nav icons, counters and key figures.
-- **Night Navy** (`#0f1d42`, `bg-brand` / `bg-panel`) is a solid *material* for brand bands: storefront heroes, commission and balance tiles.
-- **Gold** (`#f5a524`, `gold`) is used sparingly: the CTA button on Night Navy bands (dark text on it).
-- **Logo** — "SELLYGROW" in Montserrat Regular capitals, one color (`--mk-logo`: navy in light mode, near-white in dark). The "SG" tile is only the favicon / app icon.
-- **Green** survives only as a status (`success`: paid, delivered), never as a brand color.
+- **Canvas** — a cool light canvas (`#f5f7fb`) with white cards (hairline border + soft shadow) and a light sticky header.
+- **Navy** (`--mk-primary`, `#182c61`) is the one action color: primary buttons, links, focus, selected states, and the wordmark.
+- **Brand accent** (`#2f55b4`, `brand-accent`) is a brighter blue for icons and charts.
+- **Night Navy** (`#0f1d42`, `bg-brand` / `bg-panel`) is a solid *material*: the landing hero and bands, the auth brand panel, storefront heroes, balance tiles.
+- **Gold** (`#f5a524`, `gold`) is the accent: the CTA on navy surfaces (navy text on it), the active-nav marker, badge dots, glows and the landing headline. As text on light surfaces use `--mk-gold-ink` (`#b7791f`); on navy use `--mk-accent-on-dark` (`#f8c766`).
+- **Status** colors stay semantic (green success, amber warning, red danger, sky info) and are never brand colors.
 
-Restraint rules: no decorative gradients on light surfaces, no glassmorphism beyond the sticky headers' `backdrop-blur`, no neon, no heavy drop shadows. Night Navy bands may use the hairline grid texture and a soft blue glow.
+Restraint rules: no decorative gradients on light surfaces, no glassmorphism beyond the sticky headers' `backdrop-blur`, no neon, no heavy drop shadows. Navy surfaces may use the hairline grid texture and a soft gold or blue glow.
 
 ## 2. Color
 
@@ -36,9 +35,11 @@ Restraint rules: no decorative gradients on light surfaces, no glassmorphism bey
 | `--mk-primary` | `bg-primary` / `text-primary` | `#182c61` | `#4a6bc8` | Actions, links, focus |
 | `--mk-primary-hover` | `bg-primary-hover` | `#10204a` | `#5d7dd6` | Primary hover |
 | `--mk-primary-soft` | `bg-primary-soft` | `#e9eef8` | `#16213f` | Selected / soft tint |
-| `--mk-accent` | `text-accent` | `#2f55b4` | `#7c96e8` | Brand accent |
+| `--mk-accent` | `text-accent` | `#2f55b4` | `#7c96e8` | Accent text |
 | `--mk-brand-accent` | `bg-brand-accent` / `text-brand-accent` | `#2f55b4` | `#7c96e8` | Icons, charts, highlights |
-| `--mk-gold` | `bg-gold` / `text-gold` | `#f5a524` | `#fbbf24` | CTA on Night Navy bands |
+| `--mk-gold` | `bg-gold` / `text-gold` | `#f5a524` | `#fbbf24` | Accent: CTA on navy, markers, glows |
+| `--mk-gold-ink` | `text-(--mk-gold-ink)` | `#b7791f` | `#fbbf24` | Gold as text on light surfaces |
+| `--mk-accent-on-dark` | `text-(--mk-accent-on-dark)` | `#f8c766` | `#f8c766` | Gold text and icons on navy |
 | `--mk-logo` | `fill: var(--mk-logo)` | `#182c61` | `#e9edf6` | The wordmark |
 | `--mk-ring` | `--color-ring` | `rgb(24 44 97 / .28)` | `rgb(124 150 232 / .4)` | Focus halo |
 
@@ -53,19 +54,19 @@ Restraint rules: no decorative gradients on light surfaces, no glassmorphism bey
 
 Status tones always pair the soft background with the tone's text color plus a 12–15 % `ring-current` hairline (`Badge`, `Alert`, icon tiles).
 
-### 2.3 Navy bands (brand surfaces)
+### 2.3 Navy surfaces (brand material)
 
-The logo navy in both themes; used for brand bands, not for the app sidebars.
+Night Navy in both themes: the landing hero and bands, the auth brand panel, balance tiles, the selection bar.
 
 | Token | Tailwind | Light | Dark |
 |---|---|---|---|
-| `--mk-panel` | `bg-panel` | `#17212b` | `#17212b` |
-| `--mk-panel-2` | `bg-panel-2` | `#1f2b37` | `#1f2b37` |
+| `--mk-brand` | `bg-brand` | `#0f1d42` | `#0f1d42` |
+| `--mk-brand-light` | `bg-brand-light` | `#182c61` | `#182c61` |
+| `--mk-panel` | `bg-panel` | `#0f1d42` | `#0f1d42` |
+| `--mk-panel-2` | `bg-panel-2` | `#182c61` | `#182c61` |
 | `--mk-panel-line` | `border-panel-line` | `rgb(255 255 255 / .07)` | `rgb(255 255 255 / .06)` |
-| `--mk-panel-text` | `text-panel-text` | `#c9d1d9` | `#c9d1d9` |
-| `--mk-panel-muted` | `text-panel-muted` | `#8794a1` | `#8794a1` |
-
-Static brand colors: `brand #17212b`, `brand-light #223140`.
+| `--mk-panel-text` | `text-panel-text` | `#cdd5ea` | `#cdd5ea` |
+| `--mk-panel-muted` | `text-panel-muted` | `#8b97b8` | `#8b97b8` |
 
 ### 2.4 Interactive states
 
@@ -154,10 +155,11 @@ Z-index: sticky headers 20 · mobile sidebar scrim 30 · sidebar / storefront he
 
 | Shell | File | Composition |
 |---|---|---|
-| Merchant dashboard | `components/layout/DashboardLayout.jsx` | 264 px white sidebar: logo, one compact store row (name, link, visit and copy icon buttons), quiet group labels, active page on a soft navy highlight with a brand-accent icon, navy counters; white 64 px header; gray canvas; 1440 px content |
-| Platform admin | `components/layout/AdminLayout.jsx` | Same white sidebar (248 px) through the shared `SidebarNav`, with a navy "Admin" tag |
-| Affiliate portal | `features/affiliate-portal/AffiliatePortalLayout.jsx` | Store-branded top bar with underline tabs; Ink commission tile on the home |
-| Auth (vendor, admin) | `components/layout/AuthLayout.jsx` | Form column on paper + Ink brand panel (≥ lg) with grid texture and product promise |
+| Shared shell | `components/layout/AppShell.jsx` | 264 px light sidebar: logo (plus an optional tag), a context card (store logo, name and live status, with labeled "visit" and "copy link" actions), every nav group open under a quiet label (active page on a soft navy fill with a gold edge marker, navy counters), the account card and menu at its foot; light 64 px sticky header with language, theme and page tools; 1440 px content. Below `lg` the sidebar is a drawer. |
+| Merchant dashboard | `components/layout/DashboardLayout.jsx` | `AppShell` with the store card and the permission-filtered sections; home opens on a `WelcomeBanner` (light card, time-of-day greeting, today's date) |
+| Platform admin | `components/layout/AdminLayout.jsx` | `AppShell` with an "Admin" tag; home: banner, four headline KPIs, daily charts, per-area breakdown cards, top stores and affiliates |
+| Affiliate portal | `features/affiliate-portal/AffiliatePortalLayout.jsx` | `AppShell` with the store card ("بوابة المسوقين"); home: banner with status, tier and the commission tile |
+| Auth (vendor, affiliate, admin) | `components/layout/AuthLayout.jsx` | The form on a plain page (logo and toggles above, legal links below) beside a Night Navy brand panel from `lg`: grid texture, gold and blue glows, a badge, headline and three gold-checked points chosen by `audience` (`merchant`, `affiliate`, `admin`) |
 | Store public (affiliate join / login) | `components/layout/StorePublicLayout.jsx` | Store-branded header, centered content, "powered by" footer |
 | Storefront | `features/storefront/StorefrontLayout.jsx` | Ink announcement bar, sticky header with search field, category rail, perks band, footer; phone tab bar |
 | Landing / legal | `pages/landing/*` | Ink hero with grid texture, paper sections, Ink CTA band |
@@ -197,7 +199,7 @@ Two-column grids always declare `grid-cols-1` for phones and use `min-w-0` colum
 | `ColumnChart`, `BarList`, `SegmentedBar`, `TrendBadge` | `ui/Charts.jsx` | See §2.5; trend badge is a 20 px pill. |
 | Lists | `.mk-list`, `divide-y` | Rows never float as separate boxes inside a card: they share one box (`.mk-list`) or run edge to edge with hairline dividers (notifications, tickets, activity). Unread rows get a soft navy tint and a 3 px brand-accent edge. |
 | Tables | `.mk-thead` | Tinted header band, 11.5 px semibold labels, `divide-line` rows, `hover:bg-surface-2`. |
-| `SidebarNav` | `layout/DashboardLayout.jsx` | Shared Ink navigation for dashboard and admin. |
+| `SidebarNav` | `layout/AppShell.jsx` | Shared grouped navigation for the dashboard, admin and affiliate portal. |
 | `PageHeader` | `layout/DashboardLayout.jsx` | Breadcrumbs, page title, 13.5 px description (max 2xl), actions aligned to the bottom; 24 px above the content. |
 | `Logo` | `brand/Logo.jsx` | `inverse` keeps "Selly" light on navy. |
 

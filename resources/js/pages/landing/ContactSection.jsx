@@ -57,7 +57,7 @@ export function ContactSection() {
                     <div className="mk-grid-texture absolute inset-0 [mask-image:radial-gradient(ellipse_at_top,black,transparent_75%)]" aria-hidden="true" />
                     <div className="absolute -end-24 -bottom-24 size-72 rounded-full bg-brand-accent/30 blur-3xl" aria-hidden="true" />
                     <div className="relative">
-                        <span className="mk-overline text-gold">{t('تواصل معنا')}</span>
+                        <span className="mk-overline text-(--mk-accent-on-dark)">{t('تواصل معنا')}</span>
                         <h2 className="mt-3 text-[28px] leading-snug font-bold sm:text-[34px]">{t('عندك سؤال؟ فريقنا جاهز يساعدك')}</h2>
                         <p className="mt-4 leading-relaxed text-panel-text">{t('اكتب رسالتك وسنرد عليك في أقرب وقت، أو تواصل معنا مباشرة.')}</p>
 

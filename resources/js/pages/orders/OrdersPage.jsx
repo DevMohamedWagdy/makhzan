@@ -2,8 +2,9 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { PageHeader } from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/Button';
-import { EmptyState, StatCard, StatStrip } from '@/components/ui/Display';
+import { EmptyState, SelectionBar, StatCard, StatStrip } from '@/components/ui/Display';
 import { Input, Select } from '@/components/ui/Form';
+import { Icon } from '@/components/ui/Icon';
 import { Pagination, Tabs } from '@/components/ui/Navigation';
 import { Skeleton } from '@/components/ui/Spinner';
 import { useAuth } from '@/context/AuthContext';
@@ -17,7 +18,7 @@ import { findGovernorate } from '@/lib/locations';
 import { openOrderPrint } from '@/pages/orders/OrderPrintPage';
 import { ordersApi } from '@/services/ordersApi';
 
-const COLUMNS = [t('الطلب'), t('العميل'), t('المحافظة'), t('المنتجات'), t('الإجمالي'), t('المسوق'), t('الدفع'), t('الحالة')];
+const COLUMNS = [t('الطلب'), t('العميل'), t('الإجمالي'), t('الدفع'), t('المسوق'), t('الحالة')];
 
 /** The payment filter (?payment=…): cash on delivery, or an online payment status. */
 const PAYMENT_FILTERS = [
@@ -107,11 +108,16 @@ export function OrdersPage() {
     );
 
     const items = result?.data ?? [];
+    const hasFilters = Boolean(searchTerm || payment || source || couponId || affiliateId);
+    const clearFilters = () => {
+        setSearchTerm('');
+        setQuery({ search: '', payment: '', source: '', coupon_id: '', affiliate_id: '' });
+    };
     const allSelected = items.length > 0 && selectedIds.length === items.length;
 
     return (
         <>
-            <PageHeader title={t('الطلبات')} description={t('تابع طلبات متجرك وغيّر حالتها حتى التوصيل')} breadcrumbs={[t('لوحة التحكم'), t('المبيعات'), t('الطلبات')]}
+            <PageHeader title={t('الطلبات')} icon="shopping-bag" description={t('تابع طلبات متجرك وغيّر حالتها حتى التوصيل')} breadcrumbs={[t('لوحة التحكم'), t('المبيعات'), t('الطلبات')]}
                 actions={
                     can('orders.create') && (
                         <Button to="/dashboard/orders/new" icon="plus">
@@ -122,10 +128,10 @@ export function OrdersPage() {
             />
 
             <StatStrip>
-                <StatCard label={t('بانتظار التأكيد')} value={summary ? formatNumber(summary.pending) : '—'} icon="refresh" tone="warning" />
                 <StatCard label={t('طلبات اليوم')} value={summary ? formatNumber(summary.today) : '—'} icon="shopping-bag" tone="primary" />
-                <StatCard label={t('قيد الشحن')} value={summary ? formatNumber(summary.shipped) : '—'} icon="truck" tone="info" />
-                <StatCard label={t('إيرادات الطلبات المسلّمة')} value={summary ? formatMoney(summary.delivered_revenue) : '—'} icon="wallet" tone="success" hint={summary && t('{count} طلب تم توصيله', { count: formatNumber(summary.delivered) })} />
+                <StatCard label={t('بانتظار التأكيد')} value={summary ? formatNumber(summary.pending) : '—'} icon="refresh" tone="warning" onClick={() => setQuery({ status: status === 'pending' ? '' : 'pending' })} isActive={status === 'pending'} />
+                <StatCard label={t('قيد الشحن')} value={summary ? formatNumber(summary.shipped) : '—'} icon="truck" tone="info" onClick={() => setQuery({ status: status === 'shipped' ? '' : 'shipped' })} isActive={status === 'shipped'} />
+                <StatCard label={t('إيرادات الطلبات المسلّمة')} value={summary ? formatMoney(summary.delivered_revenue) : '—'} icon="wallet" tone="success" hint={summary && t('{count} طلب تم توصيله', { count: formatNumber(summary.delivered) })} onClick={() => setQuery({ status: status === 'delivered' ? '' : 'delivered' })} isActive={status === 'delivered'} />
             </StatStrip>
 
             <section className="mk-card overflow-hidden">
@@ -139,20 +145,14 @@ export function OrdersPage() {
                             {t('طلبات الكوبون: {code}', { code: items[0]?.coupon_code ?? `#${couponId}` })}
                         </Button>
                     )}
-                    {selectedIds.length > 0 && (
-                        <span className="ms-auto flex flex-wrap items-center gap-2">
-                            <span className="text-sm text-muted">{t('تم اختيار {count}', { count: selectedIds.length })}</span>
-                            <Button size="sm" variant="secondary" icon="file-text" onClick={() => openOrderPrint(selectedIds, 'invoice')}>
-                                {t('طباعة الفواتير')}
-                            </Button>
-                            <Button size="sm" variant="secondary" icon="box" onClick={() => openOrderPrint(selectedIds, 'packing')}>
-                                {t('طباعة بوالص التغليف')}
-                            </Button>
-                        </span>
-                    )}
                     {affiliateId && (
                         <Button variant="soft" size="sm" iconEnd="x" onClick={() => setQuery({ affiliate_id: '' })}>
                             {t('طلبات المسوق: {name}', { name: items[0]?.affiliate?.full_name ?? `#${affiliateId}` })}
+                        </Button>
+                    )}
+                    {hasFilters && (
+                        <Button variant="ghost" icon="x" onClick={clearFilters}>
+                            {t('مسح الفلاتر')}
                         </Button>
                     )}
                 </div>
@@ -175,7 +175,7 @@ export function OrdersPage() {
                     </div>
                 ) : (
                     <div className="mk-scroll overflow-x-auto">
-                        <table className="w-full min-w-[940px] text-sm">
+                        <table className="w-full min-w-[820px] text-sm">
                             <thead className="mk-thead">
                                 <tr>
                                     <th scope="col" className="w-10 ps-4 py-3">
@@ -201,7 +201,7 @@ export function OrdersPage() {
                                           </tr>
                                       ))
                                     : items.map((order) => (
-                                          <tr key={order.order_id} className="cursor-pointer transition hover:bg-surface-2" onClick={() => setQuery({ order: order.order_id })}>
+                                          <tr key={order.order_id} className={cn('group cursor-pointer transition hover:bg-surface-2', selectedIds.includes(order.order_id) && 'bg-primary-soft/60 hover:bg-primary-soft')} onClick={() => setQuery({ order: order.order_id })}>
                                               <td className="ps-4 py-3.5" onClick={(event) => event.stopPropagation()}>
                                                   <input type="checkbox" className="size-4 accent-primary" checked={selectedIds.includes(order.order_id)} onChange={() => toggleSelected(order.order_id)} aria-label={t('اختيار الطلب #{number}', { number: order.number })} />
                                               </td>
@@ -216,20 +216,29 @@ export function OrdersPage() {
                                               </td>
                                               <td className="px-4 py-3.5">
                                                   <span className="block font-medium whitespace-nowrap text-ink">{order.address.recipient_name}</span>
-                                                  <span className="ltr block text-start text-xs text-muted">{order.address.phone}</span>
+                                                  <span className="flex items-center gap-1.5 text-xs whitespace-nowrap text-muted">
+                                                      <span className="ltr">{order.address.phone}</span>
+                                                      <span aria-hidden="true">·</span>
+                                                      <Icon name="map-pin" className="size-3" />
+                                                      {findGovernorate(order.address.governorate_id)?.name}
+                                                  </span>
                                               </td>
-                                              <td className="px-4 py-3.5 whitespace-nowrap text-ink-2">{findGovernorate(order.address.governorate_id)?.name}</td>
-                                              <td className="px-4 py-3.5 text-ink-2">{t('{count} منتج', { count: order.items_count })}</td>
                                               <td className="px-4 py-3.5 whitespace-nowrap">
-                                                  <span className="block font-semibold text-ink">{formatMoney(order.total)}</span>
-                                                  {order.coupon_code && <span className="ltr block text-start font-mono text-2xs text-success">{order.coupon_code}</span>}
+                                                  <span className="mk-num block font-semibold text-ink">{formatMoney(order.total)}</span>
+                                                  <span className="text-xs text-muted">
+                                                      {t('{count} منتج', { count: order.items_count })}
+                                                      {order.coupon_code && <span className="ltr ms-1.5 font-mono text-2xs text-success">{order.coupon_code}</span>}
+                                                  </span>
                                               </td>
-                                              <td className="px-4 py-3.5 text-ink-2">{order.affiliate?.full_name ?? '—'}</td>
                                               <td className="px-4 py-3.5">
                                                   <PaymentBadge order={order} />
                                               </td>
+                                              <td className="px-4 py-3.5 text-ink-2">{order.affiliate?.full_name ?? <span className="text-muted">—</span>}</td>
                                               <td className="px-4 py-3.5">
-                                                  <OrderStatusBadge status={order.status} />
+                                                  <span className="flex items-center justify-between gap-2">
+                                                      <OrderStatusBadge status={order.status} />
+                                                      <Icon name="chevron-left" className="size-4 text-muted opacity-0 transition group-hover:opacity-100" />
+                                                  </span>
                                               </td>
                                           </tr>
                                       ))}
@@ -244,6 +253,15 @@ export function OrdersPage() {
                     </div>
                 )}
             </section>
+
+            <SelectionBar count={selectedIds.length} onClear={() => setSelectedIds([])}>
+                <Button size="sm" variant="brand" icon="file-text" onClick={() => openOrderPrint(selectedIds, 'invoice')}>
+                    {t('طباعة الفواتير')}
+                </Button>
+                <Button size="sm" variant="outline-light" icon="box" onClick={() => openOrderPrint(selectedIds, 'packing')}>
+                    {t('طباعة بوالص التغليف')}
+                </Button>
+            </SelectionBar>
 
             <OrderDrawer orderId={openOrderId} onClose={closeOrder} onChanged={load} />
         </>

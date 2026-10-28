@@ -44,13 +44,13 @@ export function AdminLoginPage() {
     };
 
     return (
-        <AuthLayout>
+        <AuthLayout audience="admin" homeTo="/admin/login">
             <AuthHeading title={t('إدارة المنصة')} subtitle={t('تسجيل دخول فريق Sellygrow لإدارة المتاجر والدعم.')} />
 
             <form onSubmit={onSubmit} noValidate className="flex flex-col gap-5">
                 {formError && <Alert tone="danger">{formError}</Alert>}
                 <Field label={t('البريد الإلكتروني')} error={errors.email} required>
-                    {(props) => <Input {...props} {...bind('email')} type="email" icon="mail" dir="ltr" className="text-start" autoComplete="username" />}
+                    {(props) => <Input {...props} {...bind('email')} type="email" icon="mail" dir="ltr" className="text-start" autoComplete="username" placeholder="name@example.com" />}
                 </Field>
                 <Field label={t('كلمة المرور')} error={errors.password} required>
                     {(props) => <PasswordInput {...props} {...bind('password')} autoComplete="current-password" placeholder="••••••••" />}

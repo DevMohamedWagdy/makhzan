@@ -1,25 +1,23 @@
 import { Suspense, useCallback, useEffect, useState } from 'react';
-import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { Logo } from '@/components/brand/Logo';
-import { SidebarNav } from '@/components/layout/DashboardLayout';
-import { Avatar } from '@/components/ui/Display';
-import { Icon } from '@/components/ui/Icon';
+import { Outlet, useNavigate } from 'react-router-dom';
+import { AppShell } from '@/components/layout/AppShell';
 import { PageLoader } from '@/components/ui/Spinner';
-import { LanguageToggle } from '@/components/ui/LanguageToggle';
-import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { useAdminAuth } from '@/context/AdminAuthContext';
 import { adminNotificationTarget } from '@/features/notifications/NotificationItem';
 import { NotificationsMenu } from '@/features/notifications/NotificationsMenu';
-import { isRtl, t } from '@/i18n';
-import { cn } from '@/lib/format';
+import { t } from '@/i18n';
 import { adminApi } from '@/services/adminApi';
 
 const NAV_SECTIONS = [
     {
-        title: t('المنصة'),
         items: [
             { label: t('الرئيسية'), icon: 'grid', to: '/admin', end: true, permission: 'overview.view' },
             { label: t('الإشعارات'), icon: 'bell', to: '/admin/notifications', counter: true },
+        ],
+    },
+    {
+        title: t('الدعم والتواصل'),
+        items: [
             { label: t('تذاكر الدعم'), icon: 'message-square', to: '/admin/support', permission: 'tickets.view' },
             { label: t('رسائل التواصل'), icon: 'mail', to: '/admin/messages', permission: 'messages.view' },
         ],
@@ -68,14 +66,10 @@ const POLL_INTERVAL = 60_000;
 
 /** The platform admin panel: its own sidebar, header and bell, separate from any store dashboard. */
 export function AdminLayout() {
-    const [open, setOpen] = useState(false);
     const { admin, logout, can, refresh } = useAdminAuth();
     const [notifications, setNotifications] = useState([]);
     const [unreadCount, setUnreadCount] = useState(0);
     const navigate = useNavigate();
-    const location = useLocation();
-
-    useEffect(() => setOpen(false), [location.pathname]);
 
     useEffect(() => {
         refresh().catch(() => {});
@@ -118,56 +112,31 @@ export function AdminLayout() {
     const sections = NAV_SECTIONS.map((section) => ({ ...section, items: section.items.filter((item) => !item.permission || can(item.permission)) })).filter((section) => section.items.length > 0);
 
     return (
-        <div className="min-h-dvh">
-            {open && <div className="animate-fade-in fixed inset-0 z-30 bg-[#0b1116]/55 backdrop-blur-[2px] lg:hidden" onClick={() => setOpen(false)} />}
-            <aside
-                className={cn('fixed inset-y-0 start-0 z-40 flex w-[248px] flex-col border-e border-line bg-surface transition-transform duration-300 lg:translate-x-0', open ? 'translate-x-0' : isRtl ? 'translate-x-full' : '-translate-x-full')}
-                aria-label={t('قائمة الإدارة')}
-            >
-                <div className="flex h-16 shrink-0 items-center gap-2.5 px-5">
-                    <Logo className="h-[18px]" />
-                    <span className="rounded-md border border-primary/15 bg-primary-soft px-1.5 py-0.5 text-2xs font-semibold text-primary">{t('الإدارة')}</span>
-                </div>
-                <SidebarNav sections={sections} counter={(item) => (item.counter ? unreadCount : 0)} />
-            </aside>
-
-            <div className="lg:ps-[248px]">
-                <header className="sticky top-0 z-20 flex h-16 items-center gap-3 border-b border-line bg-surface/95 px-4 backdrop-blur-xl sm:px-8">
-                    <button type="button" onClick={() => setOpen(true)} className="grid size-9 place-items-center rounded-lg border border-line-strong/70 bg-surface text-ink-2 shadow-card lg:hidden" aria-label={t('فتح القائمة')}>
-                        <Icon name="menu" className="size-[18px]" />
-                    </button>
-                    <div className="ms-auto flex items-center gap-1">
-                        <LanguageToggle />
-                        <ThemeToggle />
-                        <NotificationsMenu notifications={notifications} unreadCount={unreadCount} markRead={markRead} markAllRead={markAllRead} target={adminNotificationTarget} allHref="/admin/notifications" />
-                        <span className="mx-1.5 h-6 w-px bg-line" aria-hidden="true" />
-                        <span className="flex items-center gap-2.5 px-1">
-                            <Avatar name={admin?.full_name} size="sm" shape="circle" />
-                            <span className="hidden text-start leading-tight sm:block">
-                                <span className="block text-sm font-semibold text-ink">{admin?.full_name}</span>
-                                <span className="block text-2xs text-muted">{admin?.is_super !== false ? t('مدير عام') : (admin?.role ?? t('فريق الإدارة'))}</span>
-                            </span>
-                        </span>
-                        <button
-                            type="button"
-                            onClick={() => {
-                                logout();
-                                navigate('/admin/login');
-                            }}
-                            className="grid size-9 place-items-center rounded-lg text-muted transition hover:bg-danger-soft hover:text-danger"
-                            aria-label={t('تسجيل الخروج')}
-                            title={t('تسجيل الخروج')}
-                        >
-                            <Icon name="log-out" className="size-[18px]" />
-                        </button>
-                    </div>
-                </header>
-                <main className="mx-auto w-full max-w-[1440px] px-4 py-6 sm:px-8 sm:py-8">
-                    <Suspense fallback={<PageLoader />}>
-                        <Outlet context={{ reloadNotifications: loadNotifications }} />
-                    </Suspense>
-                </main>
-            </div>
-        </div>
+        <AppShell
+            navLabel={t('قائمة الإدارة')}
+            brandTag={t('الإدارة')}
+            sections={sections}
+            counter={(item) => (item.counter ? unreadCount : 0)}
+            headerTools={<NotificationsMenu notifications={notifications} unreadCount={unreadCount} markRead={markRead} markAllRead={markAllRead} target={adminNotificationTarget} allHref="/admin/notifications" />}
+            account={{
+                name: admin?.full_name,
+                subtitle: admin?.is_super !== false ? t('مدير عام') : (admin?.role ?? t('فريق الإدارة')),
+                items: [
+                    {
+                        label: t('تسجيل الخروج'),
+                        icon: 'log-out',
+                        tone: 'danger',
+                        onClick: () => {
+                            logout();
+                            navigate('/admin/login');
+                        },
+                    },
+                ],
+            }}
+        >
+            <Suspense fallback={<PageLoader />}>
+                <Outlet context={{ reloadNotifications: loadNotifications }} />
+            </Suspense>
+        </AppShell>
     );
 }

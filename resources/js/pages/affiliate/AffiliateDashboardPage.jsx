@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
-import { Card, StatCard } from '@/components/ui/Display';
+import { Card, StatCard, WelcomeBanner, greetingFor } from '@/components/ui/Display';
 import { Icon } from '@/components/ui/Icon';
 import { Skeleton } from '@/components/ui/Spinner';
 import { useAffiliatePortal } from '@/features/affiliate-portal/AffiliatePortalLayout';
@@ -65,26 +65,29 @@ export function AffiliateDashboardPage() {
 
     return (
         <>
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-                <div>
-                    <h1 className="mk-page-title">{t('أهلاً {value} 👋', { value: firstName })}</h1>
-                    <div className="mt-2 flex flex-wrap items-center gap-2">
+            <WelcomeBanner
+                className="mb-0"
+                title={greetingFor(firstName)}
+                description={t('أرباحك وطلباتك من روابط الإحالة في مكان واحد')}
+                meta={
+                    <>
                         <StatusBadge status={affiliate.status} />
                         <TierBadge tier={affiliate.tier} />
                         <span className="text-xs text-muted">{t('مسوق منذ {value}', { value: formatDate(affiliate.joined_at) })}</span>
+                    </>
+                }
+                aside={
+                    <div className="flex items-center gap-4 rounded-xl border border-primary/20 bg-primary-soft px-5 py-4">
+                        <span className="grid size-10 place-items-center rounded-xl bg-primary text-white">
+                            <Icon name="percent" className="size-5" />
+                        </span>
+                        <div>
+                            <p className="text-xs text-muted">{t('عمولتك على كل طلب')}</p>
+                            <p className="mk-num text-2xl font-semibold text-primary">{formatCommission(affiliate.commission)}</p>
+                        </div>
                     </div>
-                </div>
-                <div className="relative flex items-center gap-4 overflow-hidden rounded-2xl bg-panel px-5 py-4 text-white shadow-raise">
-                    <div className="mk-grid-texture absolute inset-0 [mask-image:linear-gradient(to_left,black,transparent)]" aria-hidden="true" />
-                    <span className="relative grid size-10 place-items-center rounded-xl border border-white/10 bg-white/5 text-brand-accent">
-                        <Icon name="percent" className="size-5" />
-                    </span>
-                    <div className="relative">
-                        <p className="text-xs text-panel-text">{t('عمولتك على كل طلب')}</p>
-                        <p className="mk-num text-2xl font-semibold text-brand-accent">{formatCommission(affiliate.commission)}</p>
-                    </div>
-                </div>
-            </div>
+                }
+            />
 
             <div className="mk-stat-group sm:grid-cols-2 xl:grid-cols-4">
                 <StatCard label={t('طلباتي')} value={formatNumber(affiliate.stats.orders_count)} icon="shopping-bag" />

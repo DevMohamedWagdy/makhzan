@@ -19,8 +19,14 @@ import { PER_PAGE_OPTIONS, PRODUCT_STATUSES, STOCK_LEVELS } from '@/lib/constant
 import { cn, formatNumber, formatRelative } from '@/lib/format';
 import { productsApi } from '@/services/productsApi';
 
-const FILTER_KEYS = ['search', 'category_id', 'status', 'stock', 'page', 'per_page'];
-const COLUMNS = [t('المنتج'), t('القسم'), t('السعر'), t('المخزون'), t('الحالة'), t('آخر تحديث'), ''];
+const FILTER_KEYS = ['search', 'category_id', 'status', 'stock', 'page', 'per_page', 'view'];
+const COLUMNS = [t('المنتج'), t('السعر'), t('المخزون'), t('الحالة'), t('آخر تحديث'), ''];
+
+/** List and grid layouts for the catalog (?view=grid). */
+const VIEWS = [
+    { value: '', label: t('قائمة'), icon: 'menu' },
+    { value: 'grid', label: t('شبكة'), icon: 'grid' },
+];
 
 /** Reads list filters from the URL so filtered views survive reloads and can be linked to. */
 function useProductFilters() {
@@ -127,6 +133,16 @@ export function ProductsPage() {
         }
     };
 
+    /** The row menu for a product: edit, publish / draft / archive, delete (each only with its permission). */
+    const actionsFor = (product) => [
+        { label: t('تعديل المنتج'), icon: 'edit', onClick: () => navigate(`/dashboard/products/${product.product_id}`) },
+        { label: t('نشر في المتجر'), icon: 'store', tone: 'success', onClick: () => setStatus(product, 'active'), hidden: product.status === 'active' || !can('products.update') },
+        { label: t('تحويل لمسودة'), icon: 'eye-off', onClick: () => setStatus(product, 'draft'), hidden: product.status === 'draft' || !can('products.update') },
+        { label: t('أرشفة'), icon: 'box', onClick: () => setStatus(product, 'archived'), hidden: product.status === 'archived' || !can('products.update') },
+        { divider: true },
+        { label: t('حذف المنتج'), icon: 'trash', tone: 'danger', onClick: () => setDeleting(product), hidden: !can('products.delete') },
+    ];
+
     const hasCategories = categories === null || categories.length > 0;
     const hasActiveFilters = Boolean(filters.search || filters.category_id || filters.stock);
     const items = result?.data ?? [];
@@ -135,6 +151,7 @@ export function ProductsPage() {
         <>
             <PageHeader
                 title={t('المنتجات')}
+                icon="box"
                 description={t('أضف منتجاتك بأسعارها ومقاساتها وألوانها، وتابع المخزون')}
                 breadcrumbs={[t('لوحة التحكم'), t('الكتالوج'), t('المنتجات')]}
                 actions={
@@ -168,9 +185,9 @@ export function ProductsPage() {
 
             <StatStrip>
                 <StatCard label={t('إجمالي المنتجات')} value={summary ? formatNumber(summary.total) : '—'} icon="box" tone="primary" />
-                <StatCard label={t('منشور في المتجر')} value={summary ? formatNumber(summary.active) : '—'} icon="store" tone="success" />
-                <StatCard label={t('مخزون منخفض')} value={summary ? formatNumber(summary.low_stock) : '—'} icon="alert-triangle" tone="warning" />
-                <StatCard label={t('نفد المخزون')} value={summary ? formatNumber(summary.out_of_stock) : '—'} icon="x" tone="danger" />
+                <StatCard label={t('منشور في المتجر')} value={summary ? formatNumber(summary.active) : '—'} icon="store" tone="success" onClick={() => setFilters({ status: filters.status === 'active' ? '' : 'active' })} isActive={filters.status === 'active'} />
+                <StatCard label={t('مخزون منخفض')} value={summary ? formatNumber(summary.low_stock) : '—'} icon="alert-triangle" tone="warning" onClick={() => setFilters({ stock: filters.stock === 'low' ? '' : 'low' })} isActive={filters.stock === 'low'} />
+                <StatCard label={t('نفد المخزون')} value={summary ? formatNumber(summary.out_of_stock) : '—'} icon="x" tone="danger" onClick={() => setFilters({ stock: filters.stock === 'out' ? '' : 'out' })} isActive={filters.stock === 'out'} />
             </StatStrip>
 
             <section className="mk-card overflow-hidden">
@@ -207,10 +224,11 @@ export function ProductsPage() {
                         className="lg:w-36"
                     />
                     {hasActiveFilters && (
-                        <Button variant="ghost" icon="x" onClick={resetFilters} className="lg:ms-auto">
+                        <Button variant="ghost" icon="x" onClick={resetFilters}>
                             {t('مسح الفلاتر')}
                         </Button>
                     )}
+                    <Tabs variant="segmented" tabs={VIEWS} value={filters.view} onChange={(view) => setFilters({ view, page: filters.page })} className="shrink-0" />
                 </div>
 
                 {error ? (
@@ -225,9 +243,11 @@ export function ProductsPage() {
                             <EmptyState icon="box" title={t('لا توجد منتجات بعد')} description={t('أضف أول منتج لمتجرك بصوره وأسعاره ومقاساته.')} action={hasCategories && can('products.create') && <Button icon="plus" to="/dashboard/products/new">{t('إضافة منتج')}</Button>} />
                         )}
                     </div>
+                ) : filters.view === 'grid' ? (
+                    <ProductGrid products={items} loading={loading} threshold={summary?.low_stock_threshold} onOpen={(product) => navigate(`/dashboard/products/${product.product_id}`)} actionsFor={actionsFor} />
                 ) : (
                     <div className="mk-scroll overflow-x-auto">
-                        <table className="w-full min-w-[860px] text-sm">
+                        <table className="w-full min-w-[780px] text-sm">
                             <thead className="mk-thead">
                                 <tr>
                                     {COLUMNS.map((column) => (
@@ -255,11 +275,14 @@ export function ProductsPage() {
                                                       <ProductThumb src={product.image_url} name={localized(product)} />
                                                       <div className="min-w-0">
                                                           <span className="block max-w-64 truncate font-semibold text-ink group-hover:text-primary">{localized(product)}</span>
-                                                          <span className="text-xs text-muted">{product.options.length ? t('التركيبات: {length} · {value}', { length: product.variants.length, value: product.options.map((option) => option.name).join('، ') }) : t('بدون خيارات')}</span>
+                                                          <span className="block max-w-72 truncate text-xs text-muted">
+                                                              {localized(product.category)}
+                                                              {' · '}
+                                                              {product.options.length ? t('التركيبات: {length} · {value}', { length: product.variants.length, value: product.options.map((option) => option.name).join('، ') }) : t('بدون خيارات')}
+                                                          </span>
                                                       </div>
                                                   </div>
                                               </td>
-                                              <td className="px-4 py-3 whitespace-nowrap text-ink-2">{localized(product.category)}</td>
                                               <td className="px-4 py-3">
                                                   <PriceCell product={product} />
                                               </td>
@@ -278,14 +301,7 @@ export function ProductsPage() {
                                                               <Icon name="more-vertical" className="size-[18px]" />
                                                           </button>
                                                       )}
-                                                      items={[
-                                                          { label: t('تعديل المنتج'), icon: 'edit', onClick: () => navigate(`/dashboard/products/${product.product_id}`) },
-                                                          { label: t('نشر في المتجر'), icon: 'store', tone: 'success', onClick: () => setStatus(product, 'active'), hidden: product.status === 'active' || !can('products.update') },
-                                                          { label: t('تحويل لمسودة'), icon: 'eye-off', onClick: () => setStatus(product, 'draft'), hidden: product.status === 'draft' || !can('products.update') },
-                                                          { label: t('أرشفة'), icon: 'box', onClick: () => setStatus(product, 'archived'), hidden: product.status === 'archived' || !can('products.update') },
-                                                          { divider: true },
-                                                          { label: t('حذف المنتج'), icon: 'trash', tone: 'danger', onClick: () => setDeleting(product), hidden: !can('products.delete') },
-                                                      ]}
+                                                      items={actionsFor(product)}
                                                   />
                                               </td>
                                           </tr>
@@ -313,6 +329,61 @@ export function ProductsPage() {
                 confirmLabel={t('حذف المنتج')}
             />
         </>
+    );
+}
+
+/** The catalog as cards: the cover image with its status, the name and category, the price and the stock. */
+function ProductGrid({ products, loading, threshold, onOpen, actionsFor }) {
+    if (loading && products.length === 0) {
+        return (
+            <div className="grid gap-4 p-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+                {Array.from({ length: 8 }, (_, index) => (
+                    <Skeleton key={index} className="aspect-[4/5] rounded-xl" />
+                ))}
+            </div>
+        );
+    }
+
+    return (
+        <ul className={cn('grid gap-4 p-4 transition-opacity sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4', loading && 'opacity-60')} aria-busy={loading}>
+            {products.map((product) => (
+                <li key={product.product_id} className="group relative flex flex-col overflow-hidden rounded-xl border border-line bg-surface transition duration-300 hover:-translate-y-0.5 hover:border-line-strong hover:shadow-raise">
+                    <button type="button" onClick={() => onOpen(product)} className="flex flex-1 flex-col text-start" aria-label={localized(product)}>
+                        <span className="relative block aspect-[4/3] overflow-hidden bg-surface-2">
+                            {product.image_url ? (
+                                <img src={product.image_url} alt="" loading="lazy" className="size-full object-cover transition duration-500 group-hover:scale-[1.03]" />
+                            ) : (
+                                <span className="grid size-full place-items-center text-muted">
+                                    <Icon name="camera" className="size-8" />
+                                </span>
+                            )}
+                            <span className="absolute start-2.5 top-2.5">
+                                <ProductStatusBadge status={product.status} />
+                            </span>
+                        </span>
+                        <span className="flex flex-1 flex-col gap-1 p-3.5">
+                            <span className="truncate font-semibold text-ink group-hover:text-primary">{localized(product)}</span>
+                            <span className="truncate text-xs text-muted">{localized(product.category)}</span>
+                            <span className="mt-auto flex items-end justify-between gap-2 pt-2.5">
+                                <PriceCell product={product} />
+                                <StockBadge stock={product.stock_total} threshold={threshold} />
+                            </span>
+                        </span>
+                    </button>
+                    <span className="absolute end-2 top-2">
+                        <Dropdown
+                            label={t('إجراءات {name}', { name: localized(product) })}
+                            trigger={(props) => (
+                                <button type="button" {...props} className="grid size-8 place-items-center rounded-lg bg-surface/90 text-ink-2 shadow-card backdrop-blur transition hover:text-ink">
+                                    <Icon name="more-vertical" className="size-[18px]" />
+                                </button>
+                            )}
+                            items={actionsFor(product)}
+                        />
+                    </span>
+                </li>
+            ))}
+        </ul>
     );
 }
 
