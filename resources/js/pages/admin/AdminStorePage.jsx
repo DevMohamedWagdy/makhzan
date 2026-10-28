@@ -20,7 +20,7 @@ import { cn, formatDate, formatMoney, formatNumber, formatRelative } from '@/lib
 import { findGovernorate } from '@/lib/locations';
 import { adminApi } from '@/services/adminApi';
 import { sessionStore } from '@/services/session';
-import { StoreStatus } from './AdminStoresPage';
+import { OwnerVerification, StoreStatus } from './AdminStoresPage';
 
 /** The store's sections, grouped for the side menu. */
 const SECTION_GROUPS = [
@@ -263,6 +263,11 @@ function OverviewTab({ store }) {
                 <DetailRow label={t('البريد')} ltr>
                     {store.owner?.email}
                 </DetailRow>
+                {store.owner && !store.owner.email_verified && (
+                    <DetailRow label={t('تأكيد البريد')}>
+                        <OwnerVerification owner={store.owner} />
+                    </DetailRow>
+                )}
                 <DetailRow label={t('رابط المتجر')} ltr>
                     {store.url}
                 </DetailRow>

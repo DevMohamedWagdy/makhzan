@@ -6,6 +6,7 @@ use App\Models\Affiliate;
 use App\Models\Vendor;
 use App\Notifications\EmailVerificationCodeNotification;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Throwable;
@@ -13,7 +14,9 @@ use Throwable;
 /**
  * Emailed 6-digit codes that confirm an account's email (vendors and affiliates) before it gets
  * a token. Sign-up and sign-in open a "challenge" (an opaque id the browser holds); the code is
- * checked against it, with a few attempts per code and a cooldown between resends.
+ * checked against it, with a few attempts per code and a cooldown between resends. The latest
+ * code is also kept (encrypted, for as long as it's valid) per account, so the platform team can
+ * read it to a merchant when email delivery fails.
  */
 class EmailVerification
 {
@@ -91,6 +94,7 @@ class EmailVerification
         }
 
         Cache::forget(self::cacheKey($type, $challenge));
+        Cache::forget(self::pendingKey($type, $state['account_id']));
 
         $account = self::ACCOUNTS[$type]::query()->findOrFail($state['account_id']);
         $account->forceFill(['email_verified_at' => now()])->save();
@@ -113,6 +117,11 @@ class EmailVerification
             'sent_at' => now()->getTimestamp(),
             'attempts' => 0,
         ], now()->addMinutes(self::CHALLENGE_MINUTES));
+
+        Cache::put(self::pendingKey($type, $account->getKey()), [
+            'code' => Crypt::encryptString($code),
+            'expires_at' => now()->addMinutes(self::CODE_MINUTES)->getTimestamp(),
+        ], now()->addMinutes(self::CODE_MINUTES));
 
         try {
             $account->notify(new EmailVerificationCodeNotification($code, self::CODE_MINUTES));
@@ -161,6 +170,30 @@ class EmailVerification
     }
 
     /**
+     * The account's latest unexpired code, for the platform team to pass on when the email didn't
+     * arrive; null once the email is verified or the code has expired.
+     *
+     * @return array{code: string, expires_at: string}|null
+     */
+    public static function pendingCode(Vendor|Affiliate $account): ?array
+    {
+        if ($account->email_verified_at !== null) {
+            return null;
+        }
+
+        $pending = Cache::get(self::pendingKey(array_search($account::class, self::ACCOUNTS, true), $account->getKey()));
+
+        if (! is_array($pending) || ($pending['expires_at'] ?? 0) < now()->getTimestamp()) {
+            return null;
+        }
+
+        return [
+            'code' => Crypt::decryptString($pending['code']),
+            'expires_at' => now()->setTimestamp($pending['expires_at'])->toIso8601String(),
+        ];
+    }
+
+    /**
      * "mohamed@gmail.com" becomes "mo*****@gmail.com".
      */
     public static function maskEmail(string $email): string
@@ -174,6 +207,11 @@ class EmailVerification
     private static function hash(string $code): string
     {
         return hash_hmac('sha256', $code, (string) config('app.key'));
+    }
+
+    private static function pendingKey(string $type, int|string $accountId): string
+    {
+        return "email-verification:pending:{$type}:{$accountId}";
     }
 
     /**

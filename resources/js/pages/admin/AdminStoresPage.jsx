@@ -4,11 +4,12 @@ import { PageHeader } from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/Button';
 import { Avatar, Badge, EmptyState } from '@/components/ui/Display';
 import { Input, Select } from '@/components/ui/Form';
+import { Icon } from '@/components/ui/Icon';
 import { Pagination } from '@/components/ui/Navigation';
 import { Skeleton } from '@/components/ui/Spinner';
-import { useDebouncedValue } from '@/hooks/common';
+import { useCopy, useDebouncedValue } from '@/hooks/common';
 import { t } from '@/i18n';
-import { formatDate, formatMoney, formatNumber } from '@/lib/format';
+import { cn, formatDate, formatMoney, formatNumber } from '@/lib/format';
 import { adminApi } from '@/services/adminApi';
 
 const STATUSES = [
@@ -19,6 +20,57 @@ const STATUSES = [
 
 export function StoreStatus({ store }) {
     return store.suspended_at ? <Badge tone="danger">{t('موقوف')}</Badge> : <Badge tone="success">{t('نشط')}</Badge>;
+}
+
+/** Minutes left until an ISO time, at least 0. */
+function minutesUntil(isoTime) {
+    return Math.max(0, Math.ceil((new Date(isoTime).getTime() - Date.now()) / 60_000));
+}
+
+/**
+ * Where the owner stands with email verification: nothing once verified; otherwise an "unverified" badge, and
+ * the code waiting in their inbox (with copy) so the team can read it to them when the email didn't arrive.
+ * `pending_verification` only comes to admins allowed to update merchant accounts.
+ */
+export function OwnerVerification({ owner, compact = false }) {
+    const { copy, copiedValue } = useCopy();
+
+    if (!owner || owner.email_verified) {
+        return null;
+    }
+
+    const pending = owner.pending_verification;
+
+    if (!pending) {
+        return (
+            <Badge tone="warning" icon="mail" className={compact ? 'mt-1.5' : undefined}>
+                {t('البريد غير مؤكد')}
+            </Badge>
+        );
+    }
+
+    const isCopied = copiedValue === pending.code;
+
+    return (
+        <span className={cn('inline-flex items-center gap-2.5 rounded-lg border border-warning/30 bg-warning-soft px-2.5 py-1.5', compact && 'mt-1.5')} onClick={(event) => event.stopPropagation()}>
+            <span className="flex flex-col leading-tight">
+                <span className="text-2xs font-medium text-warning">{t('كود التفعيل')}</span>
+                <span dir="ltr" className="mk-num font-mono text-base font-bold tracking-[0.2em] text-ink">
+                    {pending.code}
+                </span>
+            </span>
+            <span className="text-2xs text-muted">{t('ينتهي خلال {count} د', { count: minutesUntil(pending.expires_at) })}</span>
+            <button
+                type="button"
+                onClick={() => copy(pending.code)}
+                className={cn('grid size-7 place-items-center rounded-md transition', isCopied ? 'text-success' : 'text-muted hover:bg-surface hover:text-ink')}
+                aria-label={isCopied ? t('تم النسخ') : t('نسخ الكود')}
+                title={isCopied ? t('تم النسخ') : t('نسخ الكود')}
+            >
+                <Icon name={isCopied ? 'check' : 'copy'} className="size-4" />
+            </button>
+        </span>
+    );
 }
 
 /** Every store on the platform with search and status filters, and a details drawer. */
@@ -58,6 +110,9 @@ export function AdminStoresPage() {
                 <div className="mk-toolbar">
                     <Input type="search" icon="search" value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder={t('ابحث باسم المتجر أو الرابط أو المالك...')} aria-label={t('بحث في المتاجر')} className="lg:w-96" />
                     <Select value={status} onChange={(event) => setQuery({ status: event.target.value })} aria-label={t('الحالة')} className="sm:w-48" options={STATUSES} />
+                    <Button variant="secondary" icon="refresh" onClick={load} title={t('يجلب أحدث أكواد التفعيل')}>
+                        {t('تحديث')}
+                    </Button>
                 </div>
 
                 {error ? (
@@ -101,6 +156,7 @@ export function AdminStoresPage() {
                                         <td className="px-4 py-3">
                                             <span className="block text-ink">{store.owner?.full_name}</span>
                                             <span className="ltr block text-start text-xs text-muted">{store.owner?.phone}</span>
+                                            <OwnerVerification owner={store.owner} compact />
                                         </td>
                                         <td className="px-4 py-3">
                                             <StoreStatus store={store} />

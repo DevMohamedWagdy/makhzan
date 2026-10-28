@@ -3,6 +3,12 @@
  * Generated from the t() calls in resources/js; keep keys identical to the Arabic text in code.
  */
 export default {
+    'البريد غير مؤكد': 'Email not verified',
+    'كود التفعيل': 'Verification code',
+    'ينتهي خلال {count} د': 'Expires in {count} min',
+    'يجلب أحدث أكواد التفعيل': 'Fetches the latest verification codes',
+    'تحديث': 'Refresh',
+    'تأكيد البريد': 'Email verification',
     'المحافظات والمدن': 'Governorates & cities',
     'إضافة محافظة': 'Add governorate',
     'إضافة مدينة': 'Add city',

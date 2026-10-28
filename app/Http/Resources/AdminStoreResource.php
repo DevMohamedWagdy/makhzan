@@ -2,7 +2,9 @@
 
 namespace App\Http\Resources;
 
+use App\Models\Admin;
 use App\Models\Store;
+use App\Support\EmailVerification;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Carbon;
@@ -33,6 +35,12 @@ class AdminStoreResource extends JsonResource
                 'full_name' => $this->vendor->full_name,
                 'phone' => $this->vendor->phone,
                 'email' => $this->vendor->email,
+                'email_verified' => $this->vendor->email_verified_at !== null,
+                // The code waiting in the owner's inbox, for admins who help merchants with their accounts.
+                'pending_verification' => $this->when(
+                    $request->user() instanceof Admin && $request->user()->hasPermission('vendors.update'),
+                    fn (): ?array => EmailVerification::pendingCode($this->vendor),
+                ),
             ]),
             'suspended_at' => $this->suspended_at?->toIso8601String(),
             'suspension_reason' => $this->suspension_reason,
