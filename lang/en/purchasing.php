@@ -33,4 +33,15 @@ return [
         'note' => 'Inventory file import',
     ],
 
+    'statement_receipt' => 'Received :units units',
+    'return_note' => 'Return to :supplier #:number',
+    'return_exceeds_stock' => 'The quantity of ":product" returned is more than the warehouse holds',
+    'payment_methods' => [
+        'cash' => 'Cash',
+        'bank_transfer' => 'Bank transfer',
+        'wallet' => 'Mobile wallet',
+        'cheque' => 'Cheque',
+        'other' => 'Other',
+    ],
+
 ];

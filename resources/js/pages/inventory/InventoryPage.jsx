@@ -158,6 +158,9 @@ export function InventoryPage() {
                         <Button variant="secondary" icon="file-spreadsheet" onClick={() => setImportOpen(true)}>
                             {t('جرد بملف Excel')}
                         </Button>
+                        <Button variant="secondary" icon="bar-chart" to="/dashboard/inventory/reports">
+                            {t('التقارير')}
+                        </Button>
                         <Button variant="secondary" icon="refresh" to="/dashboard/inventory/movements">
                             {t('سجل الحركات')}
                         </Button>

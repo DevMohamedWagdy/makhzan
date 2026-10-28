@@ -40,6 +40,22 @@ class Supplier extends Model
     }
 
     /**
+     * @return HasMany<SupplierPayment, $this>
+     */
+    public function payments(): HasMany
+    {
+        return $this->hasMany(SupplierPayment::class);
+    }
+
+    /**
+     * @return HasMany<PurchaseReturn, $this>
+     */
+    public function purchaseReturns(): HasMany
+    {
+        return $this->hasMany(PurchaseReturn::class);
+    }
+
+    /**
      * Orders still waiting for goods.
      *
      * @return HasMany<PurchaseOrder, $this>

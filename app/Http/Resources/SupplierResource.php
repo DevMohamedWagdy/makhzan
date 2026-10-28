@@ -28,6 +28,8 @@ class SupplierResource extends JsonResource
             'notes' => $this->notes,
             'purchase_orders_count' => $this->whenCounted('purchaseOrders'),
             'open_purchase_orders_count' => $this->whenCounted('openPurchaseOrders'),
+            // Received, returned, paid and the balance owed (SupplierAccounts), on the list only.
+            'account' => $this->whenHas('account'),
             'created_at' => $this->created_at?->toIso8601String(),
         ];
     }

@@ -31,6 +31,9 @@ enum StockMovementType: string
     /** Quantity changed directly in the product form. */
     case ProductEdit = 'product_edit';
 
+    /** Sent back to the supplier (damaged or wrong goods), credited to their account. */
+    case SupplierReturn = 'supplier_return';
+
     /**
      * Movements a vendor records by hand from the inventory page.
      *

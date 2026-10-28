@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { PageHeader } from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/Button';
 import { Alert, Card, EmptyState } from '@/components/ui/Display';
@@ -23,13 +23,15 @@ export function PurchaseOrderFormPage() {
     const navigate = useNavigate();
     const toast = useToast();
     const isEdit = Boolean(purchaseOrderId);
+    // Smart reorder hands over its suggested lines (and their supplier) to start the order from.
+    const { state: prefill } = useLocation();
     const [suppliers, setSuppliers] = useState(null);
-    const [supplierId, setSupplierId] = useState(searchParams.get('supplier_id') ?? '');
+    const [supplierId, setSupplierId] = useState(prefill?.supplierId ? String(prefill.supplierId) : (searchParams.get('supplier_id') ?? ''));
     const [warehouseId, setWarehouseId] = useState('');
     const { warehouses } = useWarehouses();
     const [expectedAt, setExpectedAt] = useState('');
     const [notes, setNotes] = useState('');
-    const [items, setItems] = useState([]);
+    const [items, setItems] = useState(() => (isEdit ? [] : (prefill?.items ?? [])));
     const [errors, setErrors] = useState({});
     const [loadError, setLoadError] = useState(null);
     const [loaded, setLoaded] = useState(!isEdit);

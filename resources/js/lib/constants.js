@@ -66,6 +66,16 @@ export const STOCK_MOVEMENT_TYPES = {
     transfer: { label: t('تحويل بين المخازن'), tone: 'info', icon: 'arrow-left' },
     initial: { label: t('رصيد افتتاحي'), tone: 'neutral', icon: 'plus' },
     product_edit: { label: t('تعديل من صفحة المنتج'), tone: 'neutral', icon: 'edit' },
+    supplier_return: { label: t('مرتجع للمورد'), tone: 'warning', icon: 'upload' },
+};
+
+/** How the store paid a supplier. */
+export const SUPPLIER_PAYMENT_METHODS = {
+    cash: t('نقداً'),
+    bank_transfer: t('تحويل بنكي'),
+    wallet: t('محفظة إلكترونية'),
+    cheque: t('شيك'),
+    other: t('أخرى'),
 };
 
 /** @type {Record<'draft'|'ordered'|'partial'|'received'|'closed'|'cancelled', { label: string, tone: string, icon: string }>} */

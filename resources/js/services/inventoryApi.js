@@ -27,4 +27,8 @@ export const inventoryApi = {
     importRows: (rows, warehouseId) => request('POST', `${BASE}/import`, { body: { rows, warehouse_id: warehouseId } }),
     /** @param {{ low_stock_threshold: number }} payload */
     updateSettings: (payload) => request('PUT', `${BASE}/settings`, { body: payload }),
+    /** Units and value at cost and retail, per warehouse and per category, with `totals`. */
+    valueReport: () => request('GET', `${BASE}/reports/value`),
+    /** In-stock variants that haven't sold in `days` days: `{ days, totals, items }`. */
+    deadStock: (days) => request('GET', `${BASE}/reports/dead-stock`, { query: { days } }),
 };

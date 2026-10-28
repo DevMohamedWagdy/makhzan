@@ -315,6 +315,22 @@ class Store extends Model
     }
 
     /**
+     * @return HasMany<PurchaseReturn, $this>
+     */
+    public function purchaseReturns(): HasMany
+    {
+        return $this->hasMany(PurchaseReturn::class);
+    }
+
+    /**
+     * @return HasMany<SupplierPayment, $this>
+     */
+    public function supplierPayments(): HasMany
+    {
+        return $this->hasMany(SupplierPayment::class);
+    }
+
+    /**
      * @return HasMany<StockMovement, $this>
      */
     public function stockMovements(): HasMany

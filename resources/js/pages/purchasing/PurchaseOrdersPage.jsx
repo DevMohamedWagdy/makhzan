@@ -93,6 +93,9 @@ export function PurchaseOrdersPage() {
                 breadcrumbs={[t('لوحة التحكم'), t('المخزون والمشتريات'), t('أوامر الشراء')]}
                 actions={
                     <>
+                        <Button variant="secondary" icon="sparkles" to="/dashboard/purchase-orders/reorder">
+                            {t('إعادة الطلب الذكية')}
+                        </Button>
                         <Button variant="secondary" icon="building" to="/dashboard/suppliers">
                             {t('الموردين')}
                         </Button>

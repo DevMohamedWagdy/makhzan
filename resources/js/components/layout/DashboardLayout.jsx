@@ -42,9 +42,11 @@ export const NAV_SECTIONS = [
     {
         title: t('المخزون والمشتريات'),
         items: [
-            { label: t('المخزون'), icon: 'nav-inventory', to: '/dashboard/inventory', permission: 'inventory' },
+            { label: t('المخزون'), icon: 'nav-inventory', to: '/dashboard/inventory', permission: 'inventory', except: ['/dashboard/inventory/reports'] },
             { label: t('المخازن'), icon: 'nav-warehouses', to: '/dashboard/warehouses', permission: 'warehouses' },
-            { label: t('أوامر الشراء'), icon: 'nav-purchase-orders', to: '/dashboard/purchase-orders', permission: 'purchasing' },
+            { label: t('تقارير المخزون'), icon: 'nav-reports', to: '/dashboard/inventory/reports', permission: 'inventory' },
+            { label: t('أوامر الشراء'), icon: 'nav-purchase-orders', to: '/dashboard/purchase-orders', permission: 'purchasing', except: ['/dashboard/purchase-orders/reorder'] },
+            { label: t('إعادة الطلب الذكية'), icon: 'nav-purchase-orders', to: '/dashboard/purchase-orders/reorder', permission: 'purchasing' },
             { label: t('الموردين'), icon: 'nav-suppliers', to: '/dashboard/suppliers', permission: 'suppliers' },
         ],
     },

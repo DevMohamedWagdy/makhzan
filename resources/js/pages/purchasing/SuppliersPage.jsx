@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { PageHeader } from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/Button';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
-import { Avatar, EmptyState } from '@/components/ui/Display';
+import { Avatar, EmptyState, StatCard, StatStrip } from '@/components/ui/Display';
 import { Input } from '@/components/ui/Form';
 import { Skeleton } from '@/components/ui/Spinner';
 import { useAuth } from '@/context/AuthContext';
@@ -11,16 +11,17 @@ import { useToast } from '@/context/ToastContext';
 import { SupplierFormModal } from '@/features/purchasing/SupplierFormModal';
 import { useDebouncedValue } from '@/hooks/common';
 import { t } from '@/i18n';
-import { cn, formatNumber } from '@/lib/format';
+import { cn, formatMoney, formatNumber } from '@/lib/format';
 import { suppliersApi } from '@/services/purchasingApi';
 
-/** The store's suppliers with their purchase orders; add, edit or delete (when unused). */
+/** The store's suppliers with their purchase orders and what the store owes each; add, edit or delete (when unused). */
 export function SuppliersPage() {
     const { can } = useAuth();
     const toast = useToast();
     const [searchTerm, setSearchTerm] = useState('');
     const search = useDebouncedValue(searchTerm, 300);
     const [suppliers, setSuppliers] = useState(null);
+    const [totalDue, setTotalDue] = useState(null);
     const [error, setError] = useState(null);
     const [editing, setEditing] = useState(null);
     const [deleting, setDeleting] = useState(null);
@@ -29,8 +30,11 @@ export function SuppliersPage() {
     const load = useCallback(() => {
         setError(null);
         suppliersApi
-            .list({ search })
-            .then((response) => setSuppliers(response.data ?? response))
+            .listWithBalances({ search })
+            .then((response) => {
+                setSuppliers(response.data);
+                setTotalDue(response.total_due);
+            })
             .catch((loadError) => setError(loadError.message));
     }, [search]);
 
@@ -66,6 +70,12 @@ export function SuppliersPage() {
                 }
             />
 
+            <StatStrip>
+                <StatCard label={t('إجمالي المستحق للموردين')} value={totalDue === null ? '—' : formatMoney(totalDue)} icon="wallet" tone={totalDue > 0 ? 'danger' : 'success'} hint={t('قيمة البضاعة المستلمة ناقص المدفوع والمرتجع')} />
+                <StatCard label={t('موردين لهم مستحقات')} value={suppliers ? formatNumber(suppliers.filter((supplier) => supplier.account?.balance > 0).length) : '—'} icon="users" tone="warning" />
+                <StatCard label={t('أوامر شراء مفتوحة')} value={suppliers ? formatNumber(suppliers.reduce((sum, supplier) => sum + supplier.open_purchase_orders_count, 0)) : '—'} icon="truck" tone="info" />
+            </StatStrip>
+
             <section className="mk-card overflow-hidden">
                 <div className="mk-toolbar">
                     <Input type="search" icon="search" value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder={t('ابحث بالاسم أو الهاتف...')} aria-label={t('بحث في الموردين')} className="lg:w-80" />
@@ -96,7 +106,9 @@ export function SuppliersPage() {
                             <li key={supplier.supplier_id} className="flex flex-wrap items-center gap-4 px-4 py-3.5">
                                 <Avatar name={supplier.name} size="md" />
                                 <div className="min-w-0 flex-1">
-                                    <p className="font-semibold text-ink">{supplier.name}</p>
+                                    <Link to={`/dashboard/suppliers/${supplier.supplier_id}`} className="font-semibold text-ink hover:text-primary">
+                                        {supplier.name}
+                                    </Link>
                                     <p className="flex flex-wrap gap-x-3 text-xs text-muted">
                                         {supplier.contact_name && <span>{supplier.contact_name}</span>}
                                         {supplier.phone && <span className="ltr">{supplier.phone}</span>}
@@ -106,6 +118,10 @@ export function SuppliersPage() {
                                 <Link to={`/dashboard/purchase-orders?supplier_id=${supplier.supplier_id}`} className="text-sm text-ink-2 hover:text-primary">
                                     {t('{count} أمر شراء', { count: formatNumber(supplier.purchase_orders_count) })}
                                     {supplier.open_purchase_orders_count > 0 && <span className="ms-1 text-xs text-info">{t('({count} مفتوح)', { count: formatNumber(supplier.open_purchase_orders_count) })}</span>}
+                                </Link>
+                                <Link to={`/dashboard/suppliers/${supplier.supplier_id}`} className="min-w-28 text-end" title={t('كشف الحساب')}>
+                                    <span className="block text-2xs text-muted">{supplier.account?.balance < 0 ? t('رصيد لك') : t('المستحق')}</span>
+                                    <span className={cn('mk-num font-semibold', supplier.account?.balance > 0 ? 'text-danger' : 'text-success')}>{supplier.account?.balance ? formatMoney(Math.abs(supplier.account.balance)) : t('خالص')}</span>
                                 </Link>
                                 <div className={cn('flex gap-1', !can('suppliers.update') && 'hidden')}>
                                     <Button size="sm" variant="soft" icon="plus" to={`/dashboard/purchase-orders/new?supplier_id=${supplier.supplier_id}`}>

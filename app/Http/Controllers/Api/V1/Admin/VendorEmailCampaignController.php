@@ -23,12 +23,20 @@ use Illuminate\Validation\ValidationException;
 class VendorEmailCampaignController extends Controller
 {
     /**
-     * The sending history, newest first, with how many merchants an email to "all" would reach.
+     * The sending history, newest first, with how many merchants an email to "all" would reach and the
+     * totals across every email sent.
      */
     public function index(): AnonymousResourceCollection
     {
         return VendorEmailCampaignResource::collection(VendorEmailCampaign::query()->with('admin')->latest('id')->paginate(15))
-            ->additional(['eligible_count' => VendorEmailCampaign::eligibleRecipients()->count()]);
+            ->additional([
+                'eligible_count' => VendorEmailCampaign::eligibleRecipients()->count(),
+                'summary' => [
+                    'campaigns' => VendorEmailCampaign::query()->count(),
+                    'sent' => (int) VendorEmailCampaign::query()->sum('sent_count'),
+                    'failed' => (int) VendorEmailCampaign::query()->sum('failed_count'),
+                ],
+            ]);
     }
 
     /**

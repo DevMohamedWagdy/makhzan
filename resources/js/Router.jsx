@@ -64,6 +64,9 @@ const CustomersPage = lazy(() => import('@/pages/customers/CustomersPage').then(
 const DashboardHomePage = lazy(() => import('@/pages/dashboard/DashboardHomePage').then((module) => ({ default: module.DashboardHomePage })));
 const InventoryPage = lazy(() => import('@/pages/inventory/InventoryPage').then((module) => ({ default: module.InventoryPage })));
 const StockMovementsPage = lazy(() => import('@/pages/inventory/StockMovementsPage').then((module) => ({ default: module.StockMovementsPage })));
+const InventoryReportsPage = lazy(() => import('@/pages/inventory/InventoryReportsPage').then((module) => ({ default: module.InventoryReportsPage })));
+const ReorderPage = lazy(() => import('@/pages/purchasing/ReorderPage').then((module) => ({ default: module.ReorderPage })));
+const SupplierAccountPage = lazy(() => import('@/pages/purchasing/SupplierAccountPage').then((module) => ({ default: module.SupplierAccountPage })));
 const WarehousesPage = lazy(() => import('@/pages/inventory/WarehousesPage').then((module) => ({ default: module.WarehousesPage })));
 const NotificationsPage = lazy(() => import('@/pages/notifications/NotificationsPage').then((module) => ({ default: module.NotificationsPage })));
 const OrderPrintPage = lazy(() => import('@/pages/orders/OrderPrintPage').then((module) => ({ default: module.OrderPrintPage })));
@@ -260,16 +263,19 @@ export function App() {
                                     <Route element={<RequirePermission permission="inventory" />}>
                                         <Route path="inventory" element={<InventoryPage />} />
                                         <Route path="inventory/movements" element={<StockMovementsPage />} />
+                                        <Route path="inventory/reports" element={<InventoryReportsPage />} />
                                     </Route>
                                     <Route element={<RequirePermission permission="warehouses" />}>
                                         <Route path="warehouses" element={<WarehousesPage />} />
                                     </Route>
                                     <Route element={<RequirePermission permission="suppliers" />}>
                                         <Route path="suppliers" element={<SuppliersPage />} />
+                                        <Route path="suppliers/:supplierId" element={<SupplierAccountPage />} />
                                     </Route>
                                     <Route element={<RequirePermission permission="purchasing" />}>
                                         <Route path="purchase-orders" element={<PurchaseOrdersPage />} />
                                         <Route path="purchase-orders/new" element={<PurchaseOrderFormPage />} />
+                                        <Route path="purchase-orders/reorder" element={<ReorderPage />} />
                                         <Route path="purchase-orders/:purchaseOrderId" element={<PurchaseOrderPage />} />
                                         <Route path="purchase-orders/:purchaseOrderId/edit" element={<PurchaseOrderFormPage key="edit" />} />
                                     </Route>

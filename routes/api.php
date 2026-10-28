@@ -70,6 +70,7 @@ use App\Http\Controllers\Api\V1\Vendor\CustomerPointsController;
 use App\Http\Controllers\Api\V1\Vendor\CustomerSummaryController;
 use App\Http\Controllers\Api\V1\Vendor\InventoryController;
 use App\Http\Controllers\Api\V1\Vendor\InventoryImportController;
+use App\Http\Controllers\Api\V1\Vendor\InventoryReportController;
 use App\Http\Controllers\Api\V1\Vendor\InventorySettingsController;
 use App\Http\Controllers\Api\V1\Vendor\InventorySummaryController;
 use App\Http\Controllers\Api\V1\Vendor\LoyaltySettingsController;
@@ -87,6 +88,8 @@ use App\Http\Controllers\Api\V1\Vendor\ProductImageController;
 use App\Http\Controllers\Api\V1\Vendor\ProductReviewController;
 use App\Http\Controllers\Api\V1\Vendor\ProductSummaryController;
 use App\Http\Controllers\Api\V1\Vendor\PurchaseOrderController;
+use App\Http\Controllers\Api\V1\Vendor\PurchaseReturnController;
+use App\Http\Controllers\Api\V1\Vendor\ReorderSuggestionController;
 use App\Http\Controllers\Api\V1\Vendor\ReportController;
 use App\Http\Controllers\Api\V1\Vendor\ShippingSettingsController;
 use App\Http\Controllers\Api\V1\Vendor\StaffController;
@@ -96,6 +99,7 @@ use App\Http\Controllers\Api\V1\Vendor\StoreDomainController;
 use App\Http\Controllers\Api\V1\Vendor\StoreRoleController;
 use App\Http\Controllers\Api\V1\Vendor\StoreSettingsController;
 use App\Http\Controllers\Api\V1\Vendor\StoreSlugAvailabilityController;
+use App\Http\Controllers\Api\V1\Vendor\SupplierAccountController;
 use App\Http\Controllers\Api\V1\Vendor\SupplierController;
 use App\Http\Controllers\Api\V1\Vendor\SupportTicketController;
 use App\Http\Controllers\Api\V1\Vendor\TrackingPixelController;
@@ -481,6 +485,8 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
                 Route::get('/', [InventoryController::class, 'index'])->name('index')->defaults('_permission', 'inventory.view|orders.create|purchasing.create|purchasing.update');
                 Route::get('summary', InventorySummaryController::class)->name('summary');
                 Route::put('settings', [InventorySettingsController::class, 'update'])->name('settings.update')->defaults('_permission', 'inventory.update');
+                Route::get('reports/value', [InventoryReportController::class, 'value'])->name('reports.value')->defaults('_permission', 'inventory.view');
+                Route::get('reports/dead-stock', [InventoryReportController::class, 'deadStock'])->name('reports.dead-stock')->defaults('_permission', 'inventory.view');
                 Route::get('movements', [StockMovementController::class, 'index'])->name('movements.index');
                 Route::get('export', [InventoryImportController::class, 'export'])->name('export');
                 Route::post('import', [InventoryImportController::class, 'import'])->middleware('throttle:10,1')->name('import')->defaults('_permission', 'inventory.update');
@@ -506,9 +512,14 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
             // The purchase-order form picks suppliers from this list.
             Route::get('suppliers', [SupplierController::class, 'index'])->name('suppliers.index')->defaults('_permission', 'suppliers.view|purchasing.view');
             Route::apiResource('suppliers', SupplierController::class)->except(['index', 'show']);
+            Route::get('suppliers/{supplier}/account', [SupplierAccountController::class, 'show'])->name('suppliers.account')->defaults('_permission', 'suppliers.view');
+            Route::post('suppliers/{supplier}/payments', [SupplierAccountController::class, 'storePayment'])->name('suppliers.payments.store')->defaults('_permission', 'suppliers.update');
+            Route::delete('suppliers/{supplier}/payments/{payment}', [SupplierAccountController::class, 'destroyPayment'])->name('suppliers.payments.destroy')->defaults('_permission', 'suppliers.update');
+            Route::post('suppliers/{supplier}/returns', [PurchaseReturnController::class, 'store'])->name('suppliers.returns.store')->defaults('_permission', 'purchasing.create');
         });
 
         Route::middleware('permission:purchasing')->group(function () {
+            Route::get('reorder-suggestions', ReorderSuggestionController::class)->name('reorder-suggestions')->defaults('_permission', 'purchasing.view');
             Route::prefix('purchase-orders/{purchaseOrder}')->name('purchase-orders.')->group(function () {
                 Route::post('order', [PurchaseOrderController::class, 'markOrdered'])->name('order')->defaults('_permission', 'purchasing.update');
                 Route::post('receive', [PurchaseOrderController::class, 'receive'])->name('receive')->defaults('_permission', 'purchasing.update');

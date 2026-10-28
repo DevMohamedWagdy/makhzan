@@ -144,7 +144,11 @@ export function SidebarNav({ sections, alerts = {}, counter, onNavigate }) {
     );
 }
 
+/** `item.except` lists sub-paths with their own nav item, so the parent isn't highlighted there too. */
 function NavItem({ item, count, onNavigate }) {
+    const { pathname } = useLocation();
+    const isShadowed = item.except?.some((path) => pathname.startsWith(path)) ?? false;
+
     if (item.soon) {
         return (
             <span className="flex h-9 cursor-not-allowed items-center gap-3 rounded-lg px-3 text-sm text-muted" title={t('هذه الوحدة قيد التطوير')}>
@@ -160,13 +164,15 @@ function NavItem({ item, count, onNavigate }) {
             to={item.to}
             end={item.end}
             onClick={onNavigate}
-            className={({ isActive }) =>
-                cn(
+            className={({ isActive: matches }) => {
+                const isActive = matches && !isShadowed;
+
+                return cn(
                     'relative flex h-9 items-center gap-3 rounded-lg px-3 text-sm transition-colors duration-200',
                     'before:absolute before:inset-y-2 before:start-0 before:w-[3px] before:rounded-full before:bg-gold before:transition-transform before:duration-300',
                     isActive ? 'bg-primary-soft font-semibold text-primary before:scale-y-100 [&>svg]:text-primary' : 'text-ink-2 before:scale-y-0 hover:bg-surface-3 hover:text-ink [&>svg]:text-muted hover:[&>svg]:text-ink-2',
-                )
-            }
+                );
+            }}
         >
             <Icon name={item.icon} className="size-[18px] shrink-0 transition-colors duration-200" />
             <span className="truncate">{item.label}</span>

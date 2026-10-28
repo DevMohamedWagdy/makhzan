@@ -33,4 +33,15 @@ return [
         'note' => 'استيراد ملف المخزون',
     ],
 
+    'statement_receipt' => 'استلام :units قطعة',
+    'return_note' => 'مرتجع للمورد :supplier #:number',
+    'return_exceeds_stock' => 'الكمية المرتجعة من «:product» أكبر من المتاح في المخزن',
+    'payment_methods' => [
+        'cash' => 'نقداً',
+        'bank_transfer' => 'تحويل بنكي',
+        'wallet' => 'محفظة إلكترونية',
+        'cheque' => 'شيك',
+        'other' => 'أخرى',
+    ],
+
 ];
