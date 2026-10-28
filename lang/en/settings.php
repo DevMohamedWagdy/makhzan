@@ -25,4 +25,9 @@ return [
     'mail_test_sent' => 'A test message was sent to :email',
     'mail_test_logged' => 'The current provider is "Log only", so nothing was sent to :email; the message was written to storage/logs/laravel.log. Choose Amazon SES or SMTP to send for real.',
     'mail_test_failed' => 'The message could not be sent: :error',
+    'vendor_email_sent' => 'The email was sent to :email',
+    'vendor_email_logged' => 'The current mailer only logs, so the email to :email was written to storage/logs/laravel.log instead of being sent.',
+    'vendor_email_failed' => 'The email could not be sent: :error',
+    'vendor_email_no_recipients' => 'There are no active merchants with an email address to send this to.',
+    'vendor_email_queued' => 'Sending to :count merchants. Follow the result in the sending history.',
 ];

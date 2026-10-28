@@ -189,4 +189,8 @@ return [
         'subject' => 'Your password was changed',
         'message' => 'Your account password was changed from :device (IP :ip) on :time. If this wasn\'t you, reset your password right away and contact support.',
     ],
+
+    'admin_message' => [
+        'signature' => 'The :app team',
+    ],
 ];

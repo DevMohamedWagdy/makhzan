@@ -21,6 +21,7 @@ use App\Http\Controllers\Api\V1\Admin\StoreController as AdminStoreController;
 use App\Http\Controllers\Api\V1\Admin\SupportTicketController as AdminSupportTicketController;
 use App\Http\Controllers\Api\V1\Admin\TeamController as AdminTeamController;
 use App\Http\Controllers\Api\V1\Admin\VendorController as AdminVendorController;
+use App\Http\Controllers\Api\V1\Admin\VendorEmailCampaignController as AdminVendorEmailCampaignController;
 use App\Http\Controllers\Api\V1\Affiliate\Auth\AffiliateAuthController;
 use App\Http\Controllers\Api\V1\Affiliate\Auth\AffiliatePasswordController;
 use App\Http\Controllers\Api\V1\Affiliate\Auth\AffiliatePasswordResetController;
@@ -266,6 +267,13 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
 
             Route::get('vendors', [AdminVendorController::class, 'index'])->middleware('admin.can:vendors.view')->name('vendors.index');
             Route::patch('vendors/{vendor}', [AdminVendorController::class, 'update'])->middleware('admin.can:vendors.update')->name('vendors.update');
+            Route::post('vendors/{vendor}/email', [AdminVendorController::class, 'sendEmail'])->middleware(['admin.can:vendors.update', 'throttle:30,1'])->name('vendors.email');
+
+            Route::get('vendor-emails', [AdminVendorEmailCampaignController::class, 'index'])->middleware('admin.can:emails.view')->name('vendor-emails.index');
+            Route::middleware('admin.can:emails.send')->group(function () {
+                Route::get('vendor-emails/recipients', [AdminVendorEmailCampaignController::class, 'recipients'])->name('vendor-emails.recipients');
+                Route::post('vendor-emails', [AdminVendorEmailCampaignController::class, 'store'])->middleware('throttle:10,1')->name('vendor-emails.store');
+            });
 
             Route::middleware('admin.can:orders.view')->group(function () {
                 Route::get('orders', [AdminOrderController::class, 'index'])->name('orders.index');

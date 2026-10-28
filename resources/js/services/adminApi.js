@@ -62,6 +62,15 @@ export const adminApi = {
     /** @param {{ search?: string, type?: 'owner'|'staff', store_id?: number, page?: number }} filters */
     vendors: (filters) => request('GET', `${BASE}/vendors`, { query: filters, auth }),
     updateVendor: (vendorId, payload) => request('PATCH', `${BASE}/vendors/${vendorId}`, { body: payload, auth }),
+    /** @param {{ subject: string, body: string }} payload  Returns `{ message }`. */
+    emailVendor: (vendorId, payload) => request('POST', `${BASE}/vendors/${vendorId}/email`, { body: payload, auth, raw: true }),
+
+    /** Emails to merchants: `{ data, meta, eligible_count }`. */
+    vendorEmails: (query = {}) => request('GET', `${BASE}/vendor-emails`, { query, auth, raw: true }),
+    /** Active store owners to pick from, searchable. */
+    vendorEmailRecipients: (search = '') => request('GET', `${BASE}/vendor-emails/recipients`, { query: { search }, auth }),
+    /** @param {{ audience: 'all'|'selected', vendor_ids?: number[], subject: string, body: string }} payload  Returns `{ data, message }`. */
+    sendVendorEmail: (payload) => request('POST', `${BASE}/vendor-emails`, { body: payload, auth, raw: true }),
 
     /** @param {{ status?: 'open'|'closed', type?: 'problem'|'suggestion', store_id?: number, awaiting_reply?: boolean, search?: string, page?: number }} filters  Returns `{ data, meta, summary, stores }`. */
     tickets: (filters) => request('GET', `${BASE}/support-tickets`, { query: filters, auth, raw: true }),

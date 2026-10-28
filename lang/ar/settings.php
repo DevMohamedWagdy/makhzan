@@ -25,4 +25,9 @@ return [
     'mail_test_sent' => 'تم إرسال رسالة تجريبية إلى :email',
     'mail_test_logged' => 'المزود الحالي «سجل فقط»، لذلك لم تُرسل الرسالة فعلياً إلى :email، بل كُتبت في ملف storage/logs/laravel.log. اختر Amazon SES أو SMTP لإرسال حقيقي.',
     'mail_test_failed' => 'تعذر إرسال الرسالة: :error',
+    'vendor_email_sent' => 'تم إرسال البريد إلى :email',
+    'vendor_email_logged' => 'المزود الحالي «سجل فقط»، لذلك لم يُرسل البريد فعلياً إلى :email، بل كُتب في ملف storage/logs/laravel.log.',
+    'vendor_email_failed' => 'تعذر إرسال البريد: :error',
+    'vendor_email_no_recipients' => 'لا يوجد تجار نشطون لديهم بريد إلكتروني لإرسال الرسالة إليهم.',
+    'vendor_email_queued' => 'جارٍ إرسال الرسالة إلى :count تاجر. تابع النتيجة في سجل الإرسال.',
 ];

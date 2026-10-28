@@ -5,12 +5,17 @@ namespace App\Http\Controllers\Api\V1\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\AdminVendorResource;
 use App\Models\Vendor;
+use App\Notifications\AdminMessageNotification;
+use App\Support\ActivityLogger;
 use App\Support\PhoneNumber;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
+use Throwable;
 
 /**
  * Every dashboard account: store owners and their staff.
@@ -71,5 +76,31 @@ class VendorController extends Controller
         }
 
         return new AdminVendorResource($vendor->load(['ownedStore', 'employer', 'role']));
+    }
+
+    /**
+     * Emails the account a message the admin wrote (subject and text), sent right away so a mail
+     * failure comes back to the admin; the subject is kept in the activity log.
+     */
+    public function sendEmail(Request $request, Vendor $vendor): JsonResponse
+    {
+        $validated = $request->validate([
+            'subject' => ['required', 'string', 'max:150'],
+            'body' => ['required', 'string', 'max:5000'],
+        ]);
+
+        try {
+            $vendor->notify(new AdminMessageNotification($validated['subject'], $validated['body']));
+        } catch (Throwable $exception) {
+            report($exception);
+
+            throw ValidationException::withMessages(['body' => __('settings.vendor_email_failed', ['error' => $exception->getMessage()])]);
+        }
+
+        ActivityLogger::log('vendor.emailed', $vendor, ['new' => ['subject' => $validated['subject']]]);
+
+        $messageKey = config('mail.default') === 'log' ? 'settings.vendor_email_logged' : 'settings.vendor_email_sent';
+
+        return response()->json(['message' => __($messageKey, ['email' => $vendor->email])]);
     }
 }

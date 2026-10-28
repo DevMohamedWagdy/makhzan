@@ -36,6 +36,7 @@ const AdminCouponsPage = lazy(() => import('@/pages/admin/AdminCouponsPage').the
 const AdminNotificationsPage = lazy(() => import('@/pages/admin/AdminNotificationsPage').then((module) => ({ default: module.AdminNotificationsPage })));
 const AdminSettingsPage = lazy(() => import('@/pages/admin/AdminSettingsPage').then((module) => ({ default: module.AdminSettingsPage })));
 const AdminLocationsPage = lazy(() => import('@/pages/admin/AdminLocationsPage').then((module) => ({ default: module.AdminLocationsPage })));
+const AdminEmailsPage = lazy(() => import('@/pages/admin/AdminEmailsPage').then((module) => ({ default: module.AdminEmailsPage })));
 const AdminLogsPage = lazy(() => import('@/pages/admin/AdminLogsPage').then((module) => ({ default: module.AdminLogsPage })));
 const AdminOverviewPage = lazy(() => import('@/pages/admin/AdminOverviewPage').then((module) => ({ default: module.AdminOverviewPage })));
 const AdminTicketPage = lazy(() => import('@/pages/admin/AdminTicketPage').then((module) => ({ default: module.AdminTicketPage })));
@@ -351,6 +352,9 @@ export function App() {
                                     </Route>
                                     <Route element={<RequireAdminPermission permission="settings.view" />}>
                                         <Route path="settings" element={<AdminSettingsPage />} />
+                                    </Route>
+                                    <Route element={<RequireAdminPermission permission="emails.view" />}>
+                                        <Route path="emails" element={<AdminEmailsPage />} />
                                     </Route>
                                     <Route element={<RequireAdminPermission permission="locations.view" />}>
                                         <Route path="locations" element={<AdminLocationsPage />} />

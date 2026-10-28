@@ -43,27 +43,91 @@ function TransfersLog({ refreshKey }) {
 
     return (
         <div className="flex flex-col gap-3">
-            <ul className="divide-y divide-line rounded-xl border border-line">
+            <ul className="flex flex-col gap-3">
                 {result.data.map((transfer) => (
-                    <li key={transfer.transfer_id} className="p-4">
-                        <div className="flex flex-wrap items-center justify-between gap-2">
-                            <span className="flex flex-wrap items-center gap-2 text-sm">
-                                <span className="font-semibold text-ink">#{transfer.number}</span>
-                                <span className="text-ink-2">{transfer.from_warehouse.name}</span>
-                                <Icon name="arrow-left" className="size-4 text-muted" />
-                                <span className="text-ink-2">{transfer.to_warehouse.name}</span>
-                            </span>
-                            <span className="text-xs text-muted">{formatDate(transfer.created_at)}</span>
-                        </div>
-                        <p className="mt-1.5 text-xs text-muted">
-                            {transfer.items.map((item) => `${item.variant_title ? `${item.product_name} (${item.variant_title})` : item.product_name} × ${formatNumber(item.quantity)}`).join('، ')}
-                        </p>
-                        {transfer.note && <p className="mt-1 text-xs text-ink-2">{transfer.note}</p>}
-                    </li>
+                    <TransferRow key={transfer.transfer_id} transfer={transfer} />
                 ))}
             </ul>
             {result.meta.last_page > 1 && <Pagination meta={result.meta} onPageChange={setPage} />}
         </div>
+    );
+}
+
+/** A transfer's items grouped by product: each product once, with its variants and their quantities. */
+function groupItems(items) {
+    const groups = new Map();
+
+    items.forEach((item) => {
+        const group = groups.get(item.product_name) ?? { name: item.product_name, variants: [], quantity: 0 };
+
+        group.variants.push(item);
+        group.quantity += item.quantity;
+        groups.set(item.product_name, group);
+    });
+
+    return [...groups.values()];
+}
+
+/**
+ * One transfer: its number and route (from → to) with the item count, units and date, then the items grouped
+ * by product with each variant's quantity, and the note.
+ */
+function TransferRow({ transfer }) {
+    const products = groupItems(transfer.items);
+
+    return (
+        <li className="overflow-hidden rounded-xl border border-line">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-3 bg-surface-2 px-4 py-3">
+                <span className="mk-num rounded-md bg-primary-soft px-2 py-0.5 text-xs font-semibold text-primary">#{transfer.number}</span>
+                <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2 text-sm">
+                    <span className="inline-flex min-w-0 items-center gap-1.5 rounded-lg border border-line bg-surface px-2.5 py-1">
+                        <span className="text-2xs text-muted">{t('من')}</span>
+                        <span className="truncate font-medium text-ink">{transfer.from_warehouse.name}</span>
+                    </span>
+                    <Icon name="arrow-left" className="size-4 shrink-0 text-brand-accent" />
+                    <span className="inline-flex min-w-0 items-center gap-1.5 rounded-lg border border-line bg-surface px-2.5 py-1">
+                        <span className="text-2xs text-muted">{t('إلى')}</span>
+                        <span className="truncate font-medium text-ink">{transfer.to_warehouse.name}</span>
+                    </span>
+                </div>
+                <div className="flex items-center gap-3 text-xs text-muted">
+                    <span className="mk-num inline-flex items-center gap-1">
+                        <Icon name="box" className="size-3.5" />
+                        {t('{products} منتج · {units} قطعة', { products: formatNumber(products.length), units: formatNumber(transfer.units) })}
+                    </span>
+                    <span className="inline-flex items-center gap-1">
+                        <Icon name="clock" className="size-3.5" />
+                        {formatDate(transfer.created_at)}
+                    </span>
+                </div>
+            </div>
+
+            <ul className="divide-y divide-line">
+                {products.map((product) => (
+                    <li key={product.name} className="flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3">
+                        <span className="min-w-40 flex-1 text-sm font-medium text-ink">{product.name}</span>
+                        <span className="flex flex-wrap gap-1.5">
+                            {product.variants.map((item) => (
+                                <span key={item.variant_id ?? item.variant_title} className="inline-flex items-center gap-1.5 rounded-full border border-line bg-surface py-0.5 ps-2.5 pe-1 text-xs text-ink-2">
+                                    {item.variant_title || t('بدون خيارات')}
+                                    <span className="mk-num rounded-full bg-surface-3 px-2 py-0.5 font-semibold text-ink">×{formatNumber(item.quantity)}</span>
+                                </span>
+                            ))}
+                        </span>
+                        {product.variants.length > 1 && <span className="mk-num text-xs font-semibold text-ink-2">{t('{count} قطعة', { count: formatNumber(product.quantity) })}</span>}
+                    </li>
+                ))}
+            </ul>
+
+            {transfer.note && (
+                <p className="flex items-start gap-2 border-t border-line bg-warning-soft/40 px-4 py-2.5 text-xs text-ink-2">
+                    <Icon name="message-square" className="mt-0.5 size-3.5 shrink-0 text-muted" />
+                    <span>
+                        <span className="font-medium text-ink">{t('ملاحظة:')}</span> {transfer.note}
+                    </span>
+                </p>
+            )}
+        </li>
     );
 }
 

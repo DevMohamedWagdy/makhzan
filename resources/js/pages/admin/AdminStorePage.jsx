@@ -15,6 +15,7 @@ import { AdminCouponsTable, AdminPaymentsTable, AdminProductsTable, AdminReviews
 import { AdminOrdersTable } from '@/features/admin/AdminOrders';
 import { AdminAffiliatesTable, AdminCustomersTable, AdminPayoutsTable } from '@/features/admin/AdminPeople';
 import { AdminVendorsTable } from '@/features/admin/AdminVendors';
+import { VendorEmailModal } from '@/features/admin/VendorEmailModal';
 import { t } from '@/i18n';
 import { cn, formatDate, formatMoney, formatNumber, formatRelative } from '@/lib/format';
 import { findGovernorate } from '@/lib/locations';
@@ -247,6 +248,9 @@ export function AdminStorePage() {
 }
 
 function OverviewTab({ store }) {
+    const { can } = useAdminAuth();
+    const [emailing, setEmailing] = useState(false);
+
     return (
         <div className="grid gap-6 p-5 2xl:grid-cols-2">
             <div className="mk-stat-group sm:grid-cols-2">
@@ -261,7 +265,14 @@ function OverviewTab({ store }) {
                     {store.owner?.phone}
                 </DetailRow>
                 <DetailRow label={t('البريد')} ltr>
-                    {store.owner?.email}
+                    <span className="inline-flex items-center gap-2">
+                        {store.owner?.email}
+                        {can('vendors.update') && store.owner?.email && (
+                            <Button size="sm" variant="soft" icon="mail" onClick={() => setEmailing(true)}>
+                                {t('إرسال بريد')}
+                            </Button>
+                        )}
+                    </span>
                 </DetailRow>
                 {store.owner && !store.owner.email_verified && (
                     <DetailRow label={t('تأكيد البريد')}>
@@ -272,6 +283,7 @@ function OverviewTab({ store }) {
                     {store.url}
                 </DetailRow>
             </dl>
+            <VendorEmailModal vendor={emailing ? store.owner : null} onClose={() => setEmailing(false)} />
         </div>
     );
 }

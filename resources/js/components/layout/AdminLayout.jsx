@@ -20,6 +20,7 @@ const NAV_SECTIONS = [
         items: [
             { label: t('تذاكر الدعم'), icon: 'message-square', to: '/admin/support', permission: 'tickets.view' },
             { label: t('رسائل التواصل'), icon: 'mail', to: '/admin/messages', permission: 'messages.view' },
+            { label: t('البريد للتجار'), icon: 'send', to: '/admin/emails', permission: 'emails.view' },
         ],
     },
     {

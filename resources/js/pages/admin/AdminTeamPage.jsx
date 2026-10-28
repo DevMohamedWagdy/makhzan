@@ -28,6 +28,7 @@ const SECTIONS = {
     reviews: { label: t('التقييمات'), icon: 'star' },
     tickets: { label: t('تذاكر الدعم'), icon: 'message-square' },
     messages: { label: t('رسائل التواصل'), icon: 'mail' },
+    emails: { label: t('البريد للتجار'), icon: 'send' },
     logs: { label: t('سجل النشاط'), icon: 'clock' },
     settings: { label: t('إعدادات المنصة'), icon: 'settings' },
     locations: { label: t('المحافظات والمدن'), icon: 'map-pin' },
@@ -42,6 +43,7 @@ const ACTIONS = {
     manage: t('إدارة'),
     reply: t('الرد والإغلاق'),
     delete: t('حذف'),
+    send: t('إرسال'),
 };
 
 const TEMPLATES = [

@@ -21,6 +21,7 @@ const SUBJECTS = {
     purchase_order: t('أمر شراء'),
     store_payment_gateway: t('بوابة الدفع'),
     shipping_rate: t('سعر شحن'),
+    vendor_email_campaign: t('بريد للتجار'),
 };
 
 const VERBS = {
@@ -33,6 +34,8 @@ const VERBS = {
     unsuspended: t('إعادة تفعيل'),
     login: t('تسجيل دخول'),
     impersonated: t('دخول الإدارة بحساب'),
+    emailed: t('إرسال بريد إلى'),
+    sent: t('إرسال'),
     domain_verified: t('تفعيل دومين'),
 };
 

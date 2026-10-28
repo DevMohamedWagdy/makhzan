@@ -1,5 +1,6 @@
 <?php
 
+use App\Notifications\AdminMessageNotification;
 use App\Notifications\AffiliateResetPasswordNotification;
 use App\Notifications\CustomerResetPasswordNotification;
 use App\Notifications\EmailVerificationCodeNotification;
@@ -141,6 +142,7 @@ return [
         VendorResetPasswordNotification::class,
         AffiliateResetPasswordNotification::class,
         CustomerResetPasswordNotification::class,
+        AdminMessageNotification::class,
     ],
 
 ];

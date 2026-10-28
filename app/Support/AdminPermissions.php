@@ -22,6 +22,7 @@ class AdminPermissions
         'reviews' => ['view', 'update'],
         'tickets' => ['view', 'reply'],
         'messages' => ['view', 'delete'],
+        'emails' => ['view', 'send'],
         'logs' => ['view'],
         'settings' => ['view', 'update'],
         'locations' => ['view', 'update'],

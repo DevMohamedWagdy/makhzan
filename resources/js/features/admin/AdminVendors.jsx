@@ -12,6 +12,7 @@ import { t } from '@/i18n';
 import { formatRelative } from '@/lib/format';
 import { adminApi } from '@/services/adminApi';
 import { VendorEditModal } from './VendorEditModal';
+import { VendorEmailModal } from './VendorEmailModal';
 
 const TYPES = [
     { value: '', label: t('كل الحسابات') },
@@ -29,6 +30,7 @@ export function AdminVendorsTable({ storeId = null }) {
     const [result, setResult] = useState(null);
     const [error, setError] = useState(null);
     const [editing, setEditing] = useState(null);
+    const [emailing, setEmailing] = useState(null);
 
     const load = useCallback(() => {
         setError(null);
@@ -93,6 +95,7 @@ export function AdminVendorsTable({ storeId = null }) {
                                     <span className="truncate">{vendor.store.name}</span>
                                 </Link>
                             )}
+                            {can('vendors.update') && vendor.email && <Button size="icon" variant="ghost" icon="mail" onClick={() => setEmailing(vendor)} aria-label={t('إرسال بريد إلى {name}', { name: vendor.full_name })} title={t('إرسال بريد')} />}
                             {can('vendors.update') && <Button size="icon" variant="ghost" icon="edit" onClick={() => setEditing(vendor)} aria-label={t('تعديل {name}', { name: vendor.full_name })} />}
                         </li>
                     ))}
@@ -104,6 +107,8 @@ export function AdminVendorsTable({ storeId = null }) {
                     <Pagination meta={result.meta} onPageChange={setPage} />
                 </div>
             )}
+
+            <VendorEmailModal vendor={emailing} onClose={() => setEmailing(null)} />
 
             <VendorEditModal
                 vendor={editing}
