@@ -9,6 +9,7 @@ import { useToast } from '@/context/ToastContext';
 import { itemLabel } from '@/features/inventory/InventoryModals';
 import { useWarehouses } from '@/features/inventory/useWarehouses';
 import { VariantPicker } from '@/features/inventory/VariantPicker';
+import { QuickProductModal } from '@/features/purchasing/QuickProductModal';
 import { SupplierFormModal } from '@/features/purchasing/SupplierFormModal';
 import { t } from '@/i18n';
 import { CURRENCY } from '@/lib/constants';
@@ -34,6 +35,7 @@ export function PurchaseOrderFormPage() {
     const [loaded, setLoaded] = useState(!isEdit);
     const [submitting, setSubmitting] = useState(false);
     const [supplierModalOpen, setSupplierModalOpen] = useState(false);
+    const [productModalOpen, setProductModalOpen] = useState(false);
 
     useEffect(() => {
         suppliersApi
@@ -135,17 +137,25 @@ export function PurchaseOrderFormPage() {
             <form onSubmit={submit} noValidate className="grid grid-cols-1 items-start gap-6 lg:grid-cols-3">
                 <Card title={t('الأصناف')} description={t('الكمية المطلوبة وتكلفة القطعة المتفق عليها مع المورد')} className="lg:col-span-2">
                     <div className="flex flex-col gap-4">
-                        <VariantPicker
-                            excludedIds={items.map((item) => item.variant_id)}
-                            onPick={(item) => {
-                                setItems((current) => [...current, { variant_id: item.variant_id, label: itemLabel(item), sku: item.sku, quantity: '', unit_cost: item.cost == null ? '' : String(item.cost) }]);
-                                setErrors((current) => ({ ...current, items: undefined }));
-                            }}
-                        />
+                        <div className="flex flex-col gap-2 sm:flex-row sm:items-start">
+                            <div className="min-w-0 flex-1">
+                                <VariantPicker
+                                    excludedIds={items.map((item) => item.variant_id)}
+                                    onPick={(item) => {
+                                        setItems((current) => [...current, { variant_id: item.variant_id, label: itemLabel(item), sku: item.sku, quantity: '', unit_cost: item.cost == null ? '' : String(item.cost) }]);
+                                        setErrors((current) => ({ ...current, items: undefined }));
+                                    }}
+                                />
+                            </div>
+                            {/* A product the store doesn't have yet: created as a draft and added to the order in one step. */}
+                            <Button variant="secondary" icon="plus" onClick={() => setProductModalOpen(true)} className="shrink-0">
+                                {t('منتج جديد')}
+                            </Button>
+                        </div>
                         {errors.items && <Alert tone="danger">{errors.items}</Alert>}
 
                         {items.length === 0 ? (
-                            <p className="rounded-xl border border-dashed border-line-strong p-6 text-center text-sm text-muted">{t('ابحث عن المنتجات وأضفها لأمر الشراء.')}</p>
+                            <p className="rounded-xl border border-dashed border-line-strong p-6 text-center text-sm text-muted">{t('ابحث عن المنتجات وأضفها لأمر الشراء، أو أضف «منتج جديد» لو لسه مش عندك.')}</p>
                         ) : (
                             <div className="mk-scroll overflow-x-auto">
                                 <table className="w-full min-w-[560px] text-sm">
@@ -258,6 +268,15 @@ export function PurchaseOrderFormPage() {
                     setSuppliers((current) => [...(current ?? []), supplier].sort((a, b) => a.name.localeCompare(b.name)));
                     setSupplierId(String(supplier.supplier_id));
                     setSupplierModalOpen(false);
+                }}
+            />
+            <QuickProductModal
+                open={productModalOpen}
+                onClose={() => setProductModalOpen(false)}
+                onCreated={(lines) => {
+                    setItems((current) => [...current, ...lines.filter((line) => !current.some((item) => item.variant_id === line.variant_id))]);
+                    setErrors((current) => ({ ...current, items: undefined }));
+                    setProductModalOpen(false);
                 }}
             />
         </>

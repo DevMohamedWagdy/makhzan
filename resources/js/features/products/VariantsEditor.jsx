@@ -173,12 +173,53 @@ function PriceInputs({ row, errors, prefix, onChange, warehouses, compact = fals
  * with one row per combination. `value` is the state described in ./variants.js.
  * With more than one of the store's `warehouses`, quantities are entered per warehouse.
  */
-export function VariantsEditor({ value, onChange, errors, warehouses = null }) {
+/**
+ * The option rows (a name with suggestions, its values as chips) with "add option": shared by the product form
+ * and the purchase order's quick "new product" window. `options` is [{ name, values: string[] }].
+ */
+export function OptionsFields({ options, onChange, errors = {} }) {
     const suggestionsId = useId();
+    const setOption = (index, patch) => onChange(options.map((option, position) => (position === index ? { ...option, ...patch } : option)));
+
+    return (
+        <>
+            <datalist id={suggestionsId}>
+                {OPTION_SUGGESTIONS.map((suggestion) => (
+                    <option key={suggestion} value={suggestion} />
+                ))}
+            </datalist>
+
+            <div className="flex flex-col gap-3">
+                {options.map((option, index) => (
+                    <div key={index} className="grid gap-3 rounded-xl border border-line p-3 sm:grid-cols-[180px_1fr_auto] sm:items-start">
+                        <div>
+                            <Input list={suggestionsId} value={option.name} onChange={(event) => setOption(index, { name: event.target.value })} placeholder={t('اسم الخيار')} aria-label={t('اسم الخيار {value}', { value: index + 1 })} maxLength={30} aria-invalid={errors[`options.${index}.name`] ? 'true' : undefined} />
+                            {errors[`options.${index}.name`] && <p className="mt-1 text-xs text-danger">{errors[`options.${index}.name`]}</p>}
+                        </div>
+                        <div>
+                            <ValuesInput values={option.values} onChange={(values) => setOption(index, { values })} invalid={Boolean(errors[`options.${index}.values`])} placeholder={[OPTION_NAMES.color, 'color'].includes(option.name.trim().toLowerCase()) ? t('مثال: أسود، أحمر') : t('مثال: S، M، L')} />
+                            {errors[`options.${index}.values`] && <p className="mt-1 text-xs text-danger">{errors[`options.${index}.values`]}</p>}
+                        </div>
+                        <Button variant="ghost" size="icon" onClick={() => onChange(options.filter((_, position) => position !== index))} aria-label={t('حذف الخيار {name}', { name: option.name })} title={t('حذف الخيار')}>
+                            <Icon name="trash" className="size-4" />
+                        </Button>
+                    </div>
+                ))}
+                {errors.options && <p className="text-xs text-danger">{errors.options}</p>}
+                {options.length < MAX_OPTIONS && (
+                    <Button variant="soft" size="sm" icon="plus" className="self-start" onClick={() => onChange([...options, { name: options.some((option) => option.name === OPTION_NAMES.color) ? '' : OPTION_NAMES.color, values: [] }])}>
+                        {t('إضافة خيار')}
+                    </Button>
+                )}
+            </div>
+        </>
+    );
+}
+
+export function VariantsEditor({ value, onChange, errors, warehouses = null }) {
     const [bulk, setBulk] = useState({ price: '', stock: '' });
     const update = (patch) => onChange(syncRows({ ...value, ...patch }));
     const updateRow = (key, patch) => onChange({ ...value, rows: { ...value.rows, [key]: { ...value.rows[key], ...patch } } });
-    const setOption = (index, patch) => update({ options: value.options.map((option, position) => (position === index ? { ...option, ...patch } : option)) });
     const combos = combinations(value.options);
     const perWarehouse = isPerWarehouse(warehouses);
     const stockColumns = perWarehouse ? warehouses.length : 1;
@@ -217,35 +258,7 @@ export function VariantsEditor({ value, onChange, errors, warehouses = null }) {
                 <PriceInputs row={value.simple} errors={errors} prefix="simple" warehouses={warehouses} onChange={(patch) => onChange({ ...value, simple: { ...value.simple, ...patch } })} />
             ) : (
                 <>
-                    <datalist id={suggestionsId}>
-                        {OPTION_SUGGESTIONS.map((suggestion) => (
-                            <option key={suggestion} value={suggestion} />
-                        ))}
-                    </datalist>
-
-                    <div className="flex flex-col gap-3">
-                        {value.options.map((option, index) => (
-                            <div key={index} className="grid gap-3 rounded-xl border border-line p-3 sm:grid-cols-[180px_1fr_auto] sm:items-start">
-                                <div>
-                                    <Input list={suggestionsId} value={option.name} onChange={(event) => setOption(index, { name: event.target.value })} placeholder={t('اسم الخيار')} aria-label={t('اسم الخيار {value}', { value: index + 1 })} maxLength={30} aria-invalid={errors[`options.${index}.name`] ? 'true' : undefined} />
-                                    {errors[`options.${index}.name`] && <p className="mt-1 text-xs text-danger">{errors[`options.${index}.name`]}</p>}
-                                </div>
-                                <div>
-                                    <ValuesInput values={option.values} onChange={(values) => setOption(index, { values })} invalid={Boolean(errors[`options.${index}.values`])} placeholder={[OPTION_NAMES.color, 'color'].includes(option.name.trim().toLowerCase()) ? t('مثال: أسود، أحمر') : t('مثال: S، M، L')} />
-                                    {errors[`options.${index}.values`] && <p className="mt-1 text-xs text-danger">{errors[`options.${index}.values`]}</p>}
-                                </div>
-                                <Button variant="ghost" size="icon" onClick={() => update({ options: value.options.filter((_, position) => position !== index) })} aria-label={t('حذف الخيار {name}', { name: option.name })} title={t('حذف الخيار')}>
-                                    <Icon name="trash" className="size-4" />
-                                </Button>
-                            </div>
-                        ))}
-                        {errors.options && <p className="text-xs text-danger">{errors.options}</p>}
-                        {value.options.length < MAX_OPTIONS && (
-                            <Button variant="soft" size="sm" icon="plus" className="self-start" onClick={() => update({ options: [...value.options, { name: value.options.some((option) => option.name === OPTION_NAMES.color) ? '' : OPTION_NAMES.color, values: [] }] })}>
-                                {t('إضافة خيار')}
-                            </Button>
-                        )}
-                    </div>
+                    <OptionsFields options={value.options} onChange={(options) => update({ options })} errors={errors} />
 
                     {combos.length > 0 && (
                         <div className="overflow-hidden rounded-xl border border-line">

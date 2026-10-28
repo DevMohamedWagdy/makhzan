@@ -48,7 +48,8 @@ export function InventoryImportModal({ open, onClose, onImported }) {
         setExporting(true);
 
         try {
-            const { data } = await inventoryApi.exportAll();
+            // request() unwraps `{ data }`: this is the list itself.
+            const data = await inventoryApi.exportAll();
 
             downloadCsv(`sellygrow-inventory-${new Date().toISOString().slice(0, 10)}.csv`, [
                 HEADER,

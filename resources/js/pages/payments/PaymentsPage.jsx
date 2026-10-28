@@ -127,7 +127,8 @@ export function PaymentsPage() {
         setExporting(true);
 
         try {
-            const { data } = await paymentsApi.exportAll(filters);
+            // request() unwraps `{ data }`: this is the list itself.
+            const data = await paymentsApi.exportAll(filters);
 
             downloadCsv(`payments-${toDateString(new Date())}.csv`, [
                 [t('التاريخ'), t('الوقت'), t('العملية'), t('رقم الطلب'), t('العميل'), t('الطريقة'), t('المبلغ'), t('الحالة'), t('رقم العملية في Paymob'), t('ملاحظة')],

@@ -84,11 +84,12 @@ export const PasswordInput = forwardRef(function PasswordInput({ showStrength = 
     );
 });
 
+/** A styled native select. `className` (a width like sm:w-72, a margin) goes on the wrapper, which the select fills, so the chevron stays inside the box. */
 export const Select = forwardRef(function Select({ options, placeholder, className, icon, ...props }, ref) {
     return (
-        <div className="relative flex items-center">
+        <div className={cn('relative flex items-center', className)}>
             {icon && <Icon name={icon} className="pointer-events-none absolute start-3.5 size-[18px] text-muted" />}
-            <select ref={ref} className={cn('mk-input cursor-pointer appearance-none pe-10', icon && 'ps-10', className)} {...props}>
+            <select ref={ref} className={cn('mk-input cursor-pointer appearance-none pe-10', icon && 'ps-10')} {...props}>
                 {placeholder !== undefined && <option value="">{placeholder}</option>}
                 {options.map((option) => (
                     <option key={option.value} value={option.value} disabled={option.disabled}>
