@@ -37,6 +37,7 @@ use App\Models\SupportTicketMessage;
 use App\Models\Vendor;
 use App\Notifications\AdminAlertNotification;
 use App\Support\ActivityLogger;
+use App\Support\Locations;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
@@ -253,7 +254,7 @@ class DemoPlatformSeeder extends Seeder
             'name' => $name,
             'slug' => $slug,
             'governorate_id' => $governorateId,
-            'city_id' => Arr::random(config("makhzan.governorates.{$governorateId}")),
+            'city_id' => Arr::random(Locations::activeCityIds($governorateId)),
             'description' => "{$name} — أفضل المنتجات بأفضل الأسعار مع توصيل لكل المحافظات.",
             'contact_phone' => $vendor->phone,
             'whatsapp' => $vendor->phone,
@@ -410,7 +411,7 @@ class DemoPlatformSeeder extends Seeder
             'created_at' => Carbon::instance(fake()->dateTimeBetween($storeCreatedAt, 'now')),
         ])->create();
 
-        $governorates = config('makhzan.governorates');
+        $governorates = Locations::active();
         $hasGateway = $store->paymentGateway()->exists();
         $earliest = max($storeCreatedAt->timestamp, now()->subDays(60)->timestamp);
         $placedTimes = collect(range(1, $count))->map(fn (): int => fake()->numberBetween($earliest, now()->subMinutes(30)->timestamp))->sort()->values();

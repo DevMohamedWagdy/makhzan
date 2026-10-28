@@ -95,4 +95,14 @@ export const adminApi = {
     siteSettings: () => request('GET', `${BASE}/settings/site`, { auth }),
     /** Blank fields clear; a blank legal page falls back to the built-in text. */
     updateSiteSettings: (payload) => request('PUT', `${BASE}/settings/site`, { body: payload, auth }),
+
+    /** Governorates with their cities (`{ data }`); every change below answers with the refreshed list. */
+    locations: () => request('GET', `${BASE}/locations`, { auth }),
+    /** @param {{ name: string, name_en: string, is_active?: boolean }} payload */
+    createGovernorate: (payload) => request('POST', `${BASE}/governorates`, { body: payload, auth }),
+    updateGovernorate: (governorateId, payload) => request('PATCH', `${BASE}/governorates/${governorateId}`, { body: payload, auth }),
+    deleteGovernorate: (governorateId) => request('DELETE', `${BASE}/governorates/${governorateId}`, { auth }),
+    createCity: (governorateId, payload) => request('POST', `${BASE}/governorates/${governorateId}/cities`, { body: payload, auth }),
+    updateCity: (cityId, payload) => request('PATCH', `${BASE}/cities/${cityId}`, { body: payload, auth }),
+    deleteCity: (cityId) => request('DELETE', `${BASE}/cities/${cityId}`, { auth }),
 };

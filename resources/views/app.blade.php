@@ -6,9 +6,9 @@
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
         <title>{{ $meta['title'] }}</title>
-        <link rel="icon" type="image/svg+xml" href="/sellygrow-icon.svg">
-        <link rel="icon" href="/favicon.ico" sizes="48x48">
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+        <link rel="icon" type="image/svg+xml" href="/sellygrow-icon.svg?v=2">
+        <link rel="icon" href="/favicon.ico?v=2" sizes="16x16 32x32 48x48">
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=2">
 
         {{-- Filled per page by App\Support\PageMeta, so shared store and product links preview correctly. --}}
         <meta name="description" content="{{ $meta['description'] }}">

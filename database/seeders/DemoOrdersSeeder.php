@@ -14,6 +14,7 @@ use App\Models\Customer;
 use App\Models\OrderEvent;
 use App\Models\ProductVariant;
 use App\Models\Store;
+use App\Support\Locations;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\ValidationException;
@@ -67,7 +68,7 @@ class DemoOrdersSeeder extends Seeder
         $customers = Customer::factory()->count(12)->for($store)->state(fn (): array => ['full_name' => $arabic->firstName().' '.$arabic->lastName()])->create();
         $affiliates = $store->affiliates()->where('status', AffiliateStatus::Active)->with('referralCodes')->get();
         $demoAffiliate = $affiliates->firstWhere('phone', DemoVendorSeeder::AFFILIATE_PHONE);
-        $governorates = config('makhzan.governorates');
+        $governorates = Locations::active();
 
         for ($index = 0; $index < self::ORDERS; $index++) {
             // The demo affiliate gets a steady share so their dashboard has history.

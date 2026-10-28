@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1\Vendor;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\Vendor\UpdateShippingSettingsRequest;
 use App\Models\Store;
+use App\Support\Locations;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -47,7 +48,7 @@ class ShippingSettingsController extends Controller
         return response()->json([
             'default_shipping_price' => $store->default_shipping_price,
             'free_shipping_threshold' => $store->free_shipping_threshold,
-            'rates' => collect(array_keys(config('makhzan.governorates')))->map(fn (string $governorateId): array => [
+            'rates' => collect(Locations::activeGovernorateIds())->map(fn (string $governorateId): array => [
                 'governorate_id' => $governorateId,
                 'is_enabled' => $rates[$governorateId]->is_enabled ?? true,
                 'price' => $rates[$governorateId]->price ?? null,

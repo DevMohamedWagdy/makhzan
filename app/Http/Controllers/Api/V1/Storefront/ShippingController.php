@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1\Storefront;
 
 use App\Http\Controllers\Controller;
 use App\Models\Store;
+use App\Support\Locations;
 use Illuminate\Http\JsonResponse;
 
 class ShippingController extends Controller
@@ -15,7 +16,7 @@ class ShippingController extends Controller
     {
         $store->load('shippingRates');
 
-        $rates = collect(array_keys(config('makhzan.governorates')))
+        $rates = collect(Locations::activeGovernorateIds())
             ->map(fn (string $governorateId): array => ['governorate_id' => $governorateId, 'price' => $store->shippingFeeFor($governorateId, 0)])
             ->filter(fn (array $rate): bool => $rate['price'] !== null)
             ->values();

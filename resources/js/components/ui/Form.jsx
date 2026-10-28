@@ -120,7 +120,8 @@ export function Checkbox({ label, description, className, ...props }) {
     );
 }
 
-export function Switch({ checked, onChange, label, description, disabled, id }) {
+/** An on/off toggle; `ariaLabel` names it when there's no visible label (e.g. in a table row). */
+export function Switch({ checked, onChange, label, description, disabled, id, ariaLabel }) {
     return (
         <label className={cn('flex items-center justify-between gap-4', disabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer')}>
             {(label || description) && (
@@ -134,6 +135,7 @@ export function Switch({ checked, onChange, label, description, disabled, id }) 
                 type="button"
                 role="switch"
                 aria-checked={checked}
+                aria-label={ariaLabel}
                 disabled={disabled}
                 onClick={() => onChange(!checked)}
                 className={cn(

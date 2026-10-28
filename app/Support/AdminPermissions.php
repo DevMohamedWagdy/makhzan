@@ -24,6 +24,7 @@ class AdminPermissions
         'messages' => ['view', 'delete'],
         'logs' => ['view'],
         'settings' => ['view', 'update'],
+        'locations' => ['view', 'update'],
         'team' => ['manage'],
     ];
 

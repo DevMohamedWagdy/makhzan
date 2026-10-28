@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Api\V1\Vendor;
 
+use App\Support\Locations;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -19,7 +20,7 @@ class UpdateShippingSettingsRequest extends FormRequest
             'default_shipping_price' => ['nullable', 'numeric', 'min:0', 'max:100000'],
             'free_shipping_threshold' => ['nullable', 'numeric', 'min:0', 'max:10000000'],
             'rates' => ['present', 'array'],
-            'rates.*.governorate_id' => ['required', 'distinct', Rule::in(array_keys(config('makhzan.governorates')))],
+            'rates.*.governorate_id' => ['required', 'distinct', Rule::in(Locations::activeGovernorateIds())],
             'rates.*.is_enabled' => ['required', 'boolean'],
             'rates.*.price' => ['nullable', 'numeric', 'min:0', 'max:100000'],
         ];

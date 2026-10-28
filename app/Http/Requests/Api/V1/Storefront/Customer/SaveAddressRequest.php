@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Api\V1\Storefront\Customer;
 
+use App\Support\Locations;
 use App\Support\PhoneNumber;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -39,13 +40,11 @@ class SaveAddressRequest extends FormRequest
      */
     public static function addressRules(?string $governorateId, string $prefix = '', string $presence = 'required'): array
     {
-        $governorates = config('makhzan.governorates');
-
         return [
             "{$prefix}recipient_name" => [$presence, 'string', 'min:3', 'max:100'],
             "{$prefix}phone" => [$presence, 'regex:'.PhoneNumber::PATTERN],
-            "{$prefix}governorate_id" => [$presence, 'string', Rule::in(array_keys($governorates))],
-            "{$prefix}city_id" => [$presence, 'string', Rule::in($governorates[$governorateId] ?? [])],
+            "{$prefix}governorate_id" => [$presence, 'string', Rule::in(Locations::activeGovernorateIds())],
+            "{$prefix}city_id" => [$presence, 'string', Rule::in(Locations::activeCityIds($governorateId))],
             "{$prefix}address_line" => [$presence, 'string', 'min:5', 'max:255'],
             "{$prefix}landmark" => ['nullable', 'string', 'max:150'],
         ];

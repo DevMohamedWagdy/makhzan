@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Api\V1\Vendor;
 
+use App\Support\Locations;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -16,7 +17,7 @@ class ShippingSettingsControllerTest extends TestCase
         $this->getJson('/api/v1/vendor/shipping')
             ->assertOk()
             ->assertJsonPath('default_shipping_price', null)
-            ->assertJsonCount(count(config('makhzan.governorates')), 'rates');
+            ->assertJsonCount(count(Locations::activeGovernorateIds()), 'rates');
 
         $this->putJson('/api/v1/vendor/shipping', [
             'default_shipping_price' => 60,

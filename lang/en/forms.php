@@ -39,6 +39,8 @@ return [
     'role_name_required' => 'Enter a role name',
     'role_name_taken' => 'A role with this name already exists',
     'role_in_use' => 'A role with team members cannot be deleted. Move them to another role first.',
+    'governorate_in_use' => 'A governorate used by stores, orders or addresses cannot be deleted. Deactivate it instead.',
+    'city_in_use' => 'A city used by stores, orders or addresses cannot be deleted. Deactivate it instead.',
     'job_title_max' => 'The job title may not be longer than 100 characters',
     'job_title_required' => 'Enter the staff member\'s job title',
     'contact_message_sent' => 'We got your message; our team will get back to you soon.',

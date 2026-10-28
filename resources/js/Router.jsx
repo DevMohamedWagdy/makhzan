@@ -35,6 +35,7 @@ const AdminPaymentsPage = lazy(() => import('@/pages/admin/AdminPaymentsPage').t
 const AdminCouponsPage = lazy(() => import('@/pages/admin/AdminCouponsPage').then((module) => ({ default: module.AdminCouponsPage })));
 const AdminNotificationsPage = lazy(() => import('@/pages/admin/AdminNotificationsPage').then((module) => ({ default: module.AdminNotificationsPage })));
 const AdminSettingsPage = lazy(() => import('@/pages/admin/AdminSettingsPage').then((module) => ({ default: module.AdminSettingsPage })));
+const AdminLocationsPage = lazy(() => import('@/pages/admin/AdminLocationsPage').then((module) => ({ default: module.AdminLocationsPage })));
 const AdminLogsPage = lazy(() => import('@/pages/admin/AdminLogsPage').then((module) => ({ default: module.AdminLogsPage })));
 const AdminOverviewPage = lazy(() => import('@/pages/admin/AdminOverviewPage').then((module) => ({ default: module.AdminOverviewPage })));
 const AdminTicketPage = lazy(() => import('@/pages/admin/AdminTicketPage').then((module) => ({ default: module.AdminTicketPage })));
@@ -350,6 +351,9 @@ export function App() {
                                     </Route>
                                     <Route element={<RequireAdminPermission permission="settings.view" />}>
                                         <Route path="settings" element={<AdminSettingsPage />} />
+                                    </Route>
+                                    <Route element={<RequireAdminPermission permission="locations.view" />}>
+                                        <Route path="locations" element={<AdminLocationsPage />} />
                                     </Route>
                                     <Route element={<RequireAdminPermission permission="team.manage" />}>
                                         <Route path="team" element={<AdminTeamPage />} />

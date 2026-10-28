@@ -37,43 +37,6 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Governorates and Cities
-    |--------------------------------------------------------------------------
-    |
-    | Governorate id => city ids. Mirrors resources/js/lib/locations.js, which
-    | holds the Arabic display names; keep both lists in sync.
-    |
-    */
-
-    'governorates' => [
-        'cairo' => ['nasr_city', 'heliopolis', 'maadi', 'new_cairo', 'downtown', 'shubra'],
-        'giza' => ['dokki', 'mohandessin', 'october', 'sheikh_zayed', 'haram'],
-        'alexandria' => ['smouha', 'sidi_gaber', 'miami', 'borg_alarab', 'agami'],
-        'qalyubia' => ['banha', 'shubra_elkheima', 'obour', 'qalyub'],
-        'dakahlia' => ['mansoura', 'talkha', 'mit_ghamr'],
-        'sharqia' => ['zagazig', 'tenth_ramadan', 'belbeis'],
-        'gharbia' => ['tanta', 'mahalla', 'kafr_elzayat'],
-        'monufia' => ['shebin', 'sadat_city', 'menouf'],
-        'beheira' => ['damanhour', 'kafr_eldawar', 'rashid'],
-        'ismailia' => ['ismailia_city', 'fayed', 'qantara'],
-        'port_said' => ['port_said_city', 'port_fouad'],
-        'suez' => ['suez_city', 'ain_sokhna'],
-        'faiyum' => ['faiyum_city', 'sinnuris'],
-        'minya' => ['minya_city', 'mallawi', 'samalut'],
-        'asyut' => ['asyut_city', 'dayrut'],
-        'sohag' => ['sohag_city', 'akhmim', 'girga'],
-        'qena' => ['qena_city', 'nag_hammadi'],
-        'luxor' => ['luxor_city', 'esna'],
-        'aswan' => ['aswan_city', 'kom_ombo'],
-        'red_sea' => ['hurghada', 'safaga', 'marsa_alam'],
-        'south_sinai' => ['sharm', 'dahab'],
-        'damietta' => ['damietta_city', 'new_damietta', 'ras_elbar'],
-        'kafr_elsheikh' => ['kafr_elsheikh_city', 'desouk'],
-        'beni_suef' => ['beni_suef_city', 'el_wasta'],
-    ],
-
-    /*
-    |--------------------------------------------------------------------------
     | Affiliates
     |--------------------------------------------------------------------------
     */

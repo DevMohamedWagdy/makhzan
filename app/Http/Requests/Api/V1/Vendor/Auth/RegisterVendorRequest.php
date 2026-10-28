@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Api\V1\Vendor\Auth;
 
+use App\Support\Locations;
 use App\Support\PhoneNumber;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -35,8 +36,6 @@ class RegisterVendorRequest extends FormRequest
      */
     public function rules(): array
     {
-        $governorates = config('makhzan.governorates');
-
         return [
             'vendor.full_name' => ['required', 'string', 'min:5', 'max:255'],
             'vendor.phone' => ['required', 'regex:'.PhoneNumber::PATTERN, Rule::unique('vendors', 'phone')],
@@ -50,8 +49,8 @@ class RegisterVendorRequest extends FormRequest
             ],
             // SVG is deliberately excluded: it can carry scripts and is served from the public disk.
             'store.logo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
-            'store.governorate_id' => ['required', 'string', Rule::in(array_keys($governorates))],
-            'store.city_id' => ['required', 'string', Rule::in($governorates[$this->input('store.governorate_id')] ?? [])],
+            'store.governorate_id' => ['required', 'string', Rule::in(Locations::activeGovernorateIds())],
+            'store.city_id' => ['required', 'string', Rule::in(Locations::activeCityIds($this->input('store.governorate_id')))],
         ];
     }
 

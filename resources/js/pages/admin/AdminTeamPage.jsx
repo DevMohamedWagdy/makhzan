@@ -30,6 +30,7 @@ const SECTIONS = {
     messages: { label: t('رسائل التواصل'), icon: 'mail' },
     logs: { label: t('سجل النشاط'), icon: 'clock' },
     settings: { label: t('إعدادات المنصة'), icon: 'settings' },
+    locations: { label: t('المحافظات والمدن'), icon: 'map-pin' },
     team: { label: t('فريق الإدارة'), icon: 'shield-check' },
 };
 

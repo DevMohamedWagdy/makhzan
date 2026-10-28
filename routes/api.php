@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\V1\Admin\AuthController as AdminAuthController;
 use App\Http\Controllers\Api\V1\Admin\ContactMessageController as AdminContactMessageController;
 use App\Http\Controllers\Api\V1\Admin\CouponController as AdminCouponController;
 use App\Http\Controllers\Api\V1\Admin\CustomerController as AdminCustomerController;
+use App\Http\Controllers\Api\V1\Admin\LocationController as AdminLocationController;
 use App\Http\Controllers\Api\V1\Admin\MailSettingsController as AdminMailSettingsController;
 use App\Http\Controllers\Api\V1\Admin\NotificationController as AdminNotificationController;
 use App\Http\Controllers\Api\V1\Admin\OrderController as AdminOrderController;
@@ -29,6 +30,7 @@ use App\Http\Controllers\Api\V1\Affiliate\PayoutController;
 use App\Http\Controllers\Api\V1\Payments\PaymobCallbackController;
 use App\Http\Controllers\Api\V1\Public\AffiliateRegistrationController;
 use App\Http\Controllers\Api\V1\Public\ContactMessageController;
+use App\Http\Controllers\Api\V1\Public\LocationController;
 use App\Http\Controllers\Api\V1\Public\PlatformStatsController;
 use App\Http\Controllers\Api\V1\Public\SiteContentController;
 use App\Http\Controllers\Api\V1\Public\StoreController;
@@ -117,6 +119,10 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
     Route::get('platform-stats', PlatformStatsController::class)
         ->middleware('throttle:60,1')
         ->name('platform-stats');
+
+    Route::get('locations', LocationController::class)
+        ->middleware('throttle:60,1')
+        ->name('locations');
 
     Route::get('site/contact', [SiteContentController::class, 'contact'])
         ->middleware('throttle:60,1')
@@ -315,6 +321,16 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
                 Route::put('settings/mail', [AdminMailSettingsController::class, 'update'])->name('settings.mail.update');
                 Route::put('settings/site', [AdminSiteSettingsController::class, 'update'])->name('settings.site.update');
                 Route::post('settings/mail/test', [AdminMailSettingsController::class, 'test'])->middleware('throttle:10,1')->name('settings.mail.test');
+            });
+
+            Route::get('locations', [AdminLocationController::class, 'index'])->middleware('admin.can:locations.view')->name('locations.index');
+            Route::middleware('admin.can:locations.update')->group(function () {
+                Route::post('governorates', [AdminLocationController::class, 'storeGovernorate'])->name('governorates.store');
+                Route::patch('governorates/{governorate}', [AdminLocationController::class, 'updateGovernorate'])->name('governorates.update');
+                Route::delete('governorates/{governorate}', [AdminLocationController::class, 'destroyGovernorate'])->name('governorates.destroy');
+                Route::post('governorates/{governorate}/cities', [AdminLocationController::class, 'storeCity'])->name('cities.store');
+                Route::patch('cities/{city}', [AdminLocationController::class, 'updateCity'])->name('cities.update');
+                Route::delete('cities/{city}', [AdminLocationController::class, 'destroyCity'])->name('cities.destroy');
             });
 
             Route::middleware('admin.can:team.manage')->group(function () {

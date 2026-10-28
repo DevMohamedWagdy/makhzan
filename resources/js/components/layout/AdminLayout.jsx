@@ -57,6 +57,7 @@ const NAV_SECTIONS = [
         items: [
             { label: t('سجل النشاط'), icon: 'clock', to: '/admin/logs', permission: 'logs.view' },
             { label: t('فريق الإدارة'), icon: 'shield-check', to: '/admin/team', permission: 'team.manage' },
+            { label: t('المحافظات والمدن'), icon: 'map-pin', to: '/admin/locations', permission: 'locations.view' },
             { label: t('إعدادات المنصة'), icon: 'settings', to: '/admin/settings', permission: 'settings.view' },
         ],
     },
