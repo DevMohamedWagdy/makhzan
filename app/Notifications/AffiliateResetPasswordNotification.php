@@ -4,11 +4,14 @@ namespace App\Notifications;
 
 use App\Models\Affiliate;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class AffiliateResetPasswordNotification extends Notification implements ShouldQueue
+/**
+ * The password reset link. Sent during the request rather than queued: someone is waiting on that
+ * screen, and the link shouldn't depend on a queue worker running.
+ */
+class AffiliateResetPasswordNotification extends Notification
 {
     use Queueable;
 

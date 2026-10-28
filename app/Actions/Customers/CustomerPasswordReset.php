@@ -8,6 +8,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Throwable;
 
 /**
  * Store-scoped password reset for shoppers. Tokens are stored hashed, one per customer,
@@ -35,7 +36,12 @@ class CustomerPasswordReset
             ['token' => Hash::make($token), 'created_at' => now()],
         );
 
-        $customer->notify(new CustomerResetPasswordNotification($token));
+        try {
+            $customer->notify(new CustomerResetPasswordNotification($token));
+        } catch (Throwable $exception) {
+            // A mail outage shouldn't reveal whether the account exists or fail the request.
+            report($exception);
+        }
     }
 
     /**

@@ -1,5 +1,10 @@
 <?php
 
+use App\Notifications\AffiliateResetPasswordNotification;
+use App\Notifications\CustomerResetPasswordNotification;
+use App\Notifications\EmailVerificationCodeNotification;
+use App\Notifications\VendorResetPasswordNotification;
+
 return [
 
     /*
@@ -117,6 +122,25 @@ return [
     'payments' => [
         // An online order not paid within this many minutes is cancelled and its stock released.
         'expiry_minutes' => 30,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Emailed Notifications
+    |--------------------------------------------------------------------------
+    |
+    | The notifications allowed to go out by email. Any other notification
+    | still reaches its dashboard bell but its email is skipped (see
+    | App\Listeners\LimitMailNotifications). Add a class here to turn its
+    | email on.
+    |
+    */
+
+    'mail_notifications' => [
+        EmailVerificationCodeNotification::class,
+        VendorResetPasswordNotification::class,
+        AffiliateResetPasswordNotification::class,
+        CustomerResetPasswordNotification::class,
     ],
 
 ];

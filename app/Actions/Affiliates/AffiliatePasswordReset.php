@@ -9,6 +9,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Throwable;
 
 /**
  * Store-scoped password reset for affiliates. Tokens are stored hashed, one per affiliate,
@@ -36,7 +37,12 @@ class AffiliatePasswordReset
             ['token' => Hash::make($token), 'created_at' => now()],
         );
 
-        $affiliate->notify(new AffiliateResetPasswordNotification($token));
+        try {
+            $affiliate->notify(new AffiliateResetPasswordNotification($token));
+        } catch (Throwable $exception) {
+            // A mail outage shouldn't reveal whether the account exists or fail the request.
+            report($exception);
+        }
     }
 
     /**

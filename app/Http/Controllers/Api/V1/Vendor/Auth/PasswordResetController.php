@@ -11,6 +11,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use Throwable;
 
 class PasswordResetController extends Controller
 {
@@ -23,7 +24,12 @@ class PasswordResetController extends Controller
         $vendor = Vendor::query()->where('email', Str::lower(trim($request->string('email')->toString())))->first();
 
         if ($vendor) {
-            Password::broker('vendors')->sendResetLink(['email' => $vendor->email]);
+            try {
+                Password::broker('vendors')->sendResetLink(['email' => $vendor->email]);
+            } catch (Throwable $exception) {
+                // A mail outage shouldn't reveal whether the account exists or fail the request.
+                report($exception);
+            }
         }
 
         return response()->json([

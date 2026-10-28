@@ -33,10 +33,12 @@ class EmailVerificationCodeNotification extends Notification
     {
         return (new MailMessage)
             ->subject(__('notifications.email_verification_code.subject', ['code' => $this->code]))
-            ->greeting(__('notifications.greeting', ['name' => $notifiable->full_name]))
-            ->line(__('notifications.email_verification_code.intro'))
-            ->line('# '.$this->code)
-            ->line(__('notifications.email_verification_code.expiry', ['minutes' => $this->expiresInMinutes]))
-            ->line(__('notifications.email_verification_code.ignore'));
+            ->markdown('mail.verification-code', [
+                'greeting' => __('notifications.greeting', ['name' => $notifiable->full_name]),
+                'intro' => __('notifications.email_verification_code.intro'),
+                'code' => $this->code,
+                'expiry' => __('notifications.email_verification_code.expiry', ['minutes' => $this->expiresInMinutes]),
+                'ignore' => __('notifications.email_verification_code.ignore'),
+            ]);
     }
 }
