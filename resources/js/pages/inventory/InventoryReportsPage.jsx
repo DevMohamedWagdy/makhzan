@@ -1,11 +1,13 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { PageHeader } from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/Button';
 import { Alert, Badge, EmptyState, StatCard, StatStrip } from '@/components/ui/Display';
+import { Input } from '@/components/ui/Form';
 import { Icon } from '@/components/ui/Icon';
 import { Tabs } from '@/components/ui/Navigation';
 import { Skeleton } from '@/components/ui/Spinner';
+import { useWarehouses } from '@/features/inventory/useWarehouses';
 import { localized, t } from '@/i18n';
 import { PRODUCT_STATUSES } from '@/lib/constants';
 import { formatDate, formatMoney, formatNumber } from '@/lib/format';
@@ -13,16 +15,18 @@ import { inventoryApi } from '@/services/inventoryApi';
 
 const DEAD_STOCK_DAYS = [30, 60, 90, 180];
 
-/** What the stock is worth (per warehouse and per category) and what hasn't sold for a while. */
+const REPORTS = ['value', 'warehouses', 'dead-stock'];
+
+/** What the stock is worth (per warehouse and per category), what each warehouse holds and what hasn't sold for a while. */
 export function InventoryReportsPage() {
     const [searchParams, setSearchParams] = useSearchParams();
-    const report = searchParams.get('report') === 'dead-stock' ? 'dead-stock' : 'value';
+    const report = REPORTS.includes(searchParams.get('report')) ? searchParams.get('report') : 'value';
 
     return (
         <>
             <PageHeader
                 title={t('تقارير المخزون')}
-                description={t('قيمة البضاعة في كل مخزن وقسم، والأصناف التي لا تُباع')}
+                description={t('قيمة البضاعة ومحتوى كل مخزن، والأصناف التي لا تُباع')}
                 breadcrumbs={[t('لوحة التحكم'), t('المخزون'), t('التقارير')]}
                 actions={
                     <Button variant="secondary" icon="arrow-right" to="/dashboard/inventory">
@@ -35,6 +39,7 @@ export function InventoryReportsPage() {
                 variant="segmented"
                 tabs={[
                     { value: 'value', label: t('قيمة المخزون') },
+                    { value: 'warehouses', label: t('محتوى المخازن') },
                     { value: 'dead-stock', label: t('البضاعة الراكدة') },
                 ]}
                 value={report}
@@ -42,7 +47,9 @@ export function InventoryReportsPage() {
                 className="mb-6 w-fit"
             />
 
-            {report === 'value' ? <ValueReport /> : <DeadStockReport />}
+            {report === 'value' && <ValueReport />}
+            {report === 'warehouses' && <WarehouseReport />}
+            {report === 'dead-stock' && <DeadStockReport />}
         </>
     );
 }
@@ -93,14 +100,22 @@ function ValueReport() {
             )}
 
             <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-                <ValueTable title={t('حسب المخزن')} icon="warehouse" rows={data.warehouses} rowKey="warehouse_id" label={(row) => row.name} total={totals.cost_value} />
+                <ValueTable
+                    title={t('حسب المخزن')}
+                    icon="warehouse"
+                    rows={data.warehouses}
+                    rowKey="warehouse_id"
+                    label={(row) => row.name}
+                    linkTo={(row) => `/dashboard/inventory/reports?report=warehouses&warehouse=${row.warehouse_id}`}
+                    total={totals.cost_value}
+                />
                 <ValueTable title={t('حسب القسم')} icon="grid" rows={data.categories} rowKey="category_id" label={(row) => localized(row)} total={totals.cost_value} />
             </div>
         </div>
     );
 }
 
-function ValueTable({ title, icon, rows, rowKey, label, total }) {
+function ValueTable({ title, icon, rows, rowKey, label, linkTo, total }) {
     return (
         <section className="mk-card overflow-hidden">
             <header className="flex items-center gap-2 border-b border-line px-5 py-4">
@@ -129,7 +144,15 @@ function ValueTable({ title, icon, rows, rowKey, label, total }) {
                                 return (
                                     <tr key={row[rowKey]}>
                                         <td className="px-4 py-3">
-                                            <span className="block font-medium text-ink">{label(row)}</span>
+                                            {linkTo ? (
+                                                <Link to={linkTo(row)} className="group flex items-center gap-1 font-medium text-ink hover:text-primary">
+                                                    {label(row)}
+                                                    <span className="text-2xs font-normal text-muted group-hover:text-primary">{t('عرض المنتجات')}</span>
+                                                    <Icon name="chevron-left" className="size-3.5 text-muted group-hover:text-primary" />
+                                                </Link>
+                                            ) : (
+                                                <span className="block font-medium text-ink">{label(row)}</span>
+                                            )}
                                             <span className="mt-1.5 flex items-center gap-2">
                                                 <span className="h-1.5 w-24 overflow-hidden rounded-full bg-surface-3">
                                                     <span className="block h-full rounded-full bg-primary" style={{ width: `${share}%` }} />
@@ -148,6 +171,129 @@ function ValueTable({ title, icon, rows, rowKey, label, total }) {
                 </div>
             )}
         </section>
+    );
+}
+
+/** One warehouse's contents (?warehouse=id, the default warehouse otherwise): its figures, then every product in it with a search. */
+function WarehouseReport() {
+    const [searchParams, setSearchParams] = useSearchParams();
+    const { warehouses, error: warehousesError, reload: reloadWarehouses } = useWarehouses();
+    const [search, setSearch] = useState('');
+    const requestedId = Number(searchParams.get('warehouse'));
+    const warehouseId = warehouses?.some((warehouse) => warehouse.warehouse_id === requestedId) ? requestedId : warehouses?.[0]?.warehouse_id;
+    const loader = useCallback(() => (warehouseId ? inventoryApi.warehouseReport(warehouseId) : new Promise(() => {})), [warehouseId]);
+    const { data, error, reload } = useReport(loader);
+
+    const items = useMemo(() => {
+        const query = search.trim().toLowerCase();
+
+        if (!data || !query) {
+            return data?.items ?? [];
+        }
+
+        return data.items.filter((item) => [item.product_name, item.product_name_en, item.variant_title, item.sku, item.category].some((value) => value?.toLowerCase().includes(query)));
+    }, [data, search]);
+
+    if (warehousesError || error) {
+        return <EmptyState icon="alert-triangle" title={t('تعذر تحميل التقرير')} description={warehousesError ?? error} action={<Button variant="secondary" icon="refresh" onClick={warehousesError ? reloadWarehouses : reload}>{t('إعادة المحاولة')}</Button>} />;
+    }
+
+    if (warehouses?.length === 0) {
+        return <EmptyState icon="warehouse" title={t('لا توجد مخازن بعد')} action={<Button to="/dashboard/warehouses">{t('المخازن')}</Button>} />;
+    }
+
+    return (
+        <div className="flex flex-col gap-6">
+            {warehouses && warehouses.length > 1 && (
+                <div className="flex flex-wrap items-center gap-3">
+                    <span className="text-sm text-ink-2">{t('المخزن')}</span>
+                    <Tabs
+                        variant="segmented"
+                        tabs={warehouses.map((warehouse) => ({ value: warehouse.warehouse_id, label: warehouse.name }))}
+                        value={warehouseId}
+                        onChange={(id) => {
+                            setSearch('');
+                            setSearchParams({ report: 'warehouses', warehouse: String(id) }, { replace: true });
+                        }}
+                    />
+                </div>
+            )}
+
+            {!data ? (
+                <ReportSkeleton />
+            ) : (
+                <>
+                    <StatStrip>
+                        <StatCard label={t('أصناف في المخزن')} value={formatNumber(data.totals.variants)} icon="box" tone="primary" />
+                        <StatCard label={t('إجمالي القطع')} value={formatNumber(data.totals.units)} icon="warehouse" tone="neutral" />
+                        <StatCard label={t('القيمة بالتكلفة')} value={formatMoney(data.totals.cost_value)} icon="wallet" tone="info" hint={t('بسعر البيع {value}', { value: formatMoney(data.totals.retail_value) })} />
+                        <StatCard label={t('أصناف كميتها منخفضة هنا')} value={formatNumber(data.totals.low)} icon="alert-triangle" tone="warning" />
+                    </StatStrip>
+
+                    {data.totals.missing_cost > 0 && (
+                        <Alert tone="warning" title={t('{count} صنف بدون تكلفة', { count: formatNumber(data.totals.missing_cost) })}>
+                            {t('قيمتها بالتكلفة محسوبة صفر. أضف التكلفة من صفحة المخزون ليكون التقرير دقيقاً.')}
+                        </Alert>
+                    )}
+
+                    <section className="mk-card overflow-hidden">
+                        <header className="flex flex-col gap-3 border-b border-line px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+                            <div className="flex items-center gap-2">
+                                <span className="grid size-8 place-items-center rounded-lg bg-primary/10 text-primary">
+                                    <Icon name="warehouse" className="size-4" />
+                                </span>
+                                <h2 className="font-semibold text-ink">{t('منتجات {name}', { name: data.warehouse.name })}</h2>
+                            </div>
+                            {data.items.length > 0 && <Input icon="search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder={t('ابحث بالاسم أو الكود أو القسم')} className="sm:w-72" aria-label={t('بحث في منتجات المخزن')} />}
+                        </header>
+
+                        {data.items.length === 0 ? (
+                            <div className="p-6">
+                                <EmptyState icon="box" title={t('المخزن فارغ')} description={t('لا توجد بضاعة في هذا المخزن الآن. انقل إليه منتجات أو استلم فيه أمر شراء.')} />
+                            </div>
+                        ) : items.length === 0 ? (
+                            <p className="p-6 text-center text-sm text-muted">{t('لا توجد نتائج مطابقة')}</p>
+                        ) : (
+                            <div className="mk-scroll overflow-x-auto">
+                                <table className="w-full min-w-[820px] text-sm">
+                                    <thead className="mk-thead">
+                                        <tr>
+                                            {[t('المنتج'), t('القسم'), t('الكمية هنا'), t('في كل المخازن'), t('القيمة بالتكلفة'), t('بسعر البيع')].map((column) => (
+                                                <th key={column} className="px-4 py-3 text-start font-medium whitespace-nowrap">
+                                                    {column}
+                                                </th>
+                                            ))}
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-line">
+                                        {items.map((item) => (
+                                            <tr key={item.variant_id}>
+                                                <td className="px-4 py-3">
+                                                    <Link to={`/dashboard/products/${item.product_id}`} className="block font-medium text-ink hover:text-primary">
+                                                        {localized({ name: item.product_name, name_en: item.product_name_en })}
+                                                    </Link>
+                                                    <span className="text-xs text-muted">{[item.variant_title, item.sku].filter(Boolean).join(' · ')}</span>
+                                                </td>
+                                                <td className="px-4 py-3 text-ink-2">{item.category ?? '—'}</td>
+                                                <td className="px-4 py-3">
+                                                    <span className="flex items-center gap-2">
+                                                        <span className="mk-num font-semibold text-ink">{formatNumber(item.units)}</span>
+                                                        {item.is_low && <Badge tone="warning">{t('منخفض')}</Badge>}
+                                                    </span>
+                                                </td>
+                                                <td className="mk-num px-4 py-3 text-ink-2">{formatNumber(item.total_stock)}</td>
+                                                <td className="mk-num px-4 py-3 font-semibold whitespace-nowrap text-ink">{item.cost === null ? <span className="text-xs font-normal text-warning">{t('بدون تكلفة')}</span> : formatMoney(item.cost_value)}</td>
+                                                <td className="mk-num px-4 py-3 whitespace-nowrap text-ink-2">{formatMoney(item.retail_value)}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
+                    </section>
+                </>
+            )}
+        </div>
     );
 }
 

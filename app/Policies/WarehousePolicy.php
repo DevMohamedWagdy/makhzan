@@ -18,6 +18,11 @@ class WarehousePolicy
             : Response::denyAsNotFound(__('inventory.warehouse_not_found'));
     }
 
+    public function view(Vendor $vendor, Warehouse $warehouse): Response
+    {
+        return $this->update($vendor, $warehouse);
+    }
+
     public function delete(Vendor $vendor, Warehouse $warehouse): Response
     {
         return $this->update($vendor, $warehouse);

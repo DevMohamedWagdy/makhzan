@@ -55,7 +55,7 @@ export default {
     'رصيد لك': 'Your credit',
     'المستحق': 'Owed',
     'تقارير المخزون': 'Inventory reports',
-    'قيمة البضاعة في كل مخزن وقسم، والأصناف التي لا تُباع': 'Stock value per warehouse and category, and what is not selling',
+    'قيمة البضاعة ومحتوى كل مخزن، والأصناف التي لا تُباع': 'Stock value, what each warehouse holds, and what is not selling',
     'البضاعة الراكدة': 'Dead stock',
     'قيمته بسعر البيع': 'Value at selling price',
     'الربح المتوقع': 'Expected profit',
@@ -3184,4 +3184,18 @@ export default {
     'سلة ودفع إلكتروني آمن': 'Cart and secure online checkout',
     'صفحات السياسات والشروط جاهزة': 'Ready-made policy and terms pages',
     'تصميم سريع يعمل على كل الأجهزة': 'A fast design that works on every device',
+
+    // Warehouse contents report
+    'محتوى المخازن': 'Warehouse contents',
+    'لا توجد مخازن بعد': 'No warehouses yet',
+    'أصناف في المخزن': 'Items in the warehouse',
+    'بسعر البيع {value}': '{value} at selling price',
+    'أصناف كميتها منخفضة هنا': 'Items running low here',
+    'منتجات {name}': 'Products in {name}',
+    'ابحث بالاسم أو الكود أو القسم': 'Search by name, SKU or category',
+    'بحث في منتجات المخزن': 'Search the warehouse\'s products',
+    'المخزن فارغ': 'This warehouse is empty',
+    'لا توجد بضاعة في هذا المخزن الآن. انقل إليه منتجات أو استلم فيه أمر شراء.': 'There\'s no stock in this warehouse right now. Transfer products to it or receive a purchase order into it.',
+    'الكمية هنا': 'Qty here',
+    'في كل المخازن': 'All warehouses',
 };

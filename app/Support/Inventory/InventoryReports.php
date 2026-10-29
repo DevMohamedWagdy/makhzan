@@ -5,6 +5,7 @@ namespace App\Support\Inventory;
 use App\Enums\OrderStatus;
 use App\Models\ProductVariant;
 use App\Models\Store;
+use App\Models\Warehouse;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -63,6 +64,62 @@ class InventoryReports
             ],
             'warehouses' => $warehouses,
             'categories' => $categories,
+        ];
+    }
+
+    /**
+     * What one warehouse holds: every variant with units in it, the most money tied up first, with its
+     * quantity there and in the store as a whole. The level (low / out) compares the warehouse's own
+     * quantity with the variant's low-stock threshold.
+     *
+     * @return array{warehouse: array{warehouse_id: int, name: string}, totals: array{variants: int, units: int, cost_value: float, retail_value: float, low: int, missing_cost: int}, items: list<array<string, mixed>>}
+     */
+    public static function warehouse(Store $store, Warehouse $warehouse): array
+    {
+        $variants = ProductVariant::query()
+            ->inventoryOf($store)
+            ->join('warehouse_stocks', 'warehouse_stocks.product_variant_id', '=', 'product_variants.id')
+            ->where('warehouse_stocks.warehouse_id', $warehouse->id)
+            ->where('warehouse_stocks.stock', '>', 0)
+            ->whereNull('products.deleted_at')
+            ->addSelect('warehouse_stocks.stock as warehouse_stock')
+            ->with('product.category')
+            ->orderByRaw('warehouse_stocks.stock * coalesce(product_variants.cost, product_variants.price) desc')
+            ->get();
+
+        $items = $variants->map(function (ProductVariant $variant) use ($store): array {
+            $units = (int) $variant->warehouse_stock;
+            $threshold = $variant->lowStockThreshold($store);
+
+            return [
+                'variant_id' => $variant->id,
+                'product_id' => $variant->product_id,
+                'product_name' => $variant->product->name,
+                'product_name_en' => $variant->product->name_en,
+                'variant_title' => $variant->title() ?: null,
+                'sku' => $variant->sku,
+                'category' => $variant->product->category?->name,
+                'units' => $units,
+                'total_stock' => $variant->stock,
+                'is_low' => $units <= $threshold,
+                'cost' => $variant->cost === null ? null : (float) $variant->cost,
+                'price' => (float) $variant->price,
+                'cost_value' => round($units * (float) ($variant->cost ?? 0), 2),
+                'retail_value' => round($units * (float) $variant->price, 2),
+            ];
+        });
+
+        return [
+            'warehouse' => ['warehouse_id' => $warehouse->id, 'name' => $warehouse->name],
+            'totals' => [
+                'variants' => $items->count(),
+                'units' => (int) $items->sum('units'),
+                'cost_value' => round((float) $items->sum('cost_value'), 2),
+                'retail_value' => round((float) $items->sum('retail_value'), 2),
+                'low' => $items->where('is_low', true)->count(),
+                'missing_cost' => $items->whereNull('cost')->count(),
+            ],
+            'items' => $items->all(),
         ];
     }
 

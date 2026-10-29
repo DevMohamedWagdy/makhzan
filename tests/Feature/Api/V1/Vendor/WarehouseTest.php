@@ -171,6 +171,31 @@ class WarehouseTest extends TestCase
         $this->assertSame(1, $this->vendor->store->stockTransfers()->count());
     }
 
+    public function test_the_warehouse_report_lists_what_one_warehouse_holds(): void
+    {
+        $this->vendor->store->update(['low_stock_threshold' => 3]);
+        $dress = $this->variant(6, 2);
+        $dress->update(['cost' => 150]);
+        $this->variant(0, 5, 'قميص');
+        $this->variant(1, 0, 'بلوزة');
+
+        $this->getJson("/api/v1/vendor/inventory/reports/warehouses/{$this->main->id}")
+            ->assertOk()
+            ->assertJsonPath('data.warehouse.name', $this->main->name)
+            ->assertJsonPath('data.totals', ['variants' => 2, 'units' => 7, 'cost_value' => 900, 'retail_value' => 2800, 'low' => 1, 'missing_cost' => 1])
+            ->assertJsonCount(2, 'data.items')
+            ->assertJsonPath('data.items.0.product_name', 'فستان')
+            ->assertJsonPath('data.items.0.units', 6)
+            ->assertJsonPath('data.items.0.total_stock', 8)
+            ->assertJsonPath('data.items.0.is_low', false)
+            ->assertJsonPath('data.items.1.product_name', 'بلوزة')
+            ->assertJsonPath('data.items.1.is_low', true);
+
+        $otherStore = Vendor::factory()->withStore()->create()->store->defaultWarehouse();
+
+        $this->getJson("/api/v1/vendor/inventory/reports/warehouses/{$otherStore->id}")->assertNotFound();
+    }
+
     public function test_moving_all_of_a_products_stock_to_another_warehouse_does_not_alert_that_it_ran_out(): void
     {
         $dress = $this->variant(10, 0);

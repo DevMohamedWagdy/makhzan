@@ -486,6 +486,7 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
                 Route::get('summary', InventorySummaryController::class)->name('summary');
                 Route::put('settings', [InventorySettingsController::class, 'update'])->name('settings.update')->defaults('_permission', 'inventory.update');
                 Route::get('reports/value', [InventoryReportController::class, 'value'])->name('reports.value')->defaults('_permission', 'inventory.view');
+                Route::get('reports/warehouses/{warehouse}', [InventoryReportController::class, 'warehouse'])->name('reports.warehouse')->defaults('_permission', 'inventory.view');
                 Route::get('reports/dead-stock', [InventoryReportController::class, 'deadStock'])->name('reports.dead-stock')->defaults('_permission', 'inventory.view');
                 Route::get('movements', [StockMovementController::class, 'index'])->name('movements.index');
                 Route::get('export', [InventoryImportController::class, 'export'])->name('export');

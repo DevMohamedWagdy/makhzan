@@ -29,6 +29,8 @@ export const inventoryApi = {
     updateSettings: (payload) => request('PUT', `${BASE}/settings`, { body: payload }),
     /** Units and value at cost and retail, per warehouse and per category, with `totals`. */
     valueReport: () => request('GET', `${BASE}/reports/value`),
+    /** What one warehouse holds: `{ warehouse, totals, items }`, each item with its `units` there. */
+    warehouseReport: (warehouseId) => request('GET', `${BASE}/reports/warehouses/${warehouseId}`),
     /** In-stock variants that haven't sold in `days` days: `{ days, totals, items }`. */
     deadStock: (days) => request('GET', `${BASE}/reports/dead-stock`, { query: { days } }),
 };
