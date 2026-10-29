@@ -75,7 +75,7 @@ export function AffiliateLoginPage() {
     };
 
     return (
-        <AuthLayout audience="affiliate" homeTo={`/${storeSlug}/affiliates/login`} panel={store ? { title: t('اربح مع {name}', { name: store.name }) } : undefined}>
+        <AuthLayout audience="affiliate" homeTo={`/${storeSlug}/affiliates/login`}>
             <AuthHeading
                 icon={store ? <Avatar name={store.name} src={store.logo_url} size="lg" /> : <Skeleton className="size-14 rounded-xl" />}
                 title={t('دخول المسوقين')}
