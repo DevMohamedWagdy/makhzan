@@ -63,12 +63,12 @@ export const rules = {
     phone: (message = t('رقم الهاتف غير صحيح، مثال: 01012345678')) => (value) => (value && !isPhone(value) ? message : null),
     password: () => (value) =>
         value && (value.length < 8 || !/\d/.test(value) || !/[A-Za-z]/.test(value))
-            ? t('كلمة المرور يجب أن تكون ٨ أحرف على الأقل وتحتوي على حروف وأرقام')
+            ? t('كلمة المرور يجب أن تكون 8 أحرف على الأقل وتحتوي على حروف وأرقام')
             : null,
     matches: (field, message = t('كلمتا المرور غير متطابقتين')) => (value, values) =>
         value !== values[field] ? message : null,
     slug: () => (value) =>
-        value && !isSlug(value) ? t('استخدم حروفاً إنجليزية صغيرة وأرقاماً وشرطة (-) فقط، من ٣ إلى ٤٠ حرفاً') : null,
+        value && !isSlug(value) ? t('استخدم حروفاً إنجليزية صغيرة وأرقاماً وشرطة (-) فقط، من 3 إلى 40 حرفاً') : null,
     range: (min, max, message) => (value) => {
         const number = Number(value);
 

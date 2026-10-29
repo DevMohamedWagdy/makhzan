@@ -35,7 +35,7 @@ function NeedsAttention({ items }) {
                         <Icon name="check" className="size-5" />
                     </span>
                     <p className="text-sm font-medium text-ink">{t('لا شيء ينتظرك الآن')}</p>
-                    <p className="text-xs text-muted">{t('ستظهر هنا الطلبات والتحويلات التي تحتاج قرارك.')}</p>
+                    <p className="text-xs text-muted">{t('ستظهر هنا الطلبات وطلبات التحويل والمسوقين الجدد ونواقص المخزون.')}</p>
                 </div>
             ) : (
                 <ul className="flex flex-col gap-0.5">
