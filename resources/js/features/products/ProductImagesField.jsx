@@ -5,11 +5,14 @@ import { Spinner } from '@/components/ui/Spinner';
 import { useToast } from '@/context/ToastContext';
 import { t } from '@/i18n';
 import { cn } from '@/lib/format';
+import { compressImages } from '@/lib/image';
 import { productsApi } from '@/services/productsApi';
 
 const MAX_IMAGES = 10;
 const MAX_SIZE_MB = 4;
 const ACCEPTED_TYPES = ['image/png', 'image/jpeg', 'image/webp'];
+/** Large enough for the storefront's zoomed product view; the upload limit applies to the result. */
+const COMPRESSION = { maxDimension: 1600, quality: 0.85, maxSizeMb: MAX_SIZE_MB };
 
 /**
  * Product photos. For a saved product (`productId`) every change goes to the API at once;
@@ -42,9 +45,10 @@ export function ProductImagesField({ productId, images, onImagesChange, pendingF
         }
     };
 
-    const add = (fileList) => {
-        const files = [...fileList];
-        const invalid = files.find((file) => !ACCEPTED_TYPES.includes(file.type) || file.size > MAX_SIZE_MB * 1024 * 1024);
+    /** Checks the picked photos, compresses them, then uploads them (saved product) or keeps them for after saving. */
+    const add = async (fileList) => {
+        const picked = [...fileList];
+        const invalid = picked.find((file) => !ACCEPTED_TYPES.includes(file.type));
 
         if (invalid) {
             toast.error(t('تعذر إضافة الصورة'), t('{name}: استخدم PNG أو JPG أو WEBP بحد أقصى {MAX_SIZE_MB} ميجابايت', { name: invalid.name, MAX_SIZE_MB }));
@@ -52,8 +56,18 @@ export function ProductImagesField({ productId, images, onImagesChange, pendingF
             return;
         }
 
-        if (items.length + files.length > MAX_IMAGES) {
+        if (items.length + picked.length > MAX_IMAGES) {
             toast.error(t('تعذر إضافة الصور'), t('الحد الأقصى {MAX_IMAGES} صور للمنتج', { MAX_IMAGES }));
+
+            return;
+        }
+
+        setBusy(true);
+        const { files, error } = await compressImages(picked, COMPRESSION);
+        setBusy(false);
+
+        if (error) {
+            toast.error(t('تعذر إضافة الصورة'), error);
 
             return;
         }

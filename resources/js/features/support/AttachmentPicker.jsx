@@ -1,18 +1,32 @@
-import { useId, useRef } from 'react';
+import { useId, useRef, useState } from 'react';
 import { Icon } from '@/components/ui/Icon';
 import { t } from '@/i18n';
 import { cn, formatFileSize } from '@/lib/format';
+import { compressImages } from '@/lib/image';
 import { ATTACHMENT_EXTENSIONS, MAX_ATTACHMENT_MB, MAX_ATTACHMENTS } from './support';
 
 const ACCEPT = ATTACHMENT_EXTENSIONS.map((extension) => `.${extension}`).join(',');
+/** Screenshots stay readable at this size; PDFs, documents and GIFs are attached untouched. */
+const COMPRESSION = { maxDimension: 2000, quality: 0.85 };
 
-/** Picks up to MAX_ATTACHMENTS files for a ticket message, checking type and size before upload. */
+/** Picks up to MAX_ATTACHMENTS files for a ticket message, compressing photos and checking type and size before upload. */
 export function AttachmentPicker({ files, onChange, onError, disabled = false, className }) {
     const inputId = useId();
     const inputRef = useRef(null);
+    const [preparing, setPreparing] = useState(false);
 
-    const add = (picked) => {
+    const add = async (selected) => {
         const accepted = [];
+
+        setPreparing(true);
+        const { files: picked, error } = await compressImages(selected, COMPRESSION);
+        setPreparing(false);
+
+        if (error) {
+            onError?.(error);
+
+            return;
+        }
 
         for (const file of picked) {
             const extension = file.name.split('.').pop().toLowerCase();
@@ -44,7 +58,7 @@ export function AttachmentPicker({ files, onChange, onError, disabled = false, c
                 multiple
                 accept={ACCEPT}
                 className="sr-only"
-                disabled={disabled || files.length >= MAX_ATTACHMENTS}
+                disabled={disabled || preparing || files.length >= MAX_ATTACHMENTS}
                 onChange={(event) => {
                     add([...(event.target.files ?? [])]);
                     event.target.value = '';
@@ -54,7 +68,7 @@ export function AttachmentPicker({ files, onChange, onError, disabled = false, c
                 htmlFor={inputId}
                 className={cn(
                     'inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-lg border border-dashed border-line-strong px-3 text-xs font-medium text-ink-2 transition hover:border-primary hover:text-primary',
-                    (disabled || files.length >= MAX_ATTACHMENTS) && 'pointer-events-none opacity-55',
+                    (disabled || preparing || files.length >= MAX_ATTACHMENTS) && 'pointer-events-none opacity-55',
                 )}
             >
                 <Icon name="paperclip" className="size-4" />

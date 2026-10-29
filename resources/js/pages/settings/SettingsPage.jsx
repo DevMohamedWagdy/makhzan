@@ -15,6 +15,7 @@ import { TrackingTab } from '@/features/settings/TrackingTab';
 import { useCopy } from '@/hooks/common';
 import { t } from '@/i18n';
 import { CURRENCY } from '@/lib/constants';
+import { compressImages } from '@/lib/image';
 import { GOVERNORATES, findGovernorate } from '@/lib/locations';
 import { authApi } from '@/services/authApi';
 import { storeSettingsApi } from '@/services/storeSettingsApi';
@@ -106,7 +107,21 @@ function StoreTab({ settings, onSaved }) {
         setLogoBusy(true);
 
         try {
-            onSaved(file === 'remove' ? await storeSettingsApi.removeLogo() : await storeSettingsApi.uploadLogo(file));
+            if (file === 'remove') {
+                onSaved(await storeSettingsApi.removeLogo());
+            } else {
+                // Same treatment as the sign-up logo (ImageUpload): 1024px, within the server's 2 MB.
+                const { files, error } = await compressImages([file], { maxSizeMb: 2 });
+
+                if (error) {
+                    toast.error(t('تعذر تحديث اللوجو'), error);
+
+                    return;
+                }
+
+                onSaved(await storeSettingsApi.uploadLogo(files[0]));
+            }
+
             toast.success(file === 'remove' ? t('تم حذف اللوجو') : t('تم تحديث اللوجو'));
         } catch (error) {
             toast.error(t('تعذر تحديث اللوجو'), error.errors?.logo ?? error.message);

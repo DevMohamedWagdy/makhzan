@@ -45,6 +45,8 @@ class StoreProductReviewRequest extends FormRequest
             'images.*.image' => __('forms.image_type'),
             'images.*.mimes' => __('forms.image_type'),
             'images.*.max' => __('forms.image_too_large', ['size' => 4]),
+            // The server refused the file before validation (usually PHP's upload_max_filesize).
+            'images.*.uploaded' => __('forms.image_too_large', ['size' => 4]),
         ];
     }
 }

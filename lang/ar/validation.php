@@ -88,7 +88,7 @@ return [
     ],
     'string' => 'يجب أن يكون :attribute نصاً.',
     'unique' => ':attribute مستخدم من قبل.',
-    'uploaded' => 'فشل رفع :attribute.',
+    'uploaded' => 'تعذّر رفع الملف، ربما حجمه أكبر من المسموح. جرّب ملفاً أصغر.',
     'url' => 'صيغة :attribute غير صحيحة.',
 
     'custom' => [],

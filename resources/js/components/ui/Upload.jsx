@@ -2,11 +2,8 @@ import { useId, useRef, useState } from 'react';
 import { useObjectUrl } from '@/hooks/common';
 import { t } from '@/i18n';
 import { cn, formatFileSize } from '@/lib/format';
-import { compressImage } from '@/lib/image';
+import { MAX_ORIGINAL_IMAGE_MB, compressImage, imagePrepareMessage } from '@/lib/image';
 import { Icon } from './Icon';
-
-/** Originals larger than this aren't even decoded; what's uploaded is the compressed copy. */
-const MAX_ORIGINAL_IMAGE_MB = 20;
 
 function validateFile(file, { accept, maxSizeMb }) {
     const extension = `.${file.name.split('.').pop().toLowerCase()}`;
@@ -73,7 +70,7 @@ export function ImageUpload({ value, onChange, onError, label = t('رفع صور
             compressed = await compressImage(file);
         } catch (prepareError) {
             inputRef.current.value = '';
-            onError?.(prepareError.reason === 'unreadable' ? t('تعذر فتح الملف. لو الصورة على iCloud نزّلها على جهازك أولاً، أو اختر صورة أخرى') : t('الملف ليس صورة PNG أو JPG صالحة'));
+            onError?.(imagePrepareMessage(prepareError));
 
             return;
         }

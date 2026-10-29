@@ -8,10 +8,14 @@ import { useToast } from '@/context/ToastContext';
 import { useCustomerAuth } from '@/features/storefront/CustomerAuthContext';
 import { t } from '@/i18n';
 import { formatDate, formatNumber } from '@/lib/format';
+import { compressImages } from '@/lib/image';
 import { storefrontApi } from '@/services/storefrontApi';
 import { StarInput, Stars } from './Stars';
 
 const MAX_IMAGES = 3;
+
+/** Review photos are shrunk before upload; the server takes up to 4 MB each (StoreProductReviewRequest). */
+const COMPRESSION = { maxDimension: 1280, maxSizeMb: 4 };
 
 function RatingSummary({ summary }) {
     return (
@@ -87,6 +91,7 @@ function ReviewForm({ storeSlug, productSlug }) {
     const [images, setImages] = useState([]);
     const [errors, setErrors] = useState({});
     const [submitting, setSubmitting] = useState(false);
+    const [preparingImages, setPreparingImages] = useState(false);
 
     useEffect(() => {
         if (isAuthenticated) {
@@ -154,16 +159,29 @@ function ReviewForm({ storeSlug, productSlug }) {
             <Field label={t('رأيك في المنتج')} error={errors.body} optional>
                 <Textarea rows={3} maxLength={1000} value={body} onChange={(event) => setBody(event.target.value)} placeholder={t('ما الذي أعجبك؟ كيف كانت الخامة والمقاس؟')} />
             </Field>
-            <Field label={t('صور (حتى {max})', { max: formatNumber(MAX_IMAGES) })} error={errors.images ?? errors['images.0']} optional>
+            <Field label={t('صور (حتى {max})', { max: formatNumber(MAX_IMAGES) })} error={errors.images ?? Object.entries(errors).find(([key]) => key.startsWith('images.'))?.[1]} optional>
                 <input
                     type="file"
                     accept="image/png,image/jpeg,image/webp"
                     multiple
-                    onChange={(event) => setImages(Array.from(event.target.files ?? []).slice(0, MAX_IMAGES))}
+                    onChange={async (event) => {
+                        const input = event.target;
+
+                        setPreparingImages(true);
+                        const { files, error } = await compressImages(Array.from(input.files ?? []).slice(0, MAX_IMAGES), COMPRESSION);
+                        setPreparingImages(false);
+
+                        setErrors(error ? { images: error } : {});
+                        setImages(files);
+
+                        if (error) {
+                            input.value = '';
+                        }
+                    }}
                     className="text-sm text-ink-2 file:me-3 file:rounded-lg file:border-0 file:bg-surface-2 file:px-3 file:py-2 file:text-sm file:font-medium file:text-ink"
                 />
             </Field>
-            <Button type="submit" icon="send" loading={submitting} className="self-start">
+            <Button type="submit" icon="send" loading={submitting || preparingImages} className="self-start">
                 {t('إرسال التقييم')}
             </Button>
         </form>

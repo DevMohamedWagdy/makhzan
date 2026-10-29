@@ -104,6 +104,16 @@ class ProductReviewTest extends TestCase
         $this->postJson($this->url(), [])->assertJsonValidationErrors('rating');
     }
 
+    public function test_a_photo_the_server_refused_as_too_large_gets_a_readable_error(): void
+    {
+        Sanctum::actingAs($this->customer, [Customer::TOKEN_ABILITY]);
+        $this->receive($this->product);
+        $refused = new UploadedFile(UploadedFile::fake()->image('screenshot.png')->getPathname(), 'screenshot.png', 'image/png', UPLOAD_ERR_INI_SIZE, true);
+
+        $this->post($this->url(), ['rating' => 4, 'images' => [$refused]], ['Accept' => 'application/json'])
+            ->assertJsonValidationErrors(['images.0' => __('forms.image_too_large', ['size' => 4])]);
+    }
+
     public function test_reviewing_needs_a_signed_in_customer(): void
     {
         $this->postJson($this->url(), ['rating' => 5])->assertUnauthorized();

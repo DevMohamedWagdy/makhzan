@@ -3207,4 +3207,5 @@ export default {
     'جهّزه': 'Packed by',
     'راجعه': 'Checked by',
     'استلمه المندوب': 'Courier received',
+    '{name}: حجم الصورة يتجاوز {size} ميجابايت': '{name}: the image is larger than {size} MB',
 };
