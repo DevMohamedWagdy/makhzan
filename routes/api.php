@@ -416,6 +416,9 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
 
         Route::middleware('permission:reports')->group(function () {
             Route::get('reports', ReportController::class)->name('reports');
+            Route::get('reports/export', [ReportController::class, 'export'])->name('reports.export');
+            Route::get('reports/recipients', [ReportController::class, 'recipients'])->name('reports.recipients');
+            Route::post('reports/email', [ReportController::class, 'email'])->middleware('throttle:5,10')->name('reports.email')->defaults('_permission', 'reports.view');
         });
 
         Route::middleware('permission:loyalty')->group(function () {

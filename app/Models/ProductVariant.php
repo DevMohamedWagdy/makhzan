@@ -25,6 +25,9 @@ class ProductVariant extends Model
     /** @var list<string> Attributes not worth an activity log entry. */
     protected array $activityIgnored = ['stock', 'position'];
 
+    /** @var list<string> Logged changes: adding and removing variants shows in their product's own entry. */
+    protected array $activityEvents = ['updated'];
+
     /**
      * Get the attributes that should be cast.
      *

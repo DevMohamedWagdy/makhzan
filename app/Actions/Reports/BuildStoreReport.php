@@ -73,9 +73,12 @@ class BuildStoreReport
     }
 
     /**
+     * The orders a report counts: placed between the two dates, leaving out online checkouts that
+     * were never paid. Also used by the report's CSV export to list them one by one.
+     *
      * @return HasMany<Order, Store>
      */
-    private function orders(Store $store, CarbonImmutable $from, CarbonImmutable $to): HasMany
+    public function orders(Store $store, CarbonImmutable $from, CarbonImmutable $to): HasMany
     {
         return $store->orders()
             ->whereBetween('orders.created_at', [$from, $to])

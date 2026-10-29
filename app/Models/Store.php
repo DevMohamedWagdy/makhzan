@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 
 #[Fillable([
@@ -182,6 +183,17 @@ class Store extends Model
     public function staff(): HasMany
     {
         return $this->hasMany(Vendor::class, 'store_id');
+    }
+
+    /**
+     * The owner and the active team members, the owner first: the accounts that can be sent things
+     * like the emailed sales report.
+     *
+     * @return Collection<int, Vendor>
+     */
+    public function activeAccounts(): Collection
+    {
+        return collect([$this->vendor])->merge($this->staff()->where('is_active', true)->orderBy('full_name')->get())->filter()->values();
     }
 
     /**

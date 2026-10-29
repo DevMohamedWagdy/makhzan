@@ -111,6 +111,17 @@ class ActivityLogger
         return ['new' => array_map(self::scalar(...), array_diff_key($model->getAttributes(), array_flip($skip)))];
     }
 
+    /**
+     * Whether the current request is made by a store's team (owner or staff) or a platform admin:
+     * the actors whose record changes the log keeps.
+     */
+    public static function isTeamAction(): bool
+    {
+        $actor = self::currentActor();
+
+        return $actor instanceof Vendor || $actor instanceof Admin;
+    }
+
     private static function currentActor(): ?Model
     {
         if (App::runningInConsole() && ! App::runningUnitTests()) {

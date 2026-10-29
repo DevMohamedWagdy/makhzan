@@ -111,10 +111,10 @@ class AdminTeamAndLogsTest extends TestCase
         $this->assertDatabaseHas('activity_logs', ['event' => 'store.suspended', 'actor_type' => 'admin']);
 
         $this->actingAsVendor($vendor->fresh());
-        Order::factory()->for($vendor->store)->create();
+        $this->putJson('/api/v1/vendor/shipping', ['default_shipping_price' => 70, 'rates' => []])->assertOk();
 
         $events = collect($this->getJson('/api/v1/vendor/activity')->assertOk()->json('data'))->pluck('event');
-        $this->assertContains('order.created', $events);
+        $this->assertContains('store.shipping_updated', $events);
         $this->assertNotContains('store.suspended', $events);
     }
 

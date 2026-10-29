@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\ActivityLog;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
@@ -10,3 +11,4 @@ Artisan::command('inspire', function () {
 
 Schedule::command('makhzan:expire-unpaid-orders')->everyMinute()->withoutOverlapping();
 Schedule::command('makhzan:notify-expired-coupons')->hourly()->withoutOverlapping();
+Schedule::command('model:prune', ['--model' => [ActivityLog::class]])->daily()->withoutOverlapping();

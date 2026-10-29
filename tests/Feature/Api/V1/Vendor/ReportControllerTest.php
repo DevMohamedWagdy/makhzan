@@ -13,7 +13,9 @@ use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\Vendor;
+use App\Notifications\SalesReportNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
 class ReportControllerTest extends TestCase
@@ -217,5 +219,76 @@ class ReportControllerTest extends TestCase
             ->assertJsonPath('totals.cost_of_goods', 600)
             ->assertJsonPath('totals.gross_profit', 250)
             ->assertJsonPath('totals.profit_margin', 29.4);
+    }
+
+    public function test_downloads_the_period_as_a_pdf(): void
+    {
+        $delivered = $this->order('2026-10-10 09:00:00', OrderStatus::Delivered, 500, ['recipient_name' => 'منى علي']);
+        OrderItem::factory()->for($delivered)->create(['product_name' => 'تيشيرت', 'quantity' => 3, 'line_total' => 500]);
+
+        $response = $this->get('/api/v1/vendor/reports/export?from=2026-10-10&to=2026-10-13')
+            ->assertOk()
+            ->assertHeader('Content-Type', 'application/pdf')
+            ->assertDownload("sellygrow-report-{$this->vendor->store->slug}-2026-10-10-2026-10-13.pdf");
+
+        $this->assertStringStartsWith('%PDF-', $response->getContent());
+        $this->getJson('/api/v1/vendor/reports/export?from=2026-10-13&to=2026-10-01')->assertJsonValidationErrors('to');
+    }
+
+    public function test_lists_the_accounts_the_report_can_be_emailed_to(): void
+    {
+        $staff = Vendor::factory()->create(['store_id' => $this->vendor->store->id, 'full_name' => 'أمل', 'is_active' => true]);
+        Vendor::factory()->create(['store_id' => $this->vendor->store->id, 'is_active' => false]);
+
+        $this->getJson('/api/v1/vendor/reports/recipients')
+            ->assertOk()
+            ->assertJsonCount(2, 'data')
+            ->assertJsonPath('data.0', ['vendor_id' => $this->vendor->id, 'full_name' => $this->vendor->full_name, 'email' => $this->vendor->email, 'is_owner' => true, 'is_me' => true])
+            ->assertJsonPath('data.1.vendor_id', $staff->id)
+            ->assertJsonPath('data.1.is_me', false);
+    }
+
+    public function test_emails_the_report_to_chosen_accounts_and_other_addresses(): void
+    {
+        Notification::fake();
+        $staff = Vendor::factory()->create(['store_id' => $this->vendor->store->id, 'is_active' => true]);
+        $outsider = Vendor::factory()->withStore()->create();
+
+        $this->postJson('/api/v1/vendor/reports/email', [
+            'from' => '2026-10-01',
+            'to' => '2026-10-13',
+            'vendor_ids' => [$this->vendor->id, $staff->id],
+            'emails' => ['Accountant@Example.com', strtoupper($staff->email)],
+        ])
+            ->assertAccepted()
+            ->assertJsonPath('message', __('reports.email.queued', ['count' => 3]));
+
+        Notification::assertSentTo([$this->vendor, $staff], SalesReportNotification::class);
+        Notification::assertSentOnDemand(SalesReportNotification::class, function (SalesReportNotification $notification, array $channels, object $notifiable): bool {
+            $mail = $notification->toMail($notifiable);
+
+            return $notifiable->routes['mail'] === 'accountant@example.com'
+                && $notification->senderName === $this->vendor->full_name
+                && $mail->actionUrl === null
+                && str_ends_with($mail->rawAttachments[0]['name'], '2026-10-01-2026-10-13.pdf');
+        });
+        Notification::assertSentOnDemandTimes(SalesReportNotification::class, 1);
+
+        $this->postJson('/api/v1/vendor/reports/email', ['from' => '2026-10-01', 'to' => '2026-10-13'])->assertJsonValidationErrors(['vendor_ids', 'emails']);
+        $this->postJson('/api/v1/vendor/reports/email', ['vendor_ids' => [$outsider->id]])->assertJsonValidationErrors('vendor_ids.0');
+        $this->postJson('/api/v1/vendor/reports/email', ['emails' => ['not-an-email']])->assertJsonValidationErrors('emails.0');
+        $this->postJson('/api/v1/vendor/reports/email', ['emails' => array_map(fn (int $index): string => "p{$index}@example.com", range(1, 6))])->assertJsonValidationErrors('emails');
+    }
+
+    public function test_the_report_email_actually_goes_out_with_the_pdf(): void
+    {
+        $this->postJson('/api/v1/vendor/reports/email', ['from' => '2026-10-01', 'to' => '2026-10-13', 'emails' => ['accountant@example.com']])->assertAccepted();
+
+        $messages = app('mailer')->getSymfonyTransport()->messages();
+
+        $this->assertCount(1, $messages, 'LimitMailNotifications must let the report email through (config makhzan.mail_notifications).');
+        $email = $messages[0]->getOriginalMessage();
+        $this->assertSame('accountant@example.com', $email->getTo()[0]->getAddress());
+        $this->assertSame('application/pdf', $email->getAttachments()[0]->getMediaType().'/'.$email->getAttachments()[0]->getMediaSubtype());
     }
 }

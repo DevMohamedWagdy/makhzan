@@ -1,18 +1,13 @@
 import { PageHeader } from '@/components/layout/DashboardLayout';
-import { ActivityLogList } from '@/features/activity/ActivityLogList';
+import { StoreActivityTimeline } from '@/features/activity/StoreActivityTimeline';
 import { t } from '@/i18n';
-import { request } from '@/services/client';
 
-const loadActivity = (filters) => request('GET', '/api/v1/vendor/activity', { query: filters });
-
-/** The owner's view of what happened in the store: the team's actions, orders, customers… */
+/** What the store's team did: who changed what, and when. */
 export function StoreActivityPage() {
     return (
         <>
-            <PageHeader title={t('سجل النشاط')} description={t('كل ما حدث في متجرك: من نفّذه ومتى وما الذي تغيّر')} breadcrumbs={[t('لوحة التحكم'), t('الإدارة'), t('سجل النشاط')]} />
-            <section className="mk-card overflow-hidden">
-                <ActivityLogList load={loadActivity} />
-            </section>
+            <PageHeader title={t('سجل النشاط')} description={t('إجراءات فريق عملك في المتجر: من نفّذها ومتى وما الذي تغيّر')} breadcrumbs={[t('لوحة التحكم'), t('الإدارة'), t('سجل النشاط')]} icon="nav-activity" />
+            <StoreActivityTimeline />
         </>
     );
 }

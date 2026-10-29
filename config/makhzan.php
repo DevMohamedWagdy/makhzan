@@ -4,6 +4,7 @@ use App\Notifications\AdminMessageNotification;
 use App\Notifications\AffiliateResetPasswordNotification;
 use App\Notifications\CustomerResetPasswordNotification;
 use App\Notifications\EmailVerificationCodeNotification;
+use App\Notifications\SalesReportNotification;
 use App\Notifications\VendorResetPasswordNotification;
 
 return [
@@ -69,6 +70,19 @@ return [
         'max_attachments' => 5,
         'max_attachment_kb' => 5120,
         'attachment_types' => ['jpg', 'jpeg', 'png', 'webp', 'gif', 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'csv', 'txt'],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Activity Log
+    |--------------------------------------------------------------------------
+    |
+    | How long activity log entries are kept before the daily prune deletes them.
+    |
+    */
+
+    'activity_log' => [
+        'retention_days' => (int) env('MAKHZAN_ACTIVITY_LOG_RETENTION_DAYS', 180),
     ],
 
     /*
@@ -143,6 +157,8 @@ return [
         AffiliateResetPasswordNotification::class,
         CustomerResetPasswordNotification::class,
         AdminMessageNotification::class,
+        // Mail-only: the PDF a team member sends from the reports page.
+        SalesReportNotification::class,
     ],
 
 ];

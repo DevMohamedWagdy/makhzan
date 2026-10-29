@@ -6,6 +6,8 @@ import { TrendBadge } from '@/components/ui/Charts';
 import { EmptyState, StatCard } from '@/components/ui/Display';
 import { Input, Select } from '@/components/ui/Form';
 import { Skeleton } from '@/components/ui/Spinner';
+import { useToast } from '@/context/ToastContext';
+import { EmailReportModal } from '@/features/reports/EmailReportModal';
 import {
     AffiliatesCard,
     DailyChartCard,
@@ -49,6 +51,28 @@ export function ReportsPage() {
     const [report, setReport] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const toast = useToast();
+    const [downloading, setDownloading] = useState(false);
+    const [emailOpen, setEmailOpen] = useState(false);
+
+    /** Downloads the period's report as a formatted PDF. */
+    const downloadReport = async () => {
+        setDownloading(true);
+
+        try {
+            const url = URL.createObjectURL(await reportsApi.exportFile(range));
+            const link = Object.assign(document.createElement('a'), { href: url, download: `sellygrow-report-${range.from}-${range.to}.pdf` });
+
+            document.body.append(link);
+            link.click();
+            link.remove();
+            URL.revokeObjectURL(url);
+        } catch (downloadError) {
+            toast.error(t('تعذر تحميل التقرير'), downloadError.message);
+        } finally {
+            setDownloading(false);
+        }
+    };
 
     const load = useCallback(async () => {
         setLoading(true);
@@ -88,9 +112,17 @@ export function ReportsPage() {
                                 <Input type="date" value={range.to} min={range.from} max={toDateString(new Date())} onChange={(event) => setCustomDate('to', event.target.value)} aria-label={t('إلى تاريخ')} className="h-10 w-40" />
                             </>
                         )}
+                        <Button variant="secondary" icon="download" loading={downloading} onClick={downloadReport}>
+                            {t('تحميل PDF')}
+                        </Button>
+                        <Button variant="secondary" icon="mail" onClick={() => setEmailOpen(true)}>
+                            {t('إرسال بالبريد')}
+                        </Button>
                     </>
                 }
             />
+
+            <EmailReportModal open={emailOpen} onClose={() => setEmailOpen(false)} period={range} />
 
             {error ? (
                 <EmptyState icon="alert-triangle" title={t('تعذر تحميل التقرير')} description={error} action={<Button variant="secondary" icon="refresh" onClick={load}>{t('إعادة المحاولة')}</Button>} />
