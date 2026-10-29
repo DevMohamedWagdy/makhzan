@@ -2069,14 +2069,12 @@ export default {
     'طباعة الفاتورة': 'Print invoice',
     'طباعة الفواتير': 'Print invoices',
     'طباعة بوالص التغليف': 'Print packing slips',
-    'عدد القطع: {count}': 'Total pieces: {count}',
     'علامة مميزة: {value}': 'Landmark: {value}',
     'غير مدفوع': 'Unpaid',
     'فاتورة': 'Invoice',
     'كود المنتج': 'SKU',
     'لم يتم اختيار أي طلب للطباعة.': 'No orders were selected for printing.',
     'مدفوع مسبقاً': 'Prepaid',
-    'ملاحظة العميل:': 'Customer note:',
 
     // Team members
     'تم حذف الموظف': 'Team member removed',
@@ -3198,4 +3196,15 @@ export default {
     'لا توجد بضاعة في هذا المخزن الآن. انقل إليه منتجات أو استلم فيه أمر شراء.': 'There\'s no stock in this warehouse right now. Transfer products to it or receive a purchase order into it.',
     'الكمية هنا': 'Qty here',
     'في كل المخازن': 'All warehouses',
+
+    // Order print sheets
+    'ملاحظة العميل': 'Customer note',
+    'فاتورة إلى': 'Bill to',
+    'سعر الوحدة': 'Unit price',
+    'للاستفسار:': 'Questions:',
+    'عدد الأصناف': 'Items',
+    'عدد القطع': 'Units',
+    'جهّزه': 'Packed by',
+    'راجعه': 'Checked by',
+    'استلمه المندوب': 'Courier received',
 };
