@@ -16,7 +16,9 @@ use App\Models\Supplier;
 use App\Models\Vendor;
 use App\Models\Warehouse;
 use App\Models\WarehouseStock;
+use App\Notifications\StockAlertNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
 class WarehouseTest extends TestCase
@@ -167,6 +169,18 @@ class WarehouseTest extends TestCase
             ->assertJsonValidationErrors('to_warehouse_id');
         $this->assertSame([4, 6], $this->stocks($dress));
         $this->assertSame(1, $this->vendor->store->stockTransfers()->count());
+    }
+
+    public function test_moving_all_of_a_products_stock_to_another_warehouse_does_not_alert_that_it_ran_out(): void
+    {
+        $dress = $this->variant(10, 0);
+        Notification::fake();
+
+        $this->postJson('/api/v1/vendor/stock-transfers', ['from_warehouse_id' => $this->main->id, 'to_warehouse_id' => $this->branch->id, 'items' => [['variant_id' => $dress->id, 'quantity' => 10]]])
+            ->assertCreated();
+
+        $this->assertSame([0, 10], $this->stocks($dress));
+        Notification::assertNothingSentTo($this->vendor, StockAlertNotification::class);
     }
 
     public function test_manual_movements_apply_to_the_chosen_warehouse(): void

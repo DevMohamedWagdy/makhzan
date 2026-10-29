@@ -229,7 +229,8 @@ class ChangeStock
         $ranOut = $after === 0 && $before > 0;
         $ranLow = $after > 0 && $after <= $threshold && $before > $threshold;
 
-        if ($ranOut || $ranLow) {
+        // A transfer's "out" leg dips the total only until its "in" leg puts it back, so it never alerts.
+        if ($type !== StockMovementType::Transfer && ($ranOut || $ranLow)) {
             DB::afterCommit(fn () => $store->vendor->notify(new StockAlertNotification($locked, $after, $threshold)));
         }
 
